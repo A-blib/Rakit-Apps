@@ -3,3 +3,9 @@ app:
   jwt:
     # Hanya untuk test; bukan rahasia sungguhan.
     secret: test-secret-yang-panjangnya-minimal-32-byte-untuk-hs256
+  # Nilai palsu: verifikasi Google & panggilan ke GitHub diganti mock di test.
+  google:
+    web-client-id: test-web-client-id
+  github:
+    client-id: test-github-client-id
+    client-secret: test-github-client-secret

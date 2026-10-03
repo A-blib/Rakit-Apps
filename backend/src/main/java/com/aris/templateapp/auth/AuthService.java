@@ -1,12 +1,14 @@
 package com.aris.templateapp.auth;
 
 import com.aris.templateapp.auth.dto.AuthResponse;
+import com.aris.templateapp.auth.dto.GoogleLoginRequest;
 import com.aris.templateapp.auth.dto.LoginRequest;
 import com.aris.templateapp.auth.dto.RefreshTokenRequest;
 import com.aris.templateapp.auth.dto.RegisterRequest;
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.common.util.Emails;
+import com.aris.templateapp.security.GoogleTokenVerifier;
 import com.aris.templateapp.security.JwtService;
 import com.aris.templateapp.user.User;
 import com.aris.templateapp.user.UserRepository;
@@ -18,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/** Daftar, masuk, refresh, dan keluar dengan email + password. */
+/** Daftar, masuk (email, Google, hasil GitHub), refresh, dan keluar. */
 @Service
 public class AuthService {
 
@@ -28,6 +30,9 @@ public class AuthService {
     private final UserService userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final AccountLinkingService accountLinkingService;
+    private final AuthTicketService ticketService;
+    private final GoogleTokenVerifier googleTokenVerifier;
 
     /**
      * Hash palsu untuk dicocokkan saat email tidak ditemukan. Tujuannya agar waktu respons
@@ -38,13 +43,17 @@ public class AuthService {
 
     public AuthService(UserRepository userRepository, UserIdentityRepository identityRepository,
                        RefreshTokenService refreshTokenService, UserService userService, JwtService jwtService,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder, AccountLinkingService accountLinkingService,
+                       AuthTicketService ticketService, GoogleTokenVerifier googleTokenVerifier) {
         this.userRepository = userRepository;
         this.identityRepository = identityRepository;
         this.refreshTokenService = refreshTokenService;
         this.userService = userService;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.accountLinkingService = accountLinkingService;
+        this.ticketService = ticketService;
+        this.googleTokenVerifier = googleTokenVerifier;
         this.dummyPasswordHash = passwordEncoder.encode("password-palsu-untuk-penyeimbang-waktu");
     }
 
@@ -75,7 +84,30 @@ public class AuthService {
         if (!passwordEncoder.matches(request.password(), local.getPasswordHash())) {
             throw new ApiException(ErrorCode.INVALID_CREDENTIALS);
         }
+        linkPendingIdentity(user, request.linkToken());
         return issueTokens(user, deviceName, false);
+    }
+
+    /**
+     * Masuk/daftar dengan Google. Akun dibuat otomatis jika belum ada (tanpa menu Daftar).
+     * Jika email Google sudah dipakai akun lain, {@code ACCOUNT_LINK_REQUIRED} dilempar oleh AccountLinkingService.
+     */
+    @Transactional
+    public AuthResponse loginWithGoogle(GoogleLoginRequest request, String deviceName) {
+        SocialProfile profile = googleTokenVerifier.verify(request.idToken());
+        AccountLinkingService.SignInResult result = accountLinkingService.signIn(profile);
+        linkPendingIdentity(result.user(), request.linkToken());
+        return issueTokens(result.user(), deviceName, result.isNewUser());
+    }
+
+    /** Menukar tiket LOGIN_RESULT dari deep link GitHub menjadi token. Tiket hanya bisa dipakai sekali. */
+    @Transactional
+    public AuthResponse exchangeLoginTicket(String rawTicket, String deviceName) {
+        AuthTicket ticket = ticketService.consume(AuthTicketType.LOGIN_RESULT, rawTicket, ErrorCode.TICKET_INVALID);
+        User user = userRepository.findById(ticket.getUserId())
+                .orElseThrow(() -> new ApiException(ErrorCode.TICKET_INVALID));
+        boolean isNewUser = Boolean.parseBoolean(ticket.payloadString(GitHubAuthService.KEY_IS_NEW_USER));
+        return issueTokens(user, deviceName, isNewUser);
     }
 
     // noRollbackFor: lihat penjelasan di RefreshTokenService.rotate.
@@ -88,6 +120,13 @@ public class AuthService {
     @Transactional
     public void logout(RefreshTokenRequest request) {
         refreshTokenService.revoke(request.refreshToken());
+    }
+
+    /** Langkah 4 bagian 6.3: jika request membawa linkToken, sambungkan identitas yang tertunda. */
+    private void linkPendingIdentity(User user, String linkToken) {
+        if (linkToken != null && !linkToken.isBlank()) {
+            accountLinkingService.completePendingLink(user, linkToken);
+        }
     }
 
     private AuthResponse issueTokens(User user, String deviceName, boolean isNewUser) {
@@ -112,6 +151,6 @@ public class AuthService {
         String labels = providers.stream().map(IdentityProvider::label).collect(Collectors.joining(" atau "));
         return new ApiException(ErrorCode.USE_SOCIAL_LOGIN,
                 "Akun ini terdaftar dengan " + labels + ". Silakan masuk dengan " + labels + ".",
-                providers.stream().map(IdentityProvider::value).toList());
+                providers.stream().map(IdentityProvider::value).toList(), null);
     }
 }
