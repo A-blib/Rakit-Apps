@@ -1,0 +1,5 @@
+# Profile untuk test otomatis. Database disediakan Testcontainers, bukan PostgreSQL laptop.
+app:
+  jwt:
+    # Hanya untuk test; bukan rahasia sungguhan.
+    secret: test-secret-yang-panjangnya-minimal-32-byte-untuk-hs256
