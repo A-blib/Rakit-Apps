@@ -58,4 +58,15 @@ public class ProviderProfile {
     @UpdateTimestamp
     @Column(nullable = false)
     private Instant updatedAt;
+
+    public ProviderProfile(UUID userId, String creatorName, Instant agreedTermsAt) {
+        this.userId = userId;
+        this.creatorName = creatorName;
+        this.agreedTermsAt = agreedTermsAt;
+    }
+
+    /** Akun provider yang ditangguhkan tidak boleh membuka mode provider. */
+    public boolean isSuspended() {
+        return status == ProviderStatus.SUSPENDED;
+    }
 }
