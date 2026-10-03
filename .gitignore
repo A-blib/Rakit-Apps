@@ -1,0 +1,37 @@
+# --- Rahasia: jangan pernah di-commit ---
+.env
+*.env
+!.env.example
+local.properties
+*.keystore
+*.jks
+google-services.json
+
+# --- Upload lokal backend ---
+backend/uploads/
+
+# --- Hasil build ---
+build/
+target/
+out/
+bin/
+.gradle/
+.kotlin/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+
+# --- IDE ---
+# .idea/ milik Android Studio berisi pengaturan pribadi, jadi tidak di-commit.
+.idea/
+*.iml
+captures/
+# Hanya folder .vscode milik backend yang di-commit (pengaturan bersama tim).
+.vscode/
+!backend/.vscode/
+
+# --- Sistem operasi & log ---
+.DS_Store
+Thumbs.db
+*.log

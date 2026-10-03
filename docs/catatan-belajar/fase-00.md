@@ -1,0 +1,51 @@
+# Fase 00: Persiapan lingkungan & repo
+
+## Yang dikerjakan
+| File | Fungsi |
+|---|---|
+| `template-app/` | Folder monorepo berisi `backend/`, `android/`, `docs/` |
+| `AGENTS.md`, `CLAUDE.md` | Salinan instruksi pengembangan; `CLAUDE.md` dibaca otomatis oleh Claude Code |
+| `.gitignore` | Mencegah rahasia (`.env`, `local.properties`, keystore), hasil build, dan `.idea/` ikut ter-commit; `backend/.vscode/` tetap di-commit |
+| `README.md` | README awal: status fitur, struktur repo, prasyarat, persiapan Ubuntu, alat kerja, setup database, menyiapkan HP |
+| `docs/rancangan-app-template-website.pdf` | Salinan alur besar app dari folder "Instruksi dan alur" |
+| `docs/catatan-belajar/fase-00.md` | Catatan ini |
+| `docs/screenshots/.gitkeep` | Menjaga folder screenshot tetap ada di Git walau masih kosong |
+
+## Alasan keputusan
+- Memasang JDK 21 **berdampingan** dengan JDK 25 → Spring Boot dan Android Gradle Plugin paling stabil di LTS 21; JDK 25 tidak perlu dihapus (alternatif: menghapus JDK 25 — tidak dipilih karena bisa merusak program lain yang memakainya).
+- Docker dari paket `docker.io` Ubuntu → cukup untuk Testcontainers dan satu perintah saja (alternatif: repo resmi Docker — lebih baru tapi langkahnya lebih panjang; tetap ditulis sebagai opsi di README).
+- Android Studio lewat Snap → selalu versi stabil terbaru dan update otomatis (alternatif: unduh tar.gz manual — harus update sendiri).
+- `.vscode/` di-ignore secara umum, kecuali `backend/.vscode/` → pengaturan VS Code bersama ikut repo, pengaturan pribadi di folder lain tidak.
+- Folder `android/` dibiarkan kosong → di Fase 05 Aris membuatnya lewat wizard Android Studio sesuai instruksi.
+
+## Cara menjalankan & mengetes
+1. Jalankan perintah instalasi di README bagian "Persiapan lingkungan Ubuntu".
+2. Cek: `java -version` (harus 21), `docker run hello-world`, `adb devices` (HP berstatus `device`).
+3. Cek repo: `git status` tidak menampilkan file rahasia.
+
+## Hasil tes
+- Belum ada test kode di fase ini.
+- Cek awal (sebelum Aris memasang): Java 25 ✔ (perlu 21 ✘), PostgreSQL 18.6 ✔, Git 2.53 ✔, VS Code 1.140 ✔, Docker ✘, adb ✘, Android Studio ✘, scrcpy ✘.
+- Verifikasi akhir: _menunggu Aris menjalankan perintah instalasi._
+
+## Konsep yang dipelajari
+- Monorepo : satu repository Git berisi beberapa project (backend + android), sehingga perubahan yang saling terkait bisa di-commit bersama.
+- `.gitignore` : daftar pola file yang tidak dilacak Git; dipakai agar rahasia dan file hasil build tidak masuk repo.
+- `update-alternatives` : cara Ubuntu memilih versi default sebuah program ketika ada beberapa versi terpasang.
+- `JAVA_HOME` : environment variable yang dibaca Maven/Gradle untuk menentukan JDK mana yang dipakai.
+- `adb` (Android Debug Bridge) : alat untuk berbicara dengan HP dari laptop (pasang app, lihat log, meneruskan port).
+
+## Latihan untuk Aris
+1. Jalankan `ls /usr/lib/jvm/` lalu jelaskan kenapa ada lebih dari satu folder Java.
+2. Buat file `coba.env` di root repo, jalankan `git status`, dan perhatikan apakah file itu muncul. Lalu hapus file tersebut.
+3. Jalankan `adb shell getprop ro.build.version.sdk` untuk melihat API level HP-mu, pastikan ≥ 26.
+
+## Yang perlu Aris lakukan
+- Jalankan perintah di README bagian "Persiapan lingkungan Ubuntu" (JDK 21, Docker, Android Studio, udev, scrcpy) dan logout-login setelah `usermod`.
+- Jalankan Setup Wizard Android Studio (pilih Standard).
+- Siapkan HP: aktifkan USB debugging, colok, setujui pop-up.
+- Buat user & database PostgreSQL (README bagian "Setup database").
+- Kabari jika sudah, agar hasilnya diverifikasi.
+
+## Rencana fase berikutnya
+- Fase 01: inisialisasi Spring Boot (dependency bagian 4.3), `backend/.vscode/`, profile dev/prod, `AppProperties`, migrasi Flyway V1–V6, `GlobalExceptionHandler`, Swagger UI.
