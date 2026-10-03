@@ -13,16 +13,27 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.data.model.LoginMethod;
 import com.aris.templateapp.databinding.FragmentLoginBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.List;
 import java.util.Map;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 /** Layar Masuk (bagian 6.2 & 9.4): Google, GitHub, lalu email + password. */
 @AndroidEntryPoint
 public class LoginFragment extends Fragment {
+
+    /** Argumen opsional saat dibuka dari layar Daftar untuk menyambungkan akun lewat email + password. */
+    static final String ARG_LINK_TOKEN = "linkToken";
+    static final String ARG_LINK_NEW_METHOD = "linkNewMethod";
+
+    @Inject
+    AuthDeepLinks deepLinks;
 
     private FragmentLoginBinding binding;
     private AuthViewModel viewModel;
@@ -37,6 +48,7 @@ public class LoginFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        restoreLinkFromArguments();
 
         binding.toolbar.setNavigationOnClickListener(v -> NavHostFragment.findNavController(this).navigateUp());
         binding.loginButton.setOnClickListener(v -> submit());
@@ -54,6 +66,11 @@ public class LoginFragment extends Fragment {
                 .show());
         binding.registerLink.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.action_login_to_register));
+
+        SocialAuthBinder.bind(this, binding.social, binding.linkBanner, viewModel, deepLinks, link -> {
+            // Penyambungan lewat email: user cukup mengisi form di layar ini, linkToken ikut terkirim.
+            binding.emailInput.requestFocus();
+        });
 
         viewModel.getFormErrors().observe(getViewLifecycleOwner(), errors -> {
             AuthFormBinder.showFieldError(binding.emailLayout, errors.get(AuthFormValidator.Field.EMAIL));
@@ -73,6 +90,15 @@ public class LoginFragment extends Fragment {
                 PostLoginNavigator.navigate(this, result.getUser());
             }
         });
+    }
+
+    private void restoreLinkFromArguments() {
+        Bundle args = getArguments();
+        if (args != null && args.getString(ARG_LINK_TOKEN) != null && viewModel.getPendingLink().getValue() == null) {
+            LoginMethod newMethod = LoginMethod.fromValue(args.getString(ARG_LINK_NEW_METHOD));
+            viewModel.continueLinkWith(new LinkRequest(args.getString(ARG_LINK_TOKEN),
+                    List.of(LoginMethod.LOCAL.value()), newMethod), LoginMethod.LOCAL);
+        }
     }
 
     private void submit() {

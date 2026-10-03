@@ -84,6 +84,23 @@
     <string name="error_password_too_long">Password maksimal 72 karakter</string>
     <string name="helper_password">Minimal 8 karakter</string>
 
+    <!-- Login Google & GitHub, penyambungan akun (bagian 6.3–6.5) -->
+    <string name="action_cancel">Batal</string>
+    <string name="link_dialog_title">Sambungkan akun</string>
+    <!-- %1$s & %2$s = metode lama (mis. "Google"), %3$s = metode baru (mis. "GitHub") -->
+    <string name="link_dialog_body">Email ini sudah terdaftar dengan %1$s. Masuk dengan %2$s untuk menyambungkan akun %3$s.</string>
+    <!-- %1$s = nama metode -->
+    <string name="link_dialog_sign_in_with">Masuk dengan %1$s</string>
+    <!-- %1$s = metode lama, %2$s = metode baru -->
+    <string name="link_banner">Masuk dengan %1$s untuk menyambungkan akun %2$s.</string>
+    <string name="error_social_auth_failed">Gagal masuk dengan Google/GitHub. Coba lagi.</string>
+    <string name="error_google_no_account">Tidak ada akun Google di HP ini. Tambahkan akun di Pengaturan HP lalu coba lagi.</string>
+    <string name="error_google_not_configured">Login Google belum disiapkan (GOOGLE_WEB_CLIENT_ID kosong).</string>
+    <string name="error_ticket_invalid">Waktu login habis. Silakan coba lagi.</string>
+    <string name="error_link_user_mismatch">Akun yang kamu pakai masuk berbeda dengan akun yang ingin disambungkan.</string>
+    <string name="error_link_token_invalid">Waktu penyambungan akun habis. Ulangi dari awal.</string>
+    <string name="error_identity_in_use">Akun ini sudah tersambung ke pengguna lain.</string>
+
     <!-- Aksesibilitas (contentDescription ikon) -->
     <string name="cd_back">Kembali</string>
     <string name="cd_profile_menu">Menu profil</string>

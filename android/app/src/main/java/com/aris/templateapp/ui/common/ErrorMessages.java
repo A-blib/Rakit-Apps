@@ -31,6 +31,16 @@ public final class ErrorMessages {
                 return context.getString(R.string.error_email_already_used);
             case "USE_SOCIAL_LOGIN":
                 return context.getString(R.string.error_use_social_login, methodLabels(context, error.getExistingMethods()));
+            case "SOCIAL_AUTH_FAILED":
+                return context.getString(R.string.error_social_auth_failed);
+            case "TICKET_INVALID":
+                return context.getString(R.string.error_ticket_invalid);
+            case "LINK_USER_MISMATCH":
+                return context.getString(R.string.error_link_user_mismatch);
+            case "LINK_TOKEN_INVALID":
+                return context.getString(R.string.error_link_token_invalid);
+            case "IDENTITY_IN_USE":
+                return context.getString(R.string.error_identity_in_use);
             case "REFRESH_TOKEN_INVALID":
             case "UNAUTHORIZED":
                 return context.getString(R.string.error_session_expired);

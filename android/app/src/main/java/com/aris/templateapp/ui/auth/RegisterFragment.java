@@ -18,11 +18,16 @@ import com.aris.templateapp.databinding.FragmentRegisterBinding;
 
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 /** Layar Daftar (bagian 9.4): nama, email, password, lalu alternatif Google/GitHub. */
 @AndroidEntryPoint
 public class RegisterFragment extends Fragment {
+
+    @Inject
+    AuthDeepLinks deepLinks;
 
     private FragmentRegisterBinding binding;
     private AuthViewModel viewModel;
@@ -49,6 +54,15 @@ public class RegisterFragment extends Fragment {
         });
         // Daftar dibuka dari layar Masuk, jadi "Sudah punya akun? Masuk" cukup kembali ke sana.
         binding.loginLink.setOnClickListener(v -> NavHostFragment.findNavController(this).navigateUp());
+
+        SocialAuthBinder.bind(this, binding.social, binding.linkBanner, viewModel, deepLinks, link -> {
+            // Penyambungan lewat email + password dilakukan di layar Masuk; linkToken dibawa sebagai argumen.
+            Bundle args = new Bundle();
+            args.putString(LoginFragment.ARG_LINK_TOKEN, link.getLinkToken());
+            args.putString(LoginFragment.ARG_LINK_NEW_METHOD, link.getNewMethod().value());
+            viewModel.cancelLink();
+            NavHostFragment.findNavController(this).navigate(R.id.action_register_to_login, args);
+        });
 
         viewModel.getFormErrors().observe(getViewLifecycleOwner(), errors -> {
             AuthFormBinder.showFieldError(binding.nameLayout, errors.get(AuthFormValidator.Field.NAME));

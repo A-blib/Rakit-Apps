@@ -40,6 +40,14 @@
                 android:textAppearance="@style/TextAppearance.App.Body"
                 android:textColor="@color/color_muted" />
 
+            <!-- Muncul saat user sedang menyambungkan akun (setelah memilih metode lama di LinkAccountDialog). -->
+            <com.aris.templateapp.ui.common.StatusBannerView
+                android:id="@+id/link_banner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_6"
+                android:visibility="gone" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/name_layout"
                 android:layout_width="match_parent"

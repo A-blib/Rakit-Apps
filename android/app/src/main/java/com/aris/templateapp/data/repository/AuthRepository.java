@@ -10,8 +10,12 @@ import com.aris.templateapp.data.mapper.UserMapper;
 import com.aris.templateapp.data.model.AuthResult;
 import com.aris.templateapp.data.remote.api.AuthApi;
 import com.aris.templateapp.data.remote.dto.AuthResponseDto;
+import com.aris.templateapp.data.remote.dto.GitHubAuthorizeRequestDto;
+import com.aris.templateapp.data.remote.dto.GoogleLoginRequestDto;
 import com.aris.templateapp.data.remote.dto.LoginRequestDto;
 import com.aris.templateapp.data.remote.dto.RegisterRequestDto;
+import com.aris.templateapp.data.remote.dto.TicketExchangeRequestDto;
+import com.aris.templateapp.data.remote.dto.UrlResponseDto;
 
 import java.io.IOException;
 
@@ -52,6 +56,33 @@ public class AuthRepository {
     @WorkerThread
     public Resource<AuthResult> login(String email, String password, String linkToken) {
         return execute(authApi.login(new LoginRequestDto(email, password, linkToken)));
+    }
+
+    /** Masuk/daftar dengan idToken dari Credential Manager. */
+    @WorkerThread
+    public Resource<AuthResult> loginWithGoogle(String idToken, String linkToken) {
+        return execute(authApi.google(new GoogleLoginRequestDto(idToken, linkToken)));
+    }
+
+    /** URL halaman login GitHub yang dibuka di Custom Tab. */
+    @WorkerThread
+    public Resource<String> gitHubAuthorizeUrl(String linkToken) {
+        try {
+            Response<UrlResponseDto> response = authApi.gitHubAuthorizeUrl(new GitHubAuthorizeRequestDto(linkToken)).execute();
+            UrlResponseDto body = response.body();
+            if (response.isSuccessful() && body != null && body.url != null) {
+                return Resource.success(body.url);
+            }
+            return Resource.error(errorParser.parse(response));
+        } catch (IOException e) {
+            return Resource.error(errorParser.parse(e));
+        }
+    }
+
+    /** Menukar tiket dari deep link GitHub menjadi sesi login. */
+    @WorkerThread
+    public Resource<AuthResult> exchangeGitHubTicket(String ticket) {
+        return execute(authApi.gitHubExchange(new TicketExchangeRequestDto(ticket)));
     }
 
     /** Menjalankan request auth dan menyimpan sesi jika berhasil. Dipakai juga oleh login Google/GitHub. */

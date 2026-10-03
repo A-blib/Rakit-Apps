@@ -68,5 +68,12 @@
 
     <fragment
         android:id="@+id/registerFragment"
-        android:name="com.aris.templateapp.ui.auth.RegisterFragment" />
+        android:name="com.aris.templateapp.ui.auth.RegisterFragment">
+        <!-- Penyambungan akun lewat email + password: buka layar Masuk baru (yang lama dibuang) dengan linkToken. -->
+        <action
+            android:id="@+id/action_register_to_login"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 </navigation>

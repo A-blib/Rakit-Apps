@@ -1,8 +1,11 @@
 package com.aris.templateapp;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.splashscreen.SplashScreen;
@@ -12,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.aris.templateapp.core.storage.SessionStore;
 import com.aris.templateapp.databinding.ActivityMainBinding;
+import com.aris.templateapp.ui.auth.AuthDeepLinks;
 import com.aris.templateapp.ui.startup.StartupViewModel;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -28,6 +32,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Inject
     SessionStore sessionStore;
+
+    @Inject
+    AuthDeepLinks authDeepLinks;
 
     private ActivityMainBinding binding;
 
@@ -55,10 +62,31 @@ public class MainActivity extends AppCompatActivity {
             return WindowInsetsCompat.CONSUMED;
         });
 
+        // Deep link yang membuka app dari keadaan tertutup. Saat Activity dibuat ulang (mis. HP diputar),
+        // savedInstanceState tidak null dan deep link yang sama tidak diproses lagi.
+        if (savedInstanceState == null) {
+            handleDeepLink(getIntent());
+        }
+
         sessionStore.sessionExpiredEvents().observe(this, event -> {
             if (event.getContentIfNotHandled() != null) {
                 Snackbar.make(binding.getRoot(), R.string.error_session_expired, Snackbar.LENGTH_LONG).show();
             }
         });
+    }
+
+    /** Dipanggil (karena launchMode singleTask) saat deep link datang ketika app sudah terbuka. */
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleDeepLink(intent);
+    }
+
+    private void handleDeepLink(Intent intent) {
+        Uri uri = intent == null ? null : intent.getData();
+        if (AuthDeepLinks.isAuthCallback(uri)) {
+            authDeepLinks.publish(uri);
+        }
     }
 }

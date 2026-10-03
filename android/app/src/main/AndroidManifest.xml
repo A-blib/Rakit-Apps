@@ -32,6 +32,21 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!--
+                Deep link hasil login GitHub: backend mengarahkan browser ke templateapp://auth/callback?ticket=...
+                BROWSABLE = boleh dibuka dari browser/Custom Tab. singleTask (di atas) membuat Activity yang sudah
+                terbuka dipakai ulang (onNewIntent), bukan membuat Activity baru.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="auth"
+                    android:path="/callback"
+                    android:scheme="templateapp" />
+            </intent-filter>
         </activity>
     </application>
 
