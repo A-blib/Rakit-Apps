@@ -1,0 +1,13 @@
+{
+  // Muat ulang classpath otomatis setiap pom.xml berubah, tanpa ditanya.
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.jdt.ls.lombokSupport.enabled": true,
+  // Folder hasil build tidak perlu muncul di Explorer maupun pencarian.
+  "files.exclude": {
+    "target": true
+  },
+  "search.exclude": {
+    "target": true
+  },
+  "editor.formatOnSave": false
+}

@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Backend: debug (dev)",
+      "request": "launch",
+      "mainClass": "com.aris.templateapp.TemplateAppApplication",
+      "projectName": "templateapp",
+      "cwd": "${workspaceFolder}",
+      // Environment variable dari backend/.env (file ini tidak di-commit).
+      "envFile": "${workspaceFolder}/.env",
+      "args": "--spring.profiles.active=dev"
+    }
+  ]
+}
