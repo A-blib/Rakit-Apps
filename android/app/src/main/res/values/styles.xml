@@ -125,6 +125,22 @@
         <item name="trackColor">@color/color_border</item>
     </style>
 
+    <!-- Snackbar monokrom terbalik: latar foreground, teks latar, tombol aksi tebal (bukan ungu bawaan Material). -->
+    <style name="Widget.App.Snackbar" parent="Widget.Material3.Snackbar">
+        <item name="backgroundTint">@color/color_foreground</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.App.Medium</item>
+    </style>
+
+    <style name="Widget.App.Snackbar.Text" parent="Widget.Material3.Snackbar.TextView">
+        <item name="android:textColor">@color/color_background</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.BodySmall</item>
+    </style>
+
+    <style name="Widget.App.Snackbar.Button" parent="Widget.Material3.Button.TextButton.Snackbar">
+        <item name="android:textColor">@color/color_background</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Button</item>
+    </style>
+
     <!-- Dialog: satu-satunya komponen yang boleh punya elevasi (bagian 9.2). -->
     <style name="ThemeOverlay.App.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.Medium</item>

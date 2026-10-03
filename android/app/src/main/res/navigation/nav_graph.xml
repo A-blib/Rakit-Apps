@@ -43,6 +43,9 @@
     <fragment
         android:id="@+id/creatorDashboardFragment"
         android:name="com.aris.templateapp.ui.creator.CreatorDashboardFragment">
+        <action
+            android:id="@+id/action_creator_dashboard_to_login"
+            app:destination="@id/loginFragment" />
         <!-- Dibaca CreatorDashboardFragment.ARG_PROVIDER_SUSPENDED. -->
         <argument
             android:name="providerSuspended"
@@ -53,4 +56,17 @@
     <fragment
         android:id="@+id/providerDashboardFragment"
         android:name="com.aris.templateapp.ui.provider.ProviderDashboardFragment" />
+
+    <!-- Masuk & Daftar. Setelah berhasil, PostLoginNavigator membuka dashboard dan membersihkan back stack. -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.aris.templateapp.ui.auth.LoginFragment">
+        <action
+            android:id="@+id/action_login_to_register"
+            app:destination="@id/registerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.aris.templateapp.ui.auth.RegisterFragment" />
 </navigation>

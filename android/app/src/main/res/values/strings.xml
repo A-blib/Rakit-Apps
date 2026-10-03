@@ -30,6 +30,7 @@
     <string name="method_google">Google</string>
     <string name="method_github">GitHub</string>
     <string name="method_email">email</string>
+    <string name="word_or">atau</string>
 
     <!-- Intro (3 halaman, bagian 9.4) -->
     <string name="intro_title_1">Bikin website. Tanpa coding.</string>
@@ -56,6 +57,32 @@
     <string name="provider_status_rejected">Pengajuan provider ditolak: %1$s.</string>
     <string name="provider_status_rejected_no_reason">Pengajuan provider ditolak.</string>
     <string name="provider_status_suspended">Akun provider ditangguhkan.</string>
+
+    <!-- Masuk & daftar (bagian 6.2 & 9.4) -->
+    <string name="login_title">Masuk</string>
+    <string name="login_subtitle">Masuk untuk menyimpan dan membagikan karyamu.</string>
+    <string name="continue_with_google">Lanjutkan dengan Google</string>
+    <string name="continue_with_github">Lanjutkan dengan GitHub</string>
+    <string name="divider_or">atau</string>
+    <string name="field_name">Nama</string>
+    <string name="field_email">Email</string>
+    <string name="field_password">Password</string>
+    <string name="forgot_password">Lupa password?</string>
+    <string name="forgot_password_dialog_title">Lupa password</string>
+    <string name="forgot_password_dialog_body">Fitur atur ulang password segera hadir.</string>
+    <string name="no_account_register">Belum punya akun? Daftar</string>
+    <string name="have_account_login">Sudah punya akun? Masuk</string>
+    <string name="terms_notice">Dengan melanjutkan, kamu menyetujui Syarat &amp; Ketentuan serta Kebijakan Privasi.</string>
+    <string name="register_title">Buat akun</string>
+    <string name="register_subtitle">Daftar dengan email, atau pakai akun Google/GitHub.</string>
+    <string name="action_register">Daftar</string>
+    <string name="error_name_required">Nama wajib diisi</string>
+    <string name="error_email_required">Email wajib diisi</string>
+    <string name="error_email_invalid">Format email tidak valid</string>
+    <string name="error_password_required">Password wajib diisi</string>
+    <string name="error_password_length">Password minimal 8 karakter</string>
+    <string name="error_password_too_long">Password maksimal 72 karakter</string>
+    <string name="helper_password">Minimal 8 karakter</string>
 
     <!-- Aksesibilitas (contentDescription ikon) -->
     <string name="cd_back">Kembali</string>

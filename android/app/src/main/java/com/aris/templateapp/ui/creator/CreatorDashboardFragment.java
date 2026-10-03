@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.R;
 import com.aris.templateapp.databinding.FragmentCreatorDashboardBinding;
@@ -55,6 +56,8 @@ public class CreatorDashboardFragment extends Fragment {
         }
 
         viewModel.getUser().observe(getViewLifecycleOwner(), user -> AppBarAccount.bind(binding.account, user));
+        binding.account.signInButton.setOnClickListener(v ->
+                NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login));
     }
 
     @Override
