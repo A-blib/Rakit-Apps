@@ -26,7 +26,10 @@
 ## Hasil tes
 - Belum ada test kode di fase ini.
 - Cek awal (sebelum Aris memasang): Java 25 ✔ (perlu 21 ✘), PostgreSQL 18.6 ✔, Git 2.53 ✔, VS Code 1.140 ✔, Docker ✘, adb ✘, Android Studio ✘, scrcpy ✘.
-- Verifikasi akhir: _menunggu Aris menjalankan perintah instalasi._
+- Verifikasi akhir (3 Okt 2026): Java 21.0.12 ✔ (`JAVA_HOME` → java-21), PostgreSQL 18.6 ✔ (login `templateapp` ke DB `templateapp` berhasil), Docker 29.1.3 ✔ (service aktif & enabled, jalan tanpa sudo, `hello-world` sudah dijalankan), Git 2.53 ✔, VS Code 1.140 ✔, Android Studio 2026.2.1 ✔, Android SDK ✔ (platform android-37, build-tools, platform-tools), scrcpy ✔, `adb devices` → realme RMX3151 (Android 13, API 33) berstatus `device` ✔, `backend/.env` ter-ignore Git ✔.
+- Kendala yang ditemui:
+  - HP putus-sambung dengan `error -71` di log kernel → penyebabnya sambungan fisik USB; beres setelah kabel/port diganti.
+  - Ada dua `adb` (`/usr/bin/adb` dari paket udev dan adb dari SDK) → `platform-tools` SDK dipindah ke **depan** PATH di `~/.bashrc` (cadangan: `~/.bashrc.bak-fase00`).
 
 ## Konsep yang dipelajari
 - Monorepo : satu repository Git berisi beberapa project (backend + android), sehingga perubahan yang saling terkait bisa di-commit bersama.
@@ -35,17 +38,18 @@
 - `JAVA_HOME` : environment variable yang dibaca Maven/Gradle untuk menentukan JDK mana yang dipakai.
 - `adb` (Android Debug Bridge) : alat untuk berbicara dengan HP dari laptop (pasang app, lihat log, meneruskan port).
 
+- `journalctl -k` : membaca log kernel; tempat melihat apakah perangkat USB benar-benar terdeteksi dan kenapa putus.
+- Urutan `PATH` : shell mencari program dari folder paling kiri; folder yang ditaruh di depan menang jika ada nama program yang sama.
+
 ## Latihan untuk Aris
 1. Jalankan `ls /usr/lib/jvm/` lalu jelaskan kenapa ada lebih dari satu folder Java.
 2. Buat file `coba.env` di root repo, jalankan `git status`, dan perhatikan apakah file itu muncul. Lalu hapus file tersebut.
 3. Jalankan `adb shell getprop ro.build.version.sdk` untuk melihat API level HP-mu, pastikan ≥ 26.
 
 ## Yang perlu Aris lakukan
-- Jalankan perintah di README bagian "Persiapan lingkungan Ubuntu" (JDK 21, Docker, Android Studio, udev, scrcpy) dan logout-login setelah `usermod`.
-- Jalankan Setup Wizard Android Studio (pilih Standard).
-- Siapkan HP: aktifkan USB debugging, colok, setujui pop-up.
-- Buat user & database PostgreSQL (README bagian "Setup database").
-- Kabari jika sudah, agar hasilnya diverifikasi.
+- Semua langkah persiapan sudah selesai dan terverifikasi.
+- Opsional: hapus emulator & system image lewat SDK Manager untuk menghemat ±3,6 GB.
+- Buka terminal baru (atau `source ~/.bashrc`) agar `adb` dari SDK yang dipakai.
 
 ## Rencana fase berikutnya
 - Fase 01: inisialisasi Spring Boot (dependency bagian 4.3), `backend/.vscode/`, profile dev/prod, `AppProperties`, migrasi Flyway V1–V6, `GlobalExceptionHandler`, Swagger UI.
