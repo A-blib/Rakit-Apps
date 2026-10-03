@@ -8,13 +8,10 @@
     <string name="action_sign_in">Masuk</string>
     <string name="action_continue">Lanjut</string>
     <string name="action_skip">Lewati</string>
-    <string name="action_close">Tutup</string>
-    <string name="action_back">Kembali</string>
     <string name="action_ok">Oke</string>
 
     <!-- Status umum -->
     <string name="state_loading">Memuat…</string>
-    <string name="state_empty">Belum ada data.</string>
     <string name="badge_coming_soon">Segera hadir</string>
 
     <!-- Error umum (bagian 6.2) -->
@@ -100,9 +97,6 @@
     <string name="error_link_user_mismatch">Akun yang kamu pakai masuk berbeda dengan akun yang ingin disambungkan.</string>
     <string name="error_link_token_invalid">Waktu penyambungan akun habis. Ulangi dari awal.</string>
     <string name="error_identity_in_use">Akun ini sudah tersambung ke pengguna lain.</string>
-
-    <!-- Status data (StateView) -->
-    <string name="state_error">Gagal memuat data.</string>
 
     <!-- Onboarding: pilih peran (bagian 6.6 & 9.4) -->
     <string name="role_select_title">Kamu mau pakai app ini sebagai apa?</string>
