@@ -17,7 +17,7 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 ## Struktur repo
 
 ```
-template-app/
+Rakit Apps/
 ├── AGENTS.md / CLAUDE.md   ← instruksi pengembangan untuk agent AI
 ├── README.md               ← file ini
 ├── docs/

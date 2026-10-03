@@ -158,7 +158,7 @@ Pakai package `com.aris.templateapp`.
 
 - Jangan mengoperasikan Android Studio. Kerjakan semuanya lewat terminal (`./gradlew`, `adb`).
 - Arahkan Aris memakai fitur Android Studio saat membantu belajar atau mengetes, misalnya "buka Logcat lalu filter `com.aris.templateapp`" atau "klik Sync Now".
-- Di Fase 05, minta Aris membuat project Android awal lewat wizard Android Studio dengan pengaturan: *New Project → Empty Views Activity*, Name `TemplateApp`, Package `com.aris.templateapp`, Save location `template-app/android`, Language **Java**, Minimum SDK **API 26**, Build configuration language **Kotlin DSL**. Tunggu sampai Aris selesai, lalu lanjutkan dari struktur itu.
+- Di Fase 05, minta Aris membuat project Android awal lewat wizard Android Studio dengan pengaturan: *New Project → Empty Views Activity*, Name `TemplateApp`, Package `com.aris.templateapp`, Save location `Rakit Apps/android`, Language **Java**, Minimum SDK **API 26**, Build configuration language **Kotlin DSL**. Tunggu sampai Aris selesai, lalu lanjutkan dari struktur itu.
 - Pertahankan file build **Kotlin DSL** + version catalog (`gradle/libs.versions.toml`) dari wizard. Tambahkan komentar singkat yang menjelaskan sintaksnya, karena Aris belum belajar Kotlin.
 - Setiap kali mengubah `build.gradle.kts`, `settings.gradle.kts`, atau `libs.versions.toml`, ingatkan Aris untuk klik **"Sync Now"** di Android Studio.
 - Jangan menjalankan `./gradlew` saat Aris sedang build/Run di Android Studio. Tanyakan dulu jika ragu.
@@ -200,7 +200,7 @@ adb logcat --pid=$(adb shell pidof -s com.aris.templateapp)   # tampilkan log ap
 Buat satu repo (monorepo) berisi dua project:
 
 ```
-template-app/
+Rakit Apps/
 ├── AGENTS.md
 ├── README.md                     ← cara setup, menjalankan, versi library
 ├── docs/
