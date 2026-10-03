@@ -12,19 +12,21 @@ public class ApiException extends RuntimeException {
 
     private final ErrorCode errorCode;
     private final List<String> existingMethods;
+    private final String linkToken;
 
     public ApiException(ErrorCode errorCode) {
         this(errorCode, errorCode.defaultMessage());
     }
 
     public ApiException(ErrorCode errorCode, String message) {
-        this(errorCode, message, null);
+        this(errorCode, message, null, null);
     }
 
-    public ApiException(ErrorCode errorCode, String message, List<String> existingMethods) {
+    public ApiException(ErrorCode errorCode, String message, List<String> existingMethods, String linkToken) {
         super(message);
         this.errorCode = errorCode;
         this.existingMethods = existingMethods;
+        this.linkToken = linkToken;
     }
 
     public ErrorCode getErrorCode() {
@@ -37,5 +39,9 @@ public class ApiException extends RuntimeException {
 
     public List<String> getExistingMethods() {
         return existingMethods;
+    }
+
+    public String getLinkToken() {
+        return linkToken;
     }
 }
