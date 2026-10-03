@@ -8,7 +8,8 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 |---|---|
 | Persiapan lingkungan & struktur repo | Sudah (Fase 00) |
 | Backend: fondasi (konfigurasi, migrasi database, format error, Swagger UI) | Sudah (Fase 01) |
-| Backend: auth email, Google, GitHub, penyambungan akun, onboarding, mode | Belum (Fase 02–04) |
+| Backend: auth email (daftar, masuk, refresh token dengan rotasi, keluar, `/users/me`) | Sudah (Fase 02) |
+| Backend: Google, GitHub, penyambungan akun, onboarding, mode | Belum (Fase 03–04) |
 | Android: splash, intro, masuk/daftar, onboarding, profil, pengaturan | Belum (Fase 05–09) |
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
@@ -193,7 +194,16 @@ Saat start, Flyway otomatis menjalankan migrasi `V1`–`V6` di `src/main/resourc
 
 ### 3. Swagger UI
 
-Buka http://localhost:8080/swagger-ui.html untuk melihat dan mencoba endpoint. Di Fase 01 belum ada endpoint, jadi halaman masih berisi "No operations defined in spec!". Swagger UI dimatikan di profile `prod`.
+Buka http://localhost:8080/swagger-ui.html untuk melihat dan mencoba endpoint. Swagger UI dimatikan di profile `prod`.
+
+Contoh mencoba alur auth email:
+1. **Auth → `POST /api/auth/register`** → *Try it out* → isi body, mis. `{"displayName":"Aris","email":"aris@mail.com","password":"rahasia123"}` → *Execute*. Hasilnya `201` berisi `accessToken` dan `refreshToken`.
+2. Salin nilai `accessToken`, klik tombol **Authorize** (ikon gembok, kanan atas), tempel token (tanpa kata `Bearer`), lalu *Authorize*.
+3. **User → `GET /api/users/me`** → *Execute* → `200` berisi data user.
+4. **`POST /api/auth/refresh`** dengan `{"refreshToken":"..."}` → dapat pasangan token baru. Coba kirim refresh token **lama** sekali lagi → `401 REFRESH_TOKEN_INVALID`, dan token yang baru ikut dicabut (deteksi pemakaian ulang).
+5. **`POST /api/auth/logout`** dengan refresh token → `204`.
+
+Access token berlaku 15 menit (`JWT_ACCESS_TTL_MINUTES`). Untuk mencoba token kedaluwarsa, ubah sementara nilainya di `.env` menjadi `1`.
 
 ### 4. Test
 
@@ -261,6 +271,7 @@ _Diisi di Fase 04._
 
 _Daftar ini dilengkapi di fase berikutnya._
 
-## Catatan belajar
+## Catatan belajar & dokumentasi
 
-Lihat [`docs/catatan-belajar/`](docs/catatan-belajar/).
+- [`docs/dokumentasi-project.md`](docs/dokumentasi-project.md): penjelasan arsitektur, alur, data, dan endpoint project secara menyeluruh (bahan belajar utama).
+- [`docs/catatan-belajar/`](docs/catatan-belajar/): catatan per fase (apa yang dikerjakan, alasan, latihan).
