@@ -16,10 +16,31 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Android: Masuk & Daftar dengan email (validasi form, pesan error 6.2, coba lagi saat offline) | Sudah (Fase 07) |
 | Android: login Google (Credential Manager), GitHub (Custom Tabs + deep link), dialog penyambungan akun | Sudah (Fase 08) |
 | Android: onboarding (pilih peran, form pembuat website & provider), menu profil, beralih mode, pengaturan, metode login terhubung, keluar | Sudah (Fase 09) |
+| Polesan akhir: tombol Coba lagi di semua aksi online, screenshot terang/gelap, lint bersih, uji skenario 13.2 di HP | Sudah (Fase 10) |
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
 > 👥 **Ikut mengembangkan bersama tim / memakai Windows?** Ikuti [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md): langkah lengkap dari nol untuk **Windows** dan Linux, cara mendaftarkan SHA-1 & Test user Google, berbagi kredensial dengan aman, dan alur kerja Git tim. README ini berisi rangkuman untuk Linux (Ubuntu).
+
+---
+
+## Tampilan
+
+Diambil dari HP asli (realme, Android 13) dengan akun dummy. File lengkap ada di [`docs/screenshots/`](docs/screenshots/).
+
+| Layar | Terang | Gelap |
+|---|---|---|
+| Intro | <img src="docs/screenshots/01-intro-terang.png" width="220"> | <img src="docs/screenshots/01-intro-gelap.png" width="220"> |
+| Dashboard pembuat website (tamu) | <img src="docs/screenshots/02-dashboard-tamu-terang.png" width="220"> | <img src="docs/screenshots/02-dashboard-tamu-gelap.png" width="220"> |
+| Masuk | <img src="docs/screenshots/03-masuk-terang.png" width="220"> | <img src="docs/screenshots/03-masuk-gelap.png" width="220"> |
+| Daftar | <img src="docs/screenshots/04-daftar-terang.png" width="220"> | <img src="docs/screenshots/04-daftar-gelap.png" width="220"> |
+| Pilih peran | <img src="docs/screenshots/05-pilih-peran-terang.png" width="220"> | <img src="docs/screenshots/05-pilih-peran-gelap.png" width="220"> |
+| Form pembuat website | <img src="docs/screenshots/06-form-pembuat-website-terang.png" width="220"> | <img src="docs/screenshots/06-form-pembuat-website-gelap.png" width="220"> |
+| Form provider | <img src="docs/screenshots/07-form-provider-terang.png" width="220"> | <img src="docs/screenshots/07-form-provider-gelap.png" width="220"> |
+| Dashboard provider (pending) | <img src="docs/screenshots/08-dashboard-provider-terang.png" width="220"> | <img src="docs/screenshots/08-dashboard-provider-gelap.png" width="220"> |
+| Menu profil | <img src="docs/screenshots/09-menu-profil-terang.png" width="220"> | <img src="docs/screenshots/09-menu-profil-gelap.png" width="220"> |
+| Pengaturan | <img src="docs/screenshots/10-pengaturan-terang.png" width="220"> | <img src="docs/screenshots/10-pengaturan-gelap.png" width="220"> |
+| Metode login terhubung | <img src="docs/screenshots/11-metode-login-terang.png" width="220"> | <img src="docs/screenshots/11-metode-login-gelap.png" width="220"> |
 
 ---
 

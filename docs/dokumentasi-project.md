@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 09** (backend dan semua layar Android cakupan saat ini selesai). Bagian yang belum dibangun ditandai _(belum)_.
+> Status dokumen: diperbarui sampai **Fase 10** (seluruh cakupan saat ini selesai dan diuji di HP asli). Screenshot setiap layar ada di README bagian "Tampilan".
 
 ---
 
