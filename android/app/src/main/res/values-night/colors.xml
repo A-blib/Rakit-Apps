@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Token warna mode GELAP. Nama sama dengan values/colors.xml, nilainya berbeda. -->
+<resources>
+    <color name="color_background">#000000</color>
+    <color name="color_surface">#0A0A0A</color>
+    <color name="color_surface_subtle">#111111</color>
+    <color name="color_foreground">#EDEDED</color>
+    <color name="color_muted">#A1A1A1</color>
+    <color name="color_border">#2E2E2E</color>
+    <color name="color_border_strong">#454545</color>
+    <color name="color_link">#52A8FF</color>
+    <color name="color_success">#4CC38A</color>
+    <color name="color_warning">#F5A524</color>
+    <color name="color_error">#FF6166</color>
+
+    <!-- Di latar gelap tint perlu sedikit lebih kuat (≈10%, alpha 1A) agar tetap terlihat. -->
+    <color name="color_success_tint">#1A4CC38A</color>
+    <color name="color_warning_tint">#1AF5A524</color>
+    <color name="color_error_tint">#1AFF6166</color>
+    <color name="color_link_tint">#1A52A8FF</color>
+</resources>

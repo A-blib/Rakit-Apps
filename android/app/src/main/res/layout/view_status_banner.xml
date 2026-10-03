@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Isi StatusBannerView. <merge>: elemen di bawah langsung masuk ke LinearLayout milik StatusBannerView. -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:parentTag="android.widget.LinearLayout"
+    tools:orientation="horizontal">
+
+    <!-- Ikon hanya hiasan; maknanya sudah disampaikan teks di sebelahnya. -->
+    <ImageView
+        android:id="@+id/banner_icon"
+        android:layout_width="@dimen/icon_size_small"
+        android:layout_height="@dimen/icon_size_small"
+        android:importantForAccessibility="no" />
+
+    <TextView
+        android:id="@+id/banner_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:layout_weight="1"
+        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+</merge>

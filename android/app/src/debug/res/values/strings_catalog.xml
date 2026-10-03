@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Teks katalog komponen (hanya build debug). -->
+<resources>
+    <string name="catalog_title">Katalog komponen</string>
+    <string name="catalog_toggle_theme">Ganti terang / gelap</string>
+    <string name="catalog_section_typography">Tipografi</string>
+    <string name="catalog_section_colors">Warna</string>
+    <string name="catalog_section_buttons">Tombol</string>
+    <string name="catalog_section_inputs">Input</string>
+    <string name="catalog_section_cards">Kartu</string>
+    <string name="catalog_section_chips">Chip</string>
+    <string name="catalog_section_badges">Badge &amp; banner</string>
+    <string name="catalog_section_icons">Ikon &amp; loading</string>
+
+    <string name="catalog_display">Bikin website. Tanpa coding.</string>
+    <string name="catalog_headline">Headline 24sp SemiBold</string>
+    <string name="catalog_title_sample">Title 18sp SemiBold</string>
+    <string name="catalog_body">Body 15sp Regular. Teks paragraf biasa untuk penjelasan.</string>
+    <string name="catalog_body_small">BodySmall 13sp untuk teks sekunder.</string>
+    <string name="catalog_label">Label mono kapital</string>
+
+    <string name="catalog_button_primary">Tombol utama</string>
+    <string name="catalog_button_disabled">Tombol nonaktif</string>
+    <string name="catalog_button_outlined">Tombol sekunder</string>
+    <string name="catalog_button_text">Tombol teks / link</string>
+    <string name="catalog_button_icon">Dengan ikon</string>
+
+    <string name="catalog_input_email">Email</string>
+    <string name="catalog_input_password">Password</string>
+    <string name="catalog_input_error_label">Nama</string>
+    <string name="catalog_input_error">Nama wajib diisi</string>
+
+    <string name="catalog_card_title">Pembuat website</string>
+    <string name="catalog_card_body">Kartu bergaris 1dp, tanpa bayangan. Ketuk untuk memilih.</string>
+
+    <string name="catalog_chip_school">Sekolah</string>
+    <string name="catalog_chip_org">Organisasi</string>
+    <string name="catalog_chip_umkm">Usaha / UMKM</string>
+    <string name="catalog_chip_personal">Pribadi / Portofolio</string>
+
+    <string name="catalog_banner_info">Banner informasi.</string>
+    <string name="catalog_banner_pending">Akunmu sedang diverifikasi.</string>
+    <string name="catalog_banner_success">Provider disetujui.</string>
+    <string name="catalog_banner_error">Pengajuan provider ditolak: contoh alasan.</string>
+</resources>

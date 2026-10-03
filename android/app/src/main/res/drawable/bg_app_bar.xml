@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Latar app bar: warna latar + garis bawah 1dp (pengganti bayangan). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/color_border" />
+        </shape>
+    </item>
+    <item android:bottom="@dimen/border_width">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/color_background" />
+        </shape>
+    </item>
+</layer-list>

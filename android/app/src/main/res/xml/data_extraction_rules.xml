@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 12+: aturan backup cloud dan pemindahan data antar-HP.
+    File token (secure_tokens.xml) dikecualikan: isinya dienkripsi kunci Android Keystore milik HP ini,
+    jadi tidak berguna di HP lain dan lebih aman tidak ikut dipindahkan.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="secure_tokens.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="secure_tokens.xml" />
+    </device-transfer>
+</data-extraction-rules>

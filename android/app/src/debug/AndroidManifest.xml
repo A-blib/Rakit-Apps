@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Manifest khusus build DEBUG; digabung otomatis dengan src/main/AndroidManifest.xml.
+    Menambah ikon kedua "Katalog komponen" di launcher HP. Build rilis tidak memuat layar ini sama sekali.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <activity
+            android:name=".debug.ComponentCatalogActivity"
+            android:exported="true"
+            android:label="@string/catalog_title"
+            android:taskAffinity="com.aris.templateapp.catalog">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

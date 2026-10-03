@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Style pembantu khusus katalog (debug) agar layout katalog tidak mengulang atribut yang sama. -->
+<resources>
+    <style name="Catalog.Section" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_8</item>
+        <item name="android:layout_marginBottom">@dimen/space_3</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
+    </style>
+
+    <style name="Catalog.Item" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">@dimen/space_2</item>
+    </style>
+
+    <style name="Catalog.FullButton" parent="Widget.App.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_2</item>
+    </style>
+
+    <style name="Catalog.FullButton.Outlined" parent="Widget.App.Button.Outlined">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_2</item>
+    </style>
+
+    <style name="Catalog.Banner" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_3</item>
+    </style>
+</resources>

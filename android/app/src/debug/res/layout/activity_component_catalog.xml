@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        app:title="@string/catalog_title" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingVertical="@dimen/space_6">
+
+            <Button
+                android:id="@+id/toggle_theme"
+                style="@style/Widget.App.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/catalog_toggle_theme" />
+
+            <!-- Tipografi -->
+            <TextView style="@style/Catalog.Section" android:text="@string/catalog_section_typography" />
+            <TextView style="@style/Catalog.Item" android:text="@string/catalog_display" android:textAppearance="@style/TextAppearance.App.Display" />
+            <TextView style="@style/Catalog.Item" android:text="@string/catalog_headline" android:textAppearance="@style/TextAppearance.App.Headline" />
+            <TextView style="@style/Catalog.Item" android:text="@string/catalog_title_sample" android:textAppearance="@style/TextAppearance.App.Title" />
+            <TextView style="@style/Catalog.Item" android:text="@string/catalog_body" android:textAppearance="@style/TextAppearance.App.Body" />
+            <TextView style="@style/Catalog.Item" android:text="@string/catalog_body_small" android:textAppearance="@style/TextAppearance.App.BodySmall" />
+            <TextView style="@style/Catalog.Item" android:text="@string/catalog_label" android:textAppearance="@style/TextAppearance.App.Label" />
+
+            <!-- Warna: kotak contoh dibuat dari kode (ComponentCatalogActivity) untuk setiap token -->
+            <TextView style="@style/Catalog.Section" android:text="@string/catalog_section_colors" />
+            <LinearLayout
+                android:id="@+id/color_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <!-- Tombol -->
+            <TextView style="@style/Catalog.Section" android:text="@string/catalog_section_buttons" />
+            <Button style="@style/Catalog.FullButton" android:text="@string/catalog_button_primary" />
+            <Button style="@style/Catalog.FullButton" android:enabled="false" android:text="@string/catalog_button_disabled" />
+            <Button style="@style/Catalog.FullButton.Outlined" android:text="@string/catalog_button_outlined" />
+            <Button style="@style/Catalog.FullButton.Outlined" android:text="@string/catalog_button_icon" app:icon="@drawable/ic_arrow_forward" app:iconGravity="end" />
+            <Button style="@style/Widget.App.Button.Text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/space_2" android:text="@string/catalog_button_text" />
+
+            <!-- Input -->
+            <TextView style="@style/Catalog.Section" android:text="@string/catalog_section_inputs" />
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/catalog_input_email">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:autofillHints="emailAddress"
+                    android:inputType="textEmailAddress" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_3"
+                android:hint="@string/catalog_input_password"
+                app:endIconMode="password_toggle">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:autofillHints="password"
+                    android:inputType="textPassword" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/input_with_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_3"
+                android:hint="@string/catalog_input_error_label">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:autofillHints="name"
+                    android:inputType="textPersonName" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Kartu -->
+            <TextView style="@style/Catalog.Section" android:text="@string/catalog_section_cards" />
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/selectable_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checkable="true"
+                android:clickable="true"
+                android:focusable="true">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="@dimen/space_4">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/catalog_card_title"
+                            android:textAppearance="@style/TextAppearance.App.Title" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_1"
+                            android:text="@string/catalog_card_body"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                    </LinearLayout>
+                    <ImageView
+                        android:layout_width="@dimen/icon_size"
+                        android:layout_height="@dimen/icon_size"
+                        android:layout_marginStart="@dimen/space_3"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_arrow_forward" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Chip -->
+            <TextView style="@style/Catalog.Section" android:text="@string/catalog_section_chips" />
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <com.google.android.material.chip.Chip android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:checked="true" android:text="@string/catalog_chip_school" />
+                <com.google.android.material.chip.Chip android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/catalog_chip_org" />
+                <com.google.android.material.chip.Chip android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/catalog_chip_umkm" />
+                <com.google.android.material.chip.Chip android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/catalog_chip_personal" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <!-- Badge & banner -->
+            <TextView style="@style/Catalog.Section" android:text="@string/catalog_section_badges" />
+            <TextView style="@style/Widget.App.Badge" android:text="@string/badge_coming_soon" />
+            <com.aris.templateapp.ui.common.StatusBannerView android:id="@+id/banner_info" style="@style/Catalog.Banner" />
+            <com.aris.templateapp.ui.common.StatusBannerView android:id="@+id/banner_warning" style="@style/Catalog.Banner" />
+            <com.aris.templateapp.ui.common.StatusBannerView android:id="@+id/banner_success" style="@style/Catalog.Banner" />
+            <com.aris.templateapp.ui.common.StatusBannerView android:id="@+id/banner_error" style="@style/Catalog.Banner" />
+
+            <!-- Ikon & loading -->
+            <TextView style="@style/Catalog.Section" android:text="@string/catalog_section_icons" />
+            <LinearLayout
+                android:id="@+id/icon_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="@dimen/space_4" />
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminate="true" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Tema app. Token warna dipetakan ke atribut Material 3 (bagian 9.2), lalu style komponen
+    dipasang sebagai default, sehingga semua layar otomatis seragam. Mode gelap tidak perlu tema terpisah:
+    parent DayNight + warna @color/... yang berganti sendiri lewat values-night/colors.xml.
+-->
+<resources>
+    <style name="Base.Theme.App" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Warna -->
+        <item name="colorPrimary">@color/color_foreground</item>
+        <item name="colorOnPrimary">@color/color_background</item>
+        <item name="colorPrimaryContainer">@color/color_surface_subtle</item>
+        <item name="colorOnPrimaryContainer">@color/color_foreground</item>
+        <item name="colorSecondary">@color/color_muted</item>
+        <item name="colorOnSecondary">@color/color_background</item>
+        <item name="colorSecondaryContainer">@color/color_surface_subtle</item>
+        <item name="colorOnSecondaryContainer">@color/color_foreground</item>
+        <item name="colorTertiary">@color/color_link</item>
+        <item name="colorSurface">@color/color_surface</item>
+        <item name="colorOnSurface">@color/color_foreground</item>
+        <item name="colorOnSurfaceVariant">@color/color_muted</item>
+        <item name="colorSurfaceVariant">@color/color_surface_subtle</item>
+        <item name="colorSurfaceContainerLowest">@color/color_surface</item>
+        <item name="colorSurfaceContainerLow">@color/color_surface</item>
+        <item name="colorSurfaceContainer">@color/color_surface</item>
+        <item name="colorSurfaceContainerHigh">@color/color_surface</item>
+        <item name="colorSurfaceContainerHighest">@color/color_surface_subtle</item>
+        <item name="colorOutline">@color/color_border</item>
+        <item name="colorOutlineVariant">@color/color_border</item>
+        <item name="colorError">@color/color_error</item>
+        <item name="colorOnError">@color/color_background</item>
+        <!-- Material 3 biasanya memberi lapisan warna pada permukaan yang terangkat; dimatikan agar tetap netral. -->
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="android:colorBackground">@color/color_background</item>
+        <item name="android:windowBackground">@color/color_background</item>
+
+        <!-- Tipografi default untuk komponen Material -->
+        <item name="fontFamily">@font/geist</item>
+        <item name="android:fontFamily">@font/geist</item>
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.App.Display</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.App.Headline</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.App.Title</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.App.Title</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.App.Body</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.App.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.App.Button</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.App.Label</item>
+
+        <!-- Bentuk -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.App.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.App.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.App.Large</item>
+
+        <!-- Style komponen default -->
+        <item name="materialButtonStyle">@style/Widget.App.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.App.Button.Outlined</item>
+        <item name="borderlessButtonStyle">@style/Widget.App.Button.Text</item>
+        <item name="textInputStyle">@style/Widget.App.TextInputLayout</item>
+        <item name="materialCardViewStyle">@style/Widget.App.Card</item>
+        <item name="chipStyle">@style/Widget.App.Chip</item>
+        <item name="toolbarStyle">@style/Widget.App.Toolbar</item>
+        <item name="materialDividerStyle">@style/Widget.App.Divider</item>
+        <item name="circularProgressIndicatorStyle">@style/Widget.App.ProgressIndicator</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.App.MaterialAlertDialog</item>
+
+        <!-- Warna ikon status bar & navigasi (terang/gelap) diatur otomatis oleh EdgeToEdge.enable()
+             di MainActivity, mengikuti mode HP. -->
+    </style>
+
+    <style name="Theme.App" parent="Base.Theme.App" />
+</resources>

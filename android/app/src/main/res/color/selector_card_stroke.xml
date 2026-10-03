@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kartu pilihan (mis. pilih peran): garis menjadi warna foreground saat dipilih. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/color_foreground" android:state_checked="true" />
+    <item android:color="@color/color_border" />
+</selector>

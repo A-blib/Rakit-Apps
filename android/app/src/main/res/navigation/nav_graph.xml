@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Peta layar app. Setiap <fragment> adalah satu layar; <action> adalah jalur pindah layar.
+    Layar awal sementara: Dashboard Pembuat Website. Di Fase 06 diganti layar startup yang memilih layar pertama.
+-->
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/creatorDashboardFragment">
+
+    <fragment
+        android:id="@+id/creatorDashboardFragment"
+        android:name="com.aris.templateapp.ui.creator.CreatorDashboardFragment"
+        android:label="@string/app_name" />
+</navigation>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Token warna mode TERANG (bagian 9.2). Versi gelap ada di values-night/colors.xml dengan nama yang sama;
+    Android memilih otomatis sesuai mode HP. Layout tidak boleh menulis kode warna langsung: selalu @color/color_xxx
+    atau atribut tema (?attr/colorOnSurface, dst).
+-->
+<resources>
+    <color name="color_background">#FFFFFF</color>
+    <color name="color_surface">#FFFFFF</color>
+    <color name="color_surface_subtle">#FAFAFA</color>
+    <color name="color_foreground">#0A0A0A</color>
+    <color name="color_muted">#666666</color>
+    <color name="color_border">#EAEAEA</color>
+    <color name="color_border_strong">#C9C9C9</color>
+    <color name="color_link">#0068D6</color>
+    <color name="color_success">#0A7D3A</color>
+    <color name="color_warning">#A35200</color>
+    <color name="color_error">#C9252D</color>
+
+    <!-- Latar banner status: warna semantik dengan opasitas sangat rendah (≈6%, alpha 0F). -->
+    <color name="color_success_tint">#0F0A7D3A</color>
+    <color name="color_warning_tint">#0FA35200</color>
+    <color name="color_error_tint">#0FC9252D</color>
+    <color name="color_link_tint">#0F0068D6</color>
+</resources>
