@@ -9,7 +9,8 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Persiapan lingkungan & struktur repo | Sudah (Fase 00) |
 | Backend: fondasi (konfigurasi, migrasi database, format error, Swagger UI) | Sudah (Fase 01) |
 | Backend: auth email (daftar, masuk, refresh token dengan rotasi, keluar, `/users/me`) | Sudah (Fase 02) |
-| Backend: Google, GitHub, penyambungan akun, onboarding, mode | Belum (Fase 03–04) |
+| Backend: login Google & GitHub, penyambungan akun, metode login terhubung | Sudah (Fase 03), perlu kredensial OAuth (lihat "Setup OAuth") |
+| Backend: onboarding, mode, seeder | Belum (Fase 04) |
 | Android: splash, intro, masuk/daftar, onboarding, profil, pengaturan | Belum (Fase 05–09) |
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
@@ -159,7 +160,65 @@ sudo -u postgres createdb -O templateapp templateapp                            
 
 ## Setup OAuth Google & GitHub
 
-_Diisi lengkap di Fase 03._
+Login Google dan GitHub butuh "kartu identitas" app di Google dan GitHub. Langkah ini cukup dilakukan sekali. Hasilnya ditulis di `backend/.env` (jangan di-commit), dan untuk Android nanti juga di `android/local.properties`.
+
+### A. Google (Google Cloud Console)
+
+1. Buka https://console.cloud.google.com → pilih project di kiri atas → **New Project** → nama mis. `templateapp-dev` → **Create**.
+2. Menu **Google Auth Platform** (dulu bernama "OAuth consent screen") → **Get started**:
+   - *App information*: nama app `Template App`, user support email = emailmu.
+   - *Audience*: **External**.
+   - *Contact information*: emailmu → setuju kebijakan → **Create**.
+3. **Audience** → bagian *Test users* → **Add users** → tambahkan email Google yang akan dipakai mencoba. Selama status app masih *Testing*, hanya email di daftar ini yang bisa login.
+4. **Data Access** → **Add or remove scopes** → centang `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile` → **Update** → **Save**.
+5. **Clients** → **Create client** → *Application type* **Web application** → nama `templateapp-backend` → **Create**. Salin **Client ID**-nya (akhiran `.apps.googleusercontent.com`).
+   - Client ID ini dipakai di **dua** tempat: `GOOGLE_WEB_CLIENT_ID` di `backend/.env`, dan nanti `GOOGLE_WEB_CLIENT_ID` di `android/local.properties` (sebagai `serverClientId`).
+   - Client secret dari client Web **tidak dipakai**, karena backend hanya memverifikasi idToken.
+6. **Clients** → **Create client** → *Application type* **Android**:
+   - Package name: `com.aris.templateapp`
+   - SHA-1 certificate fingerprint: SHA-1 dari **debug keystore** laptopmu (cara mengambilnya ada di bawah).
+   - **Create**. Client Android ini tidak perlu disalin ke mana pun. Google memakainya untuk memastikan permintaan login datang dari app bertanda tangan sah.
+
+Cara mengambil SHA-1 debug:
+
+```bash
+# Setelah project Android ada (Fase 05):
+cd android && ./gradlew signingReport          # cari baris "SHA1:" pada Variant: debug
+
+# Atau langsung dari keystore debug (dibuat otomatis oleh Android Studio saat build pertama):
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android | grep SHA1
+```
+
+> **SHA-1 debug vs rilis.** Setiap laptop punya debug keystore sendiri, jadi SHA-1-nya berbeda-beda. APK rilis ditandatangani dengan keystore rilis yang SHA-1-nya juga berbeda. Setiap SHA-1 yang dipakai (debug di tiap laptop, rilis, dan Play App Signing kalau nanti upload ke Play Store) perlu dibuatkan **client Android sendiri** dengan package yang sama. Kalau SHA-1 belum didaftarkan, login Google di HP gagal dengan error `DEVELOPER_ERROR` / "No credentials available".
+
+### B. GitHub (OAuth App development)
+
+1. Buka https://github.com/settings/developers → **OAuth Apps** → **New OAuth App**.
+2. Isi:
+   - Application name: `Template App (dev)`
+   - Homepage URL: `http://localhost:8080`
+   - Authorization callback URL: `http://localhost:8080/api/auth/github/callback`
+3. **Register application** → salin **Client ID** → klik **Generate a new client secret** → salin secret-nya. Secret hanya ditampilkan sekali.
+4. Tulis keduanya di `backend/.env`:
+
+   ```
+   GITHUB_CLIENT_ID=Ov23li...
+   GITHUB_CLIENT_SECRET=...
+   ```
+
+Satu OAuth App GitHub hanya bisa punya satu callback URL, jadi nanti untuk production buat **OAuth App terpisah** dengan callback domain server.
+
+Callback memakai `localhost` dan tetap bisa dijangkau dari browser HP, karena `adb reverse tcp:8080 tcp:8080` meneruskan `localhost:8080` di HP ke laptop.
+
+### C. Isi `backend/.env` lalu restart backend
+
+```
+GOOGLE_WEB_CLIENT_ID=1234567890-abc.apps.googleusercontent.com
+GITHUB_CLIENT_ID=Ov23li...
+GITHUB_CLIENT_SECRET=...
+```
+
+Mencoba GitHub tanpa HP: jalankan backend, panggil `POST /api/auth/github/authorize-url` di Swagger, lalu buka `url` hasilnya di browser laptop. Setelah login GitHub, browser diarahkan ke `templateapp://auth/callback?ticket=...`. Browser laptop tidak bisa membuka alamat itu, tapi nilai `ticket` terlihat di address bar. Tukar tiketnya lewat `POST /api/auth/github/exchange` dalam waktu 2 menit.
 
 ## Menjalankan backend
 
@@ -266,6 +325,11 @@ _Diisi di Fase 04._
 | `Validate failed: Migrations have failed validation` / checksum mismatch | File migrasi yang **sudah pernah dijalankan** diubah. Jangan ubah file `V*` lama; buat file `V7__...` baru. Khusus database development, bisa reset: `sudo -u postgres psql -c "DROP DATABASE templateapp;"` lalu `sudo -u postgres createdb -O templateapp templateapp`. |
 | Test gagal: `Could not find a valid Docker environment` | Docker belum jalan: `sudo systemctl start docker`, cek dengan `docker ps`. |
 | App gagal start: `JWT_SECRET minimal 32 karakter` / `Could not resolve placeholder 'DB_URL'` | `.env` belum diisi atau perintah tidak dijalankan dari folder `backend/`. |
+| Login Google gagal: `401 SOCIAL_AUTH_FAILED` dari backend | `GOOGLE_WEB_CLIENT_ID` di `.env` kosong atau berbeda dengan `serverClientId` di app. Keduanya harus Client ID **Web** (bukan Android). Lihat log backend: `GOOGLE_WEB_CLIENT_ID belum diisi` atau `Verifikasi idToken Google gagal`. |
+| Login Google gagal di HP: `DEVELOPER_ERROR` / "No credentials available" | SHA-1 debug laptop ini belum didaftarkan sebagai client **Android** (package `com.aris.templateapp`), atau Client ID Web/Android tertukar. Pastikan juga email Google-nya ada di *Test users*. |
+| `POST /auth/github/authorize-url` membalas `500` | `GITHUB_CLIENT_ID` belum diisi di `.env` (lihat log: `GITHUB_CLIENT_ID belum diisi`). |
+| Callback GitHub tidak kembali ke app / halaman "redirect_uri is not associated" | Callback URL di OAuth App GitHub harus persis `http://localhost:8080/api/auth/github/callback` (sama dengan `GITHUB_REDIRECT_URI`); jalankan ulang `adb reverse tcp:8080 tcp:8080`; deep link `templateapp://auth/callback` dibuat di Fase 08. |
+| Deep link berisi `?error=TICKET_INVALID` | Halaman login GitHub dibiarkan terbuka lebih dari 10 menit (state kedaluwarsa) atau callback dibuka dua kali. Mulai lagi dari tombol login. |
 | HP putus-sambung terus; `journalctl -k \| grep usb` berisi `error -71` | Masalah fisik, bukan setting: ganti kabel USB data, pindah port laptop (jangan lewat hub), bersihkan lubang USB HP. |
 | HP tiba-tiba hilang dari Android Studio / `adb server version doesn't match` | Ada dua `adb` berbeda versi. Pastikan `which adb` menunjuk ke `~/Android/Sdk/platform-tools/adb`, lalu `adb kill-server && adb devices`. |
 

@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 02** (auth email). Bagian yang belum dibangun ditandai _(belum)_.
+> Status dokumen: diperbarui sampai **Fase 03** (Google, GitHub, penyambungan akun). Bagian yang belum dibangun ditandai _(belum)_.
 
 ---
 
@@ -18,11 +18,12 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 4. [Konfigurasi dan profile](#4-konfigurasi-dan-profile)
 5. [Database](#5-database)
 6. [Keamanan: login, JWT, refresh token](#6-keamanan-login-jwt-refresh-token)
-7. [Format error](#7-format-error)
-8. [Daftar endpoint](#8-daftar-endpoint)
-9. [Test](#9-test)
-10. [Resep: menambah endpoint baru](#10-resep-menambah-endpoint-baru)
-11. [Glosarium](#11-glosarium)
+7. [Login Google & GitHub, penyambungan akun](#7-login-google--github-penyambungan-akun)
+8. [Format error](#8-format-error)
+9. [Daftar endpoint](#9-daftar-endpoint)
+10. [Test](#10-test)
+11. [Resep: menambah endpoint baru](#11-resep-menambah-endpoint-baru)
+12. [Glosarium](#12-glosarium)
 
 ---
 
@@ -51,16 +52,18 @@ Satu akun bisa dimasuki lewat beberapa cara (email, Google, GitHub) dan punya du
 backend/src/main/java/com/aris/templateapp/
 ├── TemplateAppApplication.java   ← titik mulai app (method main)
 ├── config/       pengaturan: AppProperties, OpenApiConfig (Swagger), TimeConfig (Clock)
-├── security/     SecurityConfig, JwtService, JwtAuthFilter, CurrentUser, TokenGenerator
+├── security/     SecurityConfig, JwtService, JwtAuthFilter, CurrentUser, TokenGenerator,
+│                 GoogleTokenVerifier, GitHubOAuthClient (penghubung ke Google & GitHub)
 ├── common/
 │   ├── exception/    ErrorCode, ApiException, GlobalExceptionHandler
 │   ├── response/     ErrorResponse
 │   ├── persistence/  PersistableEnum (+ converter) untuk enum ↔ teks database
 │   └── util/         Emails (normalisasi email)
-├── auth/         daftar/masuk/refresh/keluar + identitas login + refresh token
-│   └── dto/          RegisterRequest, LoginRequest, RefreshTokenRequest, AuthResponse
-├── user/         User, profil pembuat website, /users/me
-│   └── dto/          UserResponse
+├── auth/         daftar/masuk/refresh/keluar, identitas login, refresh token, tiket,
+│   │             AccountLinkingService (penyambungan), GitHubAuthService (alur GitHub)
+│   └── dto/          RegisterRequest, LoginRequest, GoogleLoginRequest, AuthResponse, ...
+├── user/         User, profil pembuat website, /users/me, metode login terhubung (IdentityController)
+│   └── dto/          UserResponse, IdentityResponse
 └── provider/     ProviderProfile (profil penyedia template + status)
 ```
 
@@ -147,7 +150,7 @@ application.yml (selalu dibaca)
 ```
 users ─┬─< user_identities     (1 user : banyak identitas; maks 1 per provider)
        ├─< refresh_tokens      (1 user : banyak sesi/perangkat)
-       ├─< auth_tickets        (tiket sekali pakai: state GitHub, hasil login, link) (belum dipakai)
+       ├─< auth_tickets        (tiket sekali pakai: state GitHub, hasil login, link)
        ├── creator_profiles    (1 : 0..1, primary key = user_id)
        └── provider_profiles   (1 : 0..1, primary key = user_id)
 ```
@@ -157,7 +160,7 @@ users ─┬─< user_identities     (1 user : banyak identitas; maks 1 per prov
 | `users` | Satu akun | `email` unik tanpa beda huruf besar/kecil (index `lower(email)`); `active_mode` default `creator` |
 | `user_identities` | Cara masuk: `local` (email+password), `google`, `github` | `password_hash` hanya untuk `local` (dijaga CHECK); `UNIQUE(provider, provider_user_id)` |
 | `refresh_tokens` | Sesi login per perangkat | Hanya hash SHA-256 yang disimpan; `replaced_by` terisi saat dirotasi |
-| `auth_tickets` | Tiket sementara _(belum dipakai, Fase 03)_ | Hash, sekali pakai, ada masa berlaku |
+| `auth_tickets` | Tiket sementara (lihat bagian 7) | Hash, sekali pakai, ada masa berlaku; `payload` jsonb ↔ `Map` di Java |
 | `creator_profiles` | Data mode pembuat website | Ada = user punya peran `creator` |
 | `provider_profiles` | Data mode penyedia template + status verifikasi | Ada = user punya peran `provider` |
 
@@ -225,18 +228,110 @@ Detail implementasi yang penting:
 
 ---
 
-## 7. Format error
+## 7. Login Google & GitHub, penyambungan akun
+
+### Satu bentuk data: `SocialProfile`
+
+Google dan GitHub memberi data dengan bentuk yang berbeda. Penghubungnya mengubah data itu menjadi satu bentuk yang sama, yaitu `SocialProfile(provider, providerUserId, email, emailVerified, displayName, avatarUrl)`:
+
+| Penghubung | Masukan | Yang dicek |
+|---|---|---|
+| `GoogleTokenVerifier` | `idToken` dari Credential Manager di HP | Tanda tangan Google, penerbit, kedaluwarsa, **audience = Web Client ID kita** |
+| `GitHubOAuthClient` | `code` dari callback GitHub | Menukar `code` → access token GitHub (pakai client secret), lalu `/user` dan `/user/emails` (email **primary** + status **verified**) |
+
+Setelah itu, `AccountLinkingService` hanya bekerja dengan `SocialProfile`, tanpa peduli datanya dari Google atau GitHub.
+
+Yang dipakai sebagai kunci identitas adalah **`providerUserId`** (Google: `sub`, GitHub: ID angka), bukan email. Email bisa diganti user, tapi ID itu tidak berubah.
+
+### Keputusan masuk (`AccountLinkingService.signIn`)
+
+```
+SocialProfile masuk
+  │
+  ├─ identitas (provider, providerUserId) sudah ada? ──ya──► masuk ke pemiliknya (isNewUser=false)
+  │
+  └─ belum ada
+       │
+       ├─ email TERVERIFIKASI & sudah dipakai user lain?
+       │      └─ ya ──► JANGAN sambungkan otomatis.
+       │               Simpan identitas di tiket LINK (10 menit), balas
+       │               409 ACCOUNT_LINK_REQUIRED { linkToken, existingMethods }
+       │
+       └─ tidak / email kosong / belum terverifikasi
+              └──► buat user baru + identitas (isNewUser=true)
+                   (email yang belum terverifikasi TIDAK disimpan ke users.email)
+```
+
+**Kenapa tidak disambungkan otomatis?** Bayangkan seseorang membuat akun GitHub dan menulis email milikmu (tanpa verifikasi). Kalau backend langsung menyambungkan berdasarkan email, orang itu bisa masuk ke akunmu. Karena itu, penyambungan hanya terjadi setelah user **membuktikan** dirinya pemilik akun lama dengan cara masuk memakai metode lama.
+
+### Menyelesaikan penyambungan (`completePendingLink`)
+
+```
+App menerima ACCOUNT_LINK_REQUIRED (linkToken, existingMethods=["google"])
+  → tampilkan dialog "Email ini sudah terdaftar dengan Google. Masuk dengan Google untuk menyambungkan GitHub."
+  → user masuk dengan Google sambil mengirim linkToken (POST /auth/google { idToken, linkToken })
+  → backend: user hasil masuk == pemilik email di tiket?
+        ya    → identitas GitHub disimpan ke akun itu, tiket ditandai terpakai
+        tidak → 403 LINK_USER_MISMATCH
+  → masuk GitHub berikutnya langsung ke akun yang sama
+```
+
+`linkToken` bisa dikirim lewat ketiga cara masuk: `/auth/login` (email), `/auth/google`, dan `/auth/github/authorize-url` (dibawa di state sampai callback).
+
+### Alur GitHub (`GitHubAuthService`)
+
+```
+ App                         Backend                              GitHub
+  │ POST /auth/github/authorize-url ─►│ buat tiket GITHUB_STATE (10 mnt)  │
+  │◄──────────── { url } ─────────────│                                   │
+  │ buka url di Custom Tab ───────────┼──────────────────────────────────►│ user login & setuju
+  │                                   │◄── GET /auth/github/callback?code&state
+  │                                   │ cek state, tukar code, logika 7 di atas
+  │                                   │ buat tiket LOGIN_RESULT (2 mnt)
+  │◄── redirect templateapp://auth/callback?ticket=XXX ───────────────────│
+  │ POST /auth/github/exchange {ticket} ─►│                               │
+  │◄──────────── AuthResponse ────────│                                   │
+```
+
+- **State** mencegah serangan CSRF: callback hanya diterima kalau state-nya dibuat oleh backend kita dan belum pernah dipakai.
+- **Client secret GitHub hanya ada di backend.** App tidak pernah melihatnya.
+- **Kenapa deep link membawa tiket, bukan token?** URL deep link bisa terbaca app lain atau tercatat di riwayat. Tiket hanya berumur 2 menit, sekali pakai, dan baru ditukar menjadi token lewat request biasa.
+- Kalau gagal, redirect berisi `?error=KODE`. Untuk penyambungan: `?error=ACCOUNT_LINK_REQUIRED&linkToken=...&methods=google`.
+- `GitHubAuthService` sengaja **tidak** `@Transactional`. Setiap langkah punya transaksinya sendiri, jadi error di satu langkah bisa ditangkap lalu diubah menjadi redirect.
+
+### Tiket sekali pakai (`AuthTicketService`)
+
+| Jenis | Umur | Dibuat saat | Dipakai saat |
+|---|---|---|---|
+| `GITHUB_STATE` | 10 menit | `authorize-url` | callback GitHub |
+| `LOGIN_RESULT` | 2 menit | callback GitHub berhasil | `/auth/github/exchange` |
+| `LINK` | 10 menit | `ACCOUNT_LINK_REQUIRED` | login berikutnya yang membawa `linkToken` |
+
+- Sama seperti refresh token, yang disimpan hanya **hash** tiketnya.
+- `issue` memakai `@Transactional(propagation = REQUIRES_NEW)`: tiket langsung tersimpan di transaksi tersendiri. Ini penting karena tiket LINK dibuat tepat sebelum service melempar `ACCOUNT_LINK_REQUIRED`. Tanpa transaksi tersendiri, error itu akan me-rollback tiketnya.
+
+### Metode login terhubung (Pengaturan)
+
+- `GET /users/me/identities`: daftar metode (`local`, `google`, `github`).
+- `POST /users/me/identities/google` dan `.../github/authorize-url`: menyambungkan secara manual. Kecocokan email **tidak** diperlukan, karena user sudah membuktikan kepemilikan kedua akun dengan masuk ke keduanya (skenario 8: email GitHub berbeda atau privat).
+- Ditolak dengan `IDENTITY_IN_USE` kalau akun Google/GitHub itu sudah dipakai akun lain, atau akun ini sudah punya Google/GitHub yang lain.
+- `DELETE /users/me/identities/{provider}`: ditolak dengan `LAST_IDENTITY` kalau itu metode terakhir. Baris user dikunci (`findByIdForUpdate`) supaya dua request hapus yang bersamaan tidak sama-sama lolos.
+
+---
+
+## 8. Format error
 
 Semua error berbentuk sama (`ErrorResponse`):
 
 ```json
 { "code": "VALIDATION_ERROR", "message": "Data tidak valid.", "fieldErrors": { "email": "Format email tidak valid" } }
 { "code": "USE_SOCIAL_LOGIN", "message": "Akun ini terdaftar dengan Google. Silakan masuk dengan Google.", "existingMethods": ["google"] }
+{ "code": "ACCOUNT_LINK_REQUIRED", "message": "Email ini sudah terdaftar dengan Google. ...", "existingMethods": ["google"], "linkToken": "..." }
 ```
 
 - `code`: dibaca oleh app untuk memilih pesan dan tindakan. Daftarnya ada di `ErrorCode.java`, lengkap dengan status HTTP-nya.
 - `message`: pesan cadangan dalam Bahasa Indonesia.
-- `fieldErrors` / `existingMethods`: hanya muncul kalau relevan.
+- `fieldErrors` / `existingMethods` / `linkToken`: hanya muncul kalau relevan.
 
 Cara kerjanya:
 - Service melempar `new ApiException(ErrorCode.EMAIL_ALREADY_USED)`.
@@ -246,20 +341,25 @@ Cara kerjanya:
 
 ---
 
-## 8. Daftar endpoint
+## 9. Daftar endpoint
 
 Coba semuanya di Swagger UI: http://localhost:8080/swagger-ui.html
 
 | Method & path | Login? | Body | Hasil | Status |
 |---|---|---|---|---|
 | `POST /api/auth/register` | – | `{displayName, email, password}` | `201 AuthResponse` | ✅ Fase 02 |
-| `POST /api/auth/login` | – | `{email, password}` | `AuthResponse` | ✅ Fase 02 (`linkToken` di Fase 03) |
+| `POST /api/auth/login` | – | `{email, password, linkToken?}` | `AuthResponse` | ✅ Fase 02–03 |
 | `POST /api/auth/refresh` | – | `{refreshToken}` | `AuthResponse` | ✅ Fase 02 |
 | `POST /api/auth/logout` | – | `{refreshToken}` | `204` | ✅ Fase 02 |
 | `GET /api/users/me` | ✔ | – | `UserResponse` | ✅ Fase 02 |
-| `POST /api/auth/google` | – | `{idToken, linkToken?}` | `AuthResponse` | _(belum, Fase 03)_ |
-| `POST /api/auth/github/authorize-url` · `GET .../callback` · `POST .../exchange` | – | | | _(belum, Fase 03)_ |
-| `GET/POST/DELETE /api/users/me/identities...` | ✔ | | | _(belum, Fase 03)_ |
+| `POST /api/auth/google` | – | `{idToken, linkToken?}` | `AuthResponse` / `409 ACCOUNT_LINK_REQUIRED` | ✅ Fase 03 |
+| `POST /api/auth/github/authorize-url` | – | `{linkToken?}` | `{url}` | ✅ Fase 03 |
+| `GET /api/auth/github/callback` | – | query `code`, `state`, `error` | `302` ke deep link | ✅ Fase 03 |
+| `POST /api/auth/github/exchange` | – | `{ticket}` | `AuthResponse` | ✅ Fase 03 |
+| `GET /api/users/me/identities` | ✔ | – | `[{provider, email, createdAt}]` | ✅ Fase 03 |
+| `POST /api/users/me/identities/google` | ✔ | `{idToken}` | daftar identitas | ✅ Fase 03 |
+| `POST /api/users/me/identities/github/authorize-url` | ✔ | – | `{url}` | ✅ Fase 03 |
+| `DELETE /api/users/me/identities/{provider}` | ✔ | – | `204` / `409 LAST_IDENTITY` | ✅ Fase 03 |
 | `POST /api/users/me/onboarding/creator` · `/provider` | ✔ | | | _(belum, Fase 04)_ |
 | `PATCH /api/users/me/active-mode` | ✔ | `{mode}` | | _(belum, Fase 04)_ |
 
@@ -279,23 +379,28 @@ Bentuk respons:
 
 ---
 
-## 9. Test
+## 10. Test
 
 Jalankan semua test dengan `cd backend && ./mvnw test` (Docker harus aktif).
 
 | Jenis | Contoh | Ciri | Kecepatan |
 |---|---|---|---|
 | Unit test | `JwtServiceTest`, `GlobalExceptionHandlerTest` | Tanpa Spring penuh, tanpa database; objek dibuat manual | Sangat cepat |
-| Integration test | `AuthFlowIntegrationTest`, `FlywayMigrationTest` | `@SpringBootTest` + PostgreSQL asli di Docker (Testcontainers) | Lebih lambat (start app + container) |
+| Unit test + mock | `AccountLinkingServiceTest` | Repository diganti **mock Mockito** (`@Mock`), jadi yang diuji hanya logika keputusan | Sangat cepat |
+| Unit test + server palsu | `GitHubOAuthClientTest` | `MockRestServiceServer` meniru balasan GitHub, tanpa internet | Cepat |
+| Integration test | `AuthFlowIntegrationTest`, `SocialAuthIntegrationTest`, `FlywayMigrationTest` | `@SpringBootTest` + PostgreSQL asli di Docker (Testcontainers) | Lebih lambat (start app + container) |
 
 - `TestcontainersConfiguration` menyalakan container `postgres:18`. `@ServiceConnection` otomatis mengarahkan app ke container itu, jadi database laptop tidak tersentuh.
 - `@ActiveProfiles("test")` membaca `src/test/resources/application-test.yml`, yang berisi JWT secret khusus test.
 - Integration test memakai `MockMvc` untuk mengirim request HTTP palsu ke controller tanpa membuka port sungguhan.
 - Setiap test auth memakai email acak (`uniqueEmail()`), jadi data antar-test tidak bentrok.
+- `SocialAuthIntegrationTest` memakai `@MockitoBean GoogleTokenVerifier` (diganti total oleh mock) dan `@MockitoSpyBean GitHubOAuthClient` (objek asli, hanya `fetchProfile` yang dipalsukan). Dengan begitu, seluruh alur berjalan nyata tanpa menghubungi Google atau GitHub.
+
+**Mock vs spy:** mock adalah objek palsu yang semua method-nya kosong kecuali yang diatur dengan `when(...)`. Spy adalah objek asli yang hanya sebagian method-nya diganti dengan `doReturn(...)`.
 
 ---
 
-## 10. Resep: menambah endpoint baru
+## 11. Resep: menambah endpoint baru
 
 Contoh: `GET /api/users/me/sessions` (daftar perangkat yang sedang login).
 
@@ -312,7 +417,7 @@ Kalau butuh kolom atau tabel baru, buat migrasi `V7__...sql` terlebih dahulu, la
 
 ---
 
-## 11. Glosarium
+## 12. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -328,3 +433,8 @@ Kalau butuh kolom atau tabel baru, buat migrasi `V7__...sql` terlebih dahulu, la
 | Flyway | Alat yang menjalankan file SQL migrasi secara berurutan |
 | Testcontainers | Library yang menyalakan service sungguhan (PostgreSQL) di Docker untuk test |
 | Profile | Kumpulan konfigurasi untuk lingkungan tertentu (`dev`, `prod`, `test`) |
+| OAuth | Cara "masuk dengan akun lain" (Google/GitHub) tanpa app kita pernah melihat password akun itu |
+| idToken | JWT buatan Google yang menyatakan "user ini adalah X", ditandatangani Google |
+| State (OAuth) | Nilai acak yang dibawa bolak-balik selama login GitHub, untuk memastikan alurnya dimulai dari app kita |
+| Deep link | Alamat seperti `templateapp://...` yang membuka app Android tertentu |
+| Mock / spy | Objek palsu / setengah palsu di test untuk menggantikan bagian yang lambat atau eksternal |
