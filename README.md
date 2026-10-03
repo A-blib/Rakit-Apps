@@ -11,7 +11,8 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Backend: auth email (daftar, masuk, refresh token dengan rotasi, keluar, `/users/me`) | Sudah (Fase 02) |
 | Backend: login Google & GitHub, penyambungan akun, metode login terhubung | Sudah (Fase 03), perlu kredensial OAuth (lihat "Setup OAuth") |
 | Backend: onboarding pembuat website & provider, beralih mode, data dummy | Sudah (Fase 04) |
-| Android: splash, intro, masuk/daftar, onboarding, profil, pengaturan | Belum (Fase 05–09) |
+| Android: fondasi (tema & token desain, font Geist, jaringan, penyimpanan token terenkripsi, katalog komponen) | Sudah (Fase 05) |
+| Android: splash, intro, masuk/daftar, onboarding, profil, pengaturan | Belum (Fase 06–09) |
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
@@ -64,6 +65,30 @@ Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan 
 | springdoc-openapi (Swagger UI) | 3.1.1 | Maven Central |
 | Datafaker | 2.7.0 | Maven Central |
 | Lombok | dikelola Spring Boot | – |
+
+### Versi tools & library Android
+
+| Tools / library | Versi |
+|---|---|
+| Gradle (wrapper) | 9.8.0 |
+| Android Gradle Plugin | 9.4.1 |
+| compileSdk / targetSdk / minSdk | 37 / 37 / 26 |
+| Java (source/target) | 17 (dibangun dengan JDK 21) |
+| AppCompat | 1.8.0 |
+| Material Components | 1.14.0 |
+| ConstraintLayout | 2.2.2 |
+| Activity / Fragment | 1.13.0 / 1.9.1 |
+| Navigation | 2.10.2 |
+| Lifecycle (ViewModel, LiveData) | 2.11.0 |
+| Core / Core SplashScreen | 1.19.1 / 1.2.0 |
+| ViewPager2 | 1.1.0 |
+| Hilt | 2.60.1 |
+| Retrofit / OkHttp / Gson | 3.0.0 / 5.5.0 / 2.14.0 |
+| Credentials / Google ID | 1.6.0 / 1.2.1 |
+| Browser (Custom Tabs) | 1.10.0 |
+| JUnit / arch core-testing | 4.13.2 / 2.2.0 |
+| Font Geist Sans & Geist Mono | 1.7.2 (SIL OFL 1.1, lisensi di `app/src/main/assets/licenses/geist-OFL.txt`) |
+| Ikon | Material Symbols Outlined (Apache 2.0), disalin sebagai vector drawable `ic_*.xml` |
 
 ---
 
@@ -303,7 +328,57 @@ adb connect <ip>:<port>          # port yang tampil di layar utama Wireless debu
 
 ## Menjalankan app Android di HP
 
-_Diisi di Fase 05._
+### 1. Isi `android/local.properties`
+
+File ini dibuat otomatis oleh Android Studio (berisi `sdk.dir`) dan **tidak di-commit**. Tambahkan Client ID Web Google (lihat "Setup OAuth"):
+
+```properties
+sdk.dir=/home/<user>/Android/Sdk
+GOOGLE_WEB_CLIENT_ID=1234567890-abc.apps.googleusercontent.com
+```
+
+Nilai ini dibaca `app/build.gradle.kts` menjadi `BuildConfig.GOOGLE_WEB_CLIENT_ID`. Setelah mengubahnya, klik **Sync Now** (atau build ulang dari terminal).
+
+### 2. Sambungkan HP ke backend
+
+```bash
+adb devices                       # pastikan HP berstatus "device"
+adb reverse tcp:8080 tcp:8080     # localhost:8080 di HP diteruskan ke backend di laptop
+```
+
+> **Wajib diulang** setiap kali HP dicabut-colok, HP restart, atau `adb` di-restart. Tanpa ini app menampilkan "Tidak ada koneksi".
+
+Build debug memanggil `http://localhost:8080/api/` (`BuildConfig.API_BASE_URL`). HTTP tanpa HTTPS hanya diizinkan untuk `localhost` di build debug (`src/debug/res/xml/network_security_config.xml`).
+
+### 3. Jalankan app
+
+Dari Android Studio: buka folder `android/`, pilih HP di daftar perangkat (atas), lalu klik **Run ▶**.
+
+Dari terminal (di folder `android/`):
+
+```bash
+./gradlew installDebug                                           # build lalu pasang ke HP
+adb shell am start -n com.aris.templateapp/.MainActivity         # buka app
+adb logcat --pid=$(adb shell pidof -s com.aris.templateapp)      # tampilkan log app saja
+```
+
+Build debug memasang **dua ikon** di HP: **Template App** (app) dan **Katalog komponen** (semua komponen & token desain; tombol "Ganti terang / gelap" untuk memeriksa mode gelap). Katalog tidak ada di build rilis.
+
+### 4. Log & layar
+
+- **Logcat** di Android Studio: tab *Logcat* di bawah → filter `package:com.aris.templateapp`.
+- **scrcpy** (opsional) untuk menampilkan & mengontrol layar HP di laptop: `scrcpy`.
+- Screenshot: `adb exec-out screencap -p > nama-file.png`.
+
+### 5. Test & pemeriksaan Android
+
+```bash
+./gradlew assembleDebug        # build APK debug
+./gradlew testDebugUnitTest    # unit test (JVM laptop, tanpa HP)
+./gradlew lint                 # pemeriksaan kode & resource; laporan di app/build/reports/lint-results-debug.html
+```
+
+Jangan menjalankan `./gradlew` dari terminal bersamaan dengan Build/Run di Android Studio.
 
 ## Akun dummy
 
@@ -376,6 +451,12 @@ Nilai status selain `pending`, `approved`, `rejected`, dan `suspended` ditolak o
 | `POST /auth/github/authorize-url` membalas `500` | `GITHUB_CLIENT_ID` belum diisi di `.env` (lihat log: `GITHUB_CLIENT_ID belum diisi`). |
 | Callback GitHub tidak kembali ke app / halaman "redirect_uri is not associated" | Callback URL di OAuth App GitHub harus persis `http://localhost:8080/api/auth/github/callback` (sama dengan `GITHUB_REDIRECT_URI`); jalankan ulang `adb reverse tcp:8080 tcp:8080`; deep link `templateapp://auth/callback` dibuat di Fase 08. |
 | Deep link berisi `?error=TICKET_INVALID` | Halaman login GitHub dibiarkan terbuka lebih dari 10 menit (state kedaluwarsa) atau callback dibuka dua kali. Mulai lagi dari tombol login. |
+| Android Studio penuh garis merah / "Gradle files have changed" setelah file build berubah | Klik **Sync Now** di bar kuning atas (atau *File → Sync Project with Gradle Files*). |
+| Gradle JDK berbeda antara terminal dan Android Studio (error "Unsupported class file major version" / build berbeda hasil) | Android Studio: *Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK* pilih JDK 21; terminal: `echo $JAVA_HOME` harus `/usr/lib/jvm/java-21-openjdk-amd64`. `gradle/gradle-daemon-jvm.properties` meminta JDK 21. |
+| App di HP: "Tidak ada koneksi" padahal backend jalan | Jalankan ulang `adb reverse tcp:8080 tcp:8080`; cek backend di laptop `curl localhost:8080/v3/api-docs`; pastikan memakai build **debug** (rilis menolak HTTP). |
+| `adb: device unauthorized` / HP tidak muncul | Lihat baris troubleshooting HP di atas; buka kunci HP lalu setujui pop-up. |
+| `adb server version (...) doesn't match this client` | Dua `adb` berbeda versi berebut server; pakai yang dari SDK (`which adb`) lalu `adb kill-server && adb devices`. |
+| Laptop lambat saat build | Tutup aplikasi berat lain; memori Gradle sudah dibatasi 2 GB di `android/gradle.properties` (`org.gradle.jvmargs=-Xmx2g`); jangan build dari terminal dan Android Studio bersamaan. |
 | HP putus-sambung terus; `journalctl -k \| grep usb` berisi `error -71` | Masalah fisik, bukan setting: ganti kabel USB data, pindah port laptop (jangan lewat hub), bersihkan lubang USB HP. |
 | HP tiba-tiba hilang dari Android Studio / `adb server version doesn't match` | Ada dua `adb` berbeda versi. Pastikan `which adb` menunjuk ke `~/Android/Sdk/platform-tools/adb`, lalu `adb kill-server && adb devices`. |
 

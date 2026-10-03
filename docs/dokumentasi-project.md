@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 04** (backend selesai: auth, penyambungan akun, onboarding, mode, seeder). Bagian yang belum dibangun ditandai _(belum)_.
+> Status dokumen: diperbarui sampai **Fase 05** (backend selesai; fondasi app Android). Bagian yang belum dibangun ditandai _(belum)_.
 
 ---
 
@@ -24,7 +24,14 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 10. [Daftar endpoint](#10-daftar-endpoint)
 11. [Test](#11-test)
 12. [Resep: menambah endpoint baru](#12-resep-menambah-endpoint-baru)
-13. [Glosarium](#13-glosarium)
+
+**Bagian Android**
+
+13. [Struktur app Android](#13-struktur-app-android)
+14. [Tema dan token desain](#14-tema-dan-token-desain)
+15. [Jaringan: Retrofit, token, dan refresh otomatis](#15-jaringan-retrofit-token-dan-refresh-otomatis)
+16. [Penyimpanan sesi di HP](#16-penyimpanan-sesi-di-hp)
+17. [Glosarium](#17-glosarium)
 
 ---
 
@@ -39,7 +46,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
           └─ HP memanggil http://localhost:8080 ────┘   (diteruskan lewat kabel USB ke laptop)
 ```
 
-- **App Android** _(belum, mulai Fase 05)_ menampilkan layar dan menyimpan token login di HP.
+- **App Android** (Java + XML Views, mulai Fase 05) menampilkan layar dan menyimpan token login di HP secara terenkripsi.
 - **Backend** menyimpan akun, memeriksa password, dan membuat token. Semua endpoint diawali `/api`.
 - **PostgreSQL** menyimpan data. Struktur tabelnya hanya diubah lewat file migrasi Flyway.
 
@@ -475,7 +482,135 @@ Kalau butuh kolom atau tabel baru, buat migrasi `V7__...sql` terlebih dahulu, la
 
 ---
 
-## 13. Glosarium
+## 13. Struktur app Android
+
+```
+android/
+├── gradle/libs.versions.toml     ← daftar versi semua library (version catalog)
+├── build.gradle.kts              ← plugin tingkat project
+├── gradle.properties             ← memori Gradle 2 GB, configuration cache
+└── app/
+    ├── build.gradle.kts          ← SDK, BuildConfig (API_BASE_URL, GOOGLE_WEB_CLIENT_ID), dependency
+    └── src/
+        ├── main/                 ← kode & resource app (debug dan rilis)
+        │   ├── java/com/aris/templateapp/
+        │   │   ├── TemplateApp.java        @HiltAndroidApp
+        │   │   ├── MainActivity.java       satu-satunya Activity
+        │   │   ├── core/di/                NetworkModule, AppModule, RefreshClient
+        │   │   ├── core/network/           AuthInterceptor, TokenAuthenticator, ApiErrorParser
+        │   │   ├── core/storage/           TokenStorage, SessionStore
+        │   │   ├── core/util/              Resource, Event, AppExecutors
+        │   │   ├── data/model/             User, UserRole, ProviderStatus, LoginMethod, ApiError
+        │   │   ├── data/remote/api|dto/    interface Retrofit + bentuk JSON
+        │   │   ├── data/mapper/            UserMapper (DTO → model)
+        │   │   └── ui/                     layar (Fragment) per fitur + ui/common
+        │   ├── res/                        layout, values, font, drawable, navigation, ...
+        │   └── assets/licenses/            lisensi font Geist (OFL)
+        ├── debug/                ← hanya ikut di build debug: katalog komponen, izin HTTP localhost
+        └── test/                 ← unit test JVM (./gradlew testDebugUnitTest)
+```
+
+### Satu Activity, banyak Fragment
+
+`MainActivity` hanya berisi `NavHostFragment`. Setiap layar adalah **Fragment**, dan perpindahan antarlayar diatur oleh **Navigation Component** lewat `res/navigation/nav_graph.xml`. Keuntungannya, animasi, tombol kembali, dan pengiriman data antarlayar ditangani di satu tempat.
+
+### Pola MVVM
+
+```
+Fragment (tampilan)  ──mengamati──►  LiveData<Resource<T>>  ◄──diisi──  ViewModel
+     │                                                                     │
+     └── klik tombol ─────────────── memanggil method ────────────────────►│
+                                                                           ▼
+                                                              Repository (Fase 06+)
+                                                               ├─ Retrofit (backend)
+                                                               └─ TokenStorage / SessionStore
+```
+
+- **Fragment** hanya menampilkan data dan meneruskan klik. Tidak ada logika bisnis di sini.
+- **ViewModel** menyimpan state layar. State ini tetap ada walau HP diputar (Fragment dibuat ulang, ViewModel tidak). ViewModel **tidak boleh** menyimpan View, Fragment, atau Context Activity, supaya tidak bocor memori.
+- **`Resource<T>`** membungkus status `LOADING` / `SUCCESS` / `ERROR`, jadi setiap layar menangani tiga keadaan itu dengan cara yang sama.
+- **`Event<T>`** dipakai untuk hal yang hanya boleh terjadi sekali (pindah layar, snackbar). Tanpa ini, LiveData akan mengirim ulang nilai yang sama saat layar dibuat ulang.
+
+### ViewBinding
+
+Setiap layout `fragment_xxx.xml` otomatis punya class `FragmentXxxBinding` berisi semua View ber-`id`, jadi tidak perlu `findViewById`. Di Fragment, binding **wajib di-null-kan di `onDestroyView()`**. View Fragment bisa dihancurkan (mis. saat pindah layar) sementara Fragment-nya masih hidup di back stack. Kalau binding tidak di-null-kan, View lama tetap tertahan di memori.
+
+### Hilt (dependency injection)
+
+- `@HiltAndroidApp` di `TemplateApp` menyalakan Hilt. `@AndroidEntryPoint` di Activity/Fragment membuat field `@Inject` diisi otomatis.
+- Class milik kita cukup diberi `@Inject` di konstruktornya (mis. `TokenStorage`).
+- Objek dari library (Retrofit, OkHttp, Gson) dibuat di **module** (`NetworkModule`, `AppModule`) dengan method `@Provides`.
+- `@Singleton` berarti hanya ada satu objek selama app hidup.
+
+---
+
+## 14. Tema dan token desain
+
+Semua nilai desain didefinisikan **sekali** di `res/values/` lalu dipakai lewat nama. Layout tidak menulis kode warna, ukuran, atau teks langsung.
+
+| File | Isi |
+|---|---|
+| `values/colors.xml` + `values-night/colors.xml` | Token warna terang & gelap dengan **nama yang sama**. Android memilih otomatis sesuai mode HP |
+| `values/dimens.xml` | Spasi (kelipatan 4dp), radius, tinggi tombol, ukuran teks |
+| `values/type.xml` | `TextAppearance.App.Display/Headline/Title/Body/BodySmall/Label/Button` |
+| `values/styles.xml` | Gaya komponen: `Widget.App.Button` (+ `.Outlined`, `.Text`), `TextInputLayout`, `Card`, `Chip`, `Toolbar`, `Badge`, dll. |
+| `values/themes.xml` | `Theme.App`: memetakan token ke atribut Material 3 dan memasang style komponen sebagai default |
+| `color/selector_*.xml` | Warna yang berubah sesuai keadaan (terpilih, fokus, nonaktif) |
+| `font/` | Geist Sans (4 ketebalan) + Geist Mono (2 ketebalan) |
+| `drawable/ic_*.xml` | Ikon Material Symbols Outlined (warna otomatis mengikuti `?attr/colorOnSurface`) |
+
+Cara tema bekerja: `Theme.App` menetapkan, misalnya, `materialButtonStyle = Widget.App.Button`. Akibatnya setiap `<Button>` di layout otomatis menjadi tombol utama monokrom. Untuk varian lain cukup tulis `style="@style/Widget.App.Button.Outlined"`.
+
+- **Mode gelap:** parent tema `Theme.Material3.DayNight` + warna dari `values-night/`. Warna ikon status bar diatur `EdgeToEdge.enable()`.
+- **Edge-to-edge:** mulai Android 15, konten digambar sampai ke balik status bar. `MainActivity` menambahkan padding seukuran status bar, navigation bar, dan keyboard (`WindowInsetsCompat`).
+- **Font per ketebalan:** setiap `TextAppearance` menunjuk file font langsung (`@font/geist_semibold`), karena memilih ketebalan dari satu keluarga font baru didukung penuh mulai Android 9, sedangkan minSdk kita 8.0.
+- **Katalog komponen** (`src/debug/.../ComponentCatalogActivity`): satu layar berisi semua token dan komponen, ditambah tombol ganti terang/gelap. Pakai katalog ini untuk memeriksa perubahan desain.
+
+---
+
+## 15. Jaringan: Retrofit, token, dan refresh otomatis
+
+```
+UserApi.me()  ──►  OkHttpClient
+                     ├─ AuthInterceptor: tempel "Authorization: Bearer <access token>"
+                     │                   (kecuali /api/auth/...)
+                     ▼
+                  backend ──► 200 ✔
+                     │
+                     └─► 401 ──► TokenAuthenticator (synchronized)
+                                   ├─ token sudah diganti thread lain? → ulangi dengan token terbaru
+                                   ├─ POST /auth/refresh (lewat client TERPISAH)
+                                   │     ✔ simpan token baru → ulangi request (user tidak sadar)
+                                   │     ✘ 401/400 → hapus sesi + event "sesi berakhir"
+                                   └─ offline → biarkan sesi, request gagal sebagai error jaringan
+```
+
+- **Retrofit** mengubah interface Java (`@GET("users/me") Call<UserDto> me()`) menjadi request HTTP. Gson mengubah JSON ↔ DTO.
+- **Kenapa `synchronized`?** Refresh token dirotasi di backend (dipakai sekali). Kalau dua request sama-sama me-refresh dengan token yang sama, request kedua dianggap pencurian dan semua sesi dicabut. Dengan `synchronized`, request kedua menunggu, lalu memakai token yang sudah diperbarui request pertama.
+- **Kenapa client terpisah (`@RefreshClient`)?** Kalau `/auth/refresh` sendiri membalas 401 dan lewat client yang sama, authenticator akan terpanggil lagi tanpa akhir.
+- **`ApiErrorParser`** mengubah kegagalan menjadi `ApiError`: `ErrorResponse` JSON → `code` dari backend; `IOException` → `NETWORK_ERROR`; lainnya → `UNKNOWN_ERROR`. Layar memilih teks dari `strings.xml` berdasarkan `code`.
+- **DTO vs model:** `data/remote/dto` mengikuti bentuk JSON persis. `data/model` adalah bentuk yang enak dipakai UI (enum, Set). `UserMapper` menjadi jembatan keduanya, jadi kalau JSON berubah, cukup mapper yang diubah.
+- **R8 (build rilis)** mengganti nama field menjadi pendek (a, b, c). Gson bergantung pada nama field, karena itu `keepRules/rules.keep` menjaga nama field di paket `dto`.
+
+---
+
+## 16. Penyimpanan sesi di HP
+
+| Class | Isi | Cara simpan |
+|---|---|---|
+| `TokenStorage` | access token & refresh token | **Terenkripsi** AES-GCM; kuncinya di **Android Keystore**; hasilnya di SharedPreferences `secure_tokens` |
+| `SessionStore` | salinan user terakhir (JSON `UserDto`), mode terakhir, penanda intro sudah dilihat, event "sesi berakhir" | SharedPreferences `session` (tidak rahasia) |
+
+**Android Keystore:** area aman milik sistem. Kunci AES dibuat di sana dan tidak pernah bisa dibaca keluar, bahkan oleh app kita sendiri. App hanya bisa meminta Keystore untuk mengenkripsi atau mendekripsi. Akibatnya, kalau seseorang menyalin file `secure_tokens.xml` ke HP lain, isinya tidak bisa dibuka.
+
+- **AES-GCM** butuh IV (angka acak sekali pakai) yang berbeda setiap enkripsi. IV disimpan bersama hasil enkripsi (`iv:ciphertext` dalam Base64).
+- Kalau dekripsi gagal (kunci hilang, data rusak), token dihapus dan user dianggap belum login. App tidak crash.
+- **Backup:** `allowBackup="false"`, dan `data_extraction_rules.xml` mengecualikan `secure_tokens.xml` dari backup cloud dan pemindahan antar-HP, karena token itu tidak bisa dibuka di HP lain.
+- **Salinan user** dipakai supaya app tetap bisa dibuka saat offline (skenario 12 bagian 13.2). Data ini disimpan dalam bentuk DTO, karena nama field DTO dijaga tetap sama oleh aturan R8.
+
+---
+
+## 17. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -496,3 +631,13 @@ Kalau butuh kolom atau tabel baru, buat migrasi `V7__...sql` terlebih dahulu, la
 | State (OAuth) | Nilai acak yang dibawa bolak-balik selama login GitHub, untuk memastikan alurnya dimulai dari app kita |
 | Deep link | Alamat seperti `templateapp://...` yang membuka app Android tertentu |
 | Mock / spy | Objek palsu / setengah palsu di test untuk menggantikan bagian yang lambat atau eksternal |
+| Fragment | Satu layar (atau bagian layar) di dalam Activity, dengan siklus hidupnya sendiri |
+| ViewModel | Penyimpan state layar yang tetap hidup walau layar dibuat ulang (mis. HP diputar) |
+| LiveData | Wadah data yang memberi tahu layar setiap kali isinya berubah, hanya saat layar aktif |
+| ViewBinding | Class otomatis berisi semua View ber-id dari sebuah layout |
+| Hilt | Library dependency injection untuk Android (dibangun di atas Dagger) |
+| Interceptor / Authenticator (OkHttp) | Kode yang menyisipi setiap request / dipanggil saat server membalas 401 |
+| Android Keystore | Tempat penyimpanan kunci kriptografi yang dijaga sistem Android |
+| R8 | Pengecil & pengacak kode untuk build rilis |
+| Edge-to-edge | Konten app digambar sampai ke balik status bar dan navigation bar |
+| Version catalog | File `libs.versions.toml` berisi semua versi library di satu tempat |
