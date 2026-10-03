@@ -35,3 +35,9 @@ captures/
 .DS_Store
 Thumbs.db
 *.log
+
+# --- File buatan extension Java VS Code ---
+.classpath
+.project
+.settings/
+.factorypath
