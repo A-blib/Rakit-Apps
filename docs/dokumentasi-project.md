@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 05** (backend selesai; fondasi app Android). Bagian yang belum dibangun ditandai _(belum)_.
+> Status dokumen: diperbarui sampai **Fase 06** (backend selesai; Android: fondasi, splash, layar awal, intro, dashboard). Bagian yang belum dibangun ditandai _(belum)_.
 
 ---
 
@@ -31,7 +31,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 14. [Tema dan token desain](#14-tema-dan-token-desain)
 15. [Jaringan: Retrofit, token, dan refresh otomatis](#15-jaringan-retrofit-token-dan-refresh-otomatis)
 16. [Penyimpanan sesi di HP](#16-penyimpanan-sesi-di-hp)
-17. [Glosarium](#17-glosarium)
+17. [Saat app dibuka: splash, layar awal, intro, dashboard](#17-saat-app-dibuka-splash-layar-awal-intro-dashboard)
+18. [Glosarium](#18-glosarium)
 
 ---
 
@@ -610,7 +611,78 @@ UserApi.me()  ──►  OkHttpClient
 
 ---
 
-## 17. Glosarium
+## 17. Saat app dibuka: splash, layar awal, intro, dashboard
+
+### Urutan kejadian
+
+```
+Ikon app diketuk
+  → Splash sistem (Theme.App.Starting: latar + ikon jendela browser)
+  → MainActivity.onCreate
+       installSplashScreen()  ← sebelum super.onCreate
+       super.onCreate()
+       StartupViewModel       ← SETELAH super.onCreate (Hilt butuh Activity yang siap)
+       splash ditahan selama keputusan layar pertama belum ada
+  → nav_graph mulai di StartupFragment (tanpa tampilan, tertutup splash)
+       mengamati StartupViewModel → navigate(...) + popUpTo: StartupFragment dibuang dari back stack
+  → Intro / Dashboard Pembuat Website / Dashboard Provider
+```
+
+### Keputusan layar pertama (bagian 6.1)
+
+`StartupViewModel` mengurus urutan pengecekan, sedangkan `StartupDecision.forUser(user)` adalah **fungsi murni** (tanpa Android) yang memutuskan tujuan. Karena murni, keputusan ini bisa diuji dengan unit test biasa (`StartupDecisionTest`).
+
+```
+intro belum pernah dilihat?             → Intro
+tidak ada token?                         → Dashboard Pembuat Website (tamu)
+ada token → GET /users/me (thread latar)
+    berhasil                             → forUser(user terbaru)
+    gagal 401 & refresh gagal            → sesi sudah dihapus TokenAuthenticator → tamu
+    offline / server error               → forUser(salinan user di HP)
+forUser:
+    onboarding belum selesai             → Pilih peran (Fase 09; sementara ke Dashboard Pembuat Website)
+    mode provider & punya peran provider
+        bukan suspended                  → Dashboard Provider
+        suspended                        → Dashboard Pembuat Website + banner "ditangguhkan"
+    selain itu                           → Dashboard Pembuat Website
+```
+
+**Kenapa ViewModel milik Activity?** `MainActivity` (untuk menahan splash) dan `StartupFragment` (untuk pindah layar) harus melihat keputusan yang **sama**. `new ViewModelProvider(requireActivity())` di Fragment mengambil objek ViewModel yang sama dengan milik Activity.
+
+### Navigasi tanpa Safe Args
+
+Pindah layar memakai ID aksi di `nav_graph.xml` (`R.id.action_startup_to_intro`), dan argumen dikirim lewat `Bundle` (`CreatorDashboardFragment.args(...)`). Plugin Safe Args (yang membuat class `...Directions`) tidak dipakai karena tidak ada di daftar library project.
+
+### Intro
+
+- `ViewPager2` + `IntroAdapter`. ViewPager2 memakai Adapter yang sama seperti RecyclerView, dan setiap halaman adalah satu item.
+- Indikator halaman berupa titik yang dibuat dari kode. Titik aktif berbentuk pil panjang lewat selector `bg_page_dot` dengan `state_selected`.
+- Di halaman terakhir, tombol "Lanjut" berubah menjadi "Mulai" dan "Lewati" disembunyikan.
+- Penanda `intro_seen` disimpan di `SessionStore`, sehingga intro hanya muncul sekali.
+
+### Dashboard "Segera hadir"
+
+- `CurrentUserViewModel` membaca salinan user di HP setiap kali layar tampil (`onStart`). Kalau hasilnya null, user adalah tamu.
+- `AppBarAccount` mengatur sisi kanan app bar: tombol **Masuk** untuk tamu, atau **avatar** (huruf depan nama, area sentuh 48dp) untuk user yang sudah login.
+- Dashboard Provider menampilkan `StatusBannerView` sesuai status:
+
+| Status | Banner |
+|---|---|
+| `pending` | kuning: "Akunmu sedang diverifikasi." |
+| `approved` | (tanpa banner) |
+| `rejected` | merah: "Pengajuan provider ditolak: {alasan}." Alasan dikirim backend lewat `providerRejectionReason` |
+| `suspended` | merah: "Akun provider ditangguhkan." |
+
+### Animasi Lottie
+
+- File `res/raw/*.json` dibuat oleh skrip `android/tools/generate_lottie.py` dari bentuk sederhana (garis, kotak, lingkaran). Gaya garisnya monokrom dan bukan aset milik pihak lain.
+- Efek "menggambar garis" memakai **trim path**: bagian garis yang terlihat dianimasikan dari 0% sampai 100%.
+- Di JSON garisnya hitam. `LottieTint.applyForeground(view)` mengganti warna semua layer menjadi `color_foreground` lewat *dynamic properties*, jadi animasi ikut tema terang/gelap.
+- Animasi disembunyikan dari pembaca layar (`importantForAccessibility="no"`) karena hanya berfungsi sebagai hiasan.
+
+---
+
+## 18. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -641,3 +713,7 @@ UserApi.me()  ──►  OkHttpClient
 | R8 | Pengecil & pengacak kode untuk build rilis |
 | Edge-to-edge | Konten app digambar sampai ke balik status bar dan navigation bar |
 | Version catalog | File `libs.versions.toml` berisi semua versi library di satu tempat |
+| Splash screen | Layar pembuka yang ditampilkan sistem sampai app siap |
+| Back stack | Tumpukan layar yang dikunjungi; tombol kembali mengambil layar teratas |
+| Lottie | Format animasi vektor berbasis JSON yang diputar oleh library Lottie |
+| Trim path | Efek Lottie yang hanya menampilkan sebagian garis, dipakai untuk animasi "menggambar" |

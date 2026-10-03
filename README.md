@@ -12,7 +12,8 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Backend: login Google & GitHub, penyambungan akun, metode login terhubung | Sudah (Fase 03), perlu kredensial OAuth (lihat "Setup OAuth") |
 | Backend: onboarding pembuat website & provider, beralih mode, data dummy | Sudah (Fase 04) |
 | Android: fondasi (tema & token desain, font Geist, jaringan, penyimpanan token terenkripsi, katalog komponen) | Sudah (Fase 05) |
-| Android: splash, intro, masuk/daftar, onboarding, profil, pengaturan | Belum (Fase 06–09) |
+| Android: splash, layar awal otomatis (bagian 6.1), intro 3 halaman, Dashboard Pembuat Website & Provider "Segera hadir" dengan Lottie | Sudah (Fase 06) |
+| Android: masuk/daftar, Google/GitHub, onboarding, profil, pengaturan | Belum (Fase 07–09) |
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
@@ -361,6 +362,10 @@ Dari terminal (di folder `android/`):
 adb shell am start -n com.aris.templateapp/.MainActivity         # buka app
 adb logcat --pid=$(adb shell pidof -s com.aris.templateapp)      # tampilkan log app saja
 ```
+
+Saat pertama kali dibuka, app menampilkan intro 3 halaman, lalu Dashboard Pembuat Website sebagai tamu. Untuk melihat intro lagi, hapus app lalu pasang ulang (`adb uninstall com.aris.templateapp` lalu `./gradlew installDebug`). Beberapa HP, termasuk realme, menolak `adb shell pm clear`.
+
+Animasi Lottie (`app/src/main/res/raw/*.json`) dibuat oleh skrip `android/tools/generate_lottie.py`. Kalau ingin mengubah animasi, ubah skripnya lalu jalankan `python3 tools/generate_lottie.py` dari folder `android/`.
 
 Build debug memasang **dua ikon** di HP: **Template App** (app) dan **Katalog komponen** (semua komponen & token desain; tombol "Ganti terang / gelap" untuk memeriksa mode gelap). Katalog tidak ada di build rilis.
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Semua teks UI ada di sini (Bahasa Indonesia). Kode dan layout tidak boleh menulis teks langsung. -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Template App</string>
 
     <!-- Aksi umum -->
@@ -39,8 +39,9 @@
     <string name="intro_title_3">Bagikan karyamu.</string>
     <string name="intro_body_3">Export jadi HTML, CSS, dan JS, atau jadi penyedia template untuk pengguna lain.</string>
     <string name="intro_start">Mulai</string>
-    <!-- %1$d = halaman sekarang, %2$d = jumlah halaman (dibacakan pembaca layar) -->
-    <string name="intro_page_indicator">Halaman %1$d dari %2$d</string>
+    <!-- %1$d = halaman sekarang, %2$d = jumlah halaman (dibacakan pembaca layar).
+         Bahasa Indonesia tidak punya bentuk jamak, jadi saran lint "pakai plurals" diabaikan. -->
+    <string name="intro_page_indicator" tools:ignore="PluralsCandidate">Halaman %1$d dari %2$d</string>
 
     <!-- Dashboard pembuat website (bagian 2.3) -->
     <string name="creator_dashboard_title">Buat website pertamamu</string>
