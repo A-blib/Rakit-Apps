@@ -15,7 +15,7 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Android: splash, layar awal otomatis (bagian 6.1), intro 3 halaman, Dashboard Pembuat Website & Provider "Segera hadir" dengan Lottie | Sudah (Fase 06) |
 | Android: Masuk & Daftar dengan email (validasi form, pesan error 6.2, coba lagi saat offline) | Sudah (Fase 07) |
 | Android: login Google (Credential Manager), GitHub (Custom Tabs + deep link), dialog penyambungan akun | Sudah (Fase 08) |
-| Android: onboarding, profil, beralih mode, pengaturan, keluar | Belum (Fase 09) |
+| Android: onboarding (pilih peran, form pembuat website & provider), menu profil, beralih mode, pengaturan, metode login terhubung, keluar | Sudah (Fase 09) |
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 

@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 08** (backend selesai; Android: fondasi, layar awal, intro, dashboard, masuk & daftar email, Google, GitHub, penyambungan akun). Bagian yang belum dibangun ditandai _(belum)_.
+> Status dokumen: diperbarui sampai **Fase 09** (backend dan semua layar Android cakupan saat ini selesai). Bagian yang belum dibangun ditandai _(belum)_.
 
 ---
 
@@ -34,7 +34,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 17. [Saat app dibuka: splash, layar awal, intro, dashboard](#17-saat-app-dibuka-splash-layar-awal-intro-dashboard)
 18. [Masuk & daftar dengan email](#18-masuk--daftar-dengan-email)
 19. [Login Google & GitHub di Android](#19-login-google--github-di-android)
-20. [Glosarium](#20-glosarium)
+20. [Onboarding, menu profil, pengaturan, keluar](#20-onboarding-menu-profil-pengaturan-keluar)
+21. [Glosarium](#21-glosarium)
 
 ---
 
@@ -784,7 +785,58 @@ Login GitHub memakai **dua** jalur ke backend lewat `adb reverse`: app (`/auth/g
 
 ---
 
-## 20. Glosarium
+## 20. Onboarding, menu profil, pengaturan, keluar
+
+### Peta layar
+
+```
+Startup ──(onboarding belum selesai)──► Pilih peran ─┬─► Form pembuat website ─(Mulai/Lewati)─► Dashboard Pembuat Website
+                                                     └─► Form provider ─(Kirim)─────────────► Dashboard Provider (banner pending)
+
+Dashboard ── avatar ──► Menu profil (bottom sheet)
+                          ├─ Beralih ke mode …            (hanya jika punya dua peran)
+                          ├─ Jadi penyedia template        (hanya jika belum provider) ─► Form provider
+                          ├─ Pengaturan ─► Metode login terhubung (sambungkan / lepaskan)
+                          └─ Keluar ─► Dashboard Pembuat Website (tamu)
+```
+
+### `HomeNavigator`: satu aturan "pulang"
+
+Setelah masuk, onboarding, beralih mode, atau keluar, app memanggil `HomeNavigator.navigateHome(fragment, user)`. Tujuannya dipilih dengan `StartupDecision.forUser(user)`, aturan yang sama seperti saat app dibuka. Kalau `user` null, artinya tamu. Semua layar sebelumnya dibuang dari back stack, sehingga tombol kembali tidak membuka form yang sudah selesai.
+
+### Onboarding
+
+- `OnboardingViewModel` dipakai oleh kedua form. Nama diisi otomatis dari salinan user di HP (nama dari Google/GitHub/daftar).
+- `OnboardingFormValidator` memakai aturan yang **sama** dengan backend: nama ≤ 100, bio ≤ 300, URL harus `http(s)://`, persetujuan wajib.
+- Tombol **Lewati** memanggil endpoint yang sama dengan **Mulai**, tapi hanya mengirim nama. Field `null` tidak dikirim oleh Gson.
+- Chip tujuan website memakai `singleSelection`, sedangkan chip keahlian bisa dipilih lebih dari satu. Teks chip keahlian dikirim apa adanya.
+
+### Menu profil (`ProfileSheet`)
+
+- Berupa `BottomSheetDialogFragment` yang dibuka dari avatar lewat `getChildFragmentManager()` milik dashboard. Karena itu, sheet bisa memakai `requireParentFragment()` untuk bernavigasi lewat dashboard di belakangnya.
+- Item ditampilkan sesuai peran user (bagian 6.6): "Beralih mode" hanya muncul kalau punya peran creator **dan** provider. "Jadi penyedia template" hanya muncul kalau belum punya peran provider.
+- Setiap baris berupa satu `TextView` dengan ikon `app:drawableStartCompat` (lebih ringan daripada ImageView + TextView di dalam LinearLayout).
+
+### Keluar (bagian 6.7)
+
+`AuthRepository.logout()` memanggil `POST /auth/logout` untuk mencabut refresh token, lalu **selalu** menghapus token dan salinan user di HP, walaupun request gagal karena offline. Setelah itu app kembali ke Dashboard Pembuat Website sebagai tamu, dengan pesan "Kamu sudah keluar."
+
+### Sesi berakhir
+
+Kalau refresh token ditolak, `TokenAuthenticator` menghapus sesi lalu mengirim event. `MainActivity` menangkap event itu, pindah ke Dashboard Pembuat Website sebagai tamu, dan menampilkan "Sesi berakhir. Silakan masuk lagi."
+
+### Metode login terhubung
+
+- `SettingsViewModel` memuat `GET /users/me/identities`, dan `StateView` menampilkan keadaan memuat atau error + "Coba lagi".
+- Satu baris per metode (Google, GitHub, email):
+  - **Tersambung** → tombol **Lepaskan**. Tombol ini nonaktif kalau tinggal satu metode, karena backend juga menolaknya dengan `LAST_IDENTITY`.
+  - **Google/GitHub belum tersambung** → tombol **Sambungkan**. Google lewat Credential Manager, GitHub lewat Custom Tab dengan hasil deep link `?result=linked`.
+  - **Email belum ada** → tanpa tombol, karena belum ada endpoint untuk membuat password pada akun Google/GitHub.
+- Melepas metode meminta konfirmasi dulu lewat dialog.
+
+---
+
+## 21. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -823,3 +875,5 @@ Login GitHub memakai **dua** jalur ke backend lewat `adb reverse`: app (`/auth/g
 | Custom Tab | Browser (mis. Chrome) yang terbuka di dalam app, berbagi login dengan browser HP |
 | Intent filter | Deklarasi di manifest tentang alamat/aksi yang bisa membuka sebuah Activity |
 | DialogFragment | Dialog yang dikelola seperti Fragment, sehingga bertahan saat layar dibuat ulang |
+| Bottom sheet | Panel yang muncul dari bawah layar, dipakai untuk menu profil |
+| Compound drawable | Ikon yang ditempel langsung di sisi TextView (`drawableStart`), tanpa ImageView terpisah |
