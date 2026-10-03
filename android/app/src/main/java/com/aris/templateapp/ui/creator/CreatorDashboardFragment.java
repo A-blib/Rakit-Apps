@@ -17,6 +17,7 @@ import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.LottieTint;
 import com.aris.templateapp.ui.common.StatusBannerView;
+import com.aris.templateapp.ui.profile.ProfileSheet;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -55,6 +56,8 @@ public class CreatorDashboardFragment extends Fragment {
                     R.drawable.ic_block);
         }
 
+        binding.account.avatarContainer.setOnClickListener(v ->
+                new ProfileSheet().show(getChildFragmentManager(), ProfileSheet.TAG));
         viewModel.getUser().observe(getViewLifecycleOwner(), user -> AppBarAccount.bind(binding.account, user));
         binding.account.signInButton.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login));

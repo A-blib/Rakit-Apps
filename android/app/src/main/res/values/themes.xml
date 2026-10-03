@@ -62,6 +62,8 @@
         <item name="materialDividerStyle">@style/Widget.App.Divider</item>
         <item name="circularProgressIndicatorStyle">@style/Widget.App.ProgressIndicator</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.App.MaterialAlertDialog</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.App.BottomSheetDialog</item>
+        <item name="checkboxStyle">@style/Widget.App.CheckBox</item>
         <item name="snackbarStyle">@style/Widget.App.Snackbar</item>
         <item name="snackbarTextViewStyle">@style/Widget.App.Snackbar.Text</item>
         <item name="snackbarButtonStyle">@style/Widget.App.Snackbar.Button</item>

@@ -18,6 +18,7 @@ import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.LottieTint;
 import com.aris.templateapp.ui.common.StatusBannerView;
+import com.aris.templateapp.ui.profile.ProfileSheet;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -39,6 +40,8 @@ public class ProviderDashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         viewModel = new ViewModelProvider(this).get(CurrentUserViewModel.class);
         LottieTint.applyForeground(binding.illustration);
+        binding.account.avatarContainer.setOnClickListener(v ->
+                new ProfileSheet().show(getChildFragmentManager(), ProfileSheet.TAG));
         viewModel.getUser().observe(getViewLifecycleOwner(), user -> {
             AppBarAccount.bind(binding.account, user);
             bindStatus(user);

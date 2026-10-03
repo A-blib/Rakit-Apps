@@ -12,6 +12,8 @@ import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavOptions;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.core.storage.SessionStore;
 import com.aris.templateapp.databinding.ActivityMainBinding;
@@ -70,6 +72,13 @@ public class MainActivity extends AppCompatActivity {
 
         sessionStore.sessionExpiredEvents().observe(this, event -> {
             if (event.getContentIfNotHandled() != null) {
+                // Sesi berakhir (refresh token ditolak): kembali ke Dashboard Pembuat Website sebagai tamu.
+                NavHostFragment host = (NavHostFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.nav_host_fragment);
+                if (host != null) {
+                    host.getNavController().navigate(R.id.creatorDashboardFragment, null,
+                            new NavOptions.Builder().setPopUpTo(R.id.nav_graph, true).build());
+                }
                 Snackbar.make(binding.getRoot(), R.string.error_session_expired, Snackbar.LENGTH_LONG).show();
             }
         });

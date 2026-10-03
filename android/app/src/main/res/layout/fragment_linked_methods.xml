@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Metode login terhubung: StateView saat memuat/gagal, lalu satu baris per metode. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/settings_linked_methods" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:paddingTop="@dimen/space_6"
+        android:paddingBottom="@dimen/space_3"
+        android:text="@string/linked_subtitle"
+        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <com.aris.templateapp.ui.common.StateView
+            android:id="@+id/state_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+</LinearLayout>

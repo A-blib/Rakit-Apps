@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Form pembuat website (bagian 9.4): satu kolom, label di atas input, chip tujuan website, Mulai + Lewati. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingVertical="@dimen/space_6">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/creator_form_title"
+                android:textAppearance="@style/TextAppearance.App.Headline" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2"
+                android:layout_marginBottom="@dimen/space_6"
+                android:text="@string/creator_form_subtitle"
+                android:textAppearance="@style/TextAppearance.App.Body"
+                android:textColor="@color/color_muted" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/display_name_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/field_display_name">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/display_name_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:autofillHints="name"
+                    android:inputType="textPersonName|textCapWords" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                android:layout_marginBottom="@dimen/space_2"
+                android:text="@string/field_website_purpose"
+                android:textAppearance="@style/TextAppearance.App.Label" />
+
+            <!-- singleSelection: hanya satu tujuan; boleh tidak memilih sama sekali. -->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/purpose_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip android:id="@+id/purpose_sekolah" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_sekolah" />
+                <com.google.android.material.chip.Chip android:id="@+id/purpose_organisasi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_organisasi" />
+                <com.google.android.material.chip.Chip android:id="@+id/purpose_umkm" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_umkm" />
+                <com.google.android.material.chip.Chip android:id="@+id/purpose_instansi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_instansi" />
+                <com.google.android.material.chip.Chip android:id="@+id/purpose_pribadi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_pribadi" />
+                <com.google.android.material.chip.Chip android:id="@+id/purpose_lainnya" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_lainnya" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/organization_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                android:hint="@string/field_organization"
+                app:counterEnabled="true"
+                app:counterMaxLength="150">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/organization_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:autofillHints="organization"
+                    android:inputType="textCapWords"
+                    android:maxLength="150" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Tombol di bawah, tetap terlihat walau form digulir. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:paddingVertical="@dimen/space_4">
+
+        <Button
+            android:id="@+id/skip_button"
+            style="@style/Widget.App.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_skip"
+            android:textColor="@color/color_muted" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/start_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="@dimen/intro_button_min_width"
+            android:text="@string/intro_start" />
+    </LinearLayout>
+</LinearLayout>

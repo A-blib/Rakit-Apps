@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pengaturan (bagian 9.4): daftar bergrup, judul grup memakai style Label (mono). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/settings_title" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/Widget.App.ListGroupTitle"
+                android:text="@string/settings_group_account" />
+
+            <LinearLayout
+                android:id="@+id/linked_methods_item"
+                style="@style/Widget.App.ListItem">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size"
+                    android:layout_height="@dimen/icon_size"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_link" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/space_4"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_linked_methods"
+                        android:textAppearance="@style/TextAppearance.App.Body" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_linked_methods_desc"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size_small"
+                    android:layout_height="@dimen/icon_size_small"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_chevron_right" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/sign_out_item"
+                style="@style/Widget.App.ListItem.Text"
+                app:drawableStartCompat="@drawable/ic_logout"
+                android:text="@string/profile_sign_out" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_3" />
+
+            <TextView
+                style="@style/Widget.App.ListGroupTitle"
+                android:text="@string/settings_group_about" />
+
+            <TextView
+                android:id="@+id/version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                android:paddingVertical="@dimen/space_3"
+                android:textAppearance="@style/TextAppearance.App.BodySmall" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

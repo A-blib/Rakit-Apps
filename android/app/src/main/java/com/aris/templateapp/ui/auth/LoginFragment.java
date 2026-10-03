@@ -15,6 +15,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.aris.templateapp.R;
 import com.aris.templateapp.data.model.LoginMethod;
 import com.aris.templateapp.databinding.FragmentLoginBinding;
+import com.aris.templateapp.ui.common.HomeNavigator;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
@@ -87,7 +88,7 @@ public class LoginFragment extends Fragment {
         viewModel.getSuccess().observe(getViewLifecycleOwner(), event -> {
             var result = event.getContentIfNotHandled();
             if (result != null) {
-                PostLoginNavigator.navigate(this, result.getUser());
+                HomeNavigator.navigateHome(this, result.getUser());
             }
         });
     }

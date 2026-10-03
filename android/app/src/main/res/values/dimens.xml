@@ -26,6 +26,8 @@
     <dimen name="avatar_size">32dp</dimen>
     <dimen name="app_bar_height">56dp</dimen>
     <dimen name="illustration_size">200dp</dimen>
+    <dimen name="state_illustration_size">120dp</dimen>
+    <dimen name="list_item_min_height">56dp</dimen>
     <dimen name="page_dot_size">6dp</dimen>
     <dimen name="page_dot_active_width">20dp</dimen>
     <dimen name="intro_button_min_width">120dp</dimen>

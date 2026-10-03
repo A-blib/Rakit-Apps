@@ -101,6 +101,84 @@
     <string name="error_link_token_invalid">Waktu penyambungan akun habis. Ulangi dari awal.</string>
     <string name="error_identity_in_use">Akun ini sudah tersambung ke pengguna lain.</string>
 
+    <!-- Status data (StateView) -->
+    <string name="state_error">Gagal memuat data.</string>
+
+    <!-- Onboarding: pilih peran (bagian 6.6 & 9.4) -->
+    <string name="role_select_title">Kamu mau pakai app ini sebagai apa?</string>
+    <string name="role_creator_title">Pembuat website</string>
+    <string name="role_creator_body">Buat website untuk sekolah, organisasi, usaha, atau dirimu sendiri.</string>
+    <string name="role_provider_title">Penyedia template</string>
+    <string name="role_provider_body">Unggah template dan bagikan ke pengguna lain.</string>
+    <string name="role_select_note">Peran bisa ditambah nanti.</string>
+
+    <!-- Onboarding: form pembuat website -->
+    <string name="creator_form_title">Tentang website-mu</string>
+    <string name="creator_form_subtitle">Bantu kami menyiapkan yang cocok untukmu.</string>
+    <string name="field_display_name">Nama tampilan</string>
+    <string name="field_website_purpose">Tujuan website</string>
+    <string name="field_organization">Nama organisasi (opsional)</string>
+    <string name="purpose_sekolah">Sekolah</string>
+    <string name="purpose_organisasi">Organisasi</string>
+    <string name="purpose_umkm">Usaha / UMKM</string>
+    <string name="purpose_instansi">Instansi</string>
+    <string name="purpose_pribadi">Pribadi / Portofolio</string>
+    <string name="purpose_lainnya">Lainnya</string>
+    <string name="error_display_name_required">Nama tampilan wajib diisi</string>
+    <string name="error_name_too_long">Maksimal 100 karakter</string>
+
+    <!-- Onboarding: form provider -->
+    <string name="provider_form_title">Jadi penyedia template</string>
+    <string name="provider_form_subtitle">Isi profil kreatormu. Akunmu akan diverifikasi sebelum bisa mengunggah template.</string>
+    <string name="field_creator_name">Nama kreator</string>
+    <string name="field_bio">Bio (opsional)</string>
+    <string name="field_portfolio">Link portofolio atau GitHub (opsional)</string>
+    <string name="field_specialties">Keahlian (opsional)</string>
+    <string name="specialty_landing">Landing page</string>
+    <string name="specialty_sekolah">Sekolah</string>
+    <string name="specialty_umkm">UMKM</string>
+    <string name="specialty_portofolio">Portofolio</string>
+    <string name="specialty_organisasi">Organisasi</string>
+    <string name="specialty_acara">Acara</string>
+    <string name="provider_terms_agree">Saya menyetujui aturan penyedia template.</string>
+    <string name="action_submit_provider">Kirim pengajuan</string>
+    <string name="error_creator_name_required">Nama kreator wajib diisi</string>
+    <string name="error_bio_too_long">Bio maksimal 300 karakter</string>
+    <string name="error_url_invalid">Link harus diawali http:// atau https://</string>
+    <string name="error_terms_required">Kamu harus menyetujui aturan penyedia template</string>
+
+    <!-- Menu profil (bottom sheet) -->
+    <string name="profile_mode_creator">Mode pembuat website</string>
+    <string name="profile_mode_provider">Mode provider</string>
+    <string name="profile_switch_to_provider">Beralih ke mode provider</string>
+    <string name="profile_switch_to_creator">Beralih ke mode pembuat website</string>
+    <string name="profile_become_provider">Jadi penyedia template</string>
+    <string name="profile_settings">Pengaturan</string>
+    <string name="profile_sign_out">Keluar</string>
+    <string name="signed_out">Kamu sudah keluar.</string>
+
+    <!-- Pengaturan -->
+    <string name="settings_title">Pengaturan</string>
+    <string name="settings_group_account">Akun</string>
+    <string name="settings_linked_methods">Metode login terhubung</string>
+    <string name="settings_linked_methods_desc">Google, GitHub, dan email</string>
+    <string name="settings_group_about">Tentang</string>
+    <!-- %1$s = versi app, mis. "1.0" -->
+    <string name="settings_version">Versi %1$s</string>
+
+    <!-- Metode login terhubung -->
+    <string name="linked_subtitle">Masuk ke akun yang sama dengan metode mana pun yang tersambung.</string>
+    <string name="linked_status_not_connected">Belum tersambung</string>
+    <string name="linked_email_not_available">Belum ada password untuk akun ini</string>
+    <string name="action_link">Sambungkan</string>
+    <string name="action_unlink">Lepaskan</string>
+    <!-- %1$s = nama metode -->
+    <string name="linked_success">%1$s tersambung.</string>
+    <string name="unlinked_success">%1$s dilepaskan.</string>
+    <string name="unlink_confirm_title">Lepaskan %1$s?</string>
+    <string name="unlink_confirm_body">Kamu tidak bisa lagi masuk ke akun ini dengan %1$s.</string>
+    <string name="error_last_identity">Metode login terakhir tidak bisa dilepas.</string>
+
     <!-- Aksesibilitas (contentDescription ikon) -->
     <string name="cd_back">Kembali</string>
     <string name="cd_profile_menu">Menu profil</string>

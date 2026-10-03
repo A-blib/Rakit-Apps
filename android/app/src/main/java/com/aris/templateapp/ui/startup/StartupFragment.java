@@ -52,7 +52,8 @@ public class StartupFragment extends Fragment {
                 navController.navigate(R.id.action_startup_to_provider_dashboard);
                 break;
             case ROLE_SELECT:
-                // Layar pilih peran dibuat di Fase 09; sampai saat itu user yang belum onboarding dibawa ke dashboard.
+                navController.navigate(R.id.action_startup_to_role_select);
+                break;
             case CREATOR_DASHBOARD:
             default:
                 navController.navigate(R.id.action_startup_to_creator_dashboard,

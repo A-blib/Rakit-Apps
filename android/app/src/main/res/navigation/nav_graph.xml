@@ -28,6 +28,11 @@
             app:destination="@id/providerDashboardFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_startup_to_role_select"
+            app:destination="@id/roleSelectFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -56,6 +61,39 @@
     <fragment
         android:id="@+id/providerDashboardFragment"
         android:name="com.aris.templateapp.ui.provider.ProviderDashboardFragment" />
+
+    <!-- Onboarding akun baru (bagian 6.6). Pilih peran adalah layar paling bawah, jadi kembali = keluar app. -->
+    <fragment
+        android:id="@+id/roleSelectFragment"
+        android:name="com.aris.templateapp.ui.onboarding.RoleSelectFragment">
+        <action
+            android:id="@+id/action_role_select_to_creator_form"
+            app:destination="@id/creatorFormFragment" />
+        <action
+            android:id="@+id/action_role_select_to_provider_form"
+            app:destination="@id/providerFormFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/creatorFormFragment"
+        android:name="com.aris.templateapp.ui.onboarding.CreatorFormFragment" />
+
+    <!-- Dibuka dari onboarding ATAU dari menu profil "Jadi penyedia template". -->
+    <fragment
+        android:id="@+id/providerFormFragment"
+        android:name="com.aris.templateapp.ui.onboarding.ProviderFormFragment" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.aris.templateapp.ui.settings.SettingsFragment">
+        <action
+            android:id="@+id/action_settings_to_linked_methods"
+            app:destination="@id/linkedMethodsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/linkedMethodsFragment"
+        android:name="com.aris.templateapp.ui.settings.LinkedMethodsFragment" />
 
     <!-- Masuk & Daftar. Setelah berhasil, PostLoginNavigator membuka dashboard dan membersihkan back stack. -->
     <fragment

@@ -13,6 +13,7 @@ import com.aris.templateapp.data.remote.dto.AuthResponseDto;
 import com.aris.templateapp.data.remote.dto.GitHubAuthorizeRequestDto;
 import com.aris.templateapp.data.remote.dto.GoogleLoginRequestDto;
 import com.aris.templateapp.data.remote.dto.LoginRequestDto;
+import com.aris.templateapp.data.remote.dto.RefreshTokenRequestDto;
 import com.aris.templateapp.data.remote.dto.RegisterRequestDto;
 import com.aris.templateapp.data.remote.dto.TicketExchangeRequestDto;
 import com.aris.templateapp.data.remote.dto.UrlResponseDto;
@@ -83,6 +84,24 @@ public class AuthRepository {
     @WorkerThread
     public Resource<AuthResult> exchangeGitHubTicket(String ticket) {
         return execute(authApi.gitHubExchange(new TicketExchangeRequestDto(ticket)));
+    }
+
+    /**
+     * Keluar (bagian 6.7): cabut refresh token di backend, lalu hapus token & salinan user di HP.
+     * Data di HP SELALU dihapus, walau request gagal karena offline: keluar tidak boleh tertahan oleh jaringan.
+     */
+    @WorkerThread
+    public void logout() {
+        String refreshToken = tokenStorage.getRefreshToken();
+        if (refreshToken != null) {
+            try {
+                authApi.logout(new RefreshTokenRequestDto(refreshToken)).execute();
+            } catch (IOException e) {
+                // Offline: token di server akan kedaluwarsa sendiri (30 hari); sesi di HP tetap dihapus.
+            }
+        }
+        tokenStorage.clear();
+        sessionStore.clearUser();
     }
 
     /** Menjalankan request auth dan menyimpan sesi jika berhasil. Dipakai juga oleh login Google/GitHub. */

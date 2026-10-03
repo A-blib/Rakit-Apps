@@ -141,6 +141,63 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Button</item>
     </style>
 
+    <!-- Baris daftar (Pengaturan, menu profil): tinggi minimal 56dp, efek sentuh, tanpa garis. -->
+    <style name="Widget.App.ListItem" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/list_item_min_height</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingHorizontal">@dimen/screen_padding_horizontal</item>
+        <item name="android:paddingVertical">@dimen/space_3</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <!-- Baris daftar sederhana (ikon + teks) sebagai satu TextView: ikon dipasang lewat drawableStart. -->
+    <style name="Widget.App.ListItem.Text" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/list_item_min_height</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingHorizontal">@dimen/screen_padding_horizontal</item>
+        <item name="android:paddingVertical">@dimen/space_3</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:drawablePadding">@dimen/space_4</item>
+        <item name="drawableTint">@color/color_foreground</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Body</item>
+    </style>
+
+    <!-- Judul grup daftar (mis. "AKUN") memakai style Label mono (bagian 9.4). -->
+    <style name="Widget.App.ListGroupTitle" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingHorizontal">@dimen/screen_padding_horizontal</item>
+        <item name="android:paddingTop">@dimen/space_6</item>
+        <item name="android:paddingBottom">@dimen/space_2</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
+    </style>
+
+    <!-- Checkbox: kotak foreground, bukan warna aksen bawaan. -->
+    <style name="Widget.App.CheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
+        <item name="buttonTint">@color/color_foreground</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Body</item>
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+    </style>
+
+    <!-- Bottom sheet: latar surface, sudut atas 12dp, tanpa bayangan berwarna. -->
+    <style name="ThemeOverlay.App.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.App.BottomSheet</item>
+    </style>
+
+    <style name="Widget.App.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/color_surface</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.App.Large</item>
+    </style>
+
     <!-- Dialog: satu-satunya komponen yang boleh punya elevasi (bagian 9.2). -->
     <style name="ThemeOverlay.App.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.Medium</item>

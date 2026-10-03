@@ -15,6 +15,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.R;
 import com.aris.templateapp.databinding.FragmentRegisterBinding;
+import com.aris.templateapp.ui.common.HomeNavigator;
 
 import java.util.Map;
 
@@ -81,7 +82,7 @@ public class RegisterFragment extends Fragment {
         viewModel.getSuccess().observe(getViewLifecycleOwner(), event -> {
             var result = event.getContentIfNotHandled();
             if (result != null) {
-                PostLoginNavigator.navigate(this, result.getUser());
+                HomeNavigator.navigateHome(this, result.getUser());
             }
         });
     }
