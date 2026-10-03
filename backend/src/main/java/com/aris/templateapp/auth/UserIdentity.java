@@ -1,5 +1,6 @@
 package com.aris.templateapp.auth;
 
+import com.aris.templateapp.common.util.Emails;
 import com.aris.templateapp.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -62,6 +63,17 @@ public class UserIdentity {
         identity.providerUserId = email;
         identity.email = email;
         identity.passwordHash = passwordHash;
+        return identity;
+    }
+
+    /** Identitas Google/GitHub. Tidak punya password. */
+    public static UserIdentity social(User user, SocialProfile profile) {
+        UserIdentity identity = new UserIdentity();
+        identity.user = user;
+        identity.provider = profile.provider();
+        identity.providerUserId = profile.providerUserId();
+        identity.email = Emails.normalize(profile.email());
+        identity.emailVerified = profile.emailVerified();
         return identity;
     }
 }
