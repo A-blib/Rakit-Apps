@@ -10,7 +10,7 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Backend: fondasi (konfigurasi, migrasi database, format error, Swagger UI) | Sudah (Fase 01) |
 | Backend: auth email (daftar, masuk, refresh token dengan rotasi, keluar, `/users/me`) | Sudah (Fase 02) |
 | Backend: login Google & GitHub, penyambungan akun, metode login terhubung | Sudah (Fase 03), perlu kredensial OAuth (lihat "Setup OAuth") |
-| Backend: onboarding, mode, seeder | Belum (Fase 04) |
+| Backend: onboarding pembuat website & provider, beralih mode, data dummy | Sudah (Fase 04) |
 | Android: splash, intro, masuk/daftar, onboarding, profil, pengaturan | Belum (Fase 05–09) |
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
@@ -307,11 +307,56 @@ _Diisi di Fase 05._
 
 ## Akun dummy
 
-_Diisi di Fase 04._
+Saat backend start dengan profile `dev` dan tabel `users` masih **kosong**, `DummyDataSeeder` membuat 10 akun berikut. Semuanya memakai password yang sama: **`password123`**.
+
+| Email | Kondisi | Cocok untuk mencoba |
+|---|---|---|
+| `dummy1@templateapp.test`, `dummy2@templateapp.test` | Belum onboarding | Alur pilih peran → form |
+| `dummy3@templateapp.test` … `dummy7@templateapp.test` | Pembuat website, onboarding selesai | Dashboard pembuat website, "Jadi penyedia template" |
+| `dummy8@templateapp.test` | Pembuat website + provider **pending** | Banner "Akunmu sedang diverifikasi." |
+| `dummy9@templateapp.test` | Pembuat website + provider **approved** | Beralih mode tanpa banner |
+| `dummy10@templateapp.test` | Pembuat website + provider **rejected** | Banner "Pengajuan provider ditolak: …" |
+
+Nama tampilannya nama Indonesia acak dengan seed tetap, jadi hasilnya selalu sama setiap kali database diisi ulang.
+
+Untuk mengisi ulang dari awal (hanya database development):
+
+```bash
+sudo -u postgres psql -d templateapp -c "TRUNCATE users CASCADE;"   # kosongkan semua user (data terkait ikut terhapus)
+# lalu jalankan ulang backend dengan profile dev
+```
 
 ## Contoh SQL status provider
 
-_Diisi di Fase 04._
+Panel admin belum ada, jadi status provider diubah manual. Masuk dulu ke database:
+
+```bash
+psql -h localhost -U templateapp -d templateapp
+```
+
+```sql
+-- Lihat semua provider beserta statusnya
+SELECT u.email, p.creator_name, p.status, p.rejection_reason
+FROM provider_profiles p JOIN users u ON u.id = p.user_id;
+
+-- Setujui (banner hilang)
+UPDATE provider_profiles SET status = 'approved', rejection_reason = NULL, updated_at = now()
+WHERE user_id = (SELECT id FROM users WHERE email = 'dummy8@templateapp.test');
+
+-- Tolak dengan alasan (banner "Pengajuan provider ditolak: {alasan}.")
+UPDATE provider_profiles SET status = 'rejected', rejection_reason = 'Portofolio belum bisa dibuka.', updated_at = now()
+WHERE user_id = (SELECT id FROM users WHERE email = 'dummy8@templateapp.test');
+
+-- Tangguhkan (mode provider terkunci, user diarahkan ke mode pembuat website)
+UPDATE provider_profiles SET status = 'suspended', updated_at = now()
+WHERE user_id = (SELECT id FROM users WHERE email = 'dummy9@templateapp.test');
+
+-- Kembalikan ke menunggu verifikasi
+UPDATE provider_profiles SET status = 'pending', rejection_reason = NULL, updated_at = now()
+WHERE user_id = (SELECT id FROM users WHERE email = 'dummy8@templateapp.test');
+```
+
+Nilai status selain `pending`, `approved`, `rejected`, dan `suspended` ditolak oleh database (CHECK constraint).
 
 ## Troubleshooting
 
@@ -321,6 +366,7 @@ _Diisi di Fase 04._
 | Status `unauthorized` | Buka kunci HP, setujui pop-up "Allow USB debugging". Jika tidak muncul: *Opsi pengembang → Revoke USB debugging authorizations*, lalu colok ulang. |
 | `java -version` masih 25 | Jalankan `sudo update-alternatives --config java` dan pilih java-21; cek `JAVA_HOME`. |
 | `docker: permission denied` | Logout lalu login lagi setelah `usermod -aG docker $USER`. |
+| Seeder tidak membuat akun dummy (log: `Seeder dilewati`) | Tabel `users` sudah berisi data. Seeder sengaja hanya berjalan di database kosong; lihat bagian "Akun dummy" untuk mengosongkannya. |
 | `Port 8080 was already in use` | Ada backend lain yang masih jalan. Cari dengan `ss -ltnp \| grep 8080`, lalu hentikan prosesnya (atau tutup terminal/VS Code yang menjalankannya). |
 | `Validate failed: Migrations have failed validation` / checksum mismatch | File migrasi yang **sudah pernah dijalankan** diubah. Jangan ubah file `V*` lama; buat file `V7__...` baru. Khusus database development, bisa reset: `sudo -u postgres psql -c "DROP DATABASE templateapp;"` lalu `sudo -u postgres createdb -O templateapp templateapp`. |
 | Test gagal: `Could not find a valid Docker environment` | Docker belum jalan: `sudo systemctl start docker`, cek dengan `docker ps`. |

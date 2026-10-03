@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 03** (Google, GitHub, penyambungan akun). Bagian yang belum dibangun ditandai _(belum)_.
+> Status dokumen: diperbarui sampai **Fase 04** (backend selesai: auth, penyambungan akun, onboarding, mode, seeder). Bagian yang belum dibangun ditandai _(belum)_.
 
 ---
 
@@ -19,11 +19,12 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 5. [Database](#5-database)
 6. [Keamanan: login, JWT, refresh token](#6-keamanan-login-jwt-refresh-token)
 7. [Login Google & GitHub, penyambungan akun](#7-login-google--github-penyambungan-akun)
-8. [Format error](#8-format-error)
-9. [Daftar endpoint](#9-daftar-endpoint)
-10. [Test](#10-test)
-11. [Resep: menambah endpoint baru](#11-resep-menambah-endpoint-baru)
-12. [Glosarium](#12-glosarium)
+8. [Onboarding, mode, dan data dummy](#8-onboarding-mode-dan-data-dummy)
+9. [Format error](#9-format-error)
+10. [Daftar endpoint](#10-daftar-endpoint)
+11. [Test](#11-test)
+12. [Resep: menambah endpoint baru](#12-resep-menambah-endpoint-baru)
+13. [Glosarium](#13-glosarium)
 
 ---
 
@@ -64,7 +65,8 @@ backend/src/main/java/com/aris/templateapp/
 │   └── dto/          RegisterRequest, LoginRequest, GoogleLoginRequest, AuthResponse, ...
 ├── user/         User, profil pembuat website, /users/me, metode login terhubung (IdentityController)
 │   └── dto/          UserResponse, IdentityResponse
-└── provider/     ProviderProfile (profil penyedia template + status)
+├── provider/     ProviderProfile (profil penyedia template + status)
+└── seed/         DummyDataSeeder (10 user dummy, hanya profile dev)
 ```
 
 Kode **dikelompokkan per fitur** (`auth/`, `user/`, `provider/`), bukan per jenis (`controllers/`, `services/`). Dengan cara ini, semua yang berhubungan dengan login ada di satu folder.
@@ -319,7 +321,60 @@ App menerima ACCOUNT_LINK_REQUIRED (linkToken, existingMethods=["google"])
 
 ---
 
-## 8. Format error
+## 8. Onboarding, mode, dan data dummy
+
+### Peran dan mode
+
+- **Peran** (`roles`) adalah apa yang **dimiliki** user. `creator` ada kalau user punya baris di `creator_profiles`, `provider` ada kalau punya baris di `provider_profiles`. Peran tidak disimpan sebagai kolom terpisah, tapi dihitung dari ada tidaknya profil (`UserService.toResponse`).
+- **Mode** (`users.active_mode`) adalah dashboard yang sedang **dibuka**. Nilainya disimpan di server, jadi app membuka mode terakhir walaupun HP diganti.
+
+```
+Akun baru: onboardingCompleted=false, activeMode=creator, roles=[]
+   │
+   ├─ POST /users/me/onboarding/creator   (tombol "Mulai" ATAU "Lewati")
+   │     → creator_profiles dibuat/diperbarui, onboardingCompleted=true, activeMode=creator
+   │
+   └─ POST /users/me/onboarding/provider  (juga dari menu "Jadi penyedia template" user lama)
+         → provider_profiles dibuat (status pending), onboardingCompleted=true, activeMode=provider
+         → kedua kalinya: 409 PROVIDER_PROFILE_EXISTS
+```
+
+### Aturan beralih mode (`PATCH /users/me/active-mode`)
+
+| Mode tujuan | Boleh jika | Kalau tidak |
+|---|---|---|
+| `creator` | Selalu. Dashboard ini juga dipakai tamu dan jadi tujuan saat provider ditangguhkan | – |
+| `provider` | Punya profil provider **dan** status bukan `suspended` (`pending`/`rejected` boleh, supaya bannernya terlihat) | `403 MODE_NOT_ALLOWED` |
+
+Status provider (`pending` → `approved`/`rejected`/`suspended`) belum punya panel admin, jadi diubah lewat SQL (contohnya di README). Kalau status berubah menjadi `suspended` saat `activeMode` masih `provider`, backend tidak mengubahnya diam-diam. App yang membaca `providerStatus = suspended` lalu membuka mode pembuat website dengan pesan (bagian 6.1 instruksi).
+
+### Validasi form provider (`ProviderOnboardingRequest`)
+
+Validasi ditulis sebagai anotasi di DTO, lalu dijalankan oleh `@Valid` di controller:
+
+- `creatorName` wajib, maksimal 100
+- `bio` maksimal 300
+- `portfolioUrl` harus `http(s)://...` (`@Pattern`)
+- `specialties` maksimal 10 item, masing-masing tidak kosong dan maksimal 50 (anotasi di **dalam** tipe generik: `List<@NotBlank @Size(max = 50) String>`)
+- `agreedToTerms` harus `true` (`@AssertTrue`)
+
+Semua pesan kesalahan dikirim dalam `fieldErrors`, supaya form di app bisa menandai field yang salah.
+
+### Mencegah balapan (race condition)
+
+`becomeProvider` mengambil user dengan `findByIdForUpdate` (kunci baris). Kalau dua request "daftar provider" datang bersamaan, request kedua menunggu sampai yang pertama selesai, lalu melihat profilnya sudah ada (`PROVIDER_PROFILE_EXISTS`). Tanpa kunci, keduanya bisa lolos pengecekan, dan request kedua berakhir dengan error database `500`.
+
+### Data dummy (`DummyDataSeeder`)
+
+- Class ini mengimplementasikan `ApplicationRunner`, yaitu kode yang dijalankan Spring sekali setelah app selesai start.
+- `@Profile("dev")` membuatnya hanya aktif di laptop development, tidak pernah di production atau test.
+- Seeder hanya berjalan kalau tabel `users` kosong, jadi data yang sudah ada tidak pernah tertimpa.
+- Nama dibuat oleh Datafaker dari daftar nama Indonesia (Datafaker belum punya locale Indonesia), dengan `new Random(42)` supaya hasilnya selalu sama.
+- Daftar akun dan password-nya ada di README bagian "Akun dummy".
+
+---
+
+## 9. Format error
 
 Semua error berbentuk sama (`ErrorResponse`):
 
@@ -341,7 +396,7 @@ Cara kerjanya:
 
 ---
 
-## 9. Daftar endpoint
+## 10. Daftar endpoint
 
 Coba semuanya di Swagger UI: http://localhost:8080/swagger-ui.html
 
@@ -360,8 +415,9 @@ Coba semuanya di Swagger UI: http://localhost:8080/swagger-ui.html
 | `POST /api/users/me/identities/google` | ✔ | `{idToken}` | daftar identitas | ✅ Fase 03 |
 | `POST /api/users/me/identities/github/authorize-url` | ✔ | – | `{url}` | ✅ Fase 03 |
 | `DELETE /api/users/me/identities/{provider}` | ✔ | – | `204` / `409 LAST_IDENTITY` | ✅ Fase 03 |
-| `POST /api/users/me/onboarding/creator` · `/provider` | ✔ | | | _(belum, Fase 04)_ |
-| `PATCH /api/users/me/active-mode` | ✔ | `{mode}` | | _(belum, Fase 04)_ |
+| `POST /api/users/me/onboarding/creator` | ✔ | `{displayName, websitePurpose?, organizationName?}` | `UserResponse` | ✅ Fase 04 |
+| `POST /api/users/me/onboarding/provider` | ✔ | `{creatorName, bio?, portfolioUrl?, specialties?, agreedToTerms}` | `UserResponse` / `409 PROVIDER_PROFILE_EXISTS` | ✅ Fase 04 |
+| `PATCH /api/users/me/active-mode` | ✔ | `{mode}` | `UserResponse` / `403 MODE_NOT_ALLOWED` | ✅ Fase 04 |
 
 Bentuk respons:
 
@@ -379,7 +435,7 @@ Bentuk respons:
 
 ---
 
-## 10. Test
+## 11. Test
 
 Jalankan semua test dengan `cd backend && ./mvnw test` (Docker harus aktif).
 
@@ -388,7 +444,7 @@ Jalankan semua test dengan `cd backend && ./mvnw test` (Docker harus aktif).
 | Unit test | `JwtServiceTest`, `GlobalExceptionHandlerTest` | Tanpa Spring penuh, tanpa database; objek dibuat manual | Sangat cepat |
 | Unit test + mock | `AccountLinkingServiceTest` | Repository diganti **mock Mockito** (`@Mock`), jadi yang diuji hanya logika keputusan | Sangat cepat |
 | Unit test + server palsu | `GitHubOAuthClientTest` | `MockRestServiceServer` meniru balasan GitHub, tanpa internet | Cepat |
-| Integration test | `AuthFlowIntegrationTest`, `SocialAuthIntegrationTest`, `FlywayMigrationTest` | `@SpringBootTest` + PostgreSQL asli di Docker (Testcontainers) | Lebih lambat (start app + container) |
+| Integration test | `AuthFlowIntegrationTest`, `SocialAuthIntegrationTest`, `OnboardingIntegrationTest`, `DummyDataSeederTest`, `FlywayMigrationTest` | `@SpringBootTest` + PostgreSQL asli di Docker (Testcontainers) | Lebih lambat (start app + container) |
 
 - `TestcontainersConfiguration` menyalakan container `postgres:18`. `@ServiceConnection` otomatis mengarahkan app ke container itu, jadi database laptop tidak tersentuh.
 - `@ActiveProfiles("test")` membaca `src/test/resources/application-test.yml`, yang berisi JWT secret khusus test.
@@ -396,11 +452,13 @@ Jalankan semua test dengan `cd backend && ./mvnw test` (Docker harus aktif).
 - Setiap test auth memakai email acak (`uniqueEmail()`), jadi data antar-test tidak bentrok.
 - `SocialAuthIntegrationTest` memakai `@MockitoBean GoogleTokenVerifier` (diganti total oleh mock) dan `@MockitoSpyBean GitHubOAuthClient` (objek asli, hanya `fetchProfile` yang dipalsukan). Dengan begitu, seluruh alur berjalan nyata tanpa menghubungi Google atau GitHub.
 
+- `DummyDataSeederTest` memakai `@SpringBootTest(properties = "test.context=seeder")`. Properti yang berbeda membuat Spring menyiapkan context baru dengan database container sendiri, jadi tabel `users` dijamin kosong. Seeder dibuat manual (`new DummyDataSeeder(...)`) karena bean aslinya hanya ada di profile dev, lalu dijalankan di dalam `TransactionTemplate`.
+
 **Mock vs spy:** mock adalah objek palsu yang semua method-nya kosong kecuali yang diatur dengan `when(...)`. Spy adalah objek asli yang hanya sebagian method-nya diganti dengan `doReturn(...)`.
 
 ---
 
-## 11. Resep: menambah endpoint baru
+## 12. Resep: menambah endpoint baru
 
 Contoh: `GET /api/users/me/sessions` (daftar perangkat yang sedang login).
 
@@ -417,7 +475,7 @@ Kalau butuh kolom atau tabel baru, buat migrasi `V7__...sql` terlebih dahulu, la
 
 ---
 
-## 12. Glosarium
+## 13. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
