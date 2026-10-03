@@ -49,6 +49,12 @@ public class ProviderFormFragment extends Fragment {
                 binding.creatorNameInput.setText(user.getDisplayName());
             }
         });
+        // Pesan "harus menyetujui" hilang begitu checkbox dicentang, tanpa menunggu tombol kirim ditekan lagi.
+        binding.termsCheckbox.setOnCheckedChangeListener((button, checked) -> {
+            if (checked) {
+                binding.termsError.setVisibility(View.GONE);
+            }
+        });
         binding.submitButton.setOnClickListener(v -> viewModel.submitProvider(
                 OnboardingUi.text(binding.creatorNameInput),
                 OnboardingUi.text(binding.bioInput),

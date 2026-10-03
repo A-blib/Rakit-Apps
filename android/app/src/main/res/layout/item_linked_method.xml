@@ -28,10 +28,13 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.App.Body" />
 
+        <!-- Email panjang dipotong di tengah (aris…@gmail.com) agar tetap satu baris. -->
         <TextView
             android:id="@+id/subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ellipsize="middle"
+            android:maxLines="1"
             android:textAppearance="@style/TextAppearance.App.BodySmall" />
     </LinearLayout>
 
