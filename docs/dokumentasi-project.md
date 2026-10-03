@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 06** (backend selesai; Android: fondasi, splash, layar awal, intro, dashboard). Bagian yang belum dibangun ditandai _(belum)_.
+> Status dokumen: diperbarui sampai **Fase 07** (backend selesai; Android: fondasi, layar awal, intro, dashboard, masuk & daftar email). Bagian yang belum dibangun ditandai _(belum)_.
 
 ---
 
@@ -32,7 +32,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 15. [Jaringan: Retrofit, token, dan refresh otomatis](#15-jaringan-retrofit-token-dan-refresh-otomatis)
 16. [Penyimpanan sesi di HP](#16-penyimpanan-sesi-di-hp)
 17. [Saat app dibuka: splash, layar awal, intro, dashboard](#17-saat-app-dibuka-splash-layar-awal-intro-dashboard)
-18. [Glosarium](#18-glosarium)
+18. [Masuk & daftar dengan email](#18-masuk--daftar-dengan-email)
+19. [Glosarium](#19-glosarium)
 
 ---
 
@@ -682,7 +683,54 @@ Pindah layar memakai ID aksi di `nav_graph.xml` (`R.id.action_startup_to_intro`)
 
 ---
 
-## 18. Glosarium
+## 18. Masuk & daftar dengan email
+
+### Alur satu kali tekan "Masuk"
+
+```
+LoginFragment ── klik ──► AuthViewModel.login(email, password)
+                              │ 1. AuthFormValidator (di HP, tanpa jaringan) → error per field? berhenti
+                              │ 2. loading = true, tombol nonaktif ("Memuat…")
+                              ▼  thread latar (AppExecutors.networkIO)
+                          AuthRepository.login → POST /auth/login
+                              ├─ berhasil: TokenStorage.saveTokens + SessionStore.saveUser
+                              │            → success (Event) → PostLoginNavigator
+                              └─ gagal:    failure (Event) → AuthFormBinder.showFailure
+```
+
+- **Validasi dua lapis.** HP memeriksa dulu (cepat, tanpa internet), lalu backend memeriksa lagi (wajib, karena request bisa saja dikirim tanpa lewat app). Aturan keduanya sama: email valid, password 8–72 karakter.
+- **Event untuk sukses/gagal.** Kalau HP diputar, layar dibuat ulang dan mengamati LiveData lagi. Dengan `Event`, snackbar error dan perpindahan layar tidak terjadi dua kali.
+- **Mencegah klik ganda.** Selama `loading`, request baru diabaikan dan tombol dinonaktifkan.
+- **Coba lagi.** ViewModel menyimpan request terakhir (`Supplier`), jadi tombol "Coba lagi" di snackbar cukup memanggil `retry()`.
+
+### Pesan error (bagian 6.2) — `ErrorMessages`
+
+| `code` dari backend / app | Ditampilkan |
+|---|---|
+| `INVALID_CREDENTIALS` | "Email atau password salah." |
+| `USE_SOCIAL_LOGIN` | "Akun ini terdaftar dengan {Google/GitHub}. Silakan masuk dengan {metode}." (nama metode dari `existingMethods`) |
+| `EMAIL_ALREADY_USED` | "Email sudah terdaftar. Silakan masuk." |
+| `NETWORK_ERROR` (dibuat app) | "Tidak ada koneksi. Periksa internet lalu coba lagi." + tombol **Coba lagi** |
+| `VALIDATION_ERROR` + `fieldErrors` | Pesan langsung di bawah input yang salah |
+| lainnya | Pesan dari server, atau "Terjadi kesalahan…" |
+
+### Setelah berhasil — `PostLoginNavigator`
+
+Tujuan dipilih dengan aturan yang **sama** seperti saat app dibuka (`StartupDecision.forUser`). User yang terakhir memakai mode provider langsung masuk ke Dashboard Provider. Semua layar sebelumnya dibuang (`setPopUpTo(nav_graph, true)`), jadi tombol kembali tidak membuka layar Masuk lagi. Dashboard lalu membaca ulang user (`onStart`), sehingga tombol Masuk berganti menjadi avatar.
+
+### Tombol Google & GitHub
+
+- Logo asli: "G" empat warna dari pedoman branding Google (warnanya tidak boleh diubah, jadi `iconTint="@null"`), dan logo GitHub dari Primer Octicons (satu warna, ikut warna teks tombol).
+- Di layar Masuk, kedua tombol ada **di atas** form email (bagian 6.2). Di layar Daftar, letaknya **di bawah** sebagai alternatif.
+- Aksi tombolnya dibuat di Fase 08 _(belum)_.
+
+### Snackbar monokrom
+
+`Widget.App.Snackbar` membalik warna: latarnya `color_foreground`, teks dan tombol aksinya `color_background`. Dengan begitu snackbar tetap kontras di mode terang maupun gelap, tanpa warna ungu bawaan Material.
+
+---
+
+## 19. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
