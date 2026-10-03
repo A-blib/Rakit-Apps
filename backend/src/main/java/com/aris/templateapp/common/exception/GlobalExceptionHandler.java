@@ -24,7 +24,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApi(ApiException ex) {
-        return build(ex.getErrorCode(), ex.getMessage(), null);
+        return ResponseEntity.status(ex.getStatus()).body(new ErrorResponse(
+                ex.getErrorCode().name(), ex.getMessage(), null, ex.getExistingMethods()));
     }
 
     /** Gagal validasi {@code @Valid} pada body request: kirim pesan per field agar form bisa menandai input yang salah. */
@@ -57,6 +58,6 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ErrorResponse> build(ErrorCode code, String message, Map<String, String> fieldErrors) {
-        return ResponseEntity.status(code.status()).body(new ErrorResponse(code.name(), message, fieldErrors));
+        return ResponseEntity.status(code.status()).body(new ErrorResponse(code.name(), message, fieldErrors, null));
     }
 }
