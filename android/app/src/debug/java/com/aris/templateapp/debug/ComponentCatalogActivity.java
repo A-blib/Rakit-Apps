@@ -1,6 +1,7 @@
 package com.aris.templateapp.debug;
 
 import android.content.res.Configuration;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,9 +75,13 @@ public class ComponentCatalogActivity extends AppCompatActivity {
             row.setGravity(android.view.Gravity.CENTER_VERTICAL);
             row.setPadding(0, gap / 2, 0, gap / 2);
 
+            // Kotak contoh diberi garis tepi agar warna yang sama dengan latar (mis. color_background) tetap terlihat.
+            GradientDrawable fill = new GradientDrawable();
+            fill.setColor(getColor(color));
+            fill.setCornerRadius(getResources().getDimension(R.dimen.radius_small));
+            fill.setStroke(getResources().getDimensionPixelSize(R.dimen.border_width), getColor(R.color.color_border_strong));
             View swatch = new View(this);
-            swatch.setBackgroundResource(R.drawable.bg_badge);
-            swatch.getBackground().mutate().setTint(getColor(color));
+            swatch.setBackground(fill);
             row.addView(swatch, new LinearLayout.LayoutParams(size, size));
 
             TextView name = new TextView(this);

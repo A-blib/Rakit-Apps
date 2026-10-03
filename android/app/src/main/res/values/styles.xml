@@ -39,6 +39,9 @@
     <!-- Tombol teks / link: warna link, tanpa garis bawah. -->
     <style name="Widget.App.Button.Text" parent="Widget.Material3.Button.TextButton">
         <item name="android:minHeight">@dimen/touch_target_min</item>
+        <!-- Material 1.14 memberi tombol teks bentuk pil + garis; dihilangkan agar benar-benar tampil sebagai link. -->
+        <item name="strokeWidth">0dp</item>
+        <item name="cornerRadius">@dimen/radius_small</item>
         <item name="android:textColor">@color/color_link</item>
         <item name="iconTint">@color/color_link</item>
         <item name="rippleColor">@color/color_link_tint</item>

@@ -457,6 +457,7 @@ Nilai status selain `pending`, `approved`, `rejected`, dan `suspended` ditolak o
 | `adb: device unauthorized` / HP tidak muncul | Lihat baris troubleshooting HP di atas; buka kunci HP lalu setujui pop-up. |
 | `adb server version (...) doesn't match this client` | Dua `adb` berbeda versi berebut server; pakai yang dari SDK (`which adb`) lalu `adb kill-server && adb devices`. |
 | Laptop lambat saat build | Tutup aplikasi berat lain; memori Gradle sudah dibatasi 2 GB di `android/gradle.properties` (`org.gradle.jvmargs=-Xmx2g`); jangan build dari terminal dan Android Studio bersamaan. |
+| HP terdeteksi di `lsusb` tetapi tidak muncul di `adb devices` (log adb: `write terminated: Connection timed out`) | Jalankan adb dengan backend USB bawaan Linux: `adb kill-server && ADB_LIBUSB=0 adb start-server`. Agar permanen: `echo 'export ADB_LIBUSB=0' >> ~/.bashrc`. Pastikan juga mode USB HP **Transfer file**, bukan *Tethering USB* (cek juga *Opsi pengembang → Konfigurasi USB default*). |
 | HP putus-sambung terus; `journalctl -k \| grep usb` berisi `error -71` | Masalah fisik, bukan setting: ganti kabel USB data, pindah port laptop (jangan lewat hub), bersihkan lubang USB HP. |
 | HP tiba-tiba hilang dari Android Studio / `adb server version doesn't match` | Ada dua `adb` berbeda versi. Pastikan `which adb` menunjuk ke `~/Android/Sdk/platform-tools/adb`, lalu `adb kill-server && adb devices`. |
 

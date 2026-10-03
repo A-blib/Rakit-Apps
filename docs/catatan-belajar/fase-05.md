@@ -51,8 +51,15 @@
 - `./gradlew testDebugUnitTest`: **lulus, 10 test** (ApiErrorParserTest 5, AuthInterceptorTest 2, UserMapperTest 2, EventTest 1).
 - `./gradlew lint`: **0 error**. Warning yang tersisa hanya `UnusedResources` (33): string, ikon, dan ukuran yang disiapkan untuk layar Fase 06–09. Warning ini akan hilang saat layar-layar itu dibuat.
 - `./gradlew installDebug` ke realme RMX3151 (Android 13): **terpasang**. `MainActivity` terbuka tanpa crash, proses app berjalan, dan tidak ada error di logcat.
-- **Belum diperiksa secara visual:** saat uji, HP terkunci dan layarnya mati, jadi screenshot masih hitam. Tampilan katalog di mode terang/gelap perlu dicek setelah HP dibuka kuncinya.
-- **Belum dicek:** membuka project di Android Studio setelah perubahan (perlu Aris).
+- **Pemeriksaan visual katalog** (screenshot lewat wireless debugging), mode gelap & terang: tipografi, warna, tombol, input, kartu, chip, badge, dan banner sesuai bagian 9. Ada dua perbaikan dari hasil pemeriksaan ini:
+  - Tombol teks/link tampil berbentuk pil bergaris (bawaan Material 1.14). Diperbaiki dengan `strokeWidth 0dp` dan radius 6dp.
+  - Contoh warna `color_background` tidak terlihat di atas latar yang sama. Diperbaiki dengan memberi garis tepi.
+- Android Studio: Aris membuka project, tidak ada error, dan tidak muncul permintaan Sync (sudah tersinkron).
+- Kendala koneksi HP:
+  - Kabel/port USB kembali memunculkan `error -71` (34 kali reset dalam 3 menit).
+  - HP sempat dalam mode USB tethering (RNDIS).
+  - adb SDK versi 37 gagal dengan backend `libusb` (`write terminated: Connection timed out`), tapi berhasil dengan `ADB_LIBUSB=0`.
+  - Solusi yang dipakai sekarang: **wireless debugging** (`adb pair` + `adb connect`).
 
 ## Konsep yang dipelajari
 - Version catalog & Kotlin DSL : versi library di satu file, dan file build ditulis dengan sintaks Kotlin.
