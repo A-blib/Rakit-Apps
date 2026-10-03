@@ -5,6 +5,11 @@
       "label": "backend: jalankan (dev)",
       "type": "shell",
       "command": "./mvnw spring-boot:run -Dspring-boot.run.profiles=dev",
+      // Windows (PowerShell) tidak bisa menjalankan skrip ./mvnw; pakai mvnw.cmd.
+      // Tanda kutip wajib di PowerShell karena ada titik di "-Dspring-boot.run.profiles".
+      "windows": {
+        "command": ".\\mvnw.cmd spring-boot:run \"-Dspring-boot.run.profiles=dev\""
+      },
       "options": { "cwd": "${workspaceFolder}" },
       "isBackground": true,
       "problemMatcher": []
@@ -13,6 +18,9 @@
       "label": "backend: test",
       "type": "shell",
       "command": "./mvnw test",
+      "windows": {
+        "command": ".\\mvnw.cmd test"
+      },
       "options": { "cwd": "${workspaceFolder}" },
       "group": { "kind": "test", "isDefault": true },
       "problemMatcher": []

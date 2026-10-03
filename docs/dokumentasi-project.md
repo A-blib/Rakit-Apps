@@ -2,7 +2,7 @@
 
 Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, cara bagian itu saling terhubung, dan alasan dibuat seperti itu. Bacalah dari atas ke bawah. Setiap bagian merujuk ke file aslinya supaya bisa langsung dibuka di VS Code atau Android Studio.
 
-- Cara menyiapkan dan menjalankan project → `README.md`
+- Cara menyiapkan dan menjalankan project → `README.md` (Linux) dan `docs/panduan-kolaborator.md` (Windows & Linux, untuk anggota tim)
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 

@@ -18,6 +18,8 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
+> 👥 **Ikut mengembangkan bersama tim / memakai Windows?** Ikuti [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md): langkah lengkap dari nol untuk **Windows** dan Linux, cara mendaftarkan SHA-1 & Test user Google, berbagi kredensial dengan aman, dan alur kerja Git tim. README ini berisi rangkuman untuk Linux (Ubuntu).
+
 ---
 
 ## Struktur repo
@@ -471,5 +473,6 @@ _Daftar ini dilengkapi di fase berikutnya._
 
 ## Catatan belajar & dokumentasi
 
+- [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md): menyiapkan project dari nol di Windows & Linux untuk anggota tim baru.
 - [`docs/dokumentasi-project.md`](docs/dokumentasi-project.md): penjelasan arsitektur, alur, data, dan endpoint project secara menyeluruh (bahan belajar utama).
 - [`docs/catatan-belajar/`](docs/catatan-belajar/): catatan per fase (apa yang dikerjakan, alasan, latihan).

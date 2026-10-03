@@ -1,0 +1,24 @@
+# Aturan akhir baris (line ending) agar repo aman dipakai di Windows, Linux, dan macOS.
+# Windows memakai CRLF, Linux/macOS memakai LF. Git mengubah otomatis untuk file teks,
+# KECUALI yang diatur di bawah ini.
+
+# Default: Git yang menentukan (disimpan LF di repo, mengikuti OS saat checkout).
+* text=auto
+
+# Skrip shell WAJIB LF; jika menjadi CRLF muncul error "/usr/bin/env: 'sh\r': No such file or directory".
+gradlew text eol=lf
+mvnw text eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+
+# Skrip Windows WAJIB CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# File biner: jangan pernah diubah.
+*.jar binary
+*.ttf binary
+*.png binary
+*.webp binary
+*.jks binary
+*.keystore binary
