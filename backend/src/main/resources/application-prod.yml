@@ -1,0 +1,11 @@
+# Profile untuk server production. Semua nilai datang dari environment variable server.
+springdoc:
+  # Dokumentasi API tidak dibuka ke publik di production.
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    root: INFO

@@ -1,0 +1,31 @@
+# Konfigurasi bersama semua profile. Nilai rahasia dan yang beda per mesin
+# dibaca dari environment variable (lihat .env.example).
+spring:
+  application:
+    name: templateapp
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    # Struktur tabel hanya diubah lewat Flyway; Hibernate cukup mencocokkan Entity dengan tabel.
+    hibernate:
+      ddl-auto: validate
+    # Matikan agar query database tidak diam-diam berjalan saat JSON sedang ditulis ke response.
+    open-in-view: false
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-ttl-minutes: ${JWT_ACCESS_TTL_MINUTES:15}
+    refresh-ttl-days: ${JWT_REFRESH_TTL_DAYS:30}
+  google:
+    web-client-id: ${GOOGLE_WEB_CLIENT_ID:}
+  github:
+    client-id: ${GITHUB_CLIENT_ID:}
+    client-secret: ${GITHUB_CLIENT_SECRET:}
+    redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/api/auth/github/callback}
+  deep-link: ${APP_DEEP_LINK:templateapp://auth/callback}

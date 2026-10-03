@@ -1,0 +1,10 @@
+# Profile untuk laptop development.
+spring:
+  config:
+    # Baca backend/.env sebagai daftar properti, jadi tidak perlu `source .env` sebelum menjalankan.
+    # "optional:" membuat app tetap jalan jika file tidak ada (mis. variabel sudah di-export manual).
+    import: optional:file:.env[.properties]
+
+logging:
+  level:
+    com.aris.templateapp: DEBUG
