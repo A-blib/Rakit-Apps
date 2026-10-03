@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sisi kanan app bar dashboard. Hanya salah satu yang tampil: tombol Masuk (tamu) atau avatar (login). -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="end|center_vertical"
+    android:layout_marginEnd="@dimen/space_2">
+
+    <Button
+        android:id="@+id/sign_in_button"
+        style="@style/Widget.App.Button.Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/action_sign_in"
+        android:textColor="@color/color_foreground" />
+
+    <!-- Wadah 48dp agar area sentuh cukup besar walau avatar hanya 32dp. -->
+    <FrameLayout
+        android:id="@+id/avatar_container"
+        android:layout_width="@dimen/touch_target_min"
+        android:layout_height="@dimen/touch_target_min"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/cd_profile_menu"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/avatar_initial"
+            android:layout_width="@dimen/avatar_size"
+            android:layout_height="@dimen/avatar_size"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_avatar"
+            android:gravity="center"
+            android:importantForAccessibility="no"
+            android:textAppearance="@style/TextAppearance.App.BodySmall"
+            android:textColor="@color/color_foreground" />
+    </FrameLayout>
+</FrameLayout>

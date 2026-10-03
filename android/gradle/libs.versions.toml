@@ -22,6 +22,7 @@ gson = "2.14.0"
 credentials = "1.6.0"
 googleid = "1.2.1"
 browser = "1.10.0"
+lottie = "6.7.1"
 junit = "4.13.2"
 coreTesting = "2.2.0"
 androidxJunit = "1.3.0"
@@ -51,6 +52,7 @@ androidx-credentials = { group = "androidx.credentials", name = "credentials", v
 androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
+lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "coreTesting" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }

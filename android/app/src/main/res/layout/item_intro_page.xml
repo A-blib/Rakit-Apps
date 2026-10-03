@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Satu halaman intro: ilustrasi Lottie, judul Display rata kiri, subjudul abu. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/screen_padding_horizontal"
+    android:paddingBottom="@dimen/space_8">
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/illustration"
+        android:layout_width="@dimen/illustration_size"
+        android:layout_height="@dimen/illustration_size"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="@dimen/space_12"
+        android:importantForAccessibility="no"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.App.Display" />
+
+    <TextView
+        android:id="@+id/body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_3"
+        android:textAppearance="@style/TextAppearance.App.Body"
+        android:textColor="@color/color_muted" />
+</LinearLayout>

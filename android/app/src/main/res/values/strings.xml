@@ -31,9 +31,30 @@
     <string name="method_github">GitHub</string>
     <string name="method_email">email</string>
 
+    <!-- Intro (3 halaman, bagian 9.4) -->
+    <string name="intro_title_1">Bikin website. Tanpa coding.</string>
+    <string name="intro_body_1">Susun section, ubah teks, warna, dan foto langsung dari HP.</string>
+    <string name="intro_title_2">Mulai dari template.</string>
+    <string name="intro_body_2">Pilih template yang cocok untuk sekolah, organisasi, atau usahamu, lalu sesuaikan.</string>
+    <string name="intro_title_3">Bagikan karyamu.</string>
+    <string name="intro_body_3">Export jadi HTML, CSS, dan JS, atau jadi penyedia template untuk pengguna lain.</string>
+    <string name="intro_start">Mulai</string>
+    <!-- %1$d = halaman sekarang, %2$d = jumlah halaman (dibacakan pembaca layar) -->
+    <string name="intro_page_indicator">Halaman %1$d dari %2$d</string>
+
     <!-- Dashboard pembuat website (bagian 2.3) -->
     <string name="creator_dashboard_title">Buat website pertamamu</string>
     <string name="creator_dashboard_body">Fitur pembuatan website segera hadir.</string>
+    <string name="provider_suspended_redirect">Akun provider ditangguhkan. Kamu dialihkan ke mode pembuat website.</string>
+
+    <!-- Dashboard provider (bagian 2.3 & 6.6) -->
+    <string name="provider_dashboard_title">Dashboard provider</string>
+    <string name="provider_dashboard_body">Dashboard provider segera hadir.</string>
+    <string name="provider_status_pending">Akunmu sedang diverifikasi.</string>
+    <!-- %1$s = alasan penolakan dari admin -->
+    <string name="provider_status_rejected">Pengajuan provider ditolak: %1$s.</string>
+    <string name="provider_status_rejected_no_reason">Pengajuan provider ditolak.</string>
+    <string name="provider_status_suspended">Akun provider ditangguhkan.</string>
 
     <!-- Aksesibilitas (contentDescription ikon) -->
     <string name="cd_back">Kembali</string>

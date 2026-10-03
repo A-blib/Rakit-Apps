@@ -25,6 +25,10 @@
     <dimen name="icon_size_small">20dp</dimen>
     <dimen name="avatar_size">32dp</dimen>
     <dimen name="app_bar_height">56dp</dimen>
+    <dimen name="illustration_size">200dp</dimen>
+    <dimen name="page_dot_size">6dp</dimen>
+    <dimen name="page_dot_active_width">20dp</dimen>
+    <dimen name="intro_button_min_width">120dp</dimen>
 
     <dimen name="text_display">32sp</dimen>
     <dimen name="text_headline">24sp</dimen>

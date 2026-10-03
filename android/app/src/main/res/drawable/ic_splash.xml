@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Ikon splash: simbol jendela browser bergaris (Material Symbols "web") di tengah area 108dp.
+    Splash Android 12+ memotong ikon menjadi lingkaran 2/3 ukuran, jadi ikon diberi ruang kosong di sekeliling.
+-->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_splash_mark"
+    android:inset="30dp" />

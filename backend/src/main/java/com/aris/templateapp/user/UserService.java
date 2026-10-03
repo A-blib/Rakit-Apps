@@ -4,6 +4,7 @@ import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.provider.ProviderProfile;
 import com.aris.templateapp.provider.ProviderProfileRepository;
+import com.aris.templateapp.provider.ProviderStatus;
 import com.aris.templateapp.user.dto.CreatorOnboardingRequest;
 import com.aris.templateapp.user.dto.ProviderOnboardingRequest;
 import com.aris.templateapp.user.dto.UserResponse;
@@ -115,6 +116,8 @@ public class UserService {
                 user.isOnboardingCompleted(),
                 roles,
                 provider.map(ProviderProfile::getStatus).orElse(null),
+                provider.filter(p -> p.getStatus() == ProviderStatus.REJECTED)
+                        .map(ProviderProfile::getRejectionReason).orElse(null),
                 creator.map(c -> new UserResponse.CreatorProfileResponse(c.getWebsitePurpose(), c.getOrganizationName()))
                         .orElse(null));
     }

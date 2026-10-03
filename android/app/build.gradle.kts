@@ -94,6 +94,7 @@ dependencies {
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.googleid)
     implementation(libs.androidx.browser)
+    implementation(libs.lottie)
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.arch.core.testing)

@@ -69,6 +69,12 @@ class DummyDataSeederTest {
                         .content("{\"email\":\"dummy9@templateapp.test\",\"password\":\"%s\"}".formatted(DummyDataSeeder.PASSWORD)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user.activeMode").value("provider"))
-                .andExpect(jsonPath("$.user.providerStatus").value("approved"));
+                .andExpect(jsonPath("$.user.providerStatus").value("approved"))
+                .andExpect(jsonPath("$.user.providerRejectionReason").doesNotExist());
+        // dummy10 ditolak: alasan ikut dikirim untuk banner "Pengajuan provider ditolak: {alasan}."
+        mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"dummy10@templateapp.test\",\"password\":\"%s\"}".formatted(DummyDataSeeder.PASSWORD)))
+                .andExpect(jsonPath("$.user.providerStatus").value("rejected"))
+                .andExpect(jsonPath("$.user.providerRejectionReason").value("Contoh template belum memenuhi standar."));
     }
 }
