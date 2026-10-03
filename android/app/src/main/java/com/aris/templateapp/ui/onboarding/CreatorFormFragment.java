@@ -62,7 +62,8 @@ public class CreatorFormFragment extends Fragment {
             var error = event.getContentIfNotHandled();
             if (error != null) {
                 OnboardingUi.showFailure(binding.getRoot(), error,
-                        Map.of("displayName", binding.displayNameLayout, "organizationName", binding.organizationLayout));
+                        Map.of("displayName", binding.displayNameLayout, "organizationName", binding.organizationLayout),
+                        binding.startButton::performClick);
             }
         });
         viewModel.getSuccess().observe(getViewLifecycleOwner(), event -> {

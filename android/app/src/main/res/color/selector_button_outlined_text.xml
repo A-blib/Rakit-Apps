@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tombol sekunder nonaktif berteks abu, agar jelas tidak bisa ditekan (mis. "Lepaskan" pada metode login terakhir). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/color_muted" android:state_enabled="false" />
+    <item android:color="@color/color_foreground" />
+</selector>

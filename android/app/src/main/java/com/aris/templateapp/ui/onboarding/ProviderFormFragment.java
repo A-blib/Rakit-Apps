@@ -76,7 +76,8 @@ public class ProviderFormFragment extends Fragment {
                 OnboardingUi.showFailure(binding.getRoot(), error, Map.of(
                         "creatorName", binding.creatorNameLayout,
                         "bio", binding.bioLayout,
-                        "portfolioUrl", binding.portfolioLayout));
+                        "portfolioUrl", binding.portfolioLayout),
+                        binding.submitButton::performClick);
             }
         });
         viewModel.getSuccess().observe(getViewLifecycleOwner(), event -> {

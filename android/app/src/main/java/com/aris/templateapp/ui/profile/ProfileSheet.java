@@ -74,7 +74,14 @@ public class ProfileSheet extends BottomSheetDialogFragment {
         viewModel.getFailure().observe(getViewLifecycleOwner(), event -> {
             var error = event.getContentIfNotHandled();
             if (error != null) {
-                Snackbar.make(binding.getRoot(), ErrorMessages.forError(requireContext(), error), Snackbar.LENGTH_LONG).show();
+                Snackbar snackbar = Snackbar.make(binding.getRoot(), ErrorMessages.forError(requireContext(), error),
+                        Snackbar.LENGTH_LONG);
+                // Gagal karena koneksi: beri tombol "Coba lagi" (skenario 12 bagian 13.2).
+                if (error.isNetworkError()) {
+                    snackbar.setDuration(Snackbar.LENGTH_INDEFINITE)
+                            .setAction(R.string.action_retry, v -> viewModel.retrySwitchMode());
+                }
+                snackbar.show();
             }
         });
     }

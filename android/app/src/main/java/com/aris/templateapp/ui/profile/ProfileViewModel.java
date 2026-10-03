@@ -59,10 +59,20 @@ public class ProfileViewModel extends ViewModel {
         return signedOut;
     }
 
+    /** Mode tujuan terakhir, disimpan agar tombol "Coba lagi" bisa mengulang. */
+    private UserRole lastTarget;
+
+    public void retrySwitchMode() {
+        if (lastTarget != null) {
+            switchMode(lastTarget);
+        }
+    }
+
     public void switchMode(UserRole target) {
         if (Boolean.TRUE.equals(loading.getValue())) {
             return;
         }
+        lastTarget = target;
         loading.setValue(true);
         executors.networkIO().execute(() -> {
             Resource<User> result = userRepository.changeActiveMode(target);

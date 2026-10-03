@@ -3,6 +3,7 @@ package com.aris.templateapp.ui.onboarding;
 import android.view.View;
 import android.widget.EditText;
 
+import com.aris.templateapp.R;
 import com.aris.templateapp.data.model.ApiError;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.google.android.material.snackbar.Snackbar;
@@ -24,8 +25,12 @@ final class OnboardingUi {
         input.setError(messageRes == null ? null : input.getContext().getString(messageRes));
     }
 
-    /** Error per field dari backend ditaruh di input yang sesuai; sisanya snackbar. */
-    static void showFailure(View root, ApiError error, Map<String, TextInputLayout> inputsByServerField) {
+    /**
+     * Error per field dari backend ditaruh di input yang sesuai; sisanya snackbar.
+     * Error koneksi diberi tombol "Coba lagi" yang menjalankan {@code retry}.
+     */
+    static void showFailure(View root, ApiError error, Map<String, TextInputLayout> inputsByServerField,
+                            Runnable retry) {
         if (error != null) {
             boolean shown = false;
             for (Map.Entry<String, String> entry : error.getFieldErrors().entrySet()) {
@@ -39,6 +44,10 @@ final class OnboardingUi {
                 return;
             }
         }
-        Snackbar.make(root, ErrorMessages.forError(root.getContext(), error), Snackbar.LENGTH_LONG).show();
+        Snackbar snackbar = Snackbar.make(root, ErrorMessages.forError(root.getContext(), error), Snackbar.LENGTH_LONG);
+        if (error != null && error.isNetworkError()) {
+            snackbar.setDuration(Snackbar.LENGTH_INDEFINITE).setAction(R.string.action_retry, v -> retry.run());
+        }
+        snackbar.show();
     }
 }
