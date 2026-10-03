@@ -14,6 +14,7 @@ mvnw text eol=lf
 # Skrip Windows WAJIB CRLF.
 *.bat text eol=crlf
 *.cmd text eol=crlf
+*.ps1 text eol=crlf
 
 # File biner: jangan pernah diubah.
 *.jar binary

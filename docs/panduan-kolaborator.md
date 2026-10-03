@@ -503,6 +503,18 @@ adb reverse tcp:8080 tcp:8080
 
 Perintah ini membuat `localhost:8080` di HP diteruskan ke backend di laptop. **Wajib diulang** setiap HP dicabut-colok, HP restart, atau `adb` di-restart.
 
+**Supaya tidak perlu mengulang manual**, jalankan penjaga yang memasang ulang `adb reverse` setiap 3 detik ke semua sambungan HP. Biarkan jendelanya terbuka selama mengembangkan app (terutama saat memakai wireless debugging, yang sering putus-sambung):
+
+🪟 **Windows** (dari folder `android`):
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\keep-adb-reverse.ps1
+```
+
+🐧 **Linux** (dari folder `android`):
+```bash
+./tools/keep-adb-reverse.sh
+```
+
 > 🪟 Karena memakai `adb reverse`, **Windows Firewall tidak perlu dibuka**: koneksinya lewat jalur adb, bukan lewat jaringan Wi-Fi.
 
 ### 9.5 Run
@@ -578,7 +590,7 @@ main ───●───────────●─────────
 | `Port 8080 was already in use` | Cari prosesnya: `netstat -ano \| findstr :8080`, lalu hentikan: `taskkill /PID <angka-terakhir> /F`. Atau tutup terminal/VS Code lain yang sedang menjalankan backend. |
 | HP tidak muncul di `adb devices` (Windows) | Driver USB belum terpasang (bagian 2.7 no. 6). Ganti kabel atau port. Atau pakai wireless debugging (bagian 9.3). |
 | HP `unauthorized` | Buka kunci HP dan setujui pop-up. Jika tidak muncul: *Opsi pengembang → Cabut otorisasi debug USB*, lalu colok ulang. |
-| App di HP: "Tidak ada koneksi…" | Jalankan ulang `adb reverse tcp:8080 tcp:8080` dan pastikan backend jalan. |
+| App di HP: "Tidak ada koneksi…" padahal internet HP lancar | Pesan ini berarti app tidak bisa menjangkau **backend di laptop** (bukan internet). Jalankan penjaga `tools\keep-adb-reverse.ps1` (bagian 9.4) dan pastikan backend jalan. Jika HP tersambung lewat USB **dan** Wi-Fi sekaligus, `adb reverse` tanpa `-s` ditolak ("more than one device"); penjaga sudah menangani ini. |
 | Login Google: `DEVELOPER_ERROR` / "No credentials available" | SHA-1 laptopmu belum didaftarkan (bagian 7), `GOOGLE_WEB_CLIENT_ID` salah/kosong, atau emailmu belum menjadi Test user (0.4). |
 | GitHub: "redirect_uri is not associated with this application" | Callback/Redirect URL di OAuth App harus persis `http://localhost:8080/api/auth/github/callback` (`http`, ada `:8080`, tanpa `/` di akhir). |
 | `.env` tidak terbaca / app gagal start `JWT_SECRET minimal 32 karakter` | Pastikan file bernama persis `.env` (bukan `.env.txt`; di File Explorer aktifkan *View → File name extensions*), disimpan UTF-8 tanpa BOM, dan backend dijalankan dari folder `backend`. |

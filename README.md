@@ -14,7 +14,8 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Android: fondasi (tema & token desain, font Geist, jaringan, penyimpanan token terenkripsi, katalog komponen) | Sudah (Fase 05) |
 | Android: splash, layar awal otomatis (bagian 6.1), intro 3 halaman, Dashboard Pembuat Website & Provider "Segera hadir" dengan Lottie | Sudah (Fase 06) |
 | Android: Masuk & Daftar dengan email (validasi form, pesan error 6.2, coba lagi saat offline) | Sudah (Fase 07) |
-| Android: Google/GitHub, onboarding, profil, pengaturan | Belum (Fase 08–09) |
+| Android: login Google (Credential Manager), GitHub (Custom Tabs + deep link), dialog penyambungan akun | Sudah (Fase 08) |
+| Android: onboarding, profil, beralih mode, pengaturan, keluar | Belum (Fase 09) |
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
@@ -351,6 +352,8 @@ adb reverse tcp:8080 tcp:8080     # localhost:8080 di HP diteruskan ke backend d
 ```
 
 > **Wajib diulang** setiap kali HP dicabut-colok, HP restart, atau `adb` di-restart. Tanpa ini app menampilkan "Tidak ada koneksi".
+>
+> Agar otomatis, jalankan `./tools/keep-adb-reverse.sh` dari folder `android/` (Windows: `tools\keep-adb-reverse.ps1`) dan biarkan berjalan. Skrip ini memasang ulang `adb reverse` setiap 3 detik ke semua sambungan HP. Ini sangat membantu saat memakai wireless debugging yang sering putus-sambung.
 
 Build debug memanggil `http://localhost:8080/api/` (`BuildConfig.API_BASE_URL`). HTTP tanpa HTTPS hanya diizinkan untuk `localhost` di build debug (`src/debug/res/xml/network_security_config.xml`).
 
@@ -461,7 +464,7 @@ Nilai status selain `pending`, `approved`, `rejected`, dan `suspended` ditolak o
 | Deep link berisi `?error=TICKET_INVALID` | Halaman login GitHub dibiarkan terbuka lebih dari 10 menit (state kedaluwarsa) atau callback dibuka dua kali. Mulai lagi dari tombol login. |
 | Android Studio penuh garis merah / "Gradle files have changed" setelah file build berubah | Klik **Sync Now** di bar kuning atas (atau *File → Sync Project with Gradle Files*). |
 | Gradle JDK berbeda antara terminal dan Android Studio (error "Unsupported class file major version" / build berbeda hasil) | Android Studio: *Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK* pilih JDK 21; terminal: `echo $JAVA_HOME` harus `/usr/lib/jvm/java-21-openjdk-amd64`. `gradle/gradle-daemon-jvm.properties` meminta JDK 21. |
-| App di HP: "Tidak ada koneksi" padahal backend jalan | Jalankan ulang `adb reverse tcp:8080 tcp:8080`; cek backend di laptop `curl localhost:8080/v3/api-docs`; pastikan memakai build **debug** (rilis menolak HTTP). |
+| App di HP: "Tidak ada koneksi" padahal backend jalan (dan internet HP lancar) | Pesan ini berarti app tidak menjangkau backend di laptop. Jalankan `./tools/keep-adb-reverse.sh`, atau ulangi `adb reverse tcp:8080 tcp:8080` (jika HP tersambung lewat USB dan Wi-Fi sekaligus, pakai `adb -s <serial> reverse ...`); cek backend di laptop `curl localhost:8080/v3/api-docs`; pastikan memakai build **debug** (rilis menolak HTTP). |
 | `adb: device unauthorized` / HP tidak muncul | Lihat baris troubleshooting HP di atas; buka kunci HP lalu setujui pop-up. |
 | `adb server version (...) doesn't match this client` | Dua `adb` berbeda versi berebut server; pakai yang dari SDK (`which adb`) lalu `adb kill-server && adb devices`. |
 | Laptop lambat saat build | Tutup aplikasi berat lain; memori Gradle sudah dibatasi 2 GB di `android/gradle.properties` (`org.gradle.jvmargs=-Xmx2g`); jangan build dari terminal dan Android Studio bersamaan. |

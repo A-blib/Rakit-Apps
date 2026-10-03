@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 07** (backend selesai; Android: fondasi, layar awal, intro, dashboard, masuk & daftar email). Bagian yang belum dibangun ditandai _(belum)_.
+> Status dokumen: diperbarui sampai **Fase 08** (backend selesai; Android: fondasi, layar awal, intro, dashboard, masuk & daftar email, Google, GitHub, penyambungan akun). Bagian yang belum dibangun ditandai _(belum)_.
 
 ---
 
@@ -33,7 +33,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 16. [Penyimpanan sesi di HP](#16-penyimpanan-sesi-di-hp)
 17. [Saat app dibuka: splash, layar awal, intro, dashboard](#17-saat-app-dibuka-splash-layar-awal-intro-dashboard)
 18. [Masuk & daftar dengan email](#18-masuk--daftar-dengan-email)
-19. [Glosarium](#19-glosarium)
+19. [Login Google & GitHub di Android](#19-login-google--github-di-android)
+20. [Glosarium](#20-glosarium)
 
 ---
 
@@ -722,7 +723,7 @@ Tujuan dipilih dengan aturan yang **sama** seperti saat app dibuka (`StartupDeci
 
 - Logo asli: "G" empat warna dari pedoman branding Google (warnanya tidak boleh diubah, jadi `iconTint="@null"`), dan logo GitHub dari Primer Octicons (satu warna, ikut warna teks tombol).
 - Di layar Masuk, kedua tombol ada **di atas** form email (bagian 6.2). Di layar Daftar, letaknya **di bawah** sebagai alternatif.
-- Aksi tombolnya dibuat di Fase 08 _(belum)_.
+- Aksi tombolnya dijelaskan di bab 19.
 
 ### Snackbar monokrom
 
@@ -730,7 +731,60 @@ Tujuan dipilih dengan aturan yang **sama** seperti saat app dibuka (`StartupDeci
 
 ---
 
-## 19. Glosarium
+## 19. Login Google & GitHub di Android
+
+### Google (Credential Manager)
+
+```
+Tombol Google → GoogleSignInHelper.signIn(activity)
+   → CredentialManager menampilkan lembar "pilih akun Google" milik sistem
+   → GetSignInWithGoogleOption(serverClientId = GOOGLE_WEB_CLIENT_ID)
+   → hasil: GoogleIdTokenCredential.getIdToken()
+   → AuthViewModel.signInWithGoogle(idToken) → POST /auth/google
+```
+
+- `serverClientId` **wajib** berupa Client ID tipe **Web**. Google memasukkannya ke `aud` (audience) idToken, dan backend hanya menerima idToken dengan audience yang sama.
+- Client **Android** (package + SHA-1) tidak ditulis di kode. Google memakainya untuk memastikan permintaan datang dari APK yang ditandatangani kunci terdaftar. Karena itu, setiap laptop developer perlu didaftarkan SHA-1-nya (lihat `panduan-kolaborator.md` bagian 7).
+- User menutup lembar pilih akun → `GetCredentialCancellationException` → app diam saja, tanpa pesan error.
+
+### GitHub (Custom Tabs + deep link)
+
+```
+Tombol GitHub → POST /auth/github/authorize-url → { url }
+   → GitHubSignInHelper.open(url): Custom Tab (Chrome di dalam app)
+   → user login GitHub → GitHub memanggil backend (localhost:8080 lewat adb reverse)
+   → backend redirect ke templateapp://auth/callback?ticket=...
+   → Android membuka MainActivity (intent-filter deep link, launchMode singleTask → onNewIntent)
+   → MainActivity → AuthDeepLinks.publish(uri) → layar Masuk/Daftar → AuthViewModel.onGitHubCallback
+   → POST /auth/github/exchange { ticket } → masuk
+```
+
+- **Intent filter** di `AndroidManifest.xml` (`scheme="templateapp" host="auth" path="/callback"`, kategori `BROWSABLE`) membuat browser boleh membuka app lewat alamat itu.
+- **`singleTask`** membuat Activity yang sudah terbuka dipakai ulang. Deep link datang lewat `onNewIntent`, sehingga Custom Tab otomatis tertutup dan tidak ada Activity ganda.
+- **`AuthDeepLinks`** (singleton) menyimpan deep link di LiveData. Layar yang sedang tampil langsung menerimanya, dan layar yang baru tampil setelah deep link datang juga tetap menerimanya. `Event` memastikan deep link diproses sekali saja.
+
+### Penyambungan akun di app (`LinkAccountDialog`)
+
+```
+Backend: 409 ACCOUNT_LINK_REQUIRED { linkToken, existingMethods: ["google"] }
+      atau deep link ?error=ACCOUNT_LINK_REQUIRED&linkToken=...&methods=google
+  → AuthViewModel memancarkan LinkRequest(linkToken, existingMethods, newMethod)
+  → LinkAccountDialog: "Email ini sudah terdaftar dengan Google. Masuk dengan Google untuk menyambungkan akun GitHub."
+  → user pilih "Masuk dengan Google" → pendingLink disimpan + banner info di layar
+  → login Google berikutnya otomatis membawa linkToken → backend menyambungkan GitHub ke akun itu
+```
+
+- `linkToken` hanya dikirim kalau metode yang dipakai termasuk `existingMethods` (`AuthViewModel.linkTokenFor`).
+- Kalau metode lama adalah **email + password**: di layar Masuk, user cukup mengisi form. Di layar Daftar, app pindah ke layar Masuk dengan membawa `linkToken` sebagai argumen.
+- Dialog berupa `DialogFragment` yang mengambil `AuthViewModel` milik layar induk (`requireParentFragment()`), sehingga tetap tampil saat HP diputar.
+
+### `adb reverse` saat pengembangan
+
+Login GitHub memakai **dua** jalur ke backend lewat `adb reverse`: app (`/auth/github/authorize-url`, `/exchange`) **dan** Custom Tab (callback dari GitHub). Kalau `adb reverse` hilang, app menampilkan "Tidak ada koneksi", padahal internet HP lancar. Skrip `android/tools/keep-adb-reverse.sh` (Windows: `.ps1`) memasangnya ulang setiap 3 detik ke semua sambungan HP.
+
+---
+
+## 20. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -765,3 +819,7 @@ Tujuan dipilih dengan aturan yang **sama** seperti saat app dibuka (`StartupDeci
 | Back stack | Tumpukan layar yang dikunjungi; tombol kembali mengambil layar teratas |
 | Lottie | Format animasi vektor berbasis JSON yang diputar oleh library Lottie |
 | Trim path | Efek Lottie yang hanya menampilkan sebagian garis, dipakai untuk animasi "menggambar" |
+| Credential Manager | API Android untuk login (akun Google, passkey, sandi tersimpan) lewat lembar milik sistem |
+| Custom Tab | Browser (mis. Chrome) yang terbuka di dalam app, berbagi login dengan browser HP |
+| Intent filter | Deklarasi di manifest tentang alamat/aksi yang bisa membuka sebuah Activity |
+| DialogFragment | Dialog yang dikelola seperti Fragment, sehingga bertahan saat layar dibuat ulang |
