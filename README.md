@@ -7,7 +7,8 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Fitur | Status |
 |---|---|
 | Persiapan lingkungan & struktur repo | Sudah (Fase 00) |
-| Backend: auth email, Google, GitHub, penyambungan akun, onboarding, mode | Belum (Fase 01–04) |
+| Backend: fondasi (konfigurasi, migrasi database, format error, Swagger UI) | Sudah (Fase 01) |
+| Backend: auth email, Google, GitHub, penyambungan akun, onboarding, mode | Belum (Fase 02–04) |
 | Android: splash, intro, masuk/daftar, onboarding, profil, pengaturan | Belum (Fase 05–09) |
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
@@ -45,6 +46,22 @@ Rakit Apps/
 | HP Android | Android 8.0 (API 26) ke atas | Menjalankan app (tanpa emulator) |
 
 Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan `./gradlew`.
+
+### Versi library backend
+
+| Library | Versi | Sumber |
+|---|---|---|
+| Spring Boot (Web MVC, Data JPA, Security, Validation, Flyway, DevTools) | 4.1.1 | start.spring.io |
+| Maven (lewat wrapper) | 3.9.16 | start.spring.io |
+| Hibernate ORM | 7.4.5.Final | dikelola Spring Boot |
+| Flyway | 12.4.0 | dikelola Spring Boot |
+| Driver PostgreSQL | 42.7.13 | dikelola Spring Boot |
+| Testcontainers | 2.0.5 | dikelola Spring Boot |
+| JJWT | 0.13.0 | Maven Central |
+| Google API Client | 2.9.1 | Maven Central |
+| springdoc-openapi (Swagger UI) | 3.1.1 | Maven Central |
+| Datafaker | 2.7.0 | Maven Central |
+| Lombok | dikelola Spring Boot | – |
 
 ---
 
@@ -145,7 +162,54 @@ _Diisi lengkap di Fase 03._
 
 ## Menjalankan backend
 
-_Diisi di Fase 01._
+### 1. Isi environment variable
+
+```bash
+cd backend
+cp .env.example .env          # lalu isi DB_USERNAME, DB_PASSWORD, dan JWT_SECRET
+openssl rand -base64 48       # contoh cara membuat JWT_SECRET acak (minimal 32 karakter)
+```
+
+Tulis nilai di `.env` **tanpa tanda kutip**. File ini sudah masuk `.gitignore`, jangan pernah di-commit.
+
+Cara `.env` dibaca:
+- **Profile `dev`** otomatis membaca `backend/.env` (lewat `spring.config.import` di `application-dev.yml`), jadi tidak perlu `source` apa pun. Syaratnya perintah dijalankan dari folder `backend/`.
+- **VS Code** (launch configuration) membaca file yang sama lewat `"envFile"` di `.vscode/launch.json`.
+- Jika ingin memuat manual ke terminal: `set -a; source .env; set +a`.
+
+### 2. Jalankan
+
+Dari terminal (di folder `backend/`):
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev   # start backend dengan profile dev di port 8080
+```
+
+Dari VS Code (buka **folder `backend/`**, bukan root repo):
+- Task: *Terminal → Run Task… → `backend: jalankan (dev)`*
+- Debug: tab *Run and Debug* → pilih **Backend: debug (dev)** → tekan F5 (bisa memasang breakpoint).
+
+Saat start, Flyway otomatis menjalankan migrasi `V1`–`V6` di `src/main/resources/db/migration/`. Di log akan muncul `Successfully applied 6 migrations` (pertama kali) atau `Schema "public" is up to date`.
+
+### 3. Swagger UI
+
+Buka http://localhost:8080/swagger-ui.html untuk melihat dan mencoba endpoint. Di Fase 01 belum ada endpoint, jadi halaman masih berisi "No operations defined in spec!". Swagger UI dimatikan di profile `prod`.
+
+### 4. Test
+
+```bash
+./mvnw test     # Docker harus aktif: Testcontainers menyalakan PostgreSQL sementara khusus untuk test
+```
+
+Test pertama kali agak lama karena Docker mengunduh image `postgres:18`.
+
+### Profile
+
+| Profile | Dipakai untuk | Isi khusus |
+|---|---|---|
+| `dev` | Laptop development | Membaca `.env`, log `DEBUG` untuk `com.aris.templateapp` |
+| `prod` | Server production | Swagger UI & `/v3/api-docs` dimatikan |
+| `test` | `./mvnw test` | JWT secret khusus test, database dari Testcontainers |
 
 ## Menyiapkan HP
 
@@ -188,6 +252,10 @@ _Diisi di Fase 04._
 | Status `unauthorized` | Buka kunci HP, setujui pop-up "Allow USB debugging". Jika tidak muncul: *Opsi pengembang → Revoke USB debugging authorizations*, lalu colok ulang. |
 | `java -version` masih 25 | Jalankan `sudo update-alternatives --config java` dan pilih java-21; cek `JAVA_HOME`. |
 | `docker: permission denied` | Logout lalu login lagi setelah `usermod -aG docker $USER`. |
+| `Port 8080 was already in use` | Ada backend lain yang masih jalan. Cari dengan `ss -ltnp \| grep 8080`, lalu hentikan prosesnya (atau tutup terminal/VS Code yang menjalankannya). |
+| `Validate failed: Migrations have failed validation` / checksum mismatch | File migrasi yang **sudah pernah dijalankan** diubah. Jangan ubah file `V*` lama; buat file `V7__...` baru. Khusus database development, bisa reset: `sudo -u postgres psql -c "DROP DATABASE templateapp;"` lalu `sudo -u postgres createdb -O templateapp templateapp`. |
+| Test gagal: `Could not find a valid Docker environment` | Docker belum jalan: `sudo systemctl start docker`, cek dengan `docker ps`. |
+| App gagal start: `JWT_SECRET minimal 32 karakter` / `Could not resolve placeholder 'DB_URL'` | `.env` belum diisi atau perintah tidak dijalankan dari folder `backend/`. |
 | HP putus-sambung terus; `journalctl -k \| grep usb` berisi `error -71` | Masalah fisik, bukan setting: ganti kabel USB data, pindah port laptop (jangan lewat hub), bersihkan lubang USB HP. |
 | HP tiba-tiba hilang dari Android Studio / `adb server version doesn't match` | Ada dua `adb` berbeda versi. Pastikan `which adb` menunjuk ke `~/Android/Sdk/platform-tools/adb`, lalu `adb kill-server && adb devices`. |
 
