@@ -888,3 +888,16 @@ Gunakan format berikut untuk laporan di chat dan untuk `docs/catatan-belajar/fas
 - [ ] Catatan belajar tiap fase ada di `docs/catatan-belajar/` dengan format bagian 13.4
 - [ ] Semua skenario bagian 13.2 berhasil di HP asli dan hasilnya tercatat di laporan Fase 10
 - [ ] Screenshot mode terang dan gelap ada di `docs/screenshots/` dan tampil di README
+
+---
+
+## 15. Tambahan: fitur provider (Oktober 2026)
+
+Aris menambahkan rancangan **`docs/rancangan/alur-provider.md`** (salinan dari `Instruksi dan alur/alurUntukProvider.md`). Untuk hal yang dibahasnya, dokumen itu **mengesampingkan** bagian 2.2, 6.6, dan 7 di file ini:
+
+- Status provider hanya `active` dan `suspended`; provider langsung aktif setelah mengisi form (tanpa verifikasi admin). Data lama `pending`/`approved`/`rejected` menjadi `active`.
+- Dashboard Provider memakai bottom navigation: Beranda, Upload (**"Segera hadir"**), Template Anda, Profil.
+- Tabel `templates`, `template_checks`, `template_check_issues`, `template_events`, `notifications` boleh dibuat (sebagai "mesin siap pakai"; data hanya dari test & seeder demo opsional sampai Upload ada).
+- Grafik tren download dibuat sebagai **custom View sendiri** (tanpa MPAndroidChart).
+- **Push notification (Firebase Cloud Messaging) ditunda** sampai segmen Upload dibangun; versi ini hanya notifikasi di dalam app.
+- Bagian 9 dokumen itu (Upload, Template Anda lanjutan, Profil lanjutan) **belum boleh dibangun**.
