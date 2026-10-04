@@ -650,14 +650,20 @@ UserApi.me()  ──►  OkHttpClient
 Ikon app diketuk
   → Splash sistem (Theme.App.Starting: latar + ikon jendela browser)
   → MainActivity.onCreate
-       installSplashScreen()  ← sebelum super.onCreate
+       installSplashScreen()  ← sebelum super.onCreate (splash tidak ditahan)
        super.onCreate()
-       StartupViewModel       ← SETELAH super.onCreate (Hilt butuh Activity yang siap)
-       splash ditahan selama keputusan layar pertama belum ada
-  → nav_graph mulai di StartupFragment (tanpa tampilan, tertutup splash)
-       mengamati StartupViewModel → navigate(...) + popUpTo: StartupFragment dibuang dari back stack
-  → Intro / Dashboard Pembuat Website / Dashboard Provider
+  → nav_graph mulai di StartupFragment: animasi loading pahlawan (HeroLoading)
+       lingkaran berputar → berubah jadi pahlawan → terbang di tempat
+       StartupViewModel memutuskan layar pertama (+ prefetch Beranda provider, lihat di bawah)
+       keputusan siap & animasi sudah tampil ≥ loading_min_duration_ms
+       → pahlawan melaju ke kanan → navigate(...) dengan enterAnim slide_up_in (naik dari bawah)
+         + popUpTo: StartupFragment dibuang dari back stack
+  → Intro / Dashboard Pembuat Website / Dashboard Provider (mode terakhir)
 ```
+
+**Animasi layar awal (permintaan Aris).** Sebelumnya splash sistem ditahan sampai keputusan siap. Sekarang splash dilepas langsung, lalu `StartupFragment` menampilkan animasi loading tiga bagian dari `HeroLoading`. Animasi perpindahan ke dashboard didefinisikan di action `nav_graph.xml` (`app:enterAnim="@anim/slide_up_in"`, `app:exitAnim="@anim/fade_out"`).
+
+**Prefetch Beranda provider.** Kalau tujuannya Dashboard Provider, `StartupViewModel` langsung mengambil data Beranda (`ProviderRepository.prefetchDashboard`) selagi animasi masih berjalan. `ProviderDashboardViewModel` memakai data itu lewat `takePrefetchedDashboard()` (sekali pakai, maksimal 30 detik), sehingga Beranda tidak menampilkan loading untuk kedua kalinya.
 
 ### Keputusan layar pertama (bagian 6.1)
 
@@ -705,7 +711,8 @@ Pindah layar memakai ID aksi di `nav_graph.xml` (`R.id.action_startup_to_intro`)
 - Di JSON garisnya hitam. `LottieTint.applyForeground(view)` mengganti warna semua layer menjadi `color_foreground` lewat *dynamic properties*, jadi animasi ikut tema terang/gelap.
 - Animasi disembunyikan dari pembaca layar (`importantForAccessibility="no"`) karena hanya berfungsi sebagai hiasan.
 - **Animasi loading** (`loading.json`, dipakai `StateView.showLoading()` di semua layar yang memuat data) berupa **sosok pahlawan berjubah yang sedang terbang** (permintaan Aris; awalnya pesawat kertas). Sosoknya umum, bukan Superman atau tokoh berhak cipta lain: tanpa logo, tanpa kostum khas. Anggota badan digambar sebagai garis tebal berujung bulat, kepala dan kepalan tangan berupa lingkaran penuh, dan jubah berisi abu-abu tipis (`fill(30)`) yang berkibar lewat **path yang dianimasikan** (`animated_line()`: titik-titik jubah berpindah antar-keyframe). Sosok melayang naik-turun sambil sedikit miring, sementara 4 garis angin mengalir ke belakang sambil muncul lalu memudar. Gerakan garis angin ditulis sebagai fungsi waktu lalu "dicuplik" setiap 2 frame (`sampled()` di skrip), dan panjang animasi (120 frame) habis dibagi siklus angin (40 frame) dan kibaran jubah (30 frame), sehingga perulangannya mulus tanpa patahan. Contohnya bisa dilihat terus-menerus di app **Katalog komponen** (bagian paling bawah).
-- **Waktu tampil minimal loading** (permintaan Aris): backend lokal menjawab dalam sepersekian detik, sehingga animasinya nyaris tak terlihat. `StateView` mencatat kapan loading mulai tampil. Perpindahan berikutnya (`hide(Runnable)` untuk menampilkan isi, `showError`, `showEmpty`) ditunda lewat `postDelayed` sampai loading sudah tampil minimal `loading_min_duration_ms` (bawaan **2000 ms**, di `res/values/integers.xml`). Kalau datanya memang lambat, tidak ada tambahan waktu. Penundaan dibatalkan di `onDetachedFromWindow`, sehingga tidak ada kode yang berjalan untuk layar yang sudah ditutup. Muat ulang diam-diam tidak memakai loading, jadi tidak ikut tertunda.
+- **Tiga bagian: pembuka, ulang, penutup** (permintaan Aris). Isi `loading.json`: frame 0–45 lingkaran berputar yang berubah menjadi pahlawan (lingkaran mengecil dan memudar, pahlawan membesar dari 0% ke 120%); frame 45–165 terbang di tempat (diulang); frame 165–195 melaju ke kanan keluar layar disertai garis laju. `HeroLoading` memutar bagian-bagian itu dengan `setMinAndMaxFrame` + `setRepeatCount`. Saat data siap, `StateView.hide(content, bind)` memutar penutup lalu menaikkan isi layar dari bawah (`HeroLoading.slideUpIn`). Kalau pembuka belum selesai, penutup diputar tepat setelahnya agar tidak ada lompatan gambar.
+- **Waktu tampil minimal loading** (permintaan Aris): backend lokal menjawab dalam sepersekian detik, sehingga animasinya nyaris tak terlihat. `StateView` mencatat kapan loading mulai tampil. Perpindahan berikutnya (`hide(Runnable)` untuk menampilkan isi, `showError`, `showEmpty`) ditunda lewat `postDelayed` sampai loading sudah tampil minimal `loading_min_duration_ms` (bawaan **2000 ms**, di `res/values/integers.xml`). Kalau datanya memang lambat, tidak ada tambahan waktu. Penundaan (dan animasinya) dibatalkan di `onDetachedFromWindow`, sehingga tidak ada kode yang berjalan untuk layar yang sudah ditutup. Muat ulang diam-diam tidak memakai loading, jadi tidak ikut tertunda.
 
 ---
 

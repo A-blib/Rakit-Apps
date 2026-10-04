@@ -8,15 +8,17 @@ import com.aris.templateapp.core.storage.SessionStore;
 import com.aris.templateapp.core.util.AppExecutors;
 import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.model.User;
+import com.aris.templateapp.data.repository.ProviderRepository;
 import com.aris.templateapp.data.repository.UserRepository;
+import com.aris.templateapp.ui.provider.ProviderDashboardViewModel;
 
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
 /**
- * Menentukan layar pertama saat app dibuka (bagian 6.1). Dipakai bersama oleh MainActivity
- * (menahan splash sampai keputusan siap) dan StartupFragment (berpindah ke layar tujuan).
+ * Menentukan layar pertama saat app dibuka (bagian 6.1). Dipakai StartupFragment, yang menampilkan animasi loading
+ * pahlawan selama keputusan belum siap lalu berpindah ke layar tujuan.
  */
 @HiltViewModel
 public class StartupViewModel extends ViewModel {
@@ -24,13 +26,22 @@ public class StartupViewModel extends ViewModel {
     private final MutableLiveData<StartupDecision> decision = new MutableLiveData<>();
 
     @Inject
-    public StartupViewModel(SessionStore sessionStore, UserRepository userRepository, AppExecutors executors) {
+    public StartupViewModel(SessionStore sessionStore, UserRepository userRepository, ProviderRepository providerRepository,
+                            AppExecutors executors) {
         if (!sessionStore.isIntroSeen()) {
             decision.setValue(StartupDecision.introFirst());
         } else if (!userRepository.hasSession()) {
             decision.setValue(StartupDecision.guest());
         } else {
-            executors.networkIO().execute(() -> decision.postValue(decideForLoggedIn(userRepository)));
+            executors.networkIO().execute(() -> {
+                StartupDecision result = decideForLoggedIn(userRepository);
+                // Mumpung animasi loading layar awal masih berjalan: ambil data Beranda provider sekarang, supaya
+                // dashboard tidak menampilkan loading untuk kedua kalinya.
+                if (result.getDestination() == StartupDecision.Destination.PROVIDER_DASHBOARD) {
+                    providerRepository.prefetchDashboard(ProviderDashboardViewModel.PERIOD_7_DAYS);
+                }
+                decision.postValue(result);
+            });
         }
     }
 

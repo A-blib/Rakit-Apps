@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layar awal: animasi loading pahlawan (HeroLoading) selama app menentukan layar pertama (bagian 6.1).
+    Setelah itu pahlawan melaju ke kanan dan dashboard terakhir naik dari bawah (anim/slide_up_in).
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/animation"
+        android:layout_width="@dimen/illustration_size"
+        android:layout_height="@dimen/illustration_size"
+        android:layout_gravity="center"
+        android:contentDescription="@string/state_loading" />
+</FrameLayout>

@@ -1,5 +1,7 @@
 package com.aris.templateapp.data.repository;
 
+import android.os.SystemClock;
+
 import androidx.annotation.WorkerThread;
 
 import com.aris.templateapp.core.network.ApiErrorParser;
@@ -36,6 +38,34 @@ public class ProviderRepository {
     @WorkerThread
     public Resource<ProviderDashboardDto> dashboard(String period) {
         return execute(api.dashboard(period));
+    }
+
+    /**
+     * Data Beranda yang diambil lebih dulu oleh layar awal (selagi animasi loading berjalan), supaya Beranda provider
+     * langsung tampil tanpa loading kedua. Sekali pakai, dan hanya berlaku sebentar agar tidak menampilkan data basi.
+     */
+    private static final long PREFETCH_MAX_AGE_MS = 30_000;
+    private ProviderDashboardDto prefetched;
+    private String prefetchedPeriod;
+    private long prefetchedAt;
+
+    @WorkerThread
+    public synchronized void prefetchDashboard(String period) {
+        Resource<ProviderDashboardDto> result = dashboard(period);
+        if (result.getStatus() == Resource.Status.SUCCESS) {
+            prefetched = result.getData();
+            prefetchedPeriod = period;
+            prefetchedAt = SystemClock.elapsedRealtime();
+        }
+    }
+
+    /** Mengambil (dan menghapus) data hasil prefetch untuk periode itu; null jika tidak ada atau sudah basi. */
+    public synchronized ProviderDashboardDto takePrefetchedDashboard(String period) {
+        ProviderDashboardDto data = prefetched;
+        boolean fresh = data != null && period.equals(prefetchedPeriod)
+                && SystemClock.elapsedRealtime() - prefetchedAt < PREFETCH_MAX_AGE_MS;
+        prefetched = null;
+        return fresh ? data : null;
     }
 
     @WorkerThread

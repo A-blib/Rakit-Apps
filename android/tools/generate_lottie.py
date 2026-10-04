@@ -192,49 +192,67 @@ def animated_line(keyframes, closed=False):
     return {"ty": "sh", "d": 1, "nm": "path", "ks": {"a": 1, "k": frames}}
 
 
+# Bagian-bagian animasi loading (frame). Harus sama dengan konstanta di HeroLoading.java.
+LOADING_INTRO_END = 45      # 0–45: lingkaran berputar lalu berubah menjadi pahlawan
+LOADING_LOOP_END = 165      # 45–165: terbang di tempat, diulang selama data dimuat (120 frame = 4 detik)
+LOADING_OUTRO_END = 195     # 165–195: melaju ke kanan sampai keluar layar
+
+
 def loading():
-    """Pahlawan berjubah yang sedang terbang (permintaan Aris): tangan mengepal ke depan, kaki lurus ke belakang,
-    jubah berkibar, melayang naik-turun, dengan garis angin mengalir ke belakang. Sosok umum bergaya garis,
-    bukan karakter berhak cipta (tanpa logo/kostum tokoh tertentu). Panjang animasi 120 frame habis dibagi siklus
-    angin (40 frame) dan kibaran jubah (30 frame), sehingga perulangannya mulus."""
-    total = 120
+    """Loading tiga bagian (permintaan Aris): lingkaran berputar → berubah menjadi pahlawan berjubah yang terbang di
+    tempat (bagian ini diulang) → saat data siap, pahlawan melaju ke kanan keluar layar. Sosok umum bergaya garis,
+    bukan karakter berhak cipta (tanpa logo/kostum tokoh tertentu)."""
+    total = LOADING_OUTRO_END
+    intro, loop_end = LOADING_INTRO_END, LOADING_LOOP_END
     c = SIZE / 2
 
-    # Siluet sederhana menghadap kanan: anggota badan berupa garis tebal berujung bulat (gaya ikon "pil"),
-    # kepala & kepalan tangan berupa lingkaran penuh. Tanpa logo/kostum tokoh tertentu.
+    # ---- 1. Lingkaran berputar (seperti loading biasa), lalu mengecil & memudar saat pahlawan muncul ----
+    arc = [group([ellipse(120, 120, 80, 80), stroke(8),
+                  {"ty": "tm", "s": static(0), "e": static(28), "o": static(0), "m": 1, "nm": "trim"}], "arc")]
+    arc_layer = layer(1, "arc", arc, intro, rotation=animated([(0, 0), (intro, 540)]),
+                      opacity=animated([(0, 100), (28, 100), (40, 0)]))
+    arc_layer["ks"]["s"] = animated([(0, [100, 100, 100]), (28, [100, 100, 100]), (40, [20, 20, 100])])
+
+    # ---- 2. Pahlawan: anggota badan garis tebal berujung bulat, kepala & kepalan lingkaran penuh ----
     head = group([ellipse(174, 100, 24, 24), fill()], "head")
     fist = group([ellipse(204, 96, 13, 13), fill()], "fist")
     arm_front = group([line([[156, 106], [200, 98]]), stroke(9)], "arm-front")
     body = group([line([[154, 112], [118, 119]]), stroke(20)], "body")
-    legs = group([line([[118, 118], [68, 120]]), stroke(12)], "leg-front")
+    leg_front = group([line([[118, 118], [68, 120]]), stroke(12)], "leg-front")
     leg_back = group([line([[118, 123], [72, 134]]), stroke(10)], "leg-back")
 
-    # Jubah: dari leher melambai ke belakang di atas badan, diisi tipis. Ujungnya naik-turun bergantian
-    # (4 kibaran per 120 frame).
-    flap = 30
+    # Jubah berkibar: ujungnya naik-turun bergantian setiap 15 frame, dari pahlawan muncul sampai akhir.
     cape_frames = []
-    for i, t in enumerate(range(0, total + 1, flap // 2)):
+    for i, t in enumerate(range(28, total + 1, 15)):
         up = -5 if i % 2 == 0 else 5
         cape_frames.append((t, [[158, 104], [126, 92 + up / 2], [90, 86 + up], [56, 96 - up], [86, 104 + up / 2],
                                 [120, 110]]))
     cape = group([animated_line(cape_frames, closed=True), fill(30), stroke(4)], "cape")
+    hero = [head, fist, arm_front, body, leg_front, leg_back, cape]
 
-    # Urutan grup: yang pertama digambar paling atas.
-    hero = [head, fist, arm_front, body, legs, leg_back, cape]
-    hero_position = animated([(0, [c, c + 4, 0]), (60, [c, c - 8, 0]), (total, [c, c + 4, 0])])
-    hero_tilt = animated([(0, -3), (60, 2), (total, -3)])
+    mid = (intro + loop_end) / 2
+    hero_layer = layer(2, "hero", hero, total, rotation=animated([(28, 8), (intro, -3), (mid, 2), (loop_end, -3),
+                                                                  (total, -8)]))
+    hero_layer["ip"] = 28
+    # Muncul dengan membesar (28→45), melayang naik-turun (45→165), lalu melaju ke kanan sambil sedikit naik.
+    hero_layer["ks"]["p"] = animated([(28, [c, c + 4, 0]), (intro, [c, c + 4, 0]), (mid, [c, c - 8, 0]),
+                                      (loop_end, [c, c + 4, 0]), (total, [c + 260, c - 16, 0])])
+    hero_layer["ks"]["s"] = animated([(28, [0, 0, 100]), (intro, [120, 120, 100])])
+    hero_layer["ks"]["o"] = animated([(28, 0), (36, 100)])
 
-    # Garis angin di belakang kaki & jubah: (tinggi, panjang, fase). Bergeser ke kiri sambil muncul lalu memudar.
+    # ---- Garis angin (hanya di bagian terbang di tempat) ----
     cycle = 40
     streaks = []
     for i, (y, length, phase) in enumerate(((100, 22, 0.0), (116, 32, 0.35), (132, 26, 0.7), (146, 18, 0.15))):
         def progress(t, phase=phase):
-            return (t / cycle + phase) % 1.0
+            return ((t - intro) / cycle + phase) % 1.0
 
         def position(t, progress=progress):
             return [c - 30 * progress(t), c, 0]
 
         def fade(t, progress=progress):
+            if t < intro + 6 or t > loop_end:
+                return [0]
             p = progress(t)
             return [100 * p / 0.25 if p < 0.25 else 100 * (1 - p) / 0.75]
 
@@ -243,8 +261,16 @@ def loading():
         streaks.append(layer(10 + i, f"wind-{i}", shapes, total,
                              position=sampled(position, total), opacity=sampled(fade, total)))
 
-    return animation("loading", total, [layer(1, "hero", hero, total, position=hero_position,
-                                              rotation=hero_tilt, scale=120)] + streaks)
+    # Garis laju saat melaju ke kanan: dua garis panjang memanjang di belakang pahlawan lalu memudar.
+    dash = []
+    for i, y in enumerate((112, 128)):
+        dash.append(group([line([[20, y], [150, y]]), stroke(4),
+                           {"ty": "tm", "s": animated([(loop_end, 100), (total, 0)]), "e": static(100),
+                            "o": static(0), "m": 1, "nm": "trim"}], f"speed-{i}"))
+    speed = layer(20, "speed", dash, total, opacity=animated([(loop_end, 0), (loop_end + 6, 100), (total, 0)]))
+    speed["ip"] = loop_end
+
+    return animation("loading", total, [hero_layer, speed, arc_layer] + streaks)
 
 
 def intro_build():

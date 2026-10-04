@@ -79,11 +79,19 @@ Sumber rancangan: [`docs/rancangan/alur-pembuatan-website.md`](../rancangan/alur
 ## Tambahan: loading tampil minimal 2 detik (permintaan Aris)
 - `StateView` menahan animasi loading minimal `loading_min_duration_ms` (2000 ms, `res/values/integers.xml`) sebelum menampilkan isi, error, atau keadaan kosong. Dipakai Beranda provider, Profil provider, dan Detail template (`state.hide(() -> { tampilkan isi })`).
 
+## Tambahan: loading tiga bagian & layar awal (permintaan Aris)
+- `loading.json`: lingkaran berputar → berubah jadi pahlawan → terbang (diulang) → melaju ke kanan. Diatur `ui/common/HeroLoading`.
+- Layar awal (`StartupFragment` + `fragment_startup.xml`) menampilkan animasi ini, lalu dashboard mode terakhir naik dari bawah (`res/anim/slide_up_in.xml`, `fade_out.xml`, action di `nav_graph.xml`). Splash sistem tidak ditahan lagi.
+- `StateView`: setelah loading, isi layar juga naik dari bawah (`hide(content, bind)`).
+- Prefetch Beranda provider di `StartupViewModel`, sehingga loading tidak muncul dua kali.
+- Uji di HP (akun Aris, mode provider): rangkaian screenshot saat app dibuka menunjukkan splash → lingkaran → pahlawan → melaju ke kanan → Beranda provider, tanpa loading kedua.
+
 ## Konsep yang dipelajari
 - Room: Entity, DAO, Database, `TypeConverter`, LiveData yang otomatis diperbarui, `switchMap`.
 - Annotation processor & kenapa ia bisa gagal karena lingkungan build (kasus "musl").
 - Source set `debug` dan `@BindsOptionalOf` untuk fitur khusus build debug.
 - Instrumented test (androidTest) vs unit test.
+- Lottie `setMinAndMaxFrame` untuk memutar sebagian animasi; animasi perpindahan layar di Navigation (`enterAnim`/`exitAnim`).
 - `AppCompatDelegate.setDefaultNightMode`: memaksa mode terang/gelap untuk app saja.
 - Tombol aksi di tengah bottom navigation dengan `clipChildren="false"` dan `translationY`.
 

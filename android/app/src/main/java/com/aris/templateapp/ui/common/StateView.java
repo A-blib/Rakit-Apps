@@ -15,13 +15,15 @@ import com.aris.templateapp.databinding.ViewStateBinding;
 
 /**
  * Tampilan status untuk layar yang memuat data (bagian 8): loading (animasi), kosong (boleh dengan satu tombol aksi), atau error + "Coba lagi".
- * Saat data berhasil dimuat, panggil {@link #hide(Runnable)} dengan kode yang menampilkan isi layar.
+ * Saat data berhasil dimuat, panggil {@link #hide(View, Runnable)}: loading pahlawan melaju ke kanan, lalu isi layar
+ * naik dari bawah (HeroLoading).
  * Animasi loading selalu tampil minimal {@code loading_min_duration_ms} (res/values/integers.xml).
  */
 public class StateView extends FrameLayout {
 
     private final ViewStateBinding binding;
     private final long minLoadingMs;
+    private final HeroLoading heroLoading;
     /** Waktu (SystemClock.uptimeMillis) saat loading mulai tampil; 0 = loading tidak sedang tampil. */
     private long loadingSince;
     /** Perpindahan keadaan yang sedang ditunda sampai waktu minimal loading habis. */
@@ -36,6 +38,7 @@ public class StateView extends FrameLayout {
         super(context, attrs);
         binding = ViewStateBinding.inflate(LayoutInflater.from(context), this);
         minLoadingMs = getResources().getInteger(R.integer.loading_min_duration_ms);
+        heroLoading = new HeroLoading(binding.animation);
         setVisibility(GONE);
     }
 
@@ -43,7 +46,10 @@ public class StateView extends FrameLayout {
         cancelPending();
         if (loadingSince == 0) {
             loadingSince = SystemClock.uptimeMillis();
-            show(R.raw.loading, getContext().getString(R.string.state_loading), null, null);
+            setVisibility(VISIBLE);
+            binding.message.setText(R.string.state_loading);
+            binding.retryButton.setVisibility(View.GONE);
+            heroLoading.start();
         }
     }
 
@@ -61,20 +67,32 @@ public class StateView extends FrameLayout {
     }
 
     public void hide() {
-        hide(null);
+        afterLoading(() -> {
+            heroLoading.cancel();
+            setVisibility(GONE);
+        });
     }
 
     /**
-     * Menyembunyikan StateView lalu menjalankan {@code thenShowContent} (mis. menampilkan isi layar).
-     * Jika loading baru saja muncul, keduanya ditunda sampai waktu minimal loading habis, sehingga isi layar
-     * tidak muncul bersamaan dengan animasi yang masih berjalan.
+     * Data siap: sembunyikan StateView lalu tampilkan {@code content} setelah {@code bind} mengisinya.
+     * Jika loading sedang tampil, urutannya: tunggu waktu minimal → pahlawan melaju ke kanan → isi layar naik dari
+     * bawah. Jika tidak (mis. muat ulang diam-diam), isi langsung ditampilkan tanpa animasi.
      */
-    public void hide(@Nullable Runnable thenShowContent) {
+    public void hide(View content, Runnable bind) {
+        boolean wasLoading = loadingSince != 0;
         afterLoading(() -> {
-            binding.animation.cancelAnimation();
-            setVisibility(GONE);
-            if (thenShowContent != null) {
-                thenShowContent.run();
+            Runnable reveal = () -> {
+                setVisibility(GONE);
+                bind.run();
+                content.setVisibility(VISIBLE);
+                if (wasLoading) {
+                    HeroLoading.slideUpIn(content);
+                }
+            };
+            if (wasLoading) {
+                heroLoading.finish(reveal);
+            } else {
+                reveal.run();
             }
         });
     }
@@ -107,13 +125,18 @@ public class StateView extends FrameLayout {
     @Override
     protected void onDetachedFromWindow() {
         cancelPending();
+        heroLoading.cancel();
         super.onDetachedFromWindow();
     }
 
     private void show(int animation, CharSequence message, @Nullable CharSequence actionText,
                       @Nullable Runnable retry) {
+        heroLoading.cancel();
         setVisibility(VISIBLE);
         binding.animation.setAnimation(animation);
+        // Loading memutar sebagian frame saja; animasi lain diputar penuh dan berulang.
+        binding.animation.setMinAndMaxProgress(0f, 1f);
+        binding.animation.setRepeatCount(com.airbnb.lottie.LottieDrawable.INFINITE);
         // Warna dipasang ulang setiap ganti animasi: pengaturan warna Lottie melekat pada animasi yang sedang
         // dimuat, sehingga hilang saat berganti (mis. loading → kosong) dan garis hitam tak terlihat di mode gelap.
         LottieTint.applyForeground(binding.animation);

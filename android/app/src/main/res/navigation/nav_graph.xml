@@ -9,28 +9,36 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/startupFragment">
 
-    <!-- Layar awal tanpa tampilan (tertutup splash) yang memilih layar pertama, bagian 6.1. -->
+    <!-- Layar awal (animasi pahlawan) yang memilih layar pertama, bagian 6.1. Tujuannya naik dari bawah (slide_up_in). -->
     <fragment
         android:id="@+id/startupFragment"
         android:name="com.aris.templateapp.ui.startup.StartupFragment">
         <action
             android:id="@+id/action_startup_to_intro"
             app:destination="@id/introFragment"
+            app:enterAnim="@anim/slide_up_in"
+            app:exitAnim="@anim/fade_out"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_startup_to_creator_dashboard"
             app:destination="@id/creatorDashboardFragment"
+            app:enterAnim="@anim/slide_up_in"
+            app:exitAnim="@anim/fade_out"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_startup_to_provider_dashboard"
             app:destination="@id/providerDashboardFragment"
+            app:enterAnim="@anim/slide_up_in"
+            app:exitAnim="@anim/fade_out"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_startup_to_role_select"
             app:destination="@id/roleSelectFragment"
+            app:enterAnim="@anim/slide_up_in"
+            app:exitAnim="@anim/fade_out"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
     </fragment>

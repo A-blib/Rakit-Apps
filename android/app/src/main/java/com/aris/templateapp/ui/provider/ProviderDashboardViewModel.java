@@ -80,6 +80,12 @@ public class ProviderDashboardViewModel extends ViewModel {
      */
     public void load(boolean quiet) {
         int request = ++generation;
+        // Dibuka langsung dari layar awal: pakai data yang sudah diambil selagi animasi loading di sana berjalan.
+        ProviderDashboardDto prefetched = providerRepository.takePrefetchedDashboard(period);
+        if (prefetched != null) {
+            dashboard.setValue(Resource.success(prefetched));
+            return;
+        }
         Resource<ProviderDashboardDto> current = dashboard.getValue();
         if (!quiet || current == null || current.getData() == null) {
             dashboard.setValue(Resource.loading());
