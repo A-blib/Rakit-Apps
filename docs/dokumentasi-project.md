@@ -923,6 +923,8 @@ Dibuka DI ATAS shell lewat ProviderNav (tujuan di nav_graph, tombol kembali → 
 
 **Kenapa tab = Fragment anak dengan show/hide, bukan NavHost kedua?** Dengan show/hide, setiap tab dibuat sekali lalu hanya disembunyikan, jadi isi dan posisi scroll tetap utuh saat pindah tab. Layar lanjutan tetap memakai Navigation **utama**: `NavHostFragment.findNavController(fragmentAnak)` mencari ke atas sampai NavHostFragment terdekat, yaitu milik Activity. Kalau ada NavHost kedua di dalam shell, menu profil (`ProfileSheet`) akan menemukan NavHost yang salah saat membuka Pengaturan.
 
+**Tombol kembali** di tab selain Beranda membuka Beranda dulu (`OnBackPressedCallback` yang hanya aktif saat tab ≠ Beranda); di Beranda baru menutup app. **Keyboard terbuka** (mis. saat mencari) → bottom navigation disembunyikan; keadaan keyboard dibaca dari `ViewCompat.getRootWindowInsets(...).isVisible(Type.ime())` setiap layout berubah.
+
 **Tab terpilih diingat** di field `selectedTab` dan `onSaveInstanceState`. Saat kembali dari detail, view shell dibuat ulang, tetapi Fragment anaknya masih tersimpan di `childFragmentManager`, sehingga tab yang sama langsung tampil lagi.
 
 ### Siapa memiliki data (ViewModel)
@@ -956,7 +958,7 @@ Grafik ini digambar sendiri di `onDraw(Canvas)` (keputusan Aris: tanpa library):
 1. **Skala Y** dihitung `niceMax()`: nilai terbesar dibulatkan ke atas menjadi 1/2/5 × 10ⁿ × 4. Hasilnya, 4 garis grid selalu berlabel bilangan bulat, misalnya 23 → sumbu 0–40.
 2. **Garis** dibuat dengan `Path.lineTo` antar-titik. **Area** memakai path yang sama, ditutup ke dasar grafik, lalu diisi `LinearGradient` warna foreground dari alpha 70 ke 0.
 3. **Label** memakai Geist Mono. Untuk 7 hari ditampilkan nama hari; untuk 30 hari tanggal setiap 5 hari, ditambah hari terakhir (`DownloadTrendChart`).
-4. **Ketuk/geser**: `onTouchEvent` mencari titik terdekat dari posisi jari, lalu menggambar garis vertikal + tooltip "Rab, 30 Sep · 5 download". `requestDisallowInterceptTouchEvent(true)` mencegah ScrollView ikut menggeser layar saat jari menggeser grafik.
+4. **Ketuk/geser**: `onTouchEvent` mencari titik terdekat dari posisi jari, lalu menggambar garis vertikal + tooltip "Rab, 30 Sep · 5 download". Hanya geseran yang lebih **mendatar** (melewati *touch slop*) yang memanggil `requestDisallowInterceptTouchEvent(true)`; geseran tegak tetap dibiarkan untuk ScrollView, jadi layar bisa di-scroll walau jari mulai di atas grafik.
 5. Semua warna diambil dari `@color/...`, jadi grafik otomatis ikut mode gelap.
 
 `DownloadTrendChart` (data → titik) dan `niceMax` adalah fungsi murni, sehingga diuji dengan unit test biasa.
@@ -966,7 +968,8 @@ Grafik ini digambar sendiri di `onDraw(Canvas)` (keputusan Aris: tanpa library):
 - **Pencarian** menunggu 400 ms setelah user berhenti mengetik (`Handler.postDelayed`), supaya tidak mengirim request untuk setiap huruf. Tombol cari di keyboard langsung menjalankannya.
 - **Chip status** menampilkan jumlah dari respons (`counts`). Dropdown kategori dan urutan memakai `PopupMenu`.
 - **Paginasi**: `RecyclerView.OnScrollListener` memanggil `loadMore()` saat tersisa 5 kartu di bawah layar. `ConcatAdapter` menggabungkan `TemplateAdapter` (kartu) dengan `LoadingFooterAdapter` (indikator di bawah). `ListAdapter` + `DiffUtil` hanya menggambar kartu yang baru.
-- **Keadaan**: kerangka (skeleton) saat halaman pertama dimuat; "Belum ada template…" + Buka panduan; "Tidak ada template dengan filter ini." + Hapus filter; error + Coba lagi. `StateView` sekarang bisa menampilkan satu tombol aksi selain "Coba lagi".
+- **Keadaan**: kerangka (skeleton) saat halaman pertama dimuat; "Belum ada template…" + Buka panduan; "Tidak ada template dengan filter ini." + Hapus filter; error + Coba lagi. `StateView` sekarang bisa menampilkan satu tombol aksi selain "Coba lagi", dan memasang ulang warna Lottie setiap kali animasinya diganti (pengaturan warna Lottie melekat pada animasi yang sedang dimuat).
+- Jumlah di chip ikut tersaring kategori & pencarian, jadi "Belum ada template" hanya ditampilkan jika jumlah Semua = 0 **dan** tidak ada filter aktif.
 - `TemplateListState` adalah objek **tidak berubah** yang dibuat baru setiap kali ada perubahan, jadi layar cukup menggambar ulang dari satu objek.
 
 ### Detail, Profil, Edit profil

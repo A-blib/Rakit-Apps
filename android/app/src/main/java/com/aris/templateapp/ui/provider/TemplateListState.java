@@ -30,7 +30,7 @@ public final class TemplateListState {
         this.error = error;
     }
 
-    /** Provider memang belum punya template sama sekali (bukan karena filter). */
+    /** Jumlah "Semua" bernilai 0. Tanpa filter kategori/pencarian aktif, artinya provider belum punya template. */
     public boolean hasNoTemplates() {
         return counts != null && counts.all == 0;
     }

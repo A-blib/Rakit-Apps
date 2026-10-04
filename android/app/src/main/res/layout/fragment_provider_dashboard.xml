@@ -46,6 +46,7 @@
         android:layout_weight="1" />
 
     <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/bottom_nav_divider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

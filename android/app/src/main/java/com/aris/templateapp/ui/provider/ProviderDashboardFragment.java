@@ -4,11 +4,15 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -44,6 +48,28 @@ public class ProviderDashboardFragment extends Fragment {
     private CurrentUserViewModel userViewModel;
     @IdRes
     private int selectedTab = R.id.tab_home;
+    /**
+     * Bottom navigation disembunyikan selama keyboard terbuka (mis. saat mengetik di pencarian Template Anda),
+     * supaya ruang layar yang tersisa dipakai untuk isi, bukan untuk tab.
+     */
+    /** Tombol kembali di tab selain Beranda membuka Beranda dulu; di Beranda baru menutup app. */
+    private final OnBackPressedCallback backToHome = new OnBackPressedCallback(false) {
+        @Override
+        public void handleOnBackPressed() {
+            selectTab(R.id.tab_home);
+        }
+    };
+    private final ViewTreeObserver.OnGlobalLayoutListener keyboardListener = () -> {
+        if (binding == null) {
+            return;
+        }
+        WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(binding.getRoot());
+        int visibility = insets != null && insets.isVisible(WindowInsetsCompat.Type.ime()) ? View.GONE : View.VISIBLE;
+        if (binding.bottomNav.getVisibility() != visibility) {
+            binding.bottomNav.setVisibility(visibility);
+            binding.bottomNavDivider.setVisibility(visibility);
+        }
+    };
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,6 +101,8 @@ public class ProviderDashboardFragment extends Fragment {
             }
         });
 
+        binding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), backToHome);
         binding.bottomNav.setOnItemSelectedListener(item -> {
             showTab(item.getItemId());
             return true;
@@ -131,6 +159,7 @@ public class ProviderDashboardFragment extends Fragment {
 
     private void showTab(@IdRes int tab) {
         selectedTab = tab;
+        backToHome.setEnabled(tab != R.id.tab_home);
         FragmentManager fm = getChildFragmentManager();
         FragmentTransaction transaction = fm.beginTransaction().setReorderingAllowed(true);
         for (int id : TABS) {
@@ -166,6 +195,7 @@ public class ProviderDashboardFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        binding.getRoot().getViewTreeObserver().removeOnGlobalLayoutListener(keyboardListener);
         binding = null;
     }
 }

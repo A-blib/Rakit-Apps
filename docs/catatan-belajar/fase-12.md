@@ -43,7 +43,20 @@ Sumber rancangan: [`docs/rancangan/alur-provider.md`](../rancangan/alur-provider
 - `./gradlew testDebugUnitTest`: **lulus, 35 test** (termasuk 9 test baru untuk grafik dan waktu relatif).
 - `./gradlew lintDebug`: **0 error, 0 peringatan**.
 - `./gradlew assembleDebug`: berhasil.
-- Uji di HP: _menunggu HP tersambung lagi_ (wireless debugging terputus saat build selesai).
+- Uji di HP (realme, Android 13, wireless debugging):
+  - Akun Aris (provider tanpa template): checklist "0 dari 3" + kartu "Lengkapi profil kreatormu" + badge 1; setelah panduan dibuka → "1 dari 3" dan titik "baru" hilang; Template Anda kosong + Buka panduan; Upload "Segera hadir"; Profil & Edit profil terisi benar.
+  - Akun demo: badge 3, Perlu tindakan (Landing Event 2 error, Profil Sekolah 3 peringatan, Instansi Desa draft), ringkasan 7 hari 3 · 78 · 23 dan 30 hari 3 · 376 · 97, grafik 7/30 hari + tooltip, populer berurutan, "Lihat semua" → filter Perlu perbaikan (2), detail Landing Event (2 error + 1 peringatan), pencarian, filter kategori, Hapus filter, filter tetap diingat setelah kembali dari detail.
+  - `dummy10` dibuat `suspended` lewat SQL → app dibuka ulang → Dashboard Pembuat Website + banner "Mode provider dinonaktifkan…".
+  - `dummy8`: checklist provider baru. Screenshot terang & gelap diambil (08, 12–15 di `docs/screenshots/`).
+- Masalah yang ditemukan saat uji di HP dan sudah diperbaiki:
+  - Geser tegak yang dimulai di atas grafik tidak men-scroll layar → grafik hanya mengambil alih geseran mendatar.
+  - Label tanggal "30/9" dan "4/10" menumpuk di grafik 30 hari → label yang menabrak label hari terakhir dilewati.
+  - Label tab "Template Anda" terpotong → "Template". Label "Segera hadir" berupa pil membuat judul terlipat 3 baris → dipindah ke baris keterangan.
+  - Pencarian tanpa hasil menampilkan "Belum ada template…" (jumlah chip ikut tersaring pencarian) → kini "Tidak ada template dengan filter ini." + Hapus filter.
+  - Animasi Lottie di `StateView` tak terlihat di mode gelap: warna hilang setiap ganti animasi (bug lama Fase 06) → warna dipasang ulang setiap ganti animasi.
+  - Bottom navigation ikut naik di atas keyboard → disembunyikan selama keyboard terbuka; keyboard ditutup saat memilih filter.
+  - Tombol kembali di tab selain Beranda langsung menutup app → kembali ke Beranda dulu.
+  - Beranda tidak diperbarui saat tab dibuka lagi → dimuat ulang diam-diam.
 
 ## Konsep yang dipelajari
 - Custom View: `onDraw(Canvas)`, `Paint`, `Path`, `LinearGradient`, `onTouchEvent`, `requestDisallowInterceptTouchEvent`.
@@ -53,6 +66,7 @@ Sumber rancangan: [`docs/rancangan/alur-provider.md`](../rancangan/alur-provider
 - Debounce pencarian dengan `Handler.postDelayed`.
 - Mengabaikan jawaban request yang sudah basi (nomor `generation`).
 - `BadgeDrawable` di `BottomNavigationView`.
+- `OnBackPressedCallback` (tombol kembali kustom) dan membaca keadaan keyboard dari `WindowInsetsCompat`.
 
 ## Latihan untuk Aris
 1. Di `AreaChartView`, ubah alpha gradasi dari 70 menjadi 140 lalu Run. Apa bedanya di mode terang dan gelap? Kembalikan lagi.
@@ -60,7 +74,8 @@ Sumber rancangan: [`docs/rancangan/alur-provider.md`](../rancangan/alur-provider
 3. Jalankan `UPDATE templates SET warning_count = 0 WHERE name = 'Profil Sekolah';`, lalu kembali ke Beranda. Berapa angka badge tab Beranda sekarang, dan kenapa berubah tanpa menekan apa pun?
 
 ## Yang perlu Aris lakukan
-- Nyalakan lagi wireless debugging di HP supaya Fase 12 bisa diuji di HP dan screenshot diambil.
+- Masuk lagi dengan akunmu sendiri di HP (pengujian memakai akun demo & dummy).
+- Database dev: `dummy10` sekarang `suspended` (diubah lewat SQL saat pengujian, sesuai tabel akun dummy di README).
 
 ## Rencana fase berikutnya
 - Menunggu instruksi Aris: segmen Upload (rancangan bagian 9) atau fitur pembuatan website.

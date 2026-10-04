@@ -40,7 +40,11 @@ Diambil dari HP asli (realme, Android 13) dengan akun dummy. File lengkap ada di
 | Pilih peran | <img src="docs/screenshots/05-pilih-peran-terang.png" width="220"> | <img src="docs/screenshots/05-pilih-peran-gelap.png" width="220"> |
 | Form pembuat website | <img src="docs/screenshots/06-form-pembuat-website-terang.png" width="220"> | <img src="docs/screenshots/06-form-pembuat-website-gelap.png" width="220"> |
 | Form provider | <img src="docs/screenshots/07-form-provider-terang.png" width="220"> | <img src="docs/screenshots/07-form-provider-gelap.png" width="220"> |
-| Dashboard provider (pending) | <img src="docs/screenshots/08-dashboard-provider-terang.png" width="220"> | <img src="docs/screenshots/08-dashboard-provider-gelap.png" width="220"> |
+| Dashboard provider: Beranda (akun demo) | <img src="docs/screenshots/08-dashboard-provider-terang.png" width="220"> | <img src="docs/screenshots/08-dashboard-provider-gelap.png" width="220"> |
+| Beranda: ringkasan, grafik tren, populer | <img src="docs/screenshots/12-beranda-grafik-terang.png" width="220"> | <img src="docs/screenshots/12-beranda-grafik-gelap.png" width="220"> |
+| Beranda provider baru (checklist) | <img src="docs/screenshots/15-beranda-provider-baru-terang.png" width="220"> | <img src="docs/screenshots/15-beranda-provider-baru-gelap.png" width="220"> |
+| Template Anda | <img src="docs/screenshots/13-template-anda-terang.png" width="220"> | <img src="docs/screenshots/13-template-anda-gelap.png" width="220"> |
+| Detail template + hasil pengecekan | <img src="docs/screenshots/14-detail-template-terang.png" width="220"> | <img src="docs/screenshots/14-detail-template-gelap.png" width="220"> |
 | Menu profil | <img src="docs/screenshots/09-menu-profil-terang.png" width="220"> | <img src="docs/screenshots/09-menu-profil-gelap.png" width="220"> |
 | Pengaturan | <img src="docs/screenshots/10-pengaturan-terang.png" width="220"> | <img src="docs/screenshots/10-pengaturan-gelap.png" width="220"> |
 | Metode login terhubung | <img src="docs/screenshots/11-metode-login-terang.png" width="220"> | <img src="docs/screenshots/11-metode-login-gelap.png" width="220"> |
@@ -425,6 +429,8 @@ Saat backend start dengan profile `dev` dan tabel `users` masih **kosong**, `Dum
 | `dummy3@templateapp.test` … `dummy7@templateapp.test` | Pembuat website, onboarding selesai | Dashboard pembuat website, "Jadi penyedia template" |
 | `dummy8@templateapp.test`, `dummy9@templateapp.test` | Pembuat website + provider **active** (belum punya template) | Dashboard Provider kosong + checklist provider baru, beralih mode |
 | `dummy10@templateapp.test` | Pembuat website + provider **suspended** | Mode provider terkunci → diarahkan ke mode pembuat website |
+
+> Database yang sudah diisi **sebelum Fase 11** memakai data seeder lama: migrasi V7 mengubah status lama `pending`/`approved`/`rejected` menjadi `active`, sehingga `dummy10` ikut aktif. Jadikan `suspended` lagi dengan SQL di bagian "Contoh SQL status provider".
 
 Nama tampilannya nama Indonesia acak dengan seed tetap, jadi hasilnya selalu sama setiap kali database diisi ulang.
 

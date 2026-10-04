@@ -143,10 +143,7 @@ public class ProviderTemplatesFragment extends Fragment {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 handler.removeCallbacks(applySearch);
                 applySearch.run();
-                InputMethodManager imm = ContextCompat.getSystemService(requireContext(), InputMethodManager.class);
-                if (imm != null) {
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-                }
+                hideKeyboard();
                 return true;
             }
             return false;
@@ -204,7 +201,17 @@ public class ProviderTemplatesFragment extends Fragment {
         }
     }
 
+    /** Keyboard ditutup saat user beralih ke filter lain, supaya hasilnya langsung terlihat. */
+    private void hideKeyboard() {
+        binding.searchInput.clearFocus();
+        InputMethodManager imm = ContextCompat.getSystemService(requireContext(), InputMethodManager.class);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(binding.searchInput.getWindowToken(), 0);
+        }
+    }
+
     private void showCategoryMenu(View anchor) {
+        hideKeyboard();
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
         for (int i = 0; i < CATEGORIES.length; i++) {
             String value = CATEGORIES[i];
@@ -220,6 +227,7 @@ public class ProviderTemplatesFragment extends Fragment {
     }
 
     private void showSortMenu(View anchor) {
+        hideKeyboard();
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
         for (int i = 0; i < SORTS.length; i++) {
             popup.getMenu().add(Menu.NONE, i, i, SORT_LABELS[i]);
@@ -246,7 +254,9 @@ public class ProviderTemplatesFragment extends Fragment {
             binding.state.showError(ErrorMessages.forError(requireContext(), state.error), viewModel::refresh);
         } else if (!state.loadingFirstPage && state.items.isEmpty()) {
             binding.list.setVisibility(View.GONE);
-            if (state.hasNoTemplates()) {
+            // Jumlah dari server ikut tersaring kategori & pencarian, jadi "belum punya template" hanya
+            // bisa dipastikan saat tidak ada filter yang aktif.
+            if (state.hasNoTemplates() && !viewModel.hasActiveFilter()) {
                 binding.state.showEmpty(getString(R.string.templates_empty), getString(R.string.action_open_guide),
                         () -> ProviderNav.openGuide(this, Guide.PREPARE_TEMPLATE));
             } else {
@@ -261,6 +271,7 @@ public class ProviderTemplatesFragment extends Fragment {
     }
 
     private void clearFilters() {
+        hideKeyboard();
         handler.removeCallbacks(applySearch);
         viewModel.clearFilters();
         binding.searchInput.setText("");

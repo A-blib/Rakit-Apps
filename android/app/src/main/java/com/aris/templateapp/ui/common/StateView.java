@@ -27,7 +27,6 @@ public class StateView extends FrameLayout {
     public StateView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         binding = ViewStateBinding.inflate(LayoutInflater.from(context), this);
-        LottieTint.applyForeground(binding.animation);
         setVisibility(GONE);
     }
 
@@ -57,6 +56,9 @@ public class StateView extends FrameLayout {
                       @Nullable Runnable retry) {
         setVisibility(VISIBLE);
         binding.animation.setAnimation(animation);
+        // Warna dipasang ulang setiap ganti animasi: pengaturan warna Lottie melekat pada animasi yang sedang
+        // dimuat, sehingga hilang saat berganti (mis. loading → kosong) dan garis hitam tak terlihat di mode gelap.
+        LottieTint.applyForeground(binding.animation);
         binding.animation.playAnimation();
         binding.message.setText(message);
         binding.retryButton.setText(actionText);

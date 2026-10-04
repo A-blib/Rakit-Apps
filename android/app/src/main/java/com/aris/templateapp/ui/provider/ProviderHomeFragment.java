@@ -87,6 +87,15 @@ public class ProviderHomeFragment extends Fragment {
         startedBefore = true;
     }
 
+    /** Tab Beranda dibuka lagi lewat bottom navigation: perbarui diam-diam (badge ikut diperbarui). */
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden && viewModel != null) {
+            viewModel.load(true);
+        }
+    }
+
     private ProviderDashboardFragment shell() {
         return (ProviderDashboardFragment) requireParentFragment();
     }

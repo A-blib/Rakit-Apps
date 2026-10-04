@@ -195,16 +195,27 @@ public class AreaChartView extends View {
 
     private void drawXLabels(Canvas canvas, float left, float right) {
         float y = getHeight() - getPaddingBottom();
-        for (int i = 0; i < points.size(); i++) {
-            // Label terakhir (hari ini) selalu ditampilkan agar ujung kanan grafik jelas.
-            if (i % labelEvery != 0 && i != points.size() - 1) {
+        int last = points.size() - 1;
+        // Label terakhir (hari ini) selalu ditampilkan agar ujung kanan grafik jelas; label lain yang akan
+        // menabraknya dilewati (mis. "30/9" tepat sebelum "4/10").
+        float lastX = labelX(last, left, right);
+        for (int i = 0; i < last; i++) {
+            if (i % labelEvery != 0) {
                 continue;
             }
-            String label = points.get(i).axisLabel;
-            float width = labelPaint.measureText(label);
-            float x = Math.max(left, Math.min(xOf(i, left, right) - width / 2, getWidth() - getPaddingRight() - width));
-            canvas.drawText(label, x, y, labelPaint);
+            float x = labelX(i, left, right);
+            if (x + labelPaint.measureText(points.get(i).axisLabel) + labelGap > lastX) {
+                continue;
+            }
+            canvas.drawText(points.get(i).axisLabel, x, y, labelPaint);
         }
+        canvas.drawText(points.get(last).axisLabel, lastX, y, labelPaint);
+    }
+
+    /** Posisi kiri label sumbu X: di tengah titiknya, tetapi tidak keluar dari tepi grafik. */
+    private float labelX(int index, float left, float right) {
+        float width = labelPaint.measureText(points.get(index).axisLabel);
+        return Math.max(left, Math.min(xOf(index, left, right) - width / 2, getWidth() - getPaddingRight() - width));
     }
 
     private void drawSelection(Canvas canvas, long maxValue, float left, float right, float top, float bottom) {
