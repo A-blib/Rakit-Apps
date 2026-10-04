@@ -65,6 +65,10 @@ def stroke(width=STROKE):
             "lc": 2, "lj": 2, "ml": 4, "nm": "stroke"}
 
 
+def fill(opacity=100):
+    return {"ty": "fl", "c": static(BLACK), "o": static(opacity), "r": 1, "nm": "fill"}
+
+
 def trim(start_frame, end_frame, hold_until=None, erase_at=None):
     """Garis 'tergambar' dari 0% ke 100% antara start_frame dan end_frame (lalu opsional terhapus lagi)."""
     # Keyframe harus berurutan dan tidak boleh ada dua keyframe di frame yang sama.
@@ -87,7 +91,7 @@ def group(items, name="group"):
     return {"ty": "gr", "nm": name, "it": items + [group_transform()]}
 
 
-def layer(index, name, shapes, total_frames, position=None, rotation=None, opacity=None):
+def layer(index, name, shapes, total_frames, position=None, rotation=None, opacity=None, scale=100):
     return {
         "ddd": 0, "ind": index, "ty": 4, "nm": name, "sr": 1, "ao": 0, "bm": 0,
         "ip": 0, "op": total_frames, "st": 0,
@@ -96,7 +100,7 @@ def layer(index, name, shapes, total_frames, position=None, rotation=None, opaci
             "r": rotation or static(0),
             "p": position or static([SIZE / 2, SIZE / 2, 0]),
             "a": static([SIZE / 2, SIZE / 2, 0]),
-            "s": static([100, 100, 100]),
+            "s": static([scale, scale, 100]),
         },
         "shapes": shapes,
     }
@@ -170,43 +174,77 @@ def sampled(fn, total, step=2):
     return {"a": 1, "k": frames}
 
 
+def path_shape(points, closed=False):
+    """Bentuk garis yang titik-titiknya bisa dianimasikan (untuk jubah yang berkibar)."""
+    zeros = [[0, 0] for _ in points]
+    return {"i": zeros, "o": zeros, "v": points, "c": closed}
+
+
+def animated_line(keyframes, closed=False):
+    """keyframes: daftar (frame, titik-titik). Semua daftar titik harus sama panjangnya."""
+    frames = []
+    for index, (t, points) in enumerate(keyframes):
+        frame = {"t": t, "s": [path_shape(points, closed)]}
+        if index < len(keyframes) - 1:
+            frame["i"] = EASE_OUT
+            frame["o"] = EASE_IN
+        frames.append(frame)
+    return {"ty": "sh", "d": 1, "nm": "path", "ks": {"a": 1, "k": frames}}
+
+
 def loading():
-    """Pesawat kertas terbang: melayang naik-turun & sedikit miring, dengan garis angin mengalir ke belakang.
-    Semua gerakan berulang mulus karena panjang animasi (120 frame) habis dibagi siklus garis angin (40 frame)."""
+    """Pahlawan berjubah yang sedang terbang (permintaan Aris): tangan mengepal ke depan, kaki lurus ke belakang,
+    jubah berkibar, melayang naik-turun, dengan garis angin mengalir ke belakang. Sosok umum bergaya garis,
+    bukan karakter berhak cipta (tanpa logo/kostum tokoh tertentu). Panjang animasi 120 frame habis dibagi siklus
+    angin (40 frame) dan kibaran jubah (30 frame), sehingga perulangannya mulus."""
     total = 120
     c = SIZE / 2
 
-    # Pesawat kertas tampak samping, menghadap kanan: sayap (segi empat tertutup) + garis lipatan ke ujung depan.
-    plane = [
-        group([line([[180, 104], [92, 80], [120, 112], [104, 144]], closed=True), stroke()], "wing"),
-        group([line([[120, 112], [180, 104]]), stroke(4)], "fold"),
-    ]
-    plane_position = animated([(0, [c, c + 4, 0]), (60, [c, c - 8, 0]), (total, [c, c + 4, 0])])
-    plane_tilt = animated([(0, -4), (60, 3), (total, -4)])
+    # Siluet sederhana menghadap kanan: anggota badan berupa garis tebal berujung bulat (gaya ikon "pil"),
+    # kepala & kepalan tangan berupa lingkaran penuh. Tanpa logo/kostum tokoh tertentu.
+    head = group([ellipse(174, 100, 24, 24), fill()], "head")
+    fist = group([ellipse(204, 96, 13, 13), fill()], "fist")
+    arm_front = group([line([[156, 106], [200, 98]]), stroke(9)], "arm-front")
+    body = group([line([[154, 112], [118, 119]]), stroke(20)], "body")
+    legs = group([line([[118, 118], [68, 120]]), stroke(12)], "leg-front")
+    leg_back = group([line([[118, 123], [72, 134]]), stroke(10)], "leg-back")
 
-    # Garis angin: (tinggi, panjang, fase 0..1). Masing-masing bergeser 56 px ke kiri sambil muncul lalu memudar,
-    # tetap di dalam kanvas.
+    # Jubah: dari leher melambai ke belakang di atas badan, diisi tipis. Ujungnya naik-turun bergantian
+    # (4 kibaran per 120 frame).
+    flap = 30
+    cape_frames = []
+    for i, t in enumerate(range(0, total + 1, flap // 2)):
+        up = -5 if i % 2 == 0 else 5
+        cape_frames.append((t, [[158, 104], [126, 92 + up / 2], [90, 86 + up], [56, 96 - up], [86, 104 + up / 2],
+                                [120, 110]]))
+    cape = group([animated_line(cape_frames, closed=True), fill(30), stroke(4)], "cape")
+
+    # Urutan grup: yang pertama digambar paling atas.
+    hero = [head, fist, arm_front, body, legs, leg_back, cape]
+    hero_position = animated([(0, [c, c + 4, 0]), (60, [c, c - 8, 0]), (total, [c, c + 4, 0])])
+    hero_tilt = animated([(0, -3), (60, 2), (total, -3)])
+
+    # Garis angin di belakang kaki & jubah: (tinggi, panjang, fase). Bergeser ke kiri sambil muncul lalu memudar.
     cycle = 40
     streaks = []
-    for i, (y, length, phase) in enumerate(((92, 30, 0.0), (114, 48, 0.35), (136, 36, 0.7), (154, 22, 0.15))):
+    for i, (y, length, phase) in enumerate(((100, 22, 0.0), (116, 32, 0.35), (132, 26, 0.7), (146, 18, 0.15))):
         def progress(t, phase=phase):
             return (t / cycle + phase) % 1.0
 
         def position(t, progress=progress):
-            return [c - 56 * progress(t), c, 0]
+            return [c - 30 * progress(t), c, 0]
 
         def fade(t, progress=progress):
             p = progress(t)
-            # Muncul cepat di awal (0→100 pada 25% pertama), lalu memudar sampai habis di akhir siklus.
             return [100 * p / 0.25 if p < 0.25 else 100 * (1 - p) / 0.75]
 
-        x_end = 96
+        x_end = 44
         shapes = [group([line([[x_end - length, y], [x_end, y]]), stroke(4)], f"wind-{i}")]
         streaks.append(layer(10 + i, f"wind-{i}", shapes, total,
                              position=sampled(position, total), opacity=sampled(fade, total)))
 
-    return animation("loading", total, [layer(1, "plane", plane, total, position=plane_position,
-                                              rotation=plane_tilt)] + streaks)
+    return animation("loading", total, [layer(1, "hero", hero, total, position=hero_position,
+                                              rotation=hero_tilt, scale=120)] + streaks)
 
 
 def intro_build():
