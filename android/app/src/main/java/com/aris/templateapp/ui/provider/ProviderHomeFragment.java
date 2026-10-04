@@ -112,9 +112,12 @@ public class ProviderHomeFragment extends Fragment {
                 break;
             case SUCCESS:
             default:
-                binding.state.hide();
-                binding.content.setVisibility(View.VISIBLE);
-                bind(resource.getData());
+                binding.state.hide(() -> {
+                    if (binding != null) {
+                        binding.content.setVisibility(View.VISIBLE);
+                        bind(resource.getData());
+                    }
+                });
                 break;
         }
     }

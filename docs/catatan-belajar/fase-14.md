@@ -76,6 +76,9 @@ Sumber rancangan: [`docs/rancangan/alur-pembuatan-website.md`](../rancangan/alur
 - Contoh `StateView` loading ditambahkan di bagian bawah Katalog komponen (build debug) untuk mengecek animasinya.
 - Uji di HP: animasi berjalan dan berulang mulus; warnanya mengikuti tema.
 
+## Tambahan: loading tampil minimal 2 detik (permintaan Aris)
+- `StateView` menahan animasi loading minimal `loading_min_duration_ms` (2000 ms, `res/values/integers.xml`) sebelum menampilkan isi, error, atau keadaan kosong. Dipakai Beranda provider, Profil provider, dan Detail template (`state.hide(() -> { tampilkan isi })`).
+
 ## Konsep yang dipelajari
 - Room: Entity, DAO, Database, `TypeConverter`, LiveData yang otomatis diperbarui, `switchMap`.
 - Annotation processor & kenapa ia bisa gagal karena lingkungan build (kasus "musl").

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Animasi loading (pahlawan terbang) ditampilkan minimal selama ini, walaupun data sudah datang lebih cepat,
+        agar animasinya sempat terlihat dan layar tidak "berkedip" (permintaan Aris). Satu putaran animasi = 4000 ms.
+    -->
+    <integer name="loading_min_duration_ms">2000</integer>
+</resources>
