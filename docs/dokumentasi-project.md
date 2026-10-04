@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 10** (seluruh cakupan saat ini selesai dan diuji di HP asli). Screenshot setiap layar ada di README bagian "Tampilan".
+> Status dokumen: diperbarui sampai **Fase 11** (backend Dashboard Provider). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
 
 ---
 
@@ -35,7 +35,11 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 18. [Masuk & daftar dengan email](#18-masuk--daftar-dengan-email)
 19. [Login Google & GitHub di Android](#19-login-google--github-di-android)
 20. [Onboarding, menu profil, pengaturan, keluar](#20-onboarding-menu-profil-pengaturan-keluar)
-21. [Glosarium](#21-glosarium)
+
+**Fitur provider**
+
+21. [Backend Dashboard Provider](#21-backend-dashboard-provider)
+22. [Glosarium](#22-glosarium)
 
 ---
 
@@ -165,7 +169,10 @@ users ─┬─< user_identities     (1 user : banyak identitas; maks 1 per prov
        ├─< refresh_tokens      (1 user : banyak sesi/perangkat)
        ├─< auth_tickets        (tiket sekali pakai: state GitHub, hasil login, link)
        ├── creator_profiles    (1 : 0..1, primary key = user_id)
-       └── provider_profiles   (1 : 0..1, primary key = user_id)
+       ├── provider_profiles   (1 : 0..1, primary key = user_id)
+       ├─< templates ──┬─< template_checks ──< template_check_issues
+       │               └─< template_events   (dilihat / didownload)
+       └─< notifications
 ```
 
 | Tabel | Fungsi | Catatan penting |
@@ -175,11 +182,15 @@ users ─┬─< user_identities     (1 user : banyak identitas; maks 1 per prov
 | `refresh_tokens` | Sesi login per perangkat | Hanya hash SHA-256 yang disimpan; `replaced_by` terisi saat dirotasi |
 | `auth_tickets` | Tiket sementara (lihat bagian 7) | Hash, sekali pakai, ada masa berlaku; `payload` jsonb ↔ `Map` di Java |
 | `creator_profiles` | Data mode pembuat website | Ada = user punya peran `creator` |
-| `provider_profiles` | Data mode penyedia template + status verifikasi | Ada = user punya peran `provider` |
+| `provider_profiles` | Data mode penyedia template + status `active`/`suspended` | Ada = user punya peran `provider` |
+| `templates` | Template milik provider (Fase 11) | `status` draft/checking/published/check_failed/disabled; `warning_count` disimpan agar filter "Perlu perbaikan" cepat |
+| `template_checks` + `template_check_issues` | Hasil pengecekan otomatis per versi + daftar error/peringatan | Pengecekan terakhir = `version` tertinggi |
+| `template_events` | Kejadian dilihat & didownload | Index unik `(project_id, type)`: satu project dihitung sekali |
+| `notifications` | Notifikasi di dalam app | `resolved_at` diisi saat masalahnya beres |
 
 ### Aturan migrasi Flyway
 
-- File `V1__...sql` sampai `V6__...sql` dijalankan berurutan **sekali saja**. Riwayatnya dicatat di tabel `flyway_schema_history`.
+- File `V1__...sql` sampai `V11__...sql` dijalankan berurutan **sekali saja**. Riwayatnya dicatat di tabel `flyway_schema_history`.
 - **Jangan pernah mengubah file migrasi yang sudah dijalankan.** Flyway menyimpan checksum setiap file. Kalau file berubah, app menolak start. Untuk mengubah struktur tabel, buat file baru `V7__...sql`.
 - `spring.jpa.hibernate.ddl-auto=validate`: Hibernate hanya **mengecek** Entity cocok dengan tabel, tidak membuat atau mengubah tabel.
 
@@ -346,7 +357,7 @@ Akun baru: onboardingCompleted=false, activeMode=creator, roles=[]
    │     → creator_profiles dibuat/diperbarui, onboardingCompleted=true, activeMode=creator
    │
    └─ POST /users/me/onboarding/provider  (juga dari menu "Jadi penyedia template" user lama)
-         → provider_profiles dibuat (status pending), onboardingCompleted=true, activeMode=provider
+         → provider_profiles dibuat (status active), onboardingCompleted=true, activeMode=provider
          → kedua kalinya: 409 PROVIDER_PROFILE_EXISTS
 ```
 
@@ -355,9 +366,9 @@ Akun baru: onboardingCompleted=false, activeMode=creator, roles=[]
 | Mode tujuan | Boleh jika | Kalau tidak |
 |---|---|---|
 | `creator` | Selalu. Dashboard ini juga dipakai tamu dan jadi tujuan saat provider ditangguhkan | – |
-| `provider` | Punya profil provider **dan** status bukan `suspended` (`pending`/`rejected` boleh, supaya bannernya terlihat) | `403 MODE_NOT_ALLOWED` |
+| `provider` | Punya profil provider **dan** status bukan `suspended` | `403 MODE_NOT_ALLOWED` |
 
-Status provider (`pending` → `approved`/`rejected`/`suspended`) belum punya panel admin, jadi diubah lewat SQL (contohnya di README). Kalau status berubah menjadi `suspended` saat `activeMode` masih `provider`, backend tidak mengubahnya diam-diam. App yang membaca `providerStatus = suspended` lalu membuka mode pembuat website dengan pesan (bagian 6.1 instruksi).
+Status provider hanya **`active`** (langsung setelah mengisi form, tanpa verifikasi) dan **`suspended`** (rem darurat). Perubahan status dilakukan lewat SQL, contohnya ada di README. Migrasi `V7` mengubah data lama `pending`/`approved`/`rejected` menjadi `active`. Kalau status berubah menjadi `suspended` saat `activeMode` masih `provider`, backend tidak mengubahnya diam-diam. App yang membaca `providerStatus = suspended` lalu membuka mode pembuat website dengan pesan (bagian 6.1 instruksi).
 
 ### Validasi form provider (`ProviderOnboardingRequest`)
 
@@ -429,6 +440,15 @@ Coba semuanya di Swagger UI: http://localhost:8080/swagger-ui.html
 | `POST /api/users/me/onboarding/creator` | ✔ | `{displayName, websitePurpose?, organizationName?}` | `UserResponse` | ✅ Fase 04 |
 | `POST /api/users/me/onboarding/provider` | ✔ | `{creatorName, bio?, portfolioUrl?, specialties?, agreedToTerms}` | `UserResponse` / `409 PROVIDER_PROFILE_EXISTS` | ✅ Fase 04 |
 | `PATCH /api/users/me/active-mode` | ✔ | `{mode}` | `UserResponse` / `403 MODE_NOT_ALLOWED` | ✅ Fase 04 |
+| `GET /api/providers/me/dashboard?period=7d\|30d` | ✔ provider | – | Beranda: perlu tindakan, ringkasan, tren, populer | ✅ Fase 11 |
+| `GET /api/providers/me/stats/downloads?period=` | ✔ provider | – | `[{date, count}]` | ✅ Fase 11 |
+| `GET /api/providers/me/templates?status=&category=&sort=&q=&page=` | ✔ provider | – | daftar + jumlah per status | ✅ Fase 11 |
+| `GET /api/providers/me/templates/{id}` | ✔ provider | – | detail + pengecekan terakhir | ✅ Fase 11 |
+| `GET` / `PATCH /api/providers/me/profile` | ✔ provider | `{creatorName, bio?, portfolioUrl?, specialties?}` | profil + ringkasan | ✅ Fase 11 |
+| `POST /api/templates/{id}/events` | – (tamu boleh) | `{type, projectId?, installId, occurredAt}` | `202` | ✅ Fase 11 |
+| `GET /api/templates/{id}/checks/latest` | ✔ pemilik | – | hasil pengecekan | ✅ Fase 11 |
+| `GET /api/notifications` · `/unread-count` · `PATCH /{id}/read` | ✔ | – | notifikasi | ✅ Fase 11 |
+| `DELETE /api/dev/demo-templates` | – (profile dev saja) | – | `204` | ✅ Fase 11 |
 
 Bentuk respons:
 
@@ -836,7 +856,60 @@ Kalau refresh token ditolak, `TokenAuthenticator` menghapus sesi lalu mengirim e
 
 ---
 
-## 21. Glosarium
+## 21. Backend Dashboard Provider
+
+Rancangan lengkapnya ada di [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Versi ini belum punya Upload, sehingga semua bagian yang menampilkan data dibangun sebagai **mesin siap pakai**. Datanya baru berasal dari test dan seeder demo, tapi langsung berfungsi begitu Upload tersedia.
+
+### Siapa boleh memanggil `/providers/me/**`
+
+`ProviderAccess.requireActive(userId)` dipanggil di awal setiap service provider:
+- tidak punya profil provider → `403 PROVIDER_REQUIRED`
+- status `suspended` → `403 PROVIDER_SUSPENDED` ("Mode provider dinonaktifkan. Hubungi admin…")
+
+### Kenapa SQL biasa (`ProviderTemplateQueries`)
+
+Statistik berisi hitungan dan pengelompokan (`COUNT … FILTER`, `GROUP BY`, `generate_series`). Bentuk seperti ini lebih jelas ditulis sebagai SQL lewat `JdbcClient` daripada lewat Entity JPA. Bagian SQL yang disambung (kondisi filter, urutan) hanya diambil dari daftar tetap di enum. Nilai dari user (kategori, kata kunci, halaman) selalu dikirim sebagai **parameter**, sehingga aman dari SQL injection. Tanda `%` dan `_` di kata kunci juga di-escape, supaya dicari sebagai huruf biasa.
+
+### Angka Beranda
+
+| Angka | Cara dihitung |
+|---|---|
+| **Aktif** | Jumlah template berstatus `published` (tidak terpengaruh periode) |
+| **Dilihat** / **Didownload** | Jumlah `template_events` jenis `view`/`download` milik template provider sejak awal periode |
+| **Periode** | `StatsPeriod`: 7 atau 30 hari terakhir **termasuk hari ini**, dihitung di zona waktu app (`app.timezone`, bawaan `Asia/Jakarta`) |
+
+**Grafik tren:** `generate_series` membuat satu baris untuk **setiap tanggal** dalam periode, lalu digabung (LEFT JOIN) dengan hitungan download per tanggal. Tanggal tanpa download tetap muncul dengan nilai 0. Tanggal setiap event dihitung dengan `occurred_at AT TIME ZONE 'Asia/Jakarta'`, jadi download pukul 00.30 WIB masuk ke tanggal WIB yang benar, bukan tanggal UTC kemarin.
+
+**Template populer:** hanya yang `published` dan punya download di periode itu. Urutannya berdasarkan download, lalu jumlah dilihat, maksimal 3.
+
+**Perlu tindakan:** daftar ini dihitung dari **kondisi saat ini**, bukan disimpan. Isinya template `check_failed` (dengan jumlah error dari pengecekan terakhir), template tayang yang masih punya peringatan, draft, dan profil yang belum lengkap (bio atau keahlian kosong). Karena itu kartu otomatis hilang begitu masalahnya beres.
+
+### Event dilihat/didownload (`TemplateEventService`)
+
+- Boleh dipanggil **tanpa login**, karena tamu dihitung lewat `installId` (ID acak per instalasi app).
+- Diabaikan (tetap dibalas `202`): template yang tidak tayang, dan event dari pemilik template sendiri.
+- Download untuk `projectId` yang sama hanya tersimpan sekali. Ini dijaga oleh **index unik** di database dan `INSERT … ON CONFLICT DO NOTHING`, jadi tidak bisa terhitung ganda walaupun app mengirim ulang.
+- `occurredAt` adalah waktu di HP, karena export bisa terjadi offline lalu dikirim belakangan. Waktu yang lebih dari 1 hari di masa depan ditolak.
+
+### Template Anda
+
+- Filter status: `all`, `published`, `needs_fix` (= tidak lolos + tayang dengan peringatan), `checking`, `draft`, `disabled`. Respons juga membawa **jumlah per status** untuk chip, misalnya "Tayang (4)". Filter kategori dan pencarian ikut diterapkan pada jumlah itu, tapi filter status tidak, supaya semua chip tetap terisi.
+- Urutan: `updated` (bawaan), `downloads`, `views`, `name`. Paginasi 20 per halaman.
+- Template milik provider lain dibalas `404` (bukan `403`), supaya keberadaannya tidak bocor.
+
+### Seeder demo (`DemoTemplateSeeder`)
+
+Hanya aktif kalau dua syarat terpenuhi: profile `dev` **dan** `app.seed.demo-templates=true` (`@ConditionalOnProperty`). `@Order(2)` memastikan seeder ini berjalan setelah `DummyDataSeeder`, yang membutuhkan tabel users masih kosong. Data demo dihapus dengan `DELETE /api/dev/demo-templates`: akun demo dihapus, dan semua datanya ikut terhapus lewat `ON DELETE CASCADE`.
+
+Pelajaran dari test: template disimpan lewat JPA, sedangkan event ditulis lewat SQL langsung. Hibernate menunda penulisan ke database sampai akhir transaksi, jadi harus dipanggil `templateRepository.flush()` lebih dulu. Tanpa itu, foreign key `template_id` belum dikenali database.
+
+### Yang sengaja belum dibuat
+
+Upload, mode tandai, pengecekan otomatis sungguhan, push notification (FCM), dan pengingat berkala. Semuanya menunggu diskusi segmen Upload (bagian 9 rancangan).
+
+---
+
+## 22. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -877,3 +950,7 @@ Kalau refresh token ditolak, `TokenAuthenticator` menghapus sesi lalu mengirim e
 | DialogFragment | Dialog yang dikelola seperti Fragment, sehingga bertahan saat layar dibuat ulang |
 | Bottom sheet | Panel yang muncul dari bawah layar, dipakai untuk menu profil |
 | Compound drawable | Ikon yang ditempel langsung di sisi TextView (`drawableStart`), tanpa ImageView terpisah |
+| `generate_series` | Fungsi PostgreSQL yang membuat deret nilai (mis. satu baris per tanggal) |
+| `COUNT(*) FILTER (WHERE …)` | Menghitung hanya baris yang memenuhi syarat, beberapa hitungan sekaligus dalam satu query |
+| `ON CONFLICT DO NOTHING` | Lewati INSERT yang melanggar index unik, tanpa error |
+| `flush()` (JPA) | Memaksa Hibernate menulis perubahan yang tertahan ke database sekarang juga |

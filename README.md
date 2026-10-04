@@ -17,6 +17,9 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Android: login Google (Credential Manager), GitHub (Custom Tabs + deep link), dialog penyambungan akun | Sudah (Fase 08) |
 | Android: onboarding (pilih peran, form pembuat website & provider), menu profil, beralih mode, pengaturan, metode login terhubung, keluar | Sudah (Fase 09) |
 | Polesan akhir: tombol Coba lagi di semua aksi online, screenshot terang/gelap, lint bersih, uji skenario 13.2 di HP | Sudah (Fase 10) |
+| Backend provider: status `active`/`suspended`, Beranda (ringkasan, tren download, populer, perlu tindakan), Template Anda (filter/urutan/cari), Profil, event dilihat/didownload, notifikasi, seeder demo | Sudah (Fase 11) |
+| Android Dashboard Provider (bottom navigation) | Belum (Fase 12) |
+| Upload template, push notification | Segera hadir (lihat `docs/rancangan/alur-provider.md`) |
 | Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
@@ -420,9 +423,8 @@ Saat backend start dengan profile `dev` dan tabel `users` masih **kosong**, `Dum
 |---|---|---|
 | `dummy1@templateapp.test`, `dummy2@templateapp.test` | Belum onboarding | Alur pilih peran → form |
 | `dummy3@templateapp.test` … `dummy7@templateapp.test` | Pembuat website, onboarding selesai | Dashboard pembuat website, "Jadi penyedia template" |
-| `dummy8@templateapp.test` | Pembuat website + provider **pending** | Banner "Akunmu sedang diverifikasi." |
-| `dummy9@templateapp.test` | Pembuat website + provider **approved** | Beralih mode tanpa banner |
-| `dummy10@templateapp.test` | Pembuat website + provider **rejected** | Banner "Pengajuan provider ditolak: …" |
+| `dummy8@templateapp.test`, `dummy9@templateapp.test` | Pembuat website + provider **active** (belum punya template) | Dashboard Provider kosong + checklist provider baru, beralih mode |
+| `dummy10@templateapp.test` | Pembuat website + provider **suspended** | Mode provider terkunci → diarahkan ke mode pembuat website |
 
 Nama tampilannya nama Indonesia acak dengan seed tetap, jadi hasilnya selalu sama setiap kali database diisi ulang.
 
@@ -433,9 +435,31 @@ sudo -u postgres psql -d templateapp -c "TRUNCATE users CASCADE;"   # kosongkan 
 # lalu jalankan ulang backend dengan profile dev
 ```
 
+## Data demo provider (opsional)
+
+Selama fitur Upload belum ada, semua akun provider tidak punya template, jadi Dashboard Provider tampil kosong. Untuk melihat grafik, template populer, dan daftar berisi data, nyalakan **seeder demo**:
+
+```bash
+cd backend
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev -Dspring-boot.run.arguments=--app.seed.demo-templates=true
+```
+
+Seeder membuat akun **`demo-provider@templateapp.test`** / **`password123`** berisi:
+- 7 template berbagai status (tayang, tayang dengan peringatan, tidak lolos, sedang dicek, draft, dinonaktifkan)
+- hasil pengecekan (error & peringatan) dan 3 notifikasi
+- event dilihat/didownload tersebar di 30 hari terakhir
+
+Seeder ini hanya ada di profile `dev`, mati secara bawaan, dan tidak dibuat ulang kalau akun demo sudah ada. Akun provider lain tetap kosong.
+
+Untuk menghapusnya lagi (supaya kembali kosong), panggil `DELETE /api/dev/demo-templates` di Swagger UI (grup **Dev**) atau lewat terminal:
+
+```bash
+curl -X DELETE http://localhost:8080/api/dev/demo-templates
+```
+
 ## Contoh SQL status provider
 
-Panel admin belum ada, jadi status provider diubah manual. Masuk dulu ke database:
+Provider langsung **aktif** setelah mengisi form (tidak ada verifikasi). Status hanya `active` dan `suspended`, dan karena panel admin belum ada, perubahan status dilakukan manual. Masuk dulu ke database:
 
 ```bash
 psql -h localhost -U templateapp -d templateapp
@@ -443,27 +467,19 @@ psql -h localhost -U templateapp -d templateapp
 
 ```sql
 -- Lihat semua provider beserta statusnya
-SELECT u.email, p.creator_name, p.status, p.rejection_reason
+SELECT u.email, p.creator_name, p.status
 FROM provider_profiles p JOIN users u ON u.id = p.user_id;
 
--- Setujui (banner hilang)
-UPDATE provider_profiles SET status = 'approved', rejection_reason = NULL, updated_at = now()
-WHERE user_id = (SELECT id FROM users WHERE email = 'dummy8@templateapp.test');
-
--- Tolak dengan alasan (banner "Pengajuan provider ditolak: {alasan}.")
-UPDATE provider_profiles SET status = 'rejected', rejection_reason = 'Portofolio belum bisa dibuka.', updated_at = now()
-WHERE user_id = (SELECT id FROM users WHERE email = 'dummy8@templateapp.test');
-
--- Tangguhkan (mode provider terkunci, user diarahkan ke mode pembuat website)
+-- Tangguhkan (rem darurat: mode provider terkunci, user diarahkan ke mode pembuat website)
 UPDATE provider_profiles SET status = 'suspended', updated_at = now()
 WHERE user_id = (SELECT id FROM users WHERE email = 'dummy9@templateapp.test');
 
--- Kembalikan ke menunggu verifikasi
-UPDATE provider_profiles SET status = 'pending', rejection_reason = NULL, updated_at = now()
-WHERE user_id = (SELECT id FROM users WHERE email = 'dummy8@templateapp.test');
+-- Aktifkan kembali
+UPDATE provider_profiles SET status = 'active', updated_at = now()
+WHERE user_id = (SELECT id FROM users WHERE email = 'dummy9@templateapp.test');
 ```
 
-Nilai status selain `pending`, `approved`, `rejected`, dan `suspended` ditolak oleh database (CHECK constraint).
+Nilai status selain `active` dan `suspended` ditolak oleh database (CHECK constraint).
 
 ## Troubleshooting
 
