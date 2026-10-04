@@ -18,9 +18,9 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Android: onboarding (pilih peran, form pembuat website & provider), menu profil, beralih mode, pengaturan, metode login terhubung, keluar | Sudah (Fase 09) |
 | Polesan akhir: tombol Coba lagi di semua aksi online, screenshot terang/gelap, lint bersih, uji skenario 13.2 di HP | Sudah (Fase 10) |
 | Backend provider: status `active`/`suspended`, Beranda (ringkasan, tren download, populer, perlu tindakan), Template Anda (filter/urutan/cari), Profil, event dilihat/didownload, notifikasi, seeder demo | Sudah (Fase 11) |
-| Android Dashboard Provider (bottom navigation) | Belum (Fase 12) |
+| Android Dashboard Provider: bottom navigation, Beranda (perlu tindakan + badge, checklist provider baru, ringkasan 7/30 hari, grafik area, populer, panduan), Template Anda (cari, filter, urutan, paginasi), detail + hasil pengecekan, Profil + Edit profil | Sudah (Fase 12) |
 | Upload template, push notification | Segera hadir (lihat `docs/rancangan/alur-provider.md`) |
-| Dashboard Pembuat Website & Dashboard Provider | Segera hadir (hanya layar "Segera hadir") |
+| Dashboard Pembuat Website | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
 > 👥 **Ikut mengembangkan bersama tim / memakai Windows?** Ikuti [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md): langkah lengkap dari nol untuk **Windows** dan Linux, cara mendaftarkan SHA-1 & Test user Google, berbagi kredensial dengan aman, dan alur kerja Git tim. README ini berisi rangkuman untuk Linux (Ubuntu).

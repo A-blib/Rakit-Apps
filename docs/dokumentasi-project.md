@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 11** (backend Dashboard Provider). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
+> Status dokumen: diperbarui sampai **Fase 12** (Dashboard Provider di Android). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
 
 ---
 
@@ -39,7 +39,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 **Fitur provider**
 
 21. [Backend Dashboard Provider](#21-backend-dashboard-provider)
-22. [Glosarium](#22-glosarium)
+22. [Dashboard Provider di Android](#22-dashboard-provider-di-android)
+23. [Glosarium](#23-glosarium)
 
 ---
 
@@ -687,14 +688,8 @@ Pindah layar memakai ID aksi di `nav_graph.xml` (`R.id.action_startup_to_intro`)
 
 - `CurrentUserViewModel` membaca salinan user di HP setiap kali layar tampil (`onStart`). Kalau hasilnya null, user adalah tamu.
 - `AppBarAccount` mengatur sisi kanan app bar: tombol **Masuk** untuk tamu, atau **avatar** (huruf depan nama, area sentuh 48dp) untuk user yang sudah login.
-- Dashboard Provider menampilkan `StatusBannerView` sesuai status:
-
-| Status | Banner |
-|---|---|
-| `pending` | kuning: "Akunmu sedang diverifikasi." |
-| `approved` | (tanpa banner) |
-| `rejected` | merah: "Pengajuan provider ditolak: {alasan}." Alasan dikirim backend lewat `providerRejectionReason` |
-| `suspended` | merah: "Akun provider ditangguhkan." |
+- Dashboard Pembuat Website masih "Segera hadir". Dashboard Provider sudah berisi data sungguhan sejak Fase 12 (bab 22).
+- Status provider hanya `active` dan `suspended`. Provider yang `suspended` tidak pernah masuk Dashboard Provider: `StartupDecision` membukakan Dashboard Pembuat Website dengan `StatusBannerView` merah "Mode provider dinonaktifkan. Hubungi admin untuk informasi lebih lanjut."
 
 ### Animasi Lottie
 
@@ -811,7 +806,7 @@ Login GitHub memakai **dua** jalur ke backend lewat `adb reverse`: app (`/auth/g
 
 ```
 Startup ──(onboarding belum selesai)──► Pilih peran ─┬─► Form pembuat website ─(Mulai/Lewati)─► Dashboard Pembuat Website
-                                                     └─► Form provider ─(Kirim)─────────────► Dashboard Provider (banner pending)
+                                                     └─► Form provider ─(Kirim)─────────────► Dashboard Provider (langsung aktif)
 
 Dashboard ── avatar ──► Menu profil (bottom sheet)
                           ├─ Beralih ke mode …            (hanya jika punya dua peran)
@@ -909,7 +904,83 @@ Upload, mode tandai, pengecekan otomatis sungguhan, push notification (FCM), dan
 
 ---
 
-## 22. Glosarium
+## 22. Dashboard Provider di Android
+
+Semua file ada di `android/app/src/main/java/com/aris/templateapp/ui/provider/`, kecuali grafik (`ui/common/AreaChartView.java`). Datanya diambil lewat `ProviderApi` → `ProviderRepository` (bab 21 untuk sisi backend).
+
+### Peta layar
+
+```
+ProviderDashboardFragment  (shell: app bar + bottom navigation, ada di nav_graph)
+ ├─ ProviderHomeFragment       tab Beranda          ┐
+ ├─ ProviderUploadFragment     tab Upload (segera)  │ Fragment ANAK, ditukar dengan show/hide
+ ├─ ProviderTemplatesFragment  tab Template Anda    │
+ └─ ProviderProfileFragment    tab Profil           ┘
+
+Dibuka DI ATAS shell lewat ProviderNav (tujuan di nav_graph, tombol kembali → tab yang sama):
+ templateDetailFragment · guideFragment · providerProfileEditFragment · settingsFragment · linkedMethodsFragment
+```
+
+**Kenapa tab = Fragment anak dengan show/hide, bukan NavHost kedua?** Dengan show/hide, setiap tab dibuat sekali lalu hanya disembunyikan, jadi isi dan posisi scroll tetap utuh saat pindah tab. Layar lanjutan tetap memakai Navigation **utama**: `NavHostFragment.findNavController(fragmentAnak)` mencari ke atas sampai NavHostFragment terdekat, yaitu milik Activity. Kalau ada NavHost kedua di dalam shell, menu profil (`ProfileSheet`) akan menemukan NavHost yang salah saat membuka Pengaturan.
+
+**Tab terpilih diingat** di field `selectedTab` dan `onSaveInstanceState`. Saat kembali dari detail, view shell dibuat ulang, tetapi Fragment anaknya masih tersimpan di `childFragmentManager`, sehingga tab yang sama langsung tampil lagi.
+
+### Siapa memiliki data (ViewModel)
+
+| ViewModel | Diambil dari | Alasan |
+|---|---|---|
+| `ProviderDashboardViewModel` | shell (`requireParentFragment()` di tab Beranda) | Shell butuh jumlah "Perlu tindakan" untuk **badge** tab Beranda; satu request dipakai bersama |
+| `ProviderTemplatesViewModel` | **Activity** (`requireActivity()`) | "Filter terakhir diingat selama app terbuka" (rancangan 6.3), walau user keluar-masuk Dashboard Provider |
+| `ProviderProfileViewModel` + `ProfileViewModel` | tab Profil | `ProfileViewModel` (menu profil) dipakai ulang untuk beralih mode & keluar |
+| `TemplateDetailViewModel`, `ProviderProfileEditViewModel` | layarnya sendiri | |
+
+**Memuat ulang diam-diam:** saat kembali ke tab (dari detail, edit profil, atau latar belakang), data diambil lagi tanpa layar loading penuh. Kalau gagal, data lama tetap tampil dan muncul snackbar. **Nomor request** (`generation`) dipakai supaya jawaban request lama, misalnya periode 7 hari yang datang setelah user memilih 30 hari, tidak menimpa data yang lebih baru.
+
+**Mode provider ditangguhkan** saat app terbuka: `/providers/me/dashboard` membalas `PROVIDER_SUSPENDED`. ViewModel lalu memperbarui salinan user (`fetchMe`), dan shell membuka Dashboard Pembuat Website dengan banner "Mode provider dinonaktifkan…" (rancangan 3.2).
+
+### Beranda
+
+| Kondisi | Yang tampil |
+|---|---|
+| Belum punya template (`hasTemplates = false`) | Checklist provider baru: lengkapi profil → baca panduan → upload ("Segera hadir"), dengan progres "n dari 3" |
+| Sudah punya template | Ringkasan (chip 7/30 hari), grafik tren, 3 template populer |
+| Selalu | Perlu tindakan (disembunyikan jika kosong), Panduan, tombol Upload |
+
+Baris di dalam kartu (Perlu tindakan, checklist, panduan) memakai satu layout serbaguna, `item_row.xml`, yang ditambahkan dari kode. Daftarnya pendek dan tetap, jadi tidak perlu RecyclerView.
+
+Penanda "baru" pada panduan disimpan oleh `GuideStore` (SharedPreferences, per HP). Langkah "Baca panduan" di checklist selesai kalau salah satu panduan **yang sudah berisi** pernah dibuka.
+
+### Grafik custom (`AreaChartView`)
+
+Grafik ini digambar sendiri di `onDraw(Canvas)` (keputusan Aris: tanpa library):
+1. **Skala Y** dihitung `niceMax()`: nilai terbesar dibulatkan ke atas menjadi 1/2/5 × 10ⁿ × 4. Hasilnya, 4 garis grid selalu berlabel bilangan bulat, misalnya 23 → sumbu 0–40.
+2. **Garis** dibuat dengan `Path.lineTo` antar-titik. **Area** memakai path yang sama, ditutup ke dasar grafik, lalu diisi `LinearGradient` warna foreground dari alpha 70 ke 0.
+3. **Label** memakai Geist Mono. Untuk 7 hari ditampilkan nama hari; untuk 30 hari tanggal setiap 5 hari, ditambah hari terakhir (`DownloadTrendChart`).
+4. **Ketuk/geser**: `onTouchEvent` mencari titik terdekat dari posisi jari, lalu menggambar garis vertikal + tooltip "Rab, 30 Sep · 5 download". `requestDisallowInterceptTouchEvent(true)` mencegah ScrollView ikut menggeser layar saat jari menggeser grafik.
+5. Semua warna diambil dari `@color/...`, jadi grafik otomatis ikut mode gelap.
+
+`DownloadTrendChart` (data → titik) dan `niceMax` adalah fungsi murni, sehingga diuji dengan unit test biasa.
+
+### Template Anda
+
+- **Pencarian** menunggu 400 ms setelah user berhenti mengetik (`Handler.postDelayed`), supaya tidak mengirim request untuk setiap huruf. Tombol cari di keyboard langsung menjalankannya.
+- **Chip status** menampilkan jumlah dari respons (`counts`). Dropdown kategori dan urutan memakai `PopupMenu`.
+- **Paginasi**: `RecyclerView.OnScrollListener` memanggil `loadMore()` saat tersisa 5 kartu di bawah layar. `ConcatAdapter` menggabungkan `TemplateAdapter` (kartu) dengan `LoadingFooterAdapter` (indikator di bawah). `ListAdapter` + `DiffUtil` hanya menggambar kartu yang baru.
+- **Keadaan**: kerangka (skeleton) saat halaman pertama dimuat; "Belum ada template…" + Buka panduan; "Tidak ada template dengan filter ini." + Hapus filter; error + Coba lagi. `StateView` sekarang bisa menampilkan satu tombol aksi selain "Coba lagi".
+- `TemplateListState` adalah objek **tidak berubah** yang dibuat baru setiap kali ada perubahan, jadi layar cukup menggambar ulang dari satu objek.
+
+### Detail, Profil, Edit profil
+
+- Detail menampilkan status + waktu pengecekan ("Tidak lolos · 2 error · 4 Okt 11.40"), angka total, lalu daftar error (merah) dan peringatan (oranye) beserta file, baris, dan saran. Tombol aksi menunggu fitur Upload.
+- Edit profil memakai **layout yang sama** dengan form provider onboarding (`fragment_provider_form.xml`). Judul dan tombol diganti, checkbox aturan disembunyikan, dan validasinya memakai `OnboardingFormValidator`. Keahlian yang tidak ada di daftar chip ditambahkan sebagai chip baru supaya tidak hilang saat disimpan.
+
+### Teks & angka
+
+`TemplateUi` mengubah nilai backend menjadi teks: status (`check_failed` → "Tidak lolos"), kategori, "Diperbarui 2 hari lalu" (`RelativeTime`, diuji), angka dengan pemisah ribuan Indonesia (1.234), dan tanggal "4 Okt 11.40" menurut zona waktu HP.
+
+---
+
+## 23. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -954,3 +1025,11 @@ Upload, mode tandai, pengecekan otomatis sungguhan, push notification (FCM), dan
 | `COUNT(*) FILTER (WHERE …)` | Menghitung hanya baris yang memenuhi syarat, beberapa hitungan sekaligus dalam satu query |
 | `ON CONFLICT DO NOTHING` | Lewati INSERT yang melanggar index unik, tanpa error |
 | `flush()` (JPA) | Memaksa Hibernate menulis perubahan yang tertahan ke database sekarang juga |
+| Bottom navigation | Baris tab di bawah layar untuk berpindah antar-bagian utama app |
+| Fragment anak | Fragment di dalam Fragment lain, dikelola `getChildFragmentManager()` |
+| Custom View | Class turunan `View` yang menggambar sendiri isinya di `onDraw(Canvas)` |
+| `Path` / `LinearGradient` | Bentuk garis bebas / isian warna bergradasi untuk menggambar di Canvas |
+| Paginasi | Memuat data sedikit demi sedikit per halaman (di sini 20 per halaman) |
+| `DiffUtil` | Pembanding dua daftar untuk mencari item yang berubah, supaya RecyclerView hanya menggambar ulang yang perlu |
+| Debounce | Menunggu jeda tertentu setelah aksi terakhir sebelum bertindak (mis. pencarian saat mengetik) |
+| Skeleton | Kartu abu-abu berbentuk isi yang tampil selama data dimuat |
