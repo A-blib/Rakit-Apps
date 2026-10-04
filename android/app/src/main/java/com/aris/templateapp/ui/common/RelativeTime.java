@@ -1,10 +1,10 @@
-package com.aris.templateapp.ui.provider;
+package com.aris.templateapp.ui.common;
 
 import java.time.Duration;
 import java.time.Instant;
 
 /**
- * Menghitung "berapa lama yang lalu" untuk teks "Diperbarui 2 hari lalu" (alur-provider.md bagian 6.2).
+ * Menghitung "berapa lama yang lalu" untuk teks "Diperbarui 2 hari lalu" (provider) dan "Diedit 2 jam lalu" (project).
  * Hanya menghitung satuan & jumlah; teksnya dipilih layar dari strings.xml. Tanpa Android agar mudah diuji.
  */
 public final class RelativeTime {

@@ -59,6 +59,31 @@
     </fragment>
 
     <!-- Shell Dashboard Provider: 4 tab (Beranda, Upload, Template Anda, Profil) adalah Fragment anak di dalamnya. -->
+    <!-- Halaman editor (alur-pembuatan-website.md 6.1). Versi awal "Segera hadir"; argumen title = nama project/template. -->
+    <fragment
+        android:id="@+id/templateEditorFragment"
+        android:name="com.aris.templateapp.ui.editor.ComingSoonEditorFragment$TemplateEditor">
+        <argument
+            android:name="title"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/customEditorFragment"
+        android:name="com.aris.templateapp.ui.editor.ComingSoonEditorFragment$CustomEditor">
+        <argument
+            android:name="title"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/creatorProfileEditFragment"
+        android:name="com.aris.templateapp.ui.creator.CreatorProfileEditFragment" />
+
     <fragment
         android:id="@+id/providerDashboardFragment"
         android:name="com.aris.templateapp.ui.provider.ProviderDashboardFragment" />
@@ -74,7 +99,7 @@
 
     <fragment
         android:id="@+id/guideFragment"
-        android:name="com.aris.templateapp.ui.provider.GuideFragment">
+        android:name="com.aris.templateapp.ui.guide.GuideFragment">
         <!-- Nama enum Guide, mis. "PREPARE_TEMPLATE". -->
         <argument
             android:name="guide"

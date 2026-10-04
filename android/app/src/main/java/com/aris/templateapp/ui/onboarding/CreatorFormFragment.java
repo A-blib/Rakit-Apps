@@ -48,7 +48,7 @@ public class CreatorFormFragment extends Fragment {
             }
         });
         binding.startButton.setOnClickListener(v -> viewModel.submitCreator(
-                OnboardingUi.text(binding.displayNameInput), selectedPurpose(),
+                OnboardingUi.text(binding.displayNameInput), OnboardingUi.purposeValue(binding.purposeGroup.getCheckedChipId()),
                 OnboardingUi.text(binding.organizationInput)));
         binding.skipButton.setOnClickListener(v -> viewModel.skipCreator(OnboardingUi.text(binding.displayNameInput)));
 
@@ -72,18 +72,6 @@ public class CreatorFormFragment extends Fragment {
                 HomeNavigator.navigateHome(this, user);
             }
         });
-    }
-
-    /** Nilai backend untuk chip terpilih, atau null jika tidak ada yang dipilih. */
-    private String selectedPurpose() {
-        int checked = binding.purposeGroup.getCheckedChipId();
-        if (checked == R.id.purpose_sekolah) return "sekolah";
-        if (checked == R.id.purpose_organisasi) return "organisasi";
-        if (checked == R.id.purpose_umkm) return "umkm";
-        if (checked == R.id.purpose_instansi) return "instansi";
-        if (checked == R.id.purpose_pribadi) return "pribadi";
-        if (checked == R.id.purpose_lainnya) return "lainnya";
-        return null;
     }
 
     @Override

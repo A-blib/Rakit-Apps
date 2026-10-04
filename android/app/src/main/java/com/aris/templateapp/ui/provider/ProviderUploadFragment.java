@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.aris.templateapp.ui.guide.Guide;
 import com.aris.templateapp.databinding.FragmentProviderUploadBinding;
 import com.aris.templateapp.ui.common.LottieTint;
 

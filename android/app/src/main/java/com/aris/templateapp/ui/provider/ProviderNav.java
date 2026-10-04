@@ -6,6 +6,8 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.ui.guide.Guide;
+import com.aris.templateapp.ui.guide.GuideFragment;
 
 /**
  * Pindah dari tab Dashboard Provider ke layar penuh (detail template, panduan, edit profil).
@@ -15,7 +17,6 @@ import com.aris.templateapp.R;
 public final class ProviderNav {
 
     static final String ARG_TEMPLATE_ID = "templateId";
-    static final String ARG_GUIDE = "guide";
 
     private ProviderNav() {
     }
@@ -27,9 +28,7 @@ public final class ProviderNav {
     }
 
     public static void openGuide(Fragment from, Guide guide) {
-        Bundle args = new Bundle();
-        args.putString(ARG_GUIDE, guide.name());
-        NavHostFragment.findNavController(from).navigate(R.id.guideFragment, args);
+        GuideFragment.open(from, guide);
     }
 
     public static void openEditProfile(Fragment from) {

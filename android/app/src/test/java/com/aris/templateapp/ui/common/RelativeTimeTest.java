@@ -1,8 +1,8 @@
-package com.aris.templateapp.ui.provider;
+package com.aris.templateapp.ui.common;
 
 import static org.junit.Assert.assertEquals;
 
-import com.aris.templateapp.ui.provider.RelativeTime.Unit;
+import com.aris.templateapp.ui.common.RelativeTime.Unit;
 
 import org.junit.Test;
 

@@ -37,6 +37,13 @@
     <dimen name="thumbnail_size_large">160dp</dimen>
     <dimen name="new_dot_size">8dp</dimen>
     <dimen name="skeleton_line_height">12dp</dimen>
+    <!-- Tombol + di bottom navigation pembuat website: sedikit lebih besar & sedikit naik dari baris tab. -->
+    <dimen name="create_button_size">52dp</dimen>
+    <dimen name="create_button_lift">-6dp</dimen>
+    <dimen name="project_card_small_width">200dp</dimen>
+    <dimen name="template_card_small_width">160dp</dimen>
+    <dimen name="thumbnail_height_card">104dp</dimen>
+    <dimen name="thumbnail_height_large">140dp</dimen>
 
     <dimen name="text_display">32sp</dimen>
     <dimen name="text_headline">24sp</dimen>

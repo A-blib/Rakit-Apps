@@ -17,7 +17,7 @@ import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
-/** Menu profil: data user, beralih mode, dan keluar (bagian 6.6 & 6.7). */
+/** Aksi akun: beralih mode dan keluar (bagian 6.6 & 6.7). Dipakai tab Profil kedua dashboard dan Pengaturan. */
 @HiltViewModel
 public class ProfileViewModel extends ViewModel {
 

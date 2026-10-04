@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Satu baris menu DEBUG di Pengaturan (ikon dipasang dari kode). -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.App.ListItem.Text" />

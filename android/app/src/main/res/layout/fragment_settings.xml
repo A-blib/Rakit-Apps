@@ -23,6 +23,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Grup Akun disembunyikan untuk tamu (Pengaturan juga bisa dibuka tamu dari tab Profil). -->
+            <LinearLayout
+                android:id="@+id/account_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
             <TextView
                 style="@style/Widget.App.ListGroupTitle"
                 android:text="@string/settings_group_account" />
@@ -69,6 +76,7 @@
                 style="@style/Widget.App.ListItem.Text"
                 app:drawableStartCompat="@drawable/ic_logout"
                 android:text="@string/profile_sign_out" />
+            </LinearLayout>
 
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="match_parent"
@@ -86,6 +94,13 @@
                 android:paddingHorizontal="@dimen/screen_padding_horizontal"
                 android:paddingVertical="@dimen/space_3"
                 android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+            <!-- Diisi grup DEBUG hanya di build debug (lihat DebugMenu). -->
+            <LinearLayout
+                android:id="@+id/debug_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

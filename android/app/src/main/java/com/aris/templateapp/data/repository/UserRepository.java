@@ -75,6 +75,13 @@ public class UserRepository {
                 new CreatorOnboardingRequestDto(displayName, websitePurpose, organizationName)));
     }
 
+    /** Edit info pembuat website dari tab Profil; salinan user di HP ikut diperbarui. */
+    @WorkerThread
+    public Resource<User> updateCreatorProfile(String displayName, String websitePurpose, String organizationName) {
+        return executeUser(userApi.updateCreatorProfile(
+                new CreatorOnboardingRequestDto(displayName, websitePurpose, organizationName)));
+    }
+
     @WorkerThread
     public Resource<User> becomeProvider(String creatorName, String bio, String portfolioUrl, List<String> specialties) {
         // Checkbox persetujuan sudah diwajibkan di form sebelum method ini dipanggil.

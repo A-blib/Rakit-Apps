@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Teks menu DEBUG di Pengaturan. Hanya ada di build debug. -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="debug_group">Debug</string>
+    <string name="debug_fill_projects">Isi project contoh</string>
+    <string name="debug_clear_projects">Hapus project contoh</string>
+    <string name="debug_projects_added" tools:ignore="PluralsCandidate">%1$d project contoh ditambahkan.</string>
+    <string name="debug_projects_removed" tools:ignore="PluralsCandidate">%1$d project contoh dihapus.</string>
+</resources>

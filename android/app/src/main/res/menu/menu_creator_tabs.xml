@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Bottom navigation Dashboard Pembuat Website (alur-pembuatan-website.md bagian 2):
+    Beranda · Project · [ + ] · Template · Profil. Item tengah hanya memberi tempat untuk tombol + yang
+    digambar di atasnya (bukan tab), jadi dibuat nonaktif dan tanpa ikon/judul.
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/tab_creator_home"
+        android:icon="@drawable/ic_home"
+        android:title="@string/tab_home" />
+    <item
+        android:id="@+id/tab_creator_projects"
+        android:icon="@drawable/ic_folder"
+        android:title="@string/tab_projects" />
+    <item
+        android:id="@+id/tab_creator_create_slot"
+        android:enabled="false"
+        android:title="" />
+    <item
+        android:id="@+id/tab_creator_gallery"
+        android:icon="@drawable/ic_grid_view"
+        android:title="@string/tab_gallery" />
+    <item
+        android:id="@+id/tab_creator_profile"
+        android:icon="@drawable/ic_person"
+        android:title="@string/tab_profile" />
+</menu>

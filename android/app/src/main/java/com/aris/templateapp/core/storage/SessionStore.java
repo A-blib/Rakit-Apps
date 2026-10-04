@@ -14,6 +14,8 @@ import com.aris.templateapp.data.remote.dto.UserDto;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -33,6 +35,7 @@ public class SessionStore {
     private static final String KEY_USER = "cached_user";
     private static final String KEY_LAST_MODE = "last_mode";
     private static final String KEY_INTRO_SEEN = "intro_seen";
+    private static final String KEY_INSTALL_ID = "install_id";
 
     private final SharedPreferences prefs;
     private final Gson gson;
@@ -81,7 +84,20 @@ public class SessionStore {
         prefs.edit().putString(KEY_LAST_MODE, mode.value()).apply();
     }
 
-    /** Menghapus data user (saat keluar / sesi berakhir). Penanda intro tetap disimpan. */
+    /**
+     * ID acak per instalasi app, untuk menghitung "Dilihat"/"Didownload" dari tamu tanpa mengenali siapa
+     * orangnya (alur-provider.md 3.5). Dibuat sekali, tidak ikut terhapus saat keluar akun.
+     */
+    public synchronized String getInstallId() {
+        String id = prefs.getString(KEY_INSTALL_ID, null);
+        if (id == null) {
+            id = UUID.randomUUID().toString();
+            prefs.edit().putString(KEY_INSTALL_ID, id).apply();
+        }
+        return id;
+    }
+
+    /** Menghapus data user (saat keluar / sesi berakhir). Penanda intro & ID instalasi tetap disimpan. */
     public synchronized void clearUser() {
         prefs.edit().remove(KEY_USER).remove(KEY_LAST_MODE).apply();
     }

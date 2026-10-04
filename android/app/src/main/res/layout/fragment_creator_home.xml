@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Tab Beranda pembuat website (alur-pembuatan-website.md bagian 3). Urutan bagian berubah sesuai kondisi:
+    belum punya project → Mulai (besar) di atas; sudah punya → Lanjutkan project di atas, Mulai jadi satu baris.
+    Karena itu kedua versi "Mulai" ada di layout dan dipilih dari kode.
+-->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingVertical="@dimen/space_6">
+
+        <com.aris.templateapp.ui.common.StatusBannerView
+            android:id="@+id/suspended_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/screen_padding_horizontal"
+            android:layout_marginBottom="@dimen/space_6"
+            android:visibility="gone" />
+
+        <!-- MULAI versi besar (belum punya project) -->
+        <LinearLayout
+            android:id="@+id/start_large"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingBottom="@dimen/space_6">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/start_heading"
+                android:textAppearance="@style/TextAppearance.App.Display" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2"
+                android:layout_marginBottom="@dimen/space_6"
+                android:text="@string/start_subheading"
+                android:textAppearance="@style/TextAppearance.App.Body"
+                android:textColor="@color/color_muted" />
+
+            <include
+                android:id="@+id/start_template"
+                layout="@layout/view_start_option" />
+
+            <include
+                android:id="@+id/start_custom"
+                layout="@layout/view_start_option"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2" />
+        </LinearLayout>
+
+        <!-- LANJUTKAN PROJECT -->
+        <LinearLayout
+            android:id="@+id/continue_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/space_6"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/Widget.App.SectionTitle"
+                android:layout_marginHorizontal="@dimen/screen_padding_horizontal"
+                android:layout_marginBottom="@dimen/space_2"
+                android:text="@string/home_continue_title" />
+
+            <include
+                android:id="@+id/continue_large"
+                layout="@layout/item_project_large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/screen_padding_horizontal" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/continue_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <Button
+                android:id="@+id/continue_see_all"
+                style="@style/Widget.App.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="@dimen/space_2"
+                android:text="@string/action_see_all" />
+        </LinearLayout>
+
+        <!-- MULAI versi satu baris (sudah punya project) -->
+        <LinearLayout
+            android:id="@+id/start_compact"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingBottom="@dimen/space_6"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/Widget.App.SectionTitle"
+                android:layout_marginBottom="@dimen/space_2"
+                android:text="@string/home_start_title" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/start_template_button"
+                    style="@style/Widget.App.Button.Outlined.Compact"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/start_template_title"
+                    app:icon="@drawable/ic_grid_view"
+                    app:iconGravity="textStart" />
+
+                <Space
+                    android:layout_width="@dimen/space_2"
+                    android:layout_height="0dp" />
+
+                <Button
+                    android:id="@+id/start_custom_button"
+                    style="@style/Widget.App.Button.Outlined.Compact"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/start_custom_title"
+                    app:icon="@drawable/ic_edit"
+                    app:iconGravity="textStart" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- TEMPLATE UNTUK ANDA (disembunyikan saat offline / galeri kosong) -->
+        <LinearLayout
+            android:id="@+id/recommend_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/space_6"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/screen_padding_horizontal"
+                android:paddingEnd="@dimen/space_2">
+
+                <TextView
+                    style="@style/Widget.App.SectionTitle"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="@string/home_recommend_title" />
+
+                <Button
+                    android:id="@+id/recommend_see_all"
+                    style="@style/Widget.App.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/action_see_all" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recommend_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:orientation="horizontal"
+                android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        </LinearLayout>
+
+        <!-- PANDUAN -->
+        <TextView
+            style="@style/Widget.App.SectionTitle"
+            android:layout_marginHorizontal="@dimen/screen_padding_horizontal"
+            android:layout_marginBottom="@dimen/space_2"
+            android:text="@string/home_guides_title" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/screen_padding_horizontal">
+
+            <LinearLayout
+                android:id="@+id/guide_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="@drawable/divider_horizontal"
+                android:orientation="vertical"
+                android:showDividers="middle" />
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -41,9 +41,101 @@
          Bahasa Indonesia tidak punya bentuk jamak, jadi saran lint "pakai plurals" diabaikan. -->
     <string name="intro_page_indicator" tools:ignore="PluralsCandidate">Halaman %1$d dari %2$d</string>
 
-    <!-- Dashboard pembuat website (bagian 2.3) -->
-    <string name="creator_dashboard_title">Buat website pertamamu</string>
-    <string name="creator_dashboard_body">Fitur pembuatan website segera hadir.</string>
+    <!-- Dashboard pembuat website (docs/rancangan/alur-pembuatan-website.md) -->
+    <string name="tab_projects">Project</string>
+    <string name="tab_gallery">Template</string>
+    <string name="cd_create_project">Buat project</string>
+
+    <!-- Beranda pembuat website -->
+    <string name="home_continue_title">Lanjutkan project</string>
+    <string name="action_see_all">Lihat semua →</string>
+    <string name="home_start_title">Mulai</string>
+    <string name="start_heading">Buat website pertamamu</string>
+    <string name="start_subheading">Mulai dari template jadi, atau susun sendiri dari kerangka.</string>
+    <string name="start_template_title">Pakai template</string>
+    <string name="start_template_body">Pilih template jadi, lalu ganti teks, foto, dan warnanya.</string>
+    <string name="start_custom_title">Custom</string>
+    <string name="start_custom_body">Susun sendiri dari kerangka header, hero, footer, dan lainnya.</string>
+    <string name="home_recommend_title">Template untuk anda</string>
+
+    <!-- Bottom sheet tombol + -->
+    <string name="create_sheet_title">Buat website</string>
+
+    <!-- Project -->
+    <string name="projects_search_hint">Cari project…</string>
+    <string name="project_status_draft">Draft</string>
+    <string name="project_status_ready">Siap export</string>
+    <string name="project_status_exported">Diexport</string>
+    <string name="filter_project_ready">Siap export</string>
+    <string name="filter_project_exported">Sudah diexport</string>
+    <string name="project_mode_template">Template</string>
+    <string name="project_mode_custom">Custom</string>
+    <string name="sort_project_updated">Terakhir diedit</string>
+    <string name="sort_project_created">Terbaru dibuat</string>
+    <string name="project_edited_just_now">Diedit baru saja</string>
+    <string name="project_edited_minutes_ago" tools:ignore="PluralsCandidate">Diedit %1$d menit lalu</string>
+    <string name="project_edited_hours_ago" tools:ignore="PluralsCandidate">Diedit %1$d jam lalu</string>
+    <string name="project_edited_days_ago" tools:ignore="PluralsCandidate">Diedit %1$d hari lalu</string>
+    <string name="project_edited_weeks_ago" tools:ignore="PluralsCandidate">Diedit %1$d minggu lalu</string>
+    <string name="project_edited_months_ago" tools:ignore="PluralsCandidate">Diedit %1$d bulan lalu</string>
+    <string name="project_edited_years_ago" tools:ignore="PluralsCandidate">Diedit %1$d tahun lalu</string>
+    <string name="project_missing" tools:ignore="PluralsCandidate">%1$d isian belum diisi</string>
+    <!-- %1$s = tanggal export terakhir, mis. "3 Okt" -->
+    <string name="project_exported_on">Diexport %1$s</string>
+    <string name="project_changed_since_export">Ada perubahan sejak export terakhir</string>
+    <string name="projects_empty">Belum ada project</string>
+    <string name="action_create_website">Buat website</string>
+    <string name="projects_filter_empty">Tidak ada project yang cocok.</string>
+    <string name="cd_project_menu">Menu project</string>
+    <string name="project_rename">Ganti nama</string>
+    <string name="project_duplicate">Duplikat</string>
+    <string name="project_export">Export</string>
+    <string name="project_delete">Hapus</string>
+    <string name="project_rename_title">Ganti nama project</string>
+    <string name="field_project_name">Nama project</string>
+    <string name="error_project_name_required">Nama project wajib diisi</string>
+    <!-- %1$s = nama project asal -->
+    <string name="project_copy_name">%1$s (salinan)</string>
+    <string name="project_duplicated">Project diduplikat.</string>
+    <string name="project_delete_title">Hapus project?</string>
+    <!-- %1$s = nama project -->
+    <string name="project_delete_body">“%1$s” akan dihapus dari HP ini dan tidak bisa dikembalikan.</string>
+    <string name="project_deleted">Project dihapus.</string>
+    <string name="export_dialog_title">Export</string>
+    <string name="export_dialog_body">Fitur export menjadi file ZIP segera hadir.</string>
+    <string name="project_untitled">Project tanpa nama</string>
+
+    <!-- Galeri Template -->
+    <string name="gallery_search_hint">Cari template…</string>
+    <string name="sort_popular" tools:ignore="Typos">Populer</string>
+    <string name="sort_newest">Terbaru</string>
+    <!-- %1$s = nama kreator -->
+    <string name="gallery_by_creator">oleh %1$s</string>
+    <string name="gallery_downloads" tools:ignore="PluralsCandidate">%1$s download</string>
+    <string name="gallery_empty">Belum ada template.
+Template akan muncul di sini.</string>
+    <string name="gallery_filter_empty">Tidak ada template yang cocok.</string>
+
+    <!-- Editor "Segera hadir" -->
+    <string name="editor_label_template">Editor template</string>
+    <string name="editor_label_custom">Editor custom</string>
+    <string name="editor_title_template">Editor template sedang dirancang</string>
+    <string name="editor_title_custom">Editor custom sedang dirancang</string>
+    <string name="editor_body_template">Fitur ini masih dalam tahap perencanaan dan desain. Nantinya kamu bisa mengganti teks, foto, dan warna template di sini.</string>
+    <string name="editor_body_custom">Fitur ini masih dalam tahap perencanaan dan desain. Nantinya kamu bisa menyusun website dari kerangka header, hero, footer, dan lainnya di sini.</string>
+    <string name="action_back">Kembali</string>
+
+    <!-- Profil pembuat website -->
+    <string name="profile_badge_creator">Pembuat website</string>
+    <string name="profile_group_creator">Info pembuat website</string>
+    <string name="profile_group_summary">Ringkasan</string>
+    <string name="profile_stat_projects">Project</string>
+    <string name="profile_stat_exported">Sudah diexport</string>
+    <string name="profile_not_set">Belum diisi</string>
+    <string name="profile_guest_title">Kamu belum masuk</string>
+    <string name="profile_guest_body">Masuk untuk menyimpan profil dan membagikan karyamu.</string>
+    <string name="profile_guest_local">Project tersimpan di HP ini.</string>
+    <string name="profile_creator_edit_subtitle">Info ini dipakai untuk menyarankan template yang cocok untukmu.</string>
     <string name="provider_suspended_redirect">Mode provider dinonaktifkan. Hubungi admin untuk informasi lebih lanjut.</string>
 
     <!-- Dashboard provider (docs/rancangan/alur-provider.md). Bahasa Indonesia tidak punya bentuk jamak,
@@ -151,6 +243,9 @@
     <string name="guide_rules_title">Syarat lolos pengecekan</string>
     <string name="guide_fix_title">Memperbaiki template yang tidak lolos</string>
     <string name="guide_numbers_title">Membaca angka Dilihat dan Didownload</string>
+    <string name="guide_host_zip_title">Cara mengonlinekan file ZIP</string>
+    <string name="guide_modes_title">Beda template mode &amp; custom mode</string>
+    <string name="guide_first_website_title">Cara bikin website pertamamu</string>
     <string name="guide_coming_soon_body">Panduan ini sedang disiapkan bersama fitur Upload.</string>
     <string name="guide_prepare_body">"Template adalah satu folder website statis (HTML, CSS, JS, dan gambar) yang dikemas menjadi file ZIP.
 
@@ -189,6 +284,36 @@ Berapa kali website yang dibuat dari templatemu selesai dan diexport menjadi fil
 
 TREN DOWNLOAD
 Grafik jumlah Didownload per hari. Hari tanpa download tetap tampil sebagai 0. Ketuk grafik untuk melihat tanggal dan jumlahnya."</string>
+
+    <string name="guide_host_zip_body">"Hasil akhir Rakit adalah file ZIP berisi website (HTML, CSS, JS, dan gambar). Supaya bisa dibuka orang lain lewat internet, file itu perlu diunggah ke layanan hosting. Ada beberapa yang gratis.
+
+CARA PALING MUDAH: NETLIFY DROP
+1. Ekstrak (buka) file ZIP hasil export sampai menjadi satu folder.
+2. Buka app.netlify.com/drop di browser laptop.
+3. Seret folder tadi ke kotak di halaman itu.
+4. Tunggu beberapa detik. Kamu langsung mendapat alamat website, misalnya nama-acak.netlify.app.
+5. Buat akun Netlify (gratis) supaya websitenya tidak terhapus dan namanya bisa diganti.
+
+ALTERNATIF: GITHUB PAGES
+1. Buat akun di github.com, lalu buat repository baru.
+2. Pilih Add file → Upload files, lalu unggah isi folder website (index.html harus ada di paling atas).
+3. Buka Settings → Pages, pilih branch main, lalu Save.
+4. Beberapa menit kemudian websitemu bisa dibuka di namakamu.github.io/nama-repository.
+
+SAAT WEBSITE DIUBAH
+Export ulang dari Rakit, lalu unggah lagi folder yang baru dengan cara yang sama. Di tab Project, project yang sudah diexport lalu diedit diberi tanda \"Ada perubahan sejak export terakhir\"."</string>
+    <string name="guide_modes_body">"Rakit punya dua cara membuat website. Keduanya menghasilkan file yang sama dan bisa diexport dengan cara yang sama.
+
+TEMPLATE MODE
+Mulai dari template jadi buatan penyedia template. Desainnya sudah lengkap; kamu tinggal mengganti teks, foto, dan warna.
+Cocok jika: ingin cepat jadi, belum punya bayangan desain, atau sudah menemukan template yang pas di tab Template.
+
+CUSTOM MODE
+Susun website sendiri dari kerangka bawaan app: header, hero, footer, dan lainnya. Kamu memilih bagian apa saja yang dipakai dan urutannya.
+Cocok jika: ingin susunan yang berbeda dari template yang ada, atau websitemu hanya butuh beberapa bagian tertentu.
+
+BINGUNG MEMILIH?
+Mulai dari template. Template yang mirip dengan kebutuhanmu biasanya jadi lebih cepat, dan kamu tetap bisa membuat project custom kapan saja dari tombol +."</string>
 
     <!-- Profil provider -->
     <string name="profile_edit">Edit profil</string>
@@ -289,8 +414,6 @@ Grafik jumlah Didownload per hari. Hari tanpa download tetap tampil sebagai 0. K
     <string name="error_terms_required">Kamu harus menyetujui aturan penyedia template</string>
 
     <!-- Menu profil (bottom sheet) -->
-    <string name="profile_mode_creator">Mode pembuat website</string>
-    <string name="profile_mode_provider">Mode provider</string>
     <string name="profile_switch_to_provider">Beralih ke mode provider</string>
     <string name="profile_switch_to_creator">Beralih ke mode pembuat website</string>
     <string name="profile_become_provider">Jadi penyedia template</string>

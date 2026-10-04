@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.ui.guide.Guide;
 import com.aris.templateapp.data.remote.dto.TemplateListDto.StatusCountsDto;
 import com.aris.templateapp.databinding.FragmentProviderTemplatesBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dashboard Pembuat Website "Segera hadir" (bagian 2.3 & 9.4). -->
+<!--
+    Shell Dashboard Pembuat Website (alur-pembuatan-website.md bagian 2): app bar (nama app + Masuk/avatar),
+    ViewPager2 berisi 4 tab (bisa digeser ke samping), dan bottom navigation dengan tombol + di tengah.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -17,62 +20,40 @@
             layout="@layout/view_app_bar_account" />
     </com.google.android.material.appbar.MaterialToolbar>
 
-    <ScrollView
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-        <LinearLayout
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/bottom_nav_divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- clipChildren=false: tombol + boleh sedikit menonjol ke atas melewati batas bottom navigation. -->
+    <FrameLayout
+        android:id="@+id/bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_nav"
+            style="@style/Widget.App.BottomNavigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="@dimen/screen_padding_horizontal"
-            android:paddingVertical="@dimen/space_8">
+            app:menu="@menu/menu_creator_tabs" />
 
-            <com.aris.templateapp.ui.common.StatusBannerView
-                android:id="@+id/suspended_banner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_6"
-                android:visibility="gone" />
-
-            <TextView
-                style="@style/Widget.App.Badge"
-                android:text="@string/badge_coming_soon" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_4"
-                android:text="@string/creator_dashboard_title"
-                android:textAppearance="@style/TextAppearance.App.Display" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_3"
-                android:text="@string/creator_dashboard_body"
-                android:textAppearance="@style/TextAppearance.App.Body"
-                android:textColor="@color/color_muted" />
-
-            <!-- Animasi hanya hiasan, jadi disembunyikan dari pembaca layar. -->
-            <com.airbnb.lottie.LottieAnimationView
-                android:id="@+id/illustration"
-                android:layout_width="@dimen/illustration_size"
-                android:layout_height="@dimen/illustration_size"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/space_8"
-                android:importantForAccessibility="no"
-                app:lottie_autoPlay="true"
-                app:lottie_loop="true"
-                app:lottie_rawRes="@raw/coming_soon" />
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_8"
-                android:enabled="false"
-                android:text="@string/badge_coming_soon" />
-        </LinearLayout>
-    </ScrollView>
+        <Button
+            android:id="@+id/create_button"
+            style="@style/Widget.App.Button.Create"
+            android:layout_width="@dimen/create_button_size"
+            android:layout_height="@dimen/create_button_size"
+            android:layout_gravity="center_horizontal|top"
+            android:layout_marginTop="@dimen/space_2"
+            android:contentDescription="@string/cd_create_project"
+            android:translationY="@dimen/create_button_lift" />
+    </FrameLayout>
 </LinearLayout>

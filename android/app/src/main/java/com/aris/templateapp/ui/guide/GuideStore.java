@@ -1,4 +1,4 @@
-package com.aris.templateapp.ui.provider;
+package com.aris.templateapp.ui.guide;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -29,9 +29,12 @@ public class GuideStore {
         return prefs.getBoolean(KEY_PREFIX + guide.name(), false);
     }
 
-    /** Hanya panduan yang sudah berisi yang dihitung (membuka panduan "Segera hadir" tidak menyelesaikan checklist). */
-    public boolean anyOpened() {
-        for (Guide guide : Guide.values()) {
+    /**
+     * Ada panduan untuk dashboard itu yang sudah dibuka. Hanya panduan yang sudah berisi yang dihitung
+     * (membuka panduan "Segera hadir" tidak menyelesaikan checklist provider).
+     */
+    public boolean anyOpened(Guide.Audience audience) {
+        for (Guide guide : Guide.forAudience(audience)) {
             if (guide.available && isOpened(guide)) {
                 return true;
             }

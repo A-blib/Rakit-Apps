@@ -36,6 +36,14 @@ android {
         // buildConfigField(tipe, nama, nilai) → menjadi konstanta BuildConfig.NAMA di kode Java.
         // Nilai String harus diberi tanda kutip di dalam teks, karena itu ada \"...\".
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+
+        // Room menulis "peta" struktur database (JSON) ke folder app/schemas setiap versi database berubah.
+        // File itu di-commit, sebagai riwayat untuk menulis migrasi saat tabel berubah nanti.
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] = "$projectDir/schemas"
+            }
+        }
     }
 
     buildTypes {
@@ -95,9 +103,15 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.androidx.browser)
     implementation(libs.lottie)
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+    // Hanya di laptop yang path-nya mengandung kata "musl" (README → Troubleshooting): properti ini ditulis di
+    // ~/.gradle/gradle.properties milik laptop itu, jadi laptop lain tidak terpengaruh.
+    providers.gradleProperty("rakit.sqliteShimJar").orNull?.let { annotationProcessor(files(it)) }
 
     testImplementation(libs.junit)
     testImplementation(libs.androidx.arch.core.testing)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.arch.core.testing)
     androidTestImplementation(libs.androidx.espresso.core)
 }

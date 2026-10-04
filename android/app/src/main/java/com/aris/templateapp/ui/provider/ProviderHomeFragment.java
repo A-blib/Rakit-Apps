@@ -16,6 +16,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.ui.guide.Guide;
+import com.aris.templateapp.ui.guide.GuideStore;
 import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.remote.dto.ProviderDashboardDto;
 import com.aris.templateapp.data.remote.dto.ProviderDashboardDto.ActionItemDto;
@@ -177,7 +179,7 @@ public class ProviderHomeFragment extends Fragment {
     // ---- Checklist provider baru ----------------------------------------------------------------
 
     private void bindChecklist(boolean profileComplete) {
-        boolean guideRead = guideStore.anyOpened();
+        boolean guideRead = guideStore.anyOpened(Guide.Audience.PROVIDER);
         int done = (profileComplete ? 1 : 0) + (guideRead ? 1 : 0);
         binding.checklistProgress.setText(getString(R.string.checklist_progress, done, CHECKLIST_STEPS));
         binding.checklistBar.setProgressCompat(done * 100 / CHECKLIST_STEPS, false);
@@ -250,7 +252,7 @@ public class ProviderHomeFragment extends Fragment {
 
     private void bindGuides() {
         binding.guideList.removeAllViews();
-        for (Guide guide : Guide.values()) {
+        for (Guide guide : Guide.forAudience(Guide.Audience.PROVIDER)) {
             ItemRowBinding row = addRow(binding.guideList);
             // Label "Segera hadir" di baris keterangan agar judul panjang tidak terlipat di samping pil.
             setTexts(row, getString(guide.title), guide.available ? null : getString(R.string.badge_coming_soon));

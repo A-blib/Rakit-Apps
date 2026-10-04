@@ -4,15 +4,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavOptions;
@@ -24,8 +21,8 @@ import com.aris.templateapp.databinding.FragmentProviderDashboardBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.HomeNavigator;
+import com.aris.templateapp.ui.common.KeyboardAwareBottomBar;
 import com.aris.templateapp.ui.creator.CreatorDashboardFragment;
-import com.aris.templateapp.ui.profile.ProfileSheet;
 import com.google.android.material.badge.BadgeDrawable;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -55,21 +52,7 @@ public class ProviderDashboardFragment extends Fragment {
         }
     };
 
-    /**
-     * Bottom navigation disembunyikan selama keyboard terbuka (mis. saat mengetik di pencarian Template Anda),
-     * supaya ruang layar yang tersisa dipakai untuk isi, bukan untuk tab.
-     */
-    private final ViewTreeObserver.OnGlobalLayoutListener keyboardListener = () -> {
-        if (binding == null) {
-            return;
-        }
-        WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(binding.getRoot());
-        int visibility = insets != null && insets.isVisible(WindowInsetsCompat.Type.ime()) ? View.GONE : View.VISIBLE;
-        if (binding.bottomNav.getVisibility() != visibility) {
-            binding.bottomNav.setVisibility(visibility);
-            binding.bottomNavDivider.setVisibility(visibility);
-        }
-    };
+    private KeyboardAwareBottomBar keyboardAware;
 
     /** Halaman berganti (digeser atau lewat kode): samakan tab yang menyala di bottom navigation. */
     private final ViewPager2.OnPageChangeCallback pageChange = new ViewPager2.OnPageChangeCallback() {
@@ -92,8 +75,8 @@ public class ProviderDashboardFragment extends Fragment {
         userViewModel = new ViewModelProvider(this).get(CurrentUserViewModel.class);
         ProviderDashboardViewModel dashboardViewModel = new ViewModelProvider(this).get(ProviderDashboardViewModel.class);
 
-        binding.account.avatarContainer.setOnClickListener(v ->
-                new ProfileSheet().show(getChildFragmentManager(), ProfileSheet.TAG));
+        // Avatar membuka tab Profil (menggantikan bottom sheet menu profil, keputusan Aris).
+        binding.account.avatarContainer.setOnClickListener(v -> selectTab(R.id.tab_profile));
         userViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
             AppBarAccount.bind(binding.account, user);
             // Ditangguhkan saat app terbuka (data /users/me terbaru): mode provider dikunci (bagian 3.2).
@@ -102,7 +85,7 @@ public class ProviderDashboardFragment extends Fragment {
             }
         });
 
-        binding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
+        keyboardAware = KeyboardAwareBottomBar.attach(binding.getRoot(), binding.bottomNav, binding.bottomNavDivider);
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), backToHome);
 
         // Tab bisa dipilih lewat bottom navigation ATAU digeser ke samping (ViewPager2).
@@ -171,7 +154,7 @@ public class ProviderDashboardFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        binding.getRoot().getViewTreeObserver().removeOnGlobalLayoutListener(keyboardListener);
+        keyboardAware.detach();
         binding.pager.unregisterOnPageChangeCallback(pageChange);
         binding = null;
     }
