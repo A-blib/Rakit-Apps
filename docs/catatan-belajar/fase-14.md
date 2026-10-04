@@ -76,8 +76,8 @@ Sumber rancangan: [`docs/rancangan/alur-pembuatan-website.md`](../rancangan/alur
 - Contoh `StateView` loading ditambahkan di bagian bawah Katalog komponen (build debug) untuk mengecek animasinya.
 - Uji di HP: animasi berjalan dan berulang mulus; warnanya mengikuti tema.
 
-## Tambahan: loading tampil minimal 2 detik (permintaan Aris)
-- `StateView` menahan animasi loading minimal `loading_min_duration_ms` (2000 ms, `res/values/integers.xml`) sebelum menampilkan isi, error, atau keadaan kosong. Dipakai Beranda provider, Profil provider, dan Detail template (`state.hide(() -> { tampilkan isi })`).
+## Tambahan: loading tampil minimal 2 detik (permintaan Aris; kemudian diubah, lihat "animasi hanya untuk proses lama")
+- Sempat: `StateView` menahan animasi loading minimal 2000 ms di semua layar.
 
 ## Tambahan: loading tiga bagian & layar awal (permintaan Aris)
 - `loading.json`: lingkaran berputar → berubah jadi pahlawan → terbang (diulang) → melaju ke kanan. Diatur `ui/common/HeroLoading`.
@@ -86,6 +86,12 @@ Sumber rancangan: [`docs/rancangan/alur-pembuatan-website.md`](../rancangan/alur
 - Prefetch Beranda provider di `StartupViewModel`, sehingga loading tidak muncul dua kali.
 - Perbaikan setelah masukan Aris: dashboard naik dari **tepi bawah layar** (100%, 700 ms, sebelumnya hanya 35% dalam 450 ms sehingga tidak terasa), dan mulai naik begitu pahlawan keluar layar (frame 180), tanpa jeda layar kosong. Dicek di HP memakai durasi sementara 3 detik.
 - Uji di HP (akun Aris, mode provider): rangkaian screenshot saat app dibuka menunjukkan splash → lingkaran → pahlawan → melaju ke kanan → Beranda provider, tanpa loading kedua.
+
+## Tambahan: animasi hanya untuk proses lama (masukan Aris)
+- Aris: proses yang cepat tidak perlu animasi; animasi untuk saat masuk app dan proses yang memang lama.
+- Layar awal tetap selalu beranimasi (`loading_min_duration_ms` 2000 ms).
+- `StateView`: animasi baru tampil setelah `loading_show_delay_ms` (600 ms); jika data datang lebih cepat, isi langsung tampil. Jika sempat tampil, ditahan minimal `loading_min_visible_ms` (1000 ms).
+- Uji di HP: beralih ke mode provider → Beranda tanpa animasi; "Perlu tindakan" → detail template langsung terbuka.
 
 ## Konsep yang dipelajari
 - Room: Entity, DAO, Database, `TypeConverter`, LiveData yang otomatis diperbarui, `switchMap`.

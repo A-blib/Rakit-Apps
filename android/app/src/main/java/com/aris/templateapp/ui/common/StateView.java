@@ -17,12 +17,17 @@ import com.aris.templateapp.databinding.ViewStateBinding;
  * Tampilan status untuk layar yang memuat data (bagian 8): loading (animasi), kosong (boleh dengan satu tombol aksi), atau error + "Coba lagi".
  * Saat data berhasil dimuat, panggil {@link #hide(View, Runnable)}: loading pahlawan melaju ke kanan, lalu isi layar
  * naik dari bawah (HeroLoading).
- * Animasi loading selalu tampil minimal {@code loading_min_duration_ms} (res/values/integers.xml).
+ * Loading hanya muncul untuk proses yang lama: setelah jeda {@code loading_show_delay_ms}, lalu tampil minimal
+ * {@code loading_min_visible_ms} (res/values/integers.xml).
  */
 public class StateView extends FrameLayout {
 
     private final ViewStateBinding binding;
+    private final long showDelayMs;
     private final long minLoadingMs;
+    /** Loading diminta tapi belum ditampilkan (masih dalam jeda {@code loading_show_delay_ms}). */
+    @Nullable
+    private Runnable delayedShow;
     private final HeroLoading heroLoading;
     /** Waktu (SystemClock.uptimeMillis) saat loading mulai tampil; 0 = loading tidak sedang tampil. */
     private long loadingSince;
@@ -37,20 +42,32 @@ public class StateView extends FrameLayout {
     public StateView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         binding = ViewStateBinding.inflate(LayoutInflater.from(context), this);
-        minLoadingMs = getResources().getInteger(R.integer.loading_min_duration_ms);
+        showDelayMs = getResources().getInteger(R.integer.loading_show_delay_ms);
+        minLoadingMs = getResources().getInteger(R.integer.loading_min_visible_ms);
         heroLoading = new HeroLoading(binding.animation);
         setVisibility(GONE);
     }
 
+    /**
+     * Proses yang cepat tidak perlu animasi (permintaan Aris): loading baru ditampilkan jika data belum datang setelah
+     * {@code loading_show_delay_ms}. Selama jeda itu layar dibiarkan kosong (keadaan lama disembunyikan).
+     */
     public void showLoading() {
         cancelPending();
-        if (loadingSince == 0) {
+        if (loadingSince != 0 || delayedShow != null) {
+            return;
+        }
+        heroLoading.cancel();
+        setVisibility(GONE);
+        delayedShow = () -> {
+            delayedShow = null;
             loadingSince = SystemClock.uptimeMillis();
             setVisibility(VISIBLE);
             binding.message.setText(R.string.state_loading);
             binding.retryButton.setVisibility(View.GONE);
             heroLoading.start();
-        }
+        };
+        postDelayed(delayedShow, showDelayMs);
     }
 
     public void showEmpty(CharSequence message) {
@@ -79,8 +96,8 @@ public class StateView extends FrameLayout {
      * bawah. Jika tidak (mis. muat ulang diam-diam), isi langsung ditampilkan tanpa animasi.
      */
     public void hide(View content, Runnable bind) {
-        boolean wasLoading = loadingSince != 0;
         afterLoading(() -> {
+            boolean wasLoading = getVisibility() == VISIBLE && loadingSince != 0;
             Runnable reveal = () -> {
                 setVisibility(GONE);
                 bind.run();
@@ -97,20 +114,31 @@ public class StateView extends FrameLayout {
         });
     }
 
-    /** Menjalankan perpindahan keadaan sekarang, atau setelah loading tampil selama {@code loading_min_duration_ms}. */
+    /**
+     * Menjalankan perpindahan keadaan: langsung jika loading belum sempat tampil (proses cepat), atau setelah loading
+     * tampil minimal {@code loading_min_visible_ms} agar tidak berkedip.
+     */
     private void afterLoading(Runnable change) {
         cancelPending();
+        cancelDelayedShow();
         long remaining = loadingSince == 0 ? 0 : minLoadingMs - (SystemClock.uptimeMillis() - loadingSince);
         Runnable run = () -> {
             pending = null;
-            loadingSince = 0;
             change.run();
+            loadingSince = 0;
         };
         if (remaining <= 0) {
             run.run();
         } else {
             pending = run;
             postDelayed(run, remaining);
+        }
+    }
+
+    private void cancelDelayedShow() {
+        if (delayedShow != null) {
+            removeCallbacks(delayedShow);
+            delayedShow = null;
         }
     }
 
@@ -125,6 +153,7 @@ public class StateView extends FrameLayout {
     @Override
     protected void onDetachedFromWindow() {
         cancelPending();
+        cancelDelayedShow();
         heroLoading.cancel();
         super.onDetachedFromWindow();
     }
