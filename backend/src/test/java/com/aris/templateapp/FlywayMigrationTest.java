@@ -34,7 +34,8 @@ class FlywayMigrationTest {
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'", String.class);
 
         assertThat(tables).contains("users", "user_identities", "refresh_tokens",
-                "auth_tickets", "creator_profiles", "provider_profiles");
+                "auth_tickets", "creator_profiles", "provider_profiles",
+                "templates", "template_checks", "template_check_issues", "template_events", "notifications");
     }
 
     @Test
@@ -59,6 +60,28 @@ class FlywayMigrationTest {
     void unknownActiveModeIsRejected() {
         assertThatThrownBy(() -> jdbc.update("INSERT INTO users (display_name, active_mode) VALUES ('Aris', 'admin')"))
                 .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void providerStatusIsOnlyActiveOrSuspended() {
+        jdbc.update("INSERT INTO users (display_name) VALUES ('Aris')");
+
+        // Status lama dari sebelum V7 tidak boleh dipakai lagi.
+        assertThatThrownBy(() -> jdbc.update("""
+                INSERT INTO provider_profiles (user_id, creator_name, status, agreed_terms_at)
+                SELECT id, 'Studio', 'pending', now() FROM users""")).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void downloadOfSameProjectIsStoredOnce() {
+        jdbc.update("INSERT INTO users (display_name) VALUES ('Aris')");
+        jdbc.update("INSERT INTO templates (provider_id, name, category, status) SELECT id, 'T', 'umkm', 'published' FROM users");
+        String insert = """
+                INSERT INTO template_events (template_id, type, project_id, install_id, occurred_at)
+                SELECT id, 'download', 'project-1', 'hp', now() FROM templates""";
+        jdbc.update(insert);
+
+        assertThatThrownBy(() -> jdbc.update(insert)).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

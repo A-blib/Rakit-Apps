@@ -5,6 +5,7 @@ import com.aris.templateapp.common.response.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -24,6 +25,8 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_PATHS = {
             "/api/auth/**",
+            // Alat bantu pengembangan; controller-nya hanya dibuat di profile dev (di prod path ini tidak ada).
+            "/api/dev/**",
             "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
             // Spring meneruskan error ke /error; tanpa ini error 400/500 berubah menjadi 401.
             "/error"
@@ -41,6 +44,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_PATHS).permitAll()
+                        // Event dilihat/didownload juga dikirim tamu (dihitung lewat install_id, alur-provider.md 3.5).
+                        .requestMatchers(HttpMethod.POST, "/api/templates/*/events").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
                 // Filter JWT dipasang sebelum filter login bawaan Spring agar user sudah dikenali lebih dulu.

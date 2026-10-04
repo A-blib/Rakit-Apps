@@ -20,7 +20,9 @@ public record AppProperties(
         @Valid Jwt jwt,
         Google google,
         GitHub github,
-        @NotBlank String deepLink) {
+        @NotBlank String deepLink,
+        // Zona waktu untuk mengelompokkan statistik per hari (mis. download per tanggal di Indonesia).
+        @NotBlank String timezone) {
 
     public record Jwt(
             // HS256 butuh kunci minimal 256 bit (32 byte).

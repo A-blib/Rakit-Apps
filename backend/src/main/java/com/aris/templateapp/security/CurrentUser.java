@@ -12,6 +12,12 @@ import java.util.UUID;
 @Component
 public class CurrentUser {
 
+    /** ID user jika request membawa token sah; null untuk tamu (dipakai endpoint publik). */
+    public UUID optionalId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.getPrincipal() instanceof UUID userId ? userId : null;
+    }
+
     public UUID id() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UUID userId) {

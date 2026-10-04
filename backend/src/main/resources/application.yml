@@ -29,3 +29,8 @@ app:
     client-secret: ${GITHUB_CLIENT_SECRET:}
     redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/api/auth/github/callback}
   deep-link: ${APP_DEEP_LINK:templateapp://auth/callback}
+  timezone: ${APP_TIMEZONE:Asia/Jakarta}
+  seed:
+    # Seeder demo template provider (hanya profile dev). Mati secara bawaan; nyalakan dengan
+    # --app.seed.demo-templates=true saat menjalankan backend. Lihat README "Data demo provider".
+    demo-templates: false

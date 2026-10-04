@@ -22,6 +22,8 @@ public enum ErrorCode {
     REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "Sesi berakhir. Silakan masuk lagi."),
     PROVIDER_PROFILE_EXISTS(HttpStatus.CONFLICT, "Profil provider sudah ada."),
     MODE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Mode ini tidak tersedia untuk akunmu."),
+    PROVIDER_REQUIRED(HttpStatus.FORBIDDEN, "Fitur ini khusus penyedia template."),
+    PROVIDER_SUSPENDED(HttpStatus.FORBIDDEN, "Mode provider dinonaktifkan. Hubungi admin untuk informasi lebih lanjut."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Silakan masuk terlebih dahulu."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Data tidak ditemukan."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan di server.");
