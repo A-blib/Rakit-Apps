@@ -66,11 +66,16 @@ Sumber rancangan: [`docs/rancangan/alur-pembuatan-website.md`](../rancangan/alur
   - Screenshot terang & gelap: 02 (Beranda tamu), 16–20 di `docs/screenshots/`.
 - Catatan perilaku: project tersimpan **per HP**, belum per akun. Rancangan 4.6 belum punya kolom pemilik, sehingga akun lain di HP yang sama melihat project yang sama. Pemindahan project tamu ke akun memang ditunda (AGENTS 2.2). Ini perlu diputuskan bersama diskusi editor.
 
+## Tambahan: pilihan tema di dalam app (permintaan Aris)
+- `core/storage/ThemeStore` + `TemplateApp` + Pengaturan → Tampilan → Tema (Ikuti sistem / Terang / Gelap).
+- Uji di HP: HP dalam mode gelap, Tema → Terang → app langsung terang dan tetap di Pengaturan. Setelah app ditutup lalu dibuka lagi, app tetap terang.
+
 ## Konsep yang dipelajari
 - Room: Entity, DAO, Database, `TypeConverter`, LiveData yang otomatis diperbarui, `switchMap`.
 - Annotation processor & kenapa ia bisa gagal karena lingkungan build (kasus "musl").
 - Source set `debug` dan `@BindsOptionalOf` untuk fitur khusus build debug.
 - Instrumented test (androidTest) vs unit test.
+- `AppCompatDelegate.setDefaultNightMode`: memaksa mode terang/gelap untuk app saja.
 - Tombol aksi di tengah bottom navigation dengan `clipChildren="false"` dan `translationY`.
 
 ## Latihan untuk Aris

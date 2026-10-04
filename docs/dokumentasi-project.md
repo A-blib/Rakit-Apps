@@ -1082,6 +1082,10 @@ Riwayat struktur database ditulis Room ke `android/app/schemas/` (di-commit). Fi
 
 `SettingsFragment` meminta `Optional<DebugMenu>`. Di kode utama, `DebugMenuModule` hanya menyatakan "boleh tidak ada" (`@BindsOptionalOf`). Isinya (`SampleProjectsDebugMenu`, `DebugBindings`, `SampleProjects`) ada di **`src/debug/`**, yang hanya ikut dikompilasi di build debug. Di build rilis `Optional` itu kosong, sehingga grup DEBUG tidak pernah muncul.
 
+### Pilihan tema di dalam app (permintaan Aris)
+
+*Pengaturan → Tampilan → Tema*: **Ikuti sistem** (bawaan), **Terang**, atau **Gelap**. `ThemeStore` menyimpan pilihan di SharedPreferences dan memanggil `AppCompatDelegate.setDefaultNightMode(...)`. Fungsi itu menentukan apakah warna di `values-night/` dipakai, terlepas dari mode HP, lalu membuat ulang Activity yang terbuka dengan warna baru. `TemplateApp.onCreate()` memasang pilihan yang tersimpan sebelum layar pertama digambar, supaya tidak berkedip saat app dibuka. Tidak ada warna atau layout yang perlu diubah, karena semua warna sudah lewat token `@color/...` (bab 14).
+
 ### Test di HP (androidTest)
 
 Unit test biasa berjalan di JVM laptop, yang tidak punya SQLite versi Android. Karena itu query Room diuji di **HP**: `ProjectDaoTest` memakai database di memori (`Room.inMemoryDatabaseBuilder`) dan `InstantTaskExecutorRule`, lalu memeriksa urutan, filter, pencarian `%`, jumlah per status, ganti nama, hapus, dan project contoh. Cara menjalankannya ada di README ("Test & pemeriksaan Android").

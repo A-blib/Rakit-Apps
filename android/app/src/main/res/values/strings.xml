@@ -427,6 +427,11 @@ Mulai dari template. Template yang mirip dengan kebutuhanmu biasanya jadi lebih 
     <string name="settings_linked_methods">Metode login terhubung</string>
     <string name="settings_linked_methods_desc">Google, GitHub, dan email</string>
     <string name="settings_group_about">Tentang</string>
+    <string name="settings_group_display">Tampilan</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Ikuti sistem</string>
+    <string name="theme_light">Terang</string>
+    <string name="theme_dark">Gelap</string>
     <!-- %1$s = versi app, mis. "1.0" -->
     <string name="settings_version">Versi %1$s</string>
 

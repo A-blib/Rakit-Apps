@@ -2,6 +2,10 @@ package com.aris.templateapp;
 
 import android.app.Application;
 
+import com.aris.templateapp.core.storage.ThemeStore;
+
+import javax.inject.Inject;
+
 import dagger.hilt.android.HiltAndroidApp;
 
 /**
@@ -11,4 +15,15 @@ import dagger.hilt.android.HiltAndroidApp;
  */
 @HiltAndroidApp
 public class TemplateApp extends Application {
+
+    @Inject
+    ThemeStore themeStore;
+
+    @Override
+    public void onCreate() {
+        // Hilt mengisi field @Inject di dalam super.onCreate().
+        super.onCreate();
+        // Tema pilihan user (Pengaturan → Tema) dipasang sebelum layar pertama digambar, agar tidak berkedip.
+        themeStore.applySaved();
+    }
 }

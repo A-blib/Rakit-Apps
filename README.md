@@ -437,6 +437,8 @@ adb uninstall com.aris.templateapp.test     # hapus lagi APK test-nya
 
 `./gradlew connectedDebugAndroidTest` juga bisa dipakai, tetapi perintah itu menghapus app setelah selesai, sehingga data login dan project di HP ikut hilang.
 
+**Tema terang/gelap:** app mengikuti mode HP secara bawaan. Untuk memaksa salah satunya, buka *Profil → Pengaturan → Tampilan → Tema*.
+
 **Project contoh (build debug):** *Profil → Pengaturan → DEBUG → Isi project contoh* mengisi 7 project dengan status dan mode yang beragam. *Hapus project contoh* hanya menghapus project contoh tersebut. Menu ini tidak ada di build rilis.
 
 Jangan menjalankan `./gradlew` dari terminal bersamaan dengan Build/Run di Android Studio.

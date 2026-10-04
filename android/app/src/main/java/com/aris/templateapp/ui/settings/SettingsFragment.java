@@ -13,10 +13,12 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.BuildConfig;
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.storage.ThemeStore;
 import com.aris.templateapp.databinding.FragmentSettingsBinding;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.HomeNavigator;
 import com.aris.templateapp.ui.profile.ProfileViewModel;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Optional;
@@ -31,6 +33,14 @@ public class SettingsFragment extends Fragment {
 
     @Inject
     Optional<DebugMenu> debugMenu;
+
+    @Inject
+    ThemeStore themeStore;
+
+    /** Urutan pilihan di dialog Tema. */
+    private static final ThemeStore.Theme[] THEMES = {ThemeStore.Theme.SYSTEM, ThemeStore.Theme.LIGHT,
+            ThemeStore.Theme.DARK};
+    private static final int[] THEME_LABELS = {R.string.theme_system, R.string.theme_light, R.string.theme_dark};
 
     private FragmentSettingsBinding binding;
     private CurrentUserViewModel userViewModel;
@@ -52,6 +62,8 @@ public class SettingsFragment extends Fragment {
                 NavHostFragment.findNavController(this).navigate(R.id.action_settings_to_linked_methods));
         binding.version.setText(getString(R.string.settings_version, BuildConfig.VERSION_NAME));
         debugMenu.ifPresent(menu -> menu.addTo(binding.debugContainer, this));
+        bindTheme();
+        binding.themeItem.setOnClickListener(v -> showThemeDialog());
         userViewModel = new ViewModelProvider(this).get(CurrentUserViewModel.class);
         userViewModel.getUser().observe(getViewLifecycleOwner(), user ->
                 binding.accountGroup.setVisibility(user == null ? View.GONE : View.VISIBLE));
@@ -64,6 +76,38 @@ public class SettingsFragment extends Fragment {
                 Snackbar.make(root, R.string.signed_out, Snackbar.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void bindTheme() {
+        ThemeStore.Theme current = themeStore.getTheme();
+        for (int i = 0; i < THEMES.length; i++) {
+            if (THEMES[i] == current) {
+                binding.themeValue.setText(THEME_LABELS[i]);
+            }
+        }
+    }
+
+    /** Memilih tema langsung menerapkannya; layar dibuat ulang dengan warna baru dan tetap di Pengaturan. */
+    private void showThemeDialog() {
+        ThemeStore.Theme current = themeStore.getTheme();
+        String[] labels = new String[THEMES.length];
+        int checked = 0;
+        for (int i = 0; i < THEMES.length; i++) {
+            labels[i] = getString(THEME_LABELS[i]);
+            if (THEMES[i] == current) {
+                checked = i;
+            }
+        }
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.settings_theme)
+                .setSingleChoiceItems(labels, checked, (dialog, which) -> {
+                    dialog.dismiss();
+                    if (THEMES[which] != current) {
+                        themeStore.setTheme(THEMES[which]);
+                    }
+                })
+                .setNegativeButton(R.string.action_cancel, null)
+                .show();
     }
 
     @Override

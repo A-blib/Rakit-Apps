@@ -85,6 +85,46 @@
 
             <TextView
                 style="@style/Widget.App.ListGroupTitle"
+                android:text="@string/settings_group_display" />
+
+            <LinearLayout
+                android:id="@+id/theme_item"
+                style="@style/Widget.App.ListItem">
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size"
+                    android:layout_height="@dimen/icon_size"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_contrast" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/space_4"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_theme"
+                        android:textAppearance="@style/TextAppearance.App.Body" />
+
+                    <TextView
+                        android:id="@+id/theme_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_3" />
+
+            <TextView
+                style="@style/Widget.App.ListGroupTitle"
                 android:text="@string/settings_group_about" />
 
             <TextView
