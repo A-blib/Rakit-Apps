@@ -20,9 +20,9 @@
 | Backend provider: status `active`/`suspended`, Beranda (ringkasan, tren download, populer, perlu tindakan), Template Anda (filter/urutan/cari), Profil, event dilihat/didownload, notifikasi, seeder demo | Sudah (Fase 11) |
 | Android Dashboard Provider: bottom navigation, Beranda (perlu tindakan + badge, checklist provider baru, ringkasan 7/30 hari, grafik area, populer, panduan), Template Anda (cari, filter, urutan, paginasi), detail + hasil pengecekan, Profil + Edit profil | Sudah (Fase 12) |
 | Backend galeri Template publik (`GET /api/templates`), edit profil pembuat website | Sudah (Fase 13) |
-| Android Dashboard Pembuat Website (Beranda, Project, tombol +, Template, Profil) | Belum (Fase 14) |
+| Android Dashboard Pembuat Website: Beranda (Mulai, Lanjutkan project, Template untuk anda, panduan), tab Project (Room: cari, filter, urutan, ganti nama, duplikat, hapus), tombol +, galeri Template, Profil + edit, editor template/custom "Segera hadir" | Sudah (Fase 14) |
 | Upload template, push notification | Segera hadir (lihat `docs/rancangan/alur-provider.md`) |
-| Dashboard Pembuat Website | Segera hadir (hanya layar "Segera hadir") |
+| Editor website (template & custom mode), export ZIP | Segera hadir (layar editor sudah ada, isinya menunggu diskusi) |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
 > 🏷️ **Nama app: Rakit.** Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
@@ -123,6 +123,7 @@ Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan 
 | Retrofit / OkHttp / Gson | 3.0.0 / 5.5.0 / 2.14.0 |
 | Credentials / Google ID | 1.6.0 / 1.2.1 |
 | Browser (Custom Tabs) | 1.10.0 |
+| Room (database project di HP) | 2.8.5 |
 | JUnit / arch core-testing | 4.13.2 / 2.2.0 |
 | Font Geist Sans & Geist Mono | 1.7.2 (SIL OFL 1.1, lisensi di `app/src/main/assets/licenses/geist-OFL.txt`) |
 | Ikon | Material Symbols Outlined (Apache 2.0), disalin sebagai vector drawable `ic_*.xml` |
@@ -421,6 +422,19 @@ Build debug memasang **dua ikon** di HP: **Rakit** (app) dan **Katalog komponen*
 ./gradlew lint                 # pemeriksaan kode & resource; laporan di app/build/reports/lint-results-debug.html
 ```
 
+Test query Room (tab Project) berjalan **di HP**, karena butuh SQLite Android sungguhan:
+
+```bash
+./gradlew installDebug installDebugAndroidTest
+adb shell am instrument -w -e class com.aris.templateapp.data.local.ProjectDaoTest \
+    com.aris.templateapp.test/androidx.test.runner.AndroidJUnitRunner
+adb uninstall com.aris.templateapp.test     # hapus lagi APK test-nya
+```
+
+`./gradlew connectedDebugAndroidTest` juga bisa dipakai, tetapi perintah itu menghapus app setelah selesai, sehingga data login dan project di HP ikut hilang.
+
+**Project contoh (build debug):** *Profil → Pengaturan → DEBUG → Isi project contoh* mengisi 7 project dengan status dan mode yang beragam. *Hapus project contoh* hanya menghapus project contoh tersebut. Menu ini tidak ada di build rilis.
+
 Jangan menjalankan `./gradlew` dari terminal bersamaan dengan Build/Run di Android Studio.
 
 ## Akun dummy
@@ -495,10 +509,12 @@ Nilai status selain `active` dan `suspended` ditolak oleh database (CHECK constr
 
 | Masalah | Solusi |
 |---|---|
+| Compile Android gagal: `UnsatisfiedLinkError … libc.musl-x86_64.so.1` atau `osinfo: Linux-Musl` | Library SQLite yang dipakai Room saat compile salah menebak jenis Linux, karena path folder home mengandung kata "musl" (mis. `/home/...muslimin`). Buat jar shim berisi library Linux biasa, lalu daftarkan di `~/.gradle/gradle.properties` (bukan di repo): lihat langkah di bawah tabel ini. |
 | `adb devices` kosong atau `no permissions` | Pastikan kabel USB data, pasang `android-sdk-platform-tools-common` (aturan udev), cabut-colok ulang HP. |
 | Status `unauthorized` | Buka kunci HP, setujui pop-up "Allow USB debugging". Jika tidak muncul: *Opsi pengembang → Revoke USB debugging authorizations*, lalu colok ulang. |
 | `java -version` masih 25 | Jalankan `sudo update-alternatives --config java` dan pilih java-21; cek `JAVA_HOME`. |
 | `docker: permission denied` | Logout lalu login lagi setelah `usermod -aG docker $USER`. |
+| `adb: more than one device/emulator` padahal hanya satu HP | HP yang sama tersambung dua kali (lewat `adb connect IP:port` dan lewat mDNS). Jalankan `adb disconnect IP:port`. |
 | Seeder tidak membuat akun dummy (log: `Seeder dilewati`) | Tabel `users` sudah berisi data. Seeder sengaja hanya berjalan di database kosong; lihat bagian "Akun dummy" untuk mengosongkannya. |
 | `Port 8080 was already in use` | Ada backend lain yang masih jalan. Cari dengan `ss -ltnp \| grep 8080`, lalu hentikan prosesnya (atau tutup terminal/VS Code yang menjalankannya). |
 | `Validate failed: Migrations have failed validation` / checksum mismatch | File migrasi yang **sudah pernah dijalankan** diubah. Jangan ubah file `V*` lama; buat file `V7__...` baru. Khusus database development, bisa reset: `sudo -u postgres psql -c "DROP DATABASE templateapp;"` lalu `sudo -u postgres createdb -O templateapp templateapp`. |
@@ -520,6 +536,22 @@ Nilai status selain `active` dan `suspended` ditolak oleh database (CHECK constr
 | HP tiba-tiba hilang dari Android Studio / `adb server version doesn't match` | Ada dua `adb` berbeda versi. Pastikan `which adb` menunjuk ke `~/Android/Sdk/platform-tools/adb`, lalu `adb kill-server && adb devices`. |
 
 _Daftar ini dilengkapi di fase berikutnya._
+
+### Langkah shim sqlite untuk path yang mengandung "musl"
+
+Hanya perlu jika compile gagal dengan pesan di tabel atas. File dibuat di luar repo, jadi laptop lain tidak terpengaruh.
+
+```bash
+mkdir -p ~/.gradle/sqlite-native/shim/org/sqlite/native/Linux-Musl/x86_64
+cd ~/.gradle/sqlite-native/shim
+JAR=$(find ~/.gradle/caches -name "sqlite-jdbc-*.jar" | head -1)        # ikut terunduh bersama room-compiler
+unzip -o -j "$JAR" org/sqlite/native/Linux/x86_64/libsqlitejdbc.so -d org/sqlite/native/Linux-Musl/x86_64
+jar cf ../sqlite-musl-shim.jar org                                       # library Linux biasa di folder "musl"
+echo "rakit.sqliteShimJar=$HOME/.gradle/sqlite-native/sqlite-musl-shim.jar" >> ~/.gradle/gradle.properties
+cd - && ./gradlew --stop                                                # Gradle daemon membaca ulang pengaturan
+```
+
+`android/app/build.gradle.kts` menambahkan jar itu ke annotation processor hanya jika properti `rakit.sqliteShimJar` ada.
 
 ## Catatan belajar & dokumentasi
 

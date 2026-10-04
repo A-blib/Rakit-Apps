@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 13** (backend galeri Template & profil pembuat website). Rancangan fitur pembuatan website: [`rancangan/alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
+> Status dokumen: diperbarui sampai **Fase 14** (Dashboard Pembuat Website di Android). Rancangan fitur pembuatan website: [`rancangan/alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
 
 ---
 
@@ -44,7 +44,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 **Fitur pembuatan website**
 
 23. [Backend galeri Template & profil pembuat website](#23-backend-galeri-template--profil-pembuat-website)
-24. [Glosarium](#24-glosarium)
+24. [Dashboard Pembuat Website di Android](#24-dashboard-pembuat-website-di-android)
+25. [Glosarium](#25-glosarium)
 
 ---
 
@@ -814,7 +815,7 @@ Login GitHub memakai **dua** jalur ke backend lewat `adb reverse`: app (`/auth/g
 Startup ──(onboarding belum selesai)──► Pilih peran ─┬─► Form pembuat website ─(Mulai/Lewati)─► Dashboard Pembuat Website
                                                      └─► Form provider ─(Kirim)─────────────► Dashboard Provider (langsung aktif)
 
-Dashboard ── avatar ──► Menu profil (bottom sheet)
+Dashboard ── avatar ──► tab Profil (sejak Fase 14; sebelumnya bottom sheet menu profil)
                           ├─ Beralih ke mode …            (hanya jika punya dua peran)
                           ├─ Jadi penyedia template        (hanya jika belum provider) ─► Form provider
                           ├─ Pengaturan ─► Metode login terhubung (sambungkan / lepaskan)
@@ -832,7 +833,9 @@ Setelah masuk, onboarding, beralih mode, atau keluar, app memanggil `HomeNavigat
 - Tombol **Lewati** memanggil endpoint yang sama dengan **Mulai**, tapi hanya mengirim nama. Field `null` tidak dikirim oleh Gson.
 - Chip tujuan website memakai `singleSelection`, sedangkan chip keahlian bisa dipilih lebih dari satu. Teks chip keahlian dikirim apa adanya.
 
-### Menu profil (`ProfileSheet`)
+### Menu profil (`ProfileSheet`, sudah dihapus di Fase 14)
+
+> Sejak Fase 14, isi menu ini pindah ke **tab Profil** di kedua dashboard (bab 22 & 24), sesuai keputusan Aris. Penjelasan di bawah tetap disimpan sebagai catatan belajar.
 
 - Berupa `BottomSheetDialogFragment` yang dibuka dari avatar lewat `getChildFragmentManager()` milik dashboard. Karena itu, sheet bisa memakai `requireParentFragment()` untuk bernavigasi lewat dashboard di belakangnya.
 - Item ditampilkan sesuai peran user (bagian 6.6): "Beralih mode" hanya muncul kalau punya peran creator **dan** provider. "Jadi penyedia template" hanya muncul kalau belum punya peran provider.
@@ -933,7 +936,7 @@ Dibuka DI ATAS shell lewat ProviderNav (tujuan di nav_graph, tombol kembali → 
 - Grafik memegang geseran sejak jari menempel. Geser mendatar = memilih titik (bukan pindah tab); begitu geseran ternyata tegak, grafik melepasnya ke ScrollView.
 - Baris chip filter memakai `PagerAwareHorizontalScrollView`: chip digulir dulu, dan begitu mentok di ujung, geseran dilepas ke ViewPager2 sehingga tab berpindah. `HorizontalScrollView` biasa selalu mengunci geseran walau sudah mentok.
 
-**Kenapa bukan NavHost kedua?** Layar lanjutan tetap memakai Navigation **utama**: `NavHostFragment.findNavController(fragmentAnak)` mencari ke atas sampai NavHostFragment terdekat, yaitu milik Activity. Kalau ada NavHost kedua di dalam shell, menu profil (`ProfileSheet`) akan menemukan NavHost yang salah saat membuka Pengaturan.
+**Kenapa bukan NavHost kedua?** Layar lanjutan tetap memakai Navigation **utama**: `NavHostFragment.findNavController(fragmentAnak)` mencari ke atas sampai NavHostFragment terdekat, yaitu milik Activity. Kalau ada NavHost kedua di dalam shell, tab Profil akan menemukan NavHost yang salah saat membuka Pengaturan.
 
 **Tombol kembali** di tab selain Beranda membuka Beranda dulu (`OnBackPressedCallback` yang hanya aktif saat tab ≠ Beranda); di Beranda baru menutup app. **Keyboard terbuka** (mis. saat mencari) → bottom navigation disembunyikan; keadaan keyboard dibaca dari `ViewCompat.getRootWindowInsets(...).isVisible(Type.ime())` setiap layout berubah.
 
@@ -945,7 +948,7 @@ Dibuka DI ATAS shell lewat ProviderNav (tujuan di nav_graph, tombol kembali → 
 |---|---|---|
 | `ProviderDashboardViewModel` | shell (`requireParentFragment()` di tab Beranda) | Shell butuh jumlah "Perlu tindakan" untuk **badge** tab Beranda; satu request dipakai bersama |
 | `ProviderTemplatesViewModel` | **Activity** (`requireActivity()`) | "Filter terakhir diingat selama app terbuka" (rancangan 6.3), walau user keluar-masuk Dashboard Provider |
-| `ProviderProfileViewModel` + `ProfileViewModel` | tab Profil | `ProfileViewModel` (menu profil) dipakai ulang untuk beralih mode & keluar |
+| `ProviderProfileViewModel` + `ProfileViewModel` | tab Profil | `ProfileViewModel` dipakai ulang untuk beralih mode & keluar |
 | `TemplateDetailViewModel`, `ProviderProfileEditViewModel` | layarnya sendiri | |
 
 **Memuat ulang diam-diam:** saat kembali ke tab (dari detail, edit profil, atau latar belakang), data diambil lagi tanpa layar loading penuh. Kalau gagal, data lama tetap tampil dan muncul snackbar. **Nomor request** (`generation`) dipakai supaya jawaban request lama, misalnya periode 7 hari yang datang setelah user memilih 30 hari, tidak menimpa data yang lebih baru.
@@ -1021,7 +1024,75 @@ Kenapa tabel `templates` yang sama dengan sisi provider? Satu template cukup dis
 
 ---
 
-## 24. Glosarium
+## 24. Dashboard Pembuat Website di Android
+
+File utamanya ada di `ui/creator/`, `ui/editor/`, `data/local/` (Room), dan `data/repository/ProjectRepository` + `GalleryRepository`.
+
+### Peta layar
+
+```
+CreatorDashboardFragment  (shell: app bar + ViewPager2 + bottom nav + tombol +)
+ ├─ CreatorHomeFragment      Beranda   ┐
+ ├─ ProjectsFragment         Project   │ halaman ViewPager2 (CreatorTabsAdapter), bisa digeser ke samping
+ ├─ GalleryFragment          Template  │
+ └─ CreatorProfileFragment   Profil    ┘
+Tombol + / kartu "Mulai" ─► CreateProjectSheet ─┬─ Pakai template ─► tab Template
+                                                 └─ Custom ─────────► customEditorFragment (project baru)
+Klik template ──► catat "Dilihat" ──► templateEditorFragment
+Klik project ───► EditorNav.openProject: mode template → templateEditorFragment, custom → customEditorFragment
+Profil ─► creatorProfileEditFragment · settingsFragment · providerFormFragment · beralih mode · keluar
+```
+
+**Tombol + bukan tab.** Menu bottom navigation berisi 5 item, dan item tengahnya hanya slot kosong yang dinonaktifkan. Di atas slot itu ada `MaterialButton` (kotak foreground, radius 8dp) yang sedikit dinaikkan dengan `translationY`. `FrameLayout` pembungkusnya memakai `clipChildren="false"` supaya bagian tombol yang menonjol tidak terpotong.
+
+**Avatar → tab Profil** di kedua dashboard (keputusan Aris). `ProfileSheet` (bottom sheet menu profil) dihapus. Aksi beralih mode dan keluar tetap memakai `ProfileViewModel`.
+
+### Project disimpan di HP: Room
+
+Room adalah library resmi Android untuk SQLite. Ada tiga bagian:
+
+| Bagian | File | Isi |
+|---|---|---|
+| Entity | `ProjectEntity` | Satu class = satu tabel. Field publik menjadi kolom; enum disimpan sebagai teks lewat `Converters` |
+| DAO | `ProjectDao` | Interface berisi query SQL. Room membuat implementasinya saat compile (annotation processor) |
+| Database | `AppDatabase` | Daftar entity + versi. `DatabaseModule` (Hilt) membuat satu objek untuk seluruh app |
+
+Query yang mengembalikan `LiveData` **dipantau otomatis**: setiap kali tabel `projects` berubah (ganti nama, duplikat, hapus), Room menjalankan ulang query-nya dan layar langsung menerima daftar baru. Karena itu `ProjectRepository.rename/duplicate/delete` tidak perlu memberi tahu layar.
+
+Filter tab Project memakai `Transformations.switchMap(filter, repository::observe)`: saat filter berubah, query lama dilepas dan query baru dipantau. Pencarian di-escape (`ProjectRepository.likePattern`) agar `%` dan `_` dari user dicari sebagai huruf biasa.
+
+Riwayat struktur database ditulis Room ke `android/app/schemas/` (di-commit). File itu dipakai saat menulis migrasi kalau tabel berubah nanti.
+
+**Aturan yang dipilih (tidak disebut rancangan):**
+- **Ganti nama tidak mengubah `updated_at`.** "Diedit … lalu" dan "Ada perubahan sejak export terakhir" menyangkut isi website, sedangkan nama project tidak ikut ke ZIP.
+- **Duplikat** mendapat id dan waktu baru, belum pernah diexport. Salinan project yang sudah diexport berstatus "Siap export".
+- **Hapus project contoh** hanya menghapus baris dengan `is_sample = 1`, sehingga project buatan user aman.
+
+### Galeri & "Template untuk anda"
+
+- `GalleryViewModel` dimiliki **Activity**, sehingga "Lihat semua" di Beranda bisa memilih kategori lebih dulu lalu pindah ke tab Template. Polanya sama dengan Template Anda di Dashboard Provider: pencarian ditunda 400 ms, paginasi 20, skeleton, kosong, filter kosong, dan error.
+- `CreatorHomeViewModel.loadRecommendations()`: tujuan website user → `?category=…&size=6`. Kalau hasilnya kurang dari 6, app memanggil sekali lagi tanpa kategori lalu menggabungkannya tanpa duplikat (`Recommendations`, diuji). Kalau gagal atau kosong, bagian ini disembunyikan.
+- **"Dilihat"**: `TemplateOpener` memanggil `GalleryRepository.recordView` di latar belakang, lalu membuka editor. Kegagalannya diabaikan (tanpa antrean offline di versi awal). Event dari pemilik template sendiri memang diabaikan backend, jadi uji angka ini dengan akun lain atau sebagai tamu. `installId` dibuat sekali per instalasi (`SessionStore.getInstallId()`).
+
+### Editor "Segera hadir"
+
+`ComingSoonEditorFragment` berisi layout dan perilaku bersama. Dua turunannya, `TemplateEditor` dan `CustomEditor`, hanya mengisi teks dan animasi. Keduanya terdaftar sebagai tujuan terpisah di `nav_graph`, sehingga saat editor sungguhan dibuat nanti, cukup isi layarnya tanpa mengubah navigasi. Membuka editor tidak membuat atau mengubah project.
+
+### Menu DEBUG tanpa ikut ke rilis
+
+`SettingsFragment` meminta `Optional<DebugMenu>`. Di kode utama, `DebugMenuModule` hanya menyatakan "boleh tidak ada" (`@BindsOptionalOf`). Isinya (`SampleProjectsDebugMenu`, `DebugBindings`, `SampleProjects`) ada di **`src/debug/`**, yang hanya ikut dikompilasi di build debug. Di build rilis `Optional` itu kosong, sehingga grup DEBUG tidak pernah muncul.
+
+### Test di HP (androidTest)
+
+Unit test biasa berjalan di JVM laptop, yang tidak punya SQLite versi Android. Karena itu query Room diuji di **HP**: `ProjectDaoTest` memakai database di memori (`Room.inMemoryDatabaseBuilder`) dan `InstantTaskExecutorRule`, lalu memeriksa urutan, filter, pencarian `%`, jumlah per status, ganti nama, hapus, dan project contoh. Cara menjalankannya ada di README ("Test & pemeriksaan Android").
+
+### Catatan teknis: kata "musl" di path
+
+Saat compile, Room menguji query ke SQLite sungguhan memakai library `sqlite-jdbc`. Library itu menebak jenis Linux dengan mencari kata "musl" di path file yang sedang dibuka, dan path `/home/m-ariza-fi-i-muslimin` ikut cocok. Akibatnya ia memuat library untuk Alpine Linux dan gagal. Solusinya ada di README (Troubleshooting): jar "shim" di luar repo, yang ditambahkan ke annotation processor hanya jika `rakit.sqliteShimJar` ada di `~/.gradle/gradle.properties`.
+
+---
+
+## 25. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -1060,7 +1131,7 @@ Kenapa tabel `templates` yang sama dengan sisi provider? Satu template cukup dis
 | Custom Tab | Browser (mis. Chrome) yang terbuka di dalam app, berbagi login dengan browser HP |
 | Intent filter | Deklarasi di manifest tentang alamat/aksi yang bisa membuka sebuah Activity |
 | DialogFragment | Dialog yang dikelola seperti Fragment, sehingga bertahan saat layar dibuat ulang |
-| Bottom sheet | Panel yang muncul dari bawah layar, dipakai untuk menu profil |
+| Bottom sheet | Panel yang muncul dari bawah layar, dipakai untuk pilihan tombol + (Pakai template / Custom) |
 | Compound drawable | Ikon yang ditempel langsung di sisi TextView (`drawableStart`), tanpa ImageView terpisah |
 | `generate_series` | Fungsi PostgreSQL yang membuat deret nilai (mis. satu baris per tanggal) |
 | `COUNT(*) FILTER (WHERE …)` | Menghitung hanya baris yang memenuhi syarat, beberapa hitungan sekaligus dalam satu query |
@@ -1075,4 +1146,8 @@ Kenapa tabel `templates` yang sama dengan sisi provider? Satu template cukup dis
 | Debounce | Menunggu jeda tertentu setelah aksi terakhir sebelum bertindak (mis. pencarian saat mengetik) |
 | Skeleton | Kartu abu-abu berbentuk isi yang tampil selama data dimuat |
 | ViewPager2 | Wadah halaman yang bisa digeser ke samping; dipakai untuk intro dan tab Dashboard Provider |
+| Room | Library resmi Android untuk database SQLite: Entity (tabel), DAO (query), Database |
+| `switchMap` (LiveData) | Mengganti sumber LiveData yang dipantau setiap kali nilai lain (mis. filter) berubah |
+| androidTest | Test yang berjalan di HP/emulator, bukan di JVM laptop |
+| Source set `debug` | Folder kode/resource yang hanya ikut ke build debug (`src/debug/`) |
 | `requestDisallowInterceptTouchEvent` | Permintaan view anak agar induknya (ScrollView/ViewPager2) tidak mengambil alih geseran yang sedang berlangsung |
