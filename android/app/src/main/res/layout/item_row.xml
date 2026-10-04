@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Baris serbaguna di dalam kartu Beranda (Perlu tindakan, checklist, panduan): ikon, judul + keterangan,
-    titik "baru", badge, dan panah. Bagian yang tidak dipakai disembunyikan dari kode.
+    titik "baru", dan panah. Bagian yang tidak dipakai disembunyikan dari kode.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -53,13 +53,6 @@
         android:layout_height="@dimen/new_dot_size"
         android:layout_marginStart="@dimen/space_2"
         android:background="@drawable/bg_new_dot"
-        android:visibility="gone" />
-
-    <TextView
-        android:id="@+id/badge"
-        style="@style/Widget.App.Badge"
-        android:layout_marginStart="@dimen/space_2"
-        android:text="@string/badge_coming_soon"
         android:visibility="gone" />
 
     <ImageView

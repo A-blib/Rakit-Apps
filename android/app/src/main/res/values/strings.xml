@@ -51,7 +51,7 @@
     <string name="provider_mode_badge">Mode provider</string>
     <string name="tab_home">Beranda</string>
     <string name="tab_upload">Upload</string>
-    <string name="tab_templates">Template Anda</string>
+    <string name="tab_templates">Template</string>
     <string name="tab_profile">Profil</string>
 
     <!-- Beranda -->

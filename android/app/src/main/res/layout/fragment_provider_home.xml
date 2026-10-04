@@ -126,6 +126,7 @@
                             app:indicatorColor="@color/color_foreground"
                             app:trackColor="@color/color_border"
                             app:trackCornerRadius="@dimen/radius_small"
+                            app:indicatorTrackGapSize="0dp"
                             app:trackStopIndicatorSize="0dp" />
                     </LinearLayout>
 

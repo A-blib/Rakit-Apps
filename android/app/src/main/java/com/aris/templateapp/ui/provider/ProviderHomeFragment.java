@@ -185,7 +185,8 @@ public class ProviderHomeFragment extends Fragment {
         ItemRowBinding guide = addChecklistStep(R.string.checklist_guide, guideRead);
         guide.getRoot().setOnClickListener(v -> ProviderNav.openGuide(this, Guide.PREPARE_TEMPLATE));
         ItemRowBinding upload = addChecklistStep(R.string.checklist_upload, false);
-        upload.badge.setVisibility(View.VISIBLE);
+        // Label "Segera hadir" di baris keterangan (bukan pil di samping) agar judul tidak terlipat di layar sempit.
+        setTexts(upload, getString(R.string.checklist_upload), getString(R.string.badge_coming_soon));
         upload.getRoot().setOnClickListener(v -> shell().selectTab(R.id.tab_upload));
     }
 
@@ -248,11 +249,11 @@ public class ProviderHomeFragment extends Fragment {
         binding.guideList.removeAllViews();
         for (Guide guide : Guide.values()) {
             ItemRowBinding row = addRow(binding.guideList);
-            setTexts(row, getString(guide.title), null);
+            // Label "Segera hadir" di baris keterangan agar judul panjang tidak terlipat di samping pil.
+            setTexts(row, getString(guide.title), guide.available ? null : getString(R.string.badge_coming_soon));
             boolean isNew = !guideStore.isOpened(guide);
             row.newDot.setVisibility(isNew ? View.VISIBLE : View.GONE);
             row.newDot.setContentDescription(isNew ? getString(R.string.cd_guide_new) : null);
-            row.badge.setVisibility(guide.available ? View.GONE : View.VISIBLE);
             row.getRoot().setOnClickListener(v -> ProviderNav.openGuide(this, guide));
         }
     }

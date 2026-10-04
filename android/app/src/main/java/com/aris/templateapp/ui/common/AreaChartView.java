@@ -12,6 +12,7 @@ import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -82,6 +83,9 @@ public class AreaChartView extends View {
     /** Tampilkan label X setiap n titik (30 hari terlalu rapat jika semua diberi label). */
     private int labelEvery = 1;
     private int selected = -1;
+    private final int touchSlop;
+    private float downX;
+    private float downY;
 
     public AreaChartView(@NonNull Context context) {
         this(context, null);
@@ -124,6 +128,7 @@ public class AreaChartView extends View {
         pointRadius = 3 * density;
         tooltipPadding = getResources().getDimension(R.dimen.space_2);
         cornerRadius = getResources().getDimension(R.dimen.radius_small);
+        touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
     public void setPoints(List<Point> points, int labelEvery) {
@@ -226,18 +231,33 @@ public class AreaChartView extends View {
         if (points.isEmpty()) {
             return false;
         }
-        if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_MOVE) {
-            // Grafik ada di dalam ScrollView: minta induk tidak mengambil alih geseran horizontal.
-            getParent().requestDisallowInterceptTouchEvent(true);
-            float left = getPaddingLeft() + labelPaint.measureText(String.valueOf(niceMax(maxValue()))) + labelGap;
-            float right = getWidth() - getPaddingRight() - pointRadius;
-            float step = points.size() == 1 ? 1 : (right - left) / (points.size() - 1);
-            int index = Math.round((event.getX() - left) / step);
-            selected = Math.max(0, Math.min(points.size() - 1, index));
-            invalidate();
-            return true;
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                downX = event.getX();
+                downY = event.getY();
+                select(event.getX());
+                return true;
+            case MotionEvent.ACTION_MOVE:
+                float dx = Math.abs(event.getX() - downX);
+                float dy = Math.abs(event.getY() - downY);
+                // Geseran mendatar = memilih titik (ScrollView jangan mengambil alih);
+                // geseran tegak dibiarkan, sehingga layar tetap bisa di-scroll walau jari mulai di atas grafik.
+                if (dx > touchSlop && dx > dy) {
+                    getParent().requestDisallowInterceptTouchEvent(true);
+                }
+                select(event.getX());
+                return true;
+            default:
+                return super.onTouchEvent(event);
         }
-        return super.onTouchEvent(event);
+    }
+
+    private void select(float x) {
+        float left = getPaddingLeft() + labelPaint.measureText(String.valueOf(niceMax(maxValue()))) + labelGap;
+        float right = getWidth() - getPaddingRight() - pointRadius;
+        float step = points.size() == 1 ? 1 : (right - left) / (points.size() - 1);
+        selected = Math.max(0, Math.min(points.size() - 1, Math.round((x - left) / step)));
+        invalidate();
     }
 
     private float xOf(int index, float left, float right) {
