@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,7 +48,10 @@ public class CreatorProfileEditFragment extends Fragment {
         binding.toolbar.setNavigationOnClickListener(v -> NavHostFragment.findNavController(this).navigateUp());
         binding.formTitle.setText(R.string.profile_edit_title);
         binding.formSubtitle.setText(R.string.profile_creator_edit_subtitle);
+        // Tanpa "Lewati", tombol Simpan dibuat selebar layar (sama dengan Edit profil provider).
         binding.skipButton.setVisibility(View.GONE);
+        binding.buttonSpacer.setVisibility(View.GONE);
+        binding.startButton.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         binding.startButton.setText(R.string.action_save);
 
         viewModel = new ViewModelProvider(this).get(CreatorProfileEditViewModel.class);

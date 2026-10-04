@@ -76,12 +76,12 @@
                 style="@style/Widget.App.ListItem.Text"
                 app:drawableStartCompat="@drawable/ic_logout"
                 android:text="@string/profile_sign_out" />
-            </LinearLayout>
 
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_3" />
+            </LinearLayout>
 
             <TextView
                 style="@style/Widget.App.ListGroupTitle"

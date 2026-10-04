@@ -56,7 +56,15 @@ Sumber rancangan: [`docs/rancangan/alur-pembuatan-website.md`](../rancangan/alur
   - Tombol "Pakai template" terlipat 2 baris → gaya tombol ringkas.
   - Jumlah download di kartu galeri terlipat aneh → satu baris label.
   - Tanda kutip di dialog Hapus hilang → tanda kutip “ ”.
-- Belum selesai diuji di HP (layar terkunci): "Dilihat" sebagai tamu, Profil versi tamu, Edit profil pembuat website, mode terang, screenshot. (Saat login sebagai akun demo, "Dilihat" memang tidak bertambah karena event dari pemilik template diabaikan backend.)
+  - Tombol Simpan di Edit profil hanya setengah lebar → selebar layar.
+  - Garis pemisah grup Akun di Pengaturan tertinggal saat tamu → ikut disembunyikan.
+- Uji lanjutan di HP:
+  - Tamu: Beranda (Mulai besar), Profil versi tamu, Pengaturan tanpa grup Akun.
+  - Klik template sebagai tamu → `template_events` bertambah 1 (`type=view`, `install_id` terisi, `user_id` kosong). Saat login sebagai pemilik template (akun demo), angka tidak bertambah, sesuai aturan backend.
+  - Galeri offline (backend mati) → error + Coba lagi, dan berhasil setelah backend menyala.
+  - `dummy3`: Edit profil (tujuan website → Sekolah) tersimpan dan langsung tampil di Profil.
+  - Screenshot terang & gelap: 02 (Beranda tamu), 16–20 di `docs/screenshots/`.
+- Catatan perilaku: project tersimpan **per HP**, belum per akun. Rancangan 4.6 belum punya kolom pemilik, sehingga akun lain di HP yang sama melihat project yang sama. Pemindahan project tamu ke akun memang ditunda (AGENTS 2.2). Ini perlu diputuskan bersama diskusi editor.
 
 ## Konsep yang dipelajari
 - Room: Entity, DAO, Database, `TypeConverter`, LiveData yang otomatis diperbarui, `switchMap`.

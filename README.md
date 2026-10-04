@@ -38,7 +38,7 @@ Diambil dari HP asli (realme, Android 13) dengan akun dummy. File lengkap ada di
 | Layar | Terang | Gelap |
 |---|---|---|
 | Intro | <img src="docs/screenshots/01-intro-terang.png" width="220"> | <img src="docs/screenshots/01-intro-gelap.png" width="220"> |
-| Dashboard pembuat website (tamu) | <img src="docs/screenshots/02-dashboard-tamu-terang.png" width="220"> | <img src="docs/screenshots/02-dashboard-tamu-gelap.png" width="220"> |
+| Beranda pembuat website (tamu, belum punya project) | <img src="docs/screenshots/02-dashboard-tamu-terang.png" width="220"> | <img src="docs/screenshots/02-dashboard-tamu-gelap.png" width="220"> |
 | Masuk | <img src="docs/screenshots/03-masuk-terang.png" width="220"> | <img src="docs/screenshots/03-masuk-gelap.png" width="220"> |
 | Daftar | <img src="docs/screenshots/04-daftar-terang.png" width="220"> | <img src="docs/screenshots/04-daftar-gelap.png" width="220"> |
 | Pilih peran | <img src="docs/screenshots/05-pilih-peran-terang.png" width="220"> | <img src="docs/screenshots/05-pilih-peran-gelap.png" width="220"> |
@@ -49,7 +49,11 @@ Diambil dari HP asli (realme, Android 13) dengan akun dummy. File lengkap ada di
 | Beranda provider baru (checklist) | <img src="docs/screenshots/15-beranda-provider-baru-terang.png" width="220"> | <img src="docs/screenshots/15-beranda-provider-baru-gelap.png" width="220"> |
 | Template Anda | <img src="docs/screenshots/13-template-anda-terang.png" width="220"> | <img src="docs/screenshots/13-template-anda-gelap.png" width="220"> |
 | Detail template + hasil pengecekan | <img src="docs/screenshots/14-detail-template-terang.png" width="220"> | <img src="docs/screenshots/14-detail-template-gelap.png" width="220"> |
-| Menu profil | <img src="docs/screenshots/09-menu-profil-terang.png" width="220"> | <img src="docs/screenshots/09-menu-profil-gelap.png" width="220"> |
+| Beranda pembuat website (punya project) | <img src="docs/screenshots/16-beranda-pembuat-website-terang.png" width="220"> | <img src="docs/screenshots/16-beranda-pembuat-website-gelap.png" width="220"> |
+| Project | <img src="docs/screenshots/17-project-terang.png" width="220"> | <img src="docs/screenshots/17-project-gelap.png" width="220"> |
+| Galeri Template | <img src="docs/screenshots/18-galeri-template-terang.png" width="220"> | <img src="docs/screenshots/18-galeri-template-gelap.png" width="220"> |
+| Profil pembuat website | <img src="docs/screenshots/19-profil-pembuat-website-terang.png" width="220"> | <img src="docs/screenshots/19-profil-pembuat-website-gelap.png" width="220"> |
+| Editor "Segera hadir" | <img src="docs/screenshots/20-editor-segera-hadir-terang.png" width="220"> | <img src="docs/screenshots/20-editor-segera-hadir-gelap.png" width="220"> |
 | Pengaturan | <img src="docs/screenshots/10-pengaturan-terang.png" width="220"> | <img src="docs/screenshots/10-pengaturan-gelap.png" width="220"> |
 | Metode login terhubung | <img src="docs/screenshots/11-metode-login-terang.png" width="220"> | <img src="docs/screenshots/11-metode-login-gelap.png" width="220"> |
 
