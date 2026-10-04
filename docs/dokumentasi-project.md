@@ -911,21 +911,27 @@ Semua file ada di `android/app/src/main/java/com/aris/templateapp/ui/provider/`,
 ### Peta layar
 
 ```
-ProviderDashboardFragment  (shell: app bar + bottom navigation, ada di nav_graph)
+ProviderDashboardFragment  (shell: app bar + ViewPager2 + bottom navigation, ada di nav_graph)
  ├─ ProviderHomeFragment       tab Beranda          ┐
- ├─ ProviderUploadFragment     tab Upload (segera)  │ Fragment ANAK, ditukar dengan show/hide
- ├─ ProviderTemplatesFragment  tab Template Anda    │
+ ├─ ProviderUploadFragment     tab Upload (segera)  │ Fragment ANAK = halaman ViewPager2 (ProviderTabsAdapter),
+ ├─ ProviderTemplatesFragment  tab Template Anda    │ bisa digeser ke samping atau dipilih lewat bottom navigation
  └─ ProviderProfileFragment    tab Profil           ┘
 
 Dibuka DI ATAS shell lewat ProviderNav (tujuan di nav_graph, tombol kembali → tab yang sama):
  templateDetailFragment · guideFragment · providerProfileEditFragment · settingsFragment · linkedMethodsFragment
 ```
 
-**Kenapa tab = Fragment anak dengan show/hide, bukan NavHost kedua?** Dengan show/hide, setiap tab dibuat sekali lalu hanya disembunyikan, jadi isi dan posisi scroll tetap utuh saat pindah tab. Layar lanjutan tetap memakai Navigation **utama**: `NavHostFragment.findNavController(fragmentAnak)` mencari ke atas sampai NavHostFragment terdekat, yaitu milik Activity. Kalau ada NavHost kedua di dalam shell, menu profil (`ProfileSheet`) akan menemukan NavHost yang salah saat membuka Pengaturan.
+**Tab bisa digeser ke samping (permintaan Aris, di luar rancangan).** Tab adalah halaman **ViewPager2** (`ProviderTabsAdapter`, sebuah `FragmentStateAdapter`). `OnPageChangeCallback` menyalakan tab yang sesuai di bottom navigation, dan memilih tab di bottom navigation memanggil `setCurrentItem`. `offscreenPageLimit = 3` membuat keempat tab tetap hidup, jadi isi dan posisi scroll tiap tab tetap utuh. Karena semua tab hidup bersamaan, "tab ini baru dibuka" ditandai oleh **`onResume`**: ViewPager2 hanya membuat halaman yang tampil berstatus RESUMED, sedangkan halaman lain cukup STARTED.
+
+**Geseran yang berebut arah:**
+- Grafik memegang geseran sejak jari menempel. Geser mendatar = memilih titik (bukan pindah tab); begitu geseran ternyata tegak, grafik melepasnya ke ScrollView.
+- Baris chip filter memakai `PagerAwareHorizontalScrollView`: chip digulir dulu, dan begitu mentok di ujung, geseran dilepas ke ViewPager2 sehingga tab berpindah. `HorizontalScrollView` biasa selalu mengunci geseran walau sudah mentok.
+
+**Kenapa bukan NavHost kedua?** Layar lanjutan tetap memakai Navigation **utama**: `NavHostFragment.findNavController(fragmentAnak)` mencari ke atas sampai NavHostFragment terdekat, yaitu milik Activity. Kalau ada NavHost kedua di dalam shell, menu profil (`ProfileSheet`) akan menemukan NavHost yang salah saat membuka Pengaturan.
 
 **Tombol kembali** di tab selain Beranda membuka Beranda dulu (`OnBackPressedCallback` yang hanya aktif saat tab ≠ Beranda); di Beranda baru menutup app. **Keyboard terbuka** (mis. saat mencari) → bottom navigation disembunyikan; keadaan keyboard dibaca dari `ViewCompat.getRootWindowInsets(...).isVisible(Type.ime())` setiap layout berubah.
 
-**Tab terpilih diingat** di field `selectedTab` dan `onSaveInstanceState`. Saat kembali dari detail, view shell dibuat ulang, tetapi Fragment anaknya masih tersimpan di `childFragmentManager`, sehingga tab yang sama langsung tampil lagi.
+**Tab terpilih diingat** oleh ViewPager2 sendiri. Saat membuka detail, view shell dihancurkan, dan status ViewPager2 (halaman aktif + status tiap tab) disimpan. Saat kembali, status itu dipulihkan, sehingga tab, filter, dan posisi scroll sama seperti sebelumnya.
 
 ### Siapa memiliki data (ViewModel)
 
@@ -1036,3 +1042,5 @@ Grafik ini digambar sendiri di `onDraw(Canvas)` (keputusan Aris: tanpa library):
 | `DiffUtil` | Pembanding dua daftar untuk mencari item yang berubah, supaya RecyclerView hanya menggambar ulang yang perlu |
 | Debounce | Menunggu jeda tertentu setelah aksi terakhir sebelum bertindak (mis. pencarian saat mengetik) |
 | Skeleton | Kartu abu-abu berbentuk isi yang tampil selama data dimuat |
+| ViewPager2 | Wadah halaman yang bisa digeser ke samping; dipakai untuk intro dan tab Dashboard Provider |
+| `requestDisallowInterceptTouchEvent` | Permintaan view anak agar induknya (ScrollView/ViewPager2) tidak mengambil alih geseran yang sedang berlangsung |

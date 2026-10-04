@@ -103,23 +103,15 @@ public class ProviderTemplatesFragment extends Fragment {
         });
     }
 
+    /**
+     * Tab ini tampil (pertama kali, dibuka lagi lewat bottom navigation/geser, kembali dari detail, atau app kembali
+     * dari latar belakang): samakan kontrol filter (mis. setelah "Lihat semua" dari Beranda) lalu ambil data terbaru.
+     */
     @Override
-    public void onStart() {
-        super.onStart();
-        // Tampil pertama, kembali dari detail, atau app kembali dari latar belakang: ambil data terbaru.
-        if (!isHidden()) {
-            viewModel.refresh();
-        }
-    }
-
-    /** Tab ini dibuka lagi lewat bottom navigation (Fragment hanya disembunyikan, bukan dibuat ulang). */
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        if (!hidden && binding != null) {
-            syncControls();
-            viewModel.refresh();
-        }
+    public void onResume() {
+        super.onResume();
+        syncControls();
+        viewModel.refresh();
     }
 
     private void setUpSearch() {

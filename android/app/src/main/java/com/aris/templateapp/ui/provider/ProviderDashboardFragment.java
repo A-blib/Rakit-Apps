@@ -14,11 +14,10 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.aris.templateapp.R;
 import com.aris.templateapp.databinding.FragmentProviderDashboardBinding;
@@ -34,24 +33,20 @@ import dagger.hilt.android.AndroidEntryPoint;
 /**
  * Shell Dashboard Provider (alur-provider.md bagian 2): app bar + 4 tab di bottom navigation.
  * <p>
- * Setiap tab adalah Fragment anak yang dibuat saat pertama kali dibuka lalu hanya disembunyikan/ditampilkan,
- * sehingga isi dan posisi scroll tab tetap utuh. Layar lanjutan (detail template, panduan, edit profil) dibuka
+ * Setiap tab adalah Fragment anak di dalam ViewPager2, sehingga tab bisa dipilih lewat bottom navigation atau
+ * digeser ke samping. Tab yang sedang tampil berstatus RESUMED, tab lain hanya STARTED, jadi tab memakai
+ * {@code onResume} sebagai tanda "tab ini baru dibuka". Layar lanjutan (detail template, panduan, edit profil) dibuka
  * lewat Navigation utama di atas shell ini (lihat {@link ProviderNav}).
  */
 @AndroidEntryPoint
 public class ProviderDashboardFragment extends Fragment {
 
-    private static final String STATE_TAB = "selectedTab";
-    private static final int[] TABS = {R.id.tab_home, R.id.tab_upload, R.id.tab_templates, R.id.tab_profile};
+    /** Urutan tab = urutan halaman ViewPager2 = urutan menu bottom navigation. */
+    static final int[] TABS = {R.id.tab_home, R.id.tab_upload, R.id.tab_templates, R.id.tab_profile};
 
     private FragmentProviderDashboardBinding binding;
     private CurrentUserViewModel userViewModel;
-    @IdRes
-    private int selectedTab = R.id.tab_home;
-    /**
-     * Bottom navigation disembunyikan selama keyboard terbuka (mis. saat mengetik di pencarian Template Anda),
-     * supaya ruang layar yang tersisa dipakai untuk isi, bukan untuk tab.
-     */
+
     /** Tombol kembali di tab selain Beranda membuka Beranda dulu; di Beranda baru menutup app. */
     private final OnBackPressedCallback backToHome = new OnBackPressedCallback(false) {
         @Override
@@ -59,6 +54,11 @@ public class ProviderDashboardFragment extends Fragment {
             selectTab(R.id.tab_home);
         }
     };
+
+    /**
+     * Bottom navigation disembunyikan selama keyboard terbuka (mis. saat mengetik di pencarian Template Anda),
+     * supaya ruang layar yang tersisa dipakai untuk isi, bukan untuk tab.
+     */
     private final ViewTreeObserver.OnGlobalLayoutListener keyboardListener = () -> {
         if (binding == null) {
             return;
@@ -71,13 +71,14 @@ public class ProviderDashboardFragment extends Fragment {
         }
     };
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            selectedTab = savedInstanceState.getInt(STATE_TAB, R.id.tab_home);
+    /** Halaman berganti (digeser atau lewat kode): samakan tab yang menyala di bottom navigation. */
+    private final ViewPager2.OnPageChangeCallback pageChange = new ViewPager2.OnPageChangeCallback() {
+        @Override
+        public void onPageSelected(int position) {
+            binding.bottomNav.getMenu().findItem(TABS[position]).setChecked(true);
+            backToHome.setEnabled(position != 0);
         }
-    }
+    };
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -103,12 +104,19 @@ public class ProviderDashboardFragment extends Fragment {
 
         binding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), backToHome);
+
+        // Tab bisa dipilih lewat bottom navigation ATAU digeser ke samping (ViewPager2).
+        // Semua tab dibiarkan hidup (offscreenPageLimit = 3) agar isi & posisi scroll tiap tab tetap utuh.
+        binding.pager.setAdapter(new ProviderTabsAdapter(this));
+        binding.pager.setOffscreenPageLimit(TABS.length - 1);
+        binding.pager.registerOnPageChangeCallback(pageChange);
         binding.bottomNav.setOnItemSelectedListener(item -> {
-            showTab(item.getItemId());
+            int position = indexOf(item.getItemId());
+            if (binding.pager.getCurrentItem() != position) {
+                binding.pager.setCurrentItem(position, true);
+            }
             return true;
         });
-        binding.bottomNav.setSelectedItemId(selectedTab);
-        showTab(selectedTab);
 
         // Badge tab Beranda = jumlah "Perlu tindakan" (bagian 3.3), monokrom seperti komponen lain.
         dashboardViewModel.getDashboard().observe(getViewLifecycleOwner(), resource -> {
@@ -138,16 +146,10 @@ public class ProviderDashboardFragment extends Fragment {
         userViewModel.reload();
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(STATE_TAB, selectedTab);
-    }
-
     /** Dipanggil tab lain, mis. tombol "Upload template baru" di Beranda membuka tab Upload. */
     public void selectTab(@IdRes int tab) {
         if (binding != null) {
-            binding.bottomNav.setSelectedItemId(tab);
+            binding.pager.setCurrentItem(indexOf(tab), true);
         }
     }
 
@@ -157,45 +159,20 @@ public class ProviderDashboardFragment extends Fragment {
         selectTab(R.id.tab_templates);
     }
 
-    private void showTab(@IdRes int tab) {
-        selectedTab = tab;
-        backToHome.setEnabled(tab != R.id.tab_home);
-        FragmentManager fm = getChildFragmentManager();
-        FragmentTransaction transaction = fm.beginTransaction().setReorderingAllowed(true);
-        for (int id : TABS) {
-            Fragment fragment = fm.findFragmentByTag(tagOf(id));
-            if (id == tab) {
-                if (fragment == null) {
-                    transaction.add(R.id.tab_container, newTab(id), tagOf(id));
-                } else {
-                    transaction.show(fragment);
-                }
-            } else if (fragment != null) {
-                transaction.hide(fragment);
+    private static int indexOf(@IdRes int tab) {
+        for (int i = 0; i < TABS.length; i++) {
+            if (TABS[i] == tab) {
+                return i;
             }
         }
-        transaction.commitNow();
-    }
-
-    private static String tagOf(@IdRes int tab) {
-        return "provider_tab_" + tab;
-    }
-
-    private static Fragment newTab(@IdRes int tab) {
-        if (tab == R.id.tab_upload) {
-            return new ProviderUploadFragment();
-        } else if (tab == R.id.tab_templates) {
-            return new ProviderTemplatesFragment();
-        } else if (tab == R.id.tab_profile) {
-            return new ProviderProfileFragment();
-        }
-        return new ProviderHomeFragment();
+        return 0;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding.getRoot().getViewTreeObserver().removeOnGlobalLayoutListener(keyboardListener);
+        binding.pager.unregisterOnPageChangeCallback(pageChange);
         binding = null;
     }
 }

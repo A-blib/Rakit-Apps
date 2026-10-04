@@ -32,7 +32,7 @@ public class ProviderProfileFragment extends Fragment {
     private FragmentProviderProfileBinding binding;
     private ProviderProfileViewModel viewModel;
     private ProfileViewModel accountViewModel;
-    private boolean startedBefore;
+    private boolean resumedBefore;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -88,22 +88,14 @@ public class ProviderProfileFragment extends Fragment {
         });
     }
 
+    /** Tab ini tampil lagi (geser/bottom navigation, kembali dari Edit profil/Pengaturan): tampilkan data terbaru. */
     @Override
-    public void onStart() {
-        super.onStart();
-        // Kembali dari Edit profil / Pengaturan: tampilkan data terbaru.
-        if (startedBefore && !isHidden()) {
+    public void onResume() {
+        super.onResume();
+        if (resumedBefore) {
             viewModel.load();
         }
-        startedBefore = true;
-    }
-
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        if (!hidden) {
-            viewModel.load();
-        }
+        resumedBefore = true;
     }
 
     private void render(@Nullable Resource<ProviderProfileDto> resource) {

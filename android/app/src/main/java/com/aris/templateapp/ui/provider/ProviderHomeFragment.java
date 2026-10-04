@@ -47,8 +47,8 @@ public class ProviderHomeFragment extends Fragment {
 
     private FragmentProviderHomeBinding binding;
     private ProviderDashboardViewModel viewModel;
-    /** false sampai onStart pertama: muat pertama sudah dilakukan ViewModel, jadi tidak perlu diulang. */
-    private boolean startedBefore;
+    /** false sampai onResume pertama: muat pertama sudah dilakukan ViewModel, jadi tidak perlu diulang. */
+    private boolean resumedBefore;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -77,23 +77,17 @@ public class ProviderHomeFragment extends Fragment {
         bindStatLabels();
     }
 
+    /**
+     * Tab Beranda tampil lagi: dibuka lewat bottom navigation/geser, kembali dari detail atau panduan,
+     * atau app kembali dari latar belakang. Data diperbarui diam-diam (badge ikut diperbarui).
+     */
     @Override
-    public void onStart() {
-        super.onStart();
-        // Kembali dari detail/panduan/edit profil atau dari latar belakang: perbarui diam-diam.
-        if (startedBefore) {
+    public void onResume() {
+        super.onResume();
+        if (resumedBefore) {
             viewModel.load(true);
         }
-        startedBefore = true;
-    }
-
-    /** Tab Beranda dibuka lagi lewat bottom navigation: perbarui diam-diam (badge ikut diperbarui). */
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        if (!hidden && viewModel != null) {
-            viewModel.load(true);
-        }
+        resumedBefore = true;
     }
 
     private ProviderDashboardFragment shell() {

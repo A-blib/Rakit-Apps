@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Shell Dashboard Provider (alur-provider.md bagian 2 & 3.3): app bar (nama app + badge MODE PROVIDER + avatar),
-    wadah tab, dan bottom navigation 4 tab. Isi tiap tab adalah Fragment anak yang ditukar dengan show/hide,
-    sehingga posisi scroll dan isi setiap tab tetap utuh saat berpindah tab.
+    ViewPager2 berisi 4 tab (bisa digeser ke samping), dan bottom navigation. Isi tiap tab adalah Fragment anak.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -39,8 +38,9 @@
             layout="@layout/view_app_bar_account" />
     </com.google.android.material.appbar.MaterialToolbar>
 
-    <FrameLayout
-        android:id="@+id/tab_container"
+    <!-- Halaman tab; bisa digeser ke samping atau dipilih lewat bottom navigation. -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />

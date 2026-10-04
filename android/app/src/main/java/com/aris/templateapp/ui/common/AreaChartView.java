@@ -246,16 +246,20 @@ public class AreaChartView extends View {
             case MotionEvent.ACTION_DOWN:
                 downX = event.getX();
                 downY = event.getY();
+                // Sejak jari menempel, geseran dipegang grafik dulu: ViewPager2 (geser tab) dan ScrollView
+                // tidak boleh mengambil alih sebelum arah geseran jelas.
+                getParent().requestDisallowInterceptTouchEvent(true);
                 select(event.getX());
                 return true;
             case MotionEvent.ACTION_MOVE:
                 float dx = Math.abs(event.getX() - downX);
                 float dy = Math.abs(event.getY() - downY);
-                // Geseran mendatar = memilih titik (ScrollView jangan mengambil alih);
-                // geseran tegak dibiarkan, sehingga layar tetap bisa di-scroll walau jari mulai di atas grafik.
-                if (dx > touchSlop && dx > dy) {
-                    getParent().requestDisallowInterceptTouchEvent(true);
+                if (dy > touchSlop && dy > dx) {
+                    // Geseran tegak: lepaskan ke ScrollView agar layar tetap bisa di-scroll dari atas grafik.
+                    getParent().requestDisallowInterceptTouchEvent(false);
+                    return false;
                 }
+                // Geseran mendatar = memilih titik (bukan pindah tab).
                 select(event.getX());
                 return true;
             default:

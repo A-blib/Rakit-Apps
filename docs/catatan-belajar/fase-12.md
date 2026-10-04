@@ -58,6 +58,14 @@ Sumber rancangan: [`docs/rancangan/alur-provider.md`](../rancangan/alur-provider
   - Tombol kembali di tab selain Beranda langsung menutup app → kembali ke Beranda dulu.
   - Beranda tidak diperbarui saat tab dibuka lagi → dimuat ulang diam-diam.
 
+## Tambahan: tab bisa digeser ke samping (permintaan Aris)
+Di luar rancangan, Aris meminta tab Dashboard Provider bisa dipindah dengan menggeser layar ke samping.
+- `ProviderDashboardFragment` memakai **ViewPager2** + `ProviderTabsAdapter`; bottom navigation dan halaman saling menyamakan pilihan. ViewPager2 sudah dipakai sejak Fase 06 (intro), jadi tidak ada library baru.
+- Tab memakai `onResume` (bukan lagi `onHiddenChanged`) sebagai tanda "tab dibuka lagi".
+- Grafik: geser mendatar tetap memilih titik (tidak pindah tab); geser tegak tetap men-scroll layar.
+- Baris chip filter: `PagerAwareHorizontalScrollView` menggulir chip dulu, lalu pindah tab saat chip sudah mentok. (Pembungkus `NestedScrollableHost` dari contoh resmi sempat dicoba, tapi tidak bisa melepas geseran dari `HorizontalScrollView` yang sudah mentok, jadi diganti.)
+- Uji di HP (akun demo): geser Beranda → Upload → Template → Profil dan kembali; geser di chip menggulir chip lalu pindah ke Profil saat mentok; geser mendatar di grafik memunculkan tooltip tanpa pindah tab; geser tegak dari grafik men-scroll; detail → kembali tetap di tab Template dengan filter & scroll utuh; Metode login terhubung → kembali tetap di Profil; tidak ada crash.
+
 ## Konsep yang dipelajari
 - Custom View: `onDraw(Canvas)`, `Paint`, `Path`, `LinearGradient`, `onTouchEvent`, `requestDisallowInterceptTouchEvent`.
 - Fragment anak (`getChildFragmentManager`), `show/hide`, `onHiddenChanged`.
@@ -66,6 +74,7 @@ Sumber rancangan: [`docs/rancangan/alur-provider.md`](../rancangan/alur-provider
 - Debounce pencarian dengan `Handler.postDelayed`.
 - Mengabaikan jawaban request yang sudah basi (nomor `generation`).
 - `BadgeDrawable` di `BottomNavigationView`.
+- ViewPager2 + `FragmentStateAdapter` untuk tab yang bisa digeser; perebutan geseran antara view bersarang (`requestDisallowInterceptTouchEvent`).
 - `OnBackPressedCallback` (tombol kembali kustom) dan membaca keadaan keyboard dari `WindowInsetsCompat`.
 
 ## Latihan untuk Aris
