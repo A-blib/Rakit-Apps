@@ -656,7 +656,8 @@ Ikon app diketuk
        lingkaran berputar → berubah jadi pahlawan → terbang di tempat
        StartupViewModel memutuskan layar pertama (+ prefetch Beranda provider, lihat di bawah)
        keputusan siap & animasi sudah tampil ≥ loading_min_duration_ms
-       → pahlawan melaju ke kanan → navigate(...) dengan enterAnim slide_up_in (naik dari bawah)
+       → pahlawan melaju ke kanan; begitu keluar layar (frame 180) → navigate(...) dengan enterAnim slide_up_in
+         (dashboard naik dari tepi bawah layar, 700 ms)
          + popUpTo: StartupFragment dibuang dari back stack
   → Intro / Dashboard Pembuat Website / Dashboard Provider (mode terakhir)
 ```

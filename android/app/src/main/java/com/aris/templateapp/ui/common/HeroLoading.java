@@ -26,6 +26,8 @@ public final class HeroLoading {
     static final int INTRO_END = 45;
     static final int LOOP_END = 165;
     static final int OUTRO_END = 195;
+    /** Pahlawan sudah keluar dari kanan layar: layar berikutnya mulai naik dari bawah (tanpa menunggu garis laju habis). */
+    static final int HERO_GONE = 180;
 
     private final LottieAnimationView view;
     private boolean introPlaying;
@@ -76,6 +78,7 @@ public final class HeroLoading {
     public void cancel() {
         onFinished = null;
         view.removeAllAnimatorListeners();
+        view.removeAllUpdateListeners();
         view.cancelAnimation();
     }
 
@@ -88,17 +91,32 @@ public final class HeroLoading {
 
     private void playOutro() {
         Runnable done = onFinished;
+        onFinished = null;
         view.removeAllAnimatorListeners();
+        view.removeAllUpdateListeners();
         view.setRepeatCount(0);
         view.setMinAndMaxFrame(LOOP_END, OUTRO_END);
+        boolean[] fired = {false};
+        Runnable fireOnce = () -> {
+            if (!fired[0]) {
+                fired[0] = true;
+                view.removeAllUpdateListeners();
+                if (done != null) {
+                    done.run();
+                }
+            }
+        };
+        // Lanjut ke layar berikutnya begitu pahlawan keluar layar; cadangan: saat penutup selesai.
+        view.addAnimatorUpdateListener(animation -> {
+            if (view.getFrame() >= HERO_GONE) {
+                fireOnce.run();
+            }
+        });
         view.addAnimatorListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 view.removeAnimatorListener(this);
-                onFinished = null;
-                if (done != null) {
-                    done.run();
-                }
+                fireOnce.run();
             }
         });
         view.setFrame(LOOP_END);
@@ -107,8 +125,8 @@ public final class HeroLoading {
 
     /** Isi layar "muncul dari bawah": mulai agak di bawah & transparan, lalu naik ke tempatnya. */
     public static void slideUpIn(View content) {
-        float distance = content.getResources().getDisplayMetrics().heightPixels * 0.35f;
-        content.setAlpha(0f);
+        float distance = content.getResources().getDisplayMetrics().heightPixels;
+        content.setAlpha(0.4f);
         content.setTranslationY(distance);
         content.animate()
                 .alpha(1f)

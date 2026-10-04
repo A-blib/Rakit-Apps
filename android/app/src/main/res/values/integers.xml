@@ -6,5 +6,5 @@
     -->
     <integer name="loading_min_duration_ms">2000</integer>
     <!-- Lama isi layar / dashboard naik dari bawah setelah pahlawan melaju ke kanan. -->
-    <integer name="slide_up_duration_ms">450</integer>
+    <integer name="slide_up_duration_ms">700</integer>
 </resources>

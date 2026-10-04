@@ -84,6 +84,7 @@ Sumber rancangan: [`docs/rancangan/alur-pembuatan-website.md`](../rancangan/alur
 - Layar awal (`StartupFragment` + `fragment_startup.xml`) menampilkan animasi ini, lalu dashboard mode terakhir naik dari bawah (`res/anim/slide_up_in.xml`, `fade_out.xml`, action di `nav_graph.xml`). Splash sistem tidak ditahan lagi.
 - `StateView`: setelah loading, isi layar juga naik dari bawah (`hide(content, bind)`).
 - Prefetch Beranda provider di `StartupViewModel`, sehingga loading tidak muncul dua kali.
+- Perbaikan setelah masukan Aris: dashboard naik dari **tepi bawah layar** (100%, 700 ms, sebelumnya hanya 35% dalam 450 ms sehingga tidak terasa), dan mulai naik begitu pahlawan keluar layar (frame 180), tanpa jeda layar kosong. Dicek di HP memakai durasi sementara 3 detik.
 - Uji di HP (akun Aris, mode provider): rangkaian screenshot saat app dibuka menunjukkan splash → lingkaran → pahlawan → melaju ke kanan → Beranda provider, tanpa loading kedua.
 
 ## Konsep yang dipelajari
