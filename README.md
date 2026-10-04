@@ -19,6 +19,8 @@
 | Polesan akhir: tombol Coba lagi di semua aksi online, screenshot terang/gelap, lint bersih, uji skenario 13.2 di HP | Sudah (Fase 10) |
 | Backend provider: status `active`/`suspended`, Beranda (ringkasan, tren download, populer, perlu tindakan), Template Anda (filter/urutan/cari), Profil, event dilihat/didownload, notifikasi, seeder demo | Sudah (Fase 11) |
 | Android Dashboard Provider: bottom navigation, Beranda (perlu tindakan + badge, checklist provider baru, ringkasan 7/30 hari, grafik area, populer, panduan), Template Anda (cari, filter, urutan, paginasi), detail + hasil pengecekan, Profil + Edit profil | Sudah (Fase 12) |
+| Backend galeri Template publik (`GET /api/templates`), edit profil pembuat website | Sudah (Fase 13) |
+| Android Dashboard Pembuat Website (Beranda, Project, tombol +, Template, Profil) | Belum (Fase 14) |
 | Upload template, push notification | Segera hadir (lihat `docs/rancangan/alur-provider.md`) |
 | Dashboard Pembuat Website | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |

@@ -4,6 +4,7 @@ import com.aris.templateapp.config.OpenApiConfig;
 import com.aris.templateapp.security.CurrentUser;
 import com.aris.templateapp.user.dto.ActiveModeRequest;
 import com.aris.templateapp.user.dto.CreatorOnboardingRequest;
+import com.aris.templateapp.user.dto.CreatorProfileUpdateRequest;
 import com.aris.templateapp.user.dto.ProviderOnboardingRequest;
 import com.aris.templateapp.user.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,6 +47,13 @@ public class UserController {
     @PostMapping("/onboarding/provider")
     public UserResponse onboardProvider(@Valid @RequestBody ProviderOnboardingRequest request) {
         return userService.becomeProvider(currentUser.id(), request);
+    }
+
+    @Operation(summary = "Ubah info pembuat website (nama tampilan, tujuan website, nama organisasi)",
+            description = "Dipakai tab Profil. Tidak mengubah status onboarding maupun mode aktif.")
+    @PatchMapping("/creator-profile")
+    public UserResponse updateCreatorProfile(@Valid @RequestBody CreatorProfileUpdateRequest request) {
+        return userService.updateCreatorProfile(currentUser.id(), request);
     }
 
     @Operation(summary = "Beralih mode (creator / provider)",

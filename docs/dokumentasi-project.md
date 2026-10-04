@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 12** (Dashboard Provider di Android). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
+> Status dokumen: diperbarui sampai **Fase 13** (backend galeri Template & profil pembuat website). Rancangan fitur pembuatan website: [`rancangan/alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
 
 ---
 
@@ -40,7 +40,11 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 
 21. [Backend Dashboard Provider](#21-backend-dashboard-provider)
 22. [Dashboard Provider di Android](#22-dashboard-provider-di-android)
-23. [Glosarium](#23-glosarium)
+
+**Fitur pembuatan website**
+
+23. [Backend galeri Template & profil pembuat website](#23-backend-galeri-template--profil-pembuat-website)
+24. [Glosarium](#24-glosarium)
 
 ---
 
@@ -450,6 +454,8 @@ Coba semuanya di Swagger UI: http://localhost:8080/swagger-ui.html
 | `GET /api/templates/{id}/checks/latest` | ✔ pemilik | – | hasil pengecekan | ✅ Fase 11 |
 | `GET /api/notifications` · `/unread-count` · `PATCH /{id}/read` | ✔ | – | notifikasi | ✅ Fase 11 |
 | `DELETE /api/dev/demo-templates` | – (profile dev saja) | – | `204` | ✅ Fase 11 |
+| `GET /api/templates?category=&q=&sort=popular\|newest&page=&size=` | – (tamu boleh) | – | galeri: template tayang dari provider aktif + nama kreator + jumlah download | ✅ Fase 13 |
+| `PATCH /api/users/me/creator-profile` | ✔ | `{displayName, websitePurpose?, organizationName?}` | `UserResponse` | ✅ Fase 13 |
 
 Bentuk respons:
 
@@ -989,7 +995,33 @@ Grafik ini digambar sendiri di `onDraw(Canvas)` (keputusan Aris: tanpa library):
 
 ---
 
-## 23. Glosarium
+## 23. Backend galeri Template & profil pembuat website
+
+Rancangan: [`rancangan/alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md). Bagian backend-nya kecil, karena project disimpan di HP (Room) dan bukan di server.
+
+### Galeri (`gallery/`)
+
+`GET /api/templates` adalah endpoint **publik**: tamu juga boleh melihat galeri. Di `SecurityConfig` yang dibuka hanya `GET /api/templates` persis, jadi `GET /api/templates/{id}/checks/latest` tetap butuh login.
+
+| Aturan | Cara |
+|---|---|
+| Template yang tampil | `t.status = 'published'` **dan** `provider_profiles.status = 'active'`. Provider yang ditangguhkan adalah rem darurat untuk konten berbahaya, jadi templatenya ikut disembunyikan dari galeri |
+| Urutan `popular` (bawaan) | jumlah download terbanyak → tanggal tayang terbaru → id |
+| Urutan `newest` | `published_at` terbaru → id |
+| Paginasi | `page` mulai 0, `size` bawaan 20, maksimal 50 (agar satu request tidak bisa meminta seluruh tabel) |
+| "Template untuk anda" | Tidak punya endpoint khusus: Android memanggil `?category={tujuan website}&sort=popular&size=6` |
+
+Kenapa tabel `templates` yang sama dengan sisi provider? Satu template cukup disimpan sekali. Provider melihatnya di "Template Anda", pembuat website melihatnya di galeri. Saat Upload sudah ada, galeri langsung terisi tanpa perubahan apa pun.
+
+**"Dilihat" saat template diklik** (keputusan Aris): app memanggil `POST /api/templates/{id}/events` dengan `type=view` setiap kali template diklik. Endpoint ini sudah ada sejak Fase 11, jadi backend tidak perlu diubah.
+
+### Edit profil pembuat website
+
+`PATCH /api/users/me/creator-profile` dipakai tab Profil untuk mengubah nama tampilan, tujuan website, dan nama organisasi. Aturan validasinya sama dengan form onboarding. Bedanya dengan `POST /onboarding/creator`: endpoint ini **tidak** mengubah `onboardingCompleted` maupun `activeMode`. Kalau user belum punya profil creator (misalnya onboarding sebagai provider), profilnya dibuat.
+
+---
+
+## 24. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|

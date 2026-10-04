@@ -5,6 +5,7 @@ import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.provider.ProviderProfile;
 import com.aris.templateapp.provider.ProviderProfileRepository;
 import com.aris.templateapp.user.dto.CreatorOnboardingRequest;
+import com.aris.templateapp.user.dto.CreatorProfileUpdateRequest;
 import com.aris.templateapp.user.dto.ProviderOnboardingRequest;
 import com.aris.templateapp.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,22 @@ public class UserService {
 
         user.setOnboardingCompleted(true);
         user.setActiveMode(ActiveMode.CREATOR);
+        return toResponse(user);
+    }
+
+    /**
+     * Edit info pembuat website dari tab Profil. Profil creator dibuat jika belum ada (mis. user yang
+     * onboarding sebagai provider), tetapi status onboarding dan mode aktif tidak disentuh.
+     */
+    @Transactional
+    public UserResponse updateCreatorProfile(UUID userId, CreatorProfileUpdateRequest request) {
+        User user = findUser(userId);
+        user.setDisplayName(request.displayName().trim());
+
+        CreatorProfile profile = creatorProfileRepository.findById(userId).orElseGet(() -> new CreatorProfile(userId));
+        profile.setWebsitePurpose(request.websitePurpose());
+        profile.setOrganizationName(blankToNull(request.organizationName()));
+        creatorProfileRepository.save(profile);
         return toResponse(user);
     }
 
