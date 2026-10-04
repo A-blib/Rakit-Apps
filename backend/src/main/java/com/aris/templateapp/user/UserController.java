@@ -41,7 +41,7 @@ public class UserController {
         return userService.completeCreatorOnboarding(currentUser.id(), request);
     }
 
-    @Operation(summary = "Daftar sebagai penyedia template (status awal pending)",
+    @Operation(summary = "Daftar sebagai penyedia template (langsung aktif)",
             description = "409 PROVIDER_PROFILE_EXISTS jika sudah pernah mendaftar.")
     @PostMapping("/onboarding/provider")
     public UserResponse onboardProvider(@Valid @RequestBody ProviderOnboardingRequest request) {

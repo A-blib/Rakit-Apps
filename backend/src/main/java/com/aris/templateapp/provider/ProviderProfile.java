@@ -43,10 +43,7 @@ public class ProviderProfile {
     private List<String> specialties = new ArrayList<>();
 
     @Column(nullable = false)
-    private ProviderStatus status = ProviderStatus.PENDING;
-
-    @Column(length = 300)
-    private String rejectionReason;
+    private ProviderStatus status = ProviderStatus.ACTIVE;
 
     @Column(nullable = false)
     private Instant agreedTermsAt;

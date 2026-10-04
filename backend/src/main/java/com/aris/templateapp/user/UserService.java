@@ -4,7 +4,6 @@ import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.provider.ProviderProfile;
 import com.aris.templateapp.provider.ProviderProfileRepository;
-import com.aris.templateapp.provider.ProviderStatus;
 import com.aris.templateapp.user.dto.CreatorOnboardingRequest;
 import com.aris.templateapp.user.dto.ProviderOnboardingRequest;
 import com.aris.templateapp.user.dto.UserResponse;
@@ -53,8 +52,8 @@ public class UserService {
 
     /**
      * Mendaftar sebagai penyedia template, baik dari onboarding akun baru maupun dari tombol
-     * "Jadi penyedia template" milik user lama. Status awal {@code pending} dan mode langsung pindah ke provider,
-     * sehingga user melihat Dashboard Provider dengan banner "Akunmu sedang diverifikasi."
+     * "Jadi penyedia template" milik user lama. Provider langsung {@code active} (tanpa verifikasi admin)
+     * dan mode langsung pindah ke provider.
      */
     @Transactional
     public UserResponse becomeProvider(UUID userId, ProviderOnboardingRequest request) {
@@ -80,7 +79,6 @@ public class UserService {
     /**
      * Beralih mode. Mode pembuat website selalu boleh (dashboard ini juga dipakai tamu dan
      * menjadi tujuan saat provider ditangguhkan). Mode provider butuh profil provider yang tidak ditangguhkan.
-     * Status pending/rejected tetap boleh masuk agar user bisa melihat banner statusnya.
      */
     @Transactional
     public UserResponse changeActiveMode(UUID userId, ActiveMode mode) {
@@ -116,8 +114,6 @@ public class UserService {
                 user.isOnboardingCompleted(),
                 roles,
                 provider.map(ProviderProfile::getStatus).orElse(null),
-                provider.filter(p -> p.getStatus() == ProviderStatus.REJECTED)
-                        .map(ProviderProfile::getRejectionReason).orElse(null),
                 creator.map(c -> new UserResponse.CreatorProfileResponse(c.getWebsitePurpose(), c.getOrganizationName()))
                         .orElse(null));
     }

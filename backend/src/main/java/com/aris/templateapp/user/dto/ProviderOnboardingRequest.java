@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
-/** Form penyedia template. Setelah dikirim, status provider menjadi {@code pending} sampai diverifikasi. */
+/** Form penyedia template. Setelah dikirim, provider langsung aktif. */
 public record ProviderOnboardingRequest(
         @NotBlank(message = "Nama kreator wajib diisi")
         @Size(max = 100, message = "Nama kreator maksimal 100 karakter")

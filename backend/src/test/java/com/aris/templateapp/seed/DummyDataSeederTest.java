@@ -47,7 +47,7 @@ class DummyDataSeederTest {
     @Autowired private MockMvc mockMvc;
 
     @Test
-    void seedsOnceWithLoginableUsersAndThreeProviderStatuses() throws Exception {
+    void seedsOnceWithLoginableUsersAndProviders() throws Exception {
         DummyDataSeeder seeder = new DummyDataSeeder(userRepository, identityRepository, creatorProfileRepository,
                 providerProfileRepository, passwordEncoder, clock);
 
@@ -58,7 +58,7 @@ class DummyDataSeederTest {
         assertThat(userRepository.count()).isEqualTo(DummyDataSeeder.USER_COUNT);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM creator_profiles", Integer.class)).isEqualTo(8);
         List<String> statuses = jdbc.queryForList("SELECT status FROM provider_profiles ORDER BY status", String.class);
-        assertThat(statuses).containsExactly("approved", "pending", "rejected");
+        assertThat(statuses).containsExactly("active", "active", "suspended");
 
         // User dummy bisa login dengan password dari README.
         mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
@@ -69,12 +69,10 @@ class DummyDataSeederTest {
                         .content("{\"email\":\"dummy9@templateapp.test\",\"password\":\"%s\"}".formatted(DummyDataSeeder.PASSWORD)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user.activeMode").value("provider"))
-                .andExpect(jsonPath("$.user.providerStatus").value("approved"))
-                .andExpect(jsonPath("$.user.providerRejectionReason").doesNotExist());
-        // dummy10 ditolak: alasan ikut dikirim untuk banner "Pengajuan provider ditolak: {alasan}."
+                .andExpect(jsonPath("$.user.providerStatus").value("active"));
+        // dummy10 ditangguhkan: app mengunci mode provider dan mengarahkan ke mode pembuat website.
         mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"dummy10@templateapp.test\",\"password\":\"%s\"}".formatted(DummyDataSeeder.PASSWORD)))
-                .andExpect(jsonPath("$.user.providerStatus").value("rejected"))
-                .andExpect(jsonPath("$.user.providerRejectionReason").value("Contoh template belum memenuhi standar."));
+                .andExpect(jsonPath("$.user.providerStatus").value("suspended"));
     }
 }

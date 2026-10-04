@@ -17,6 +17,7 @@ import net.datafaker.Faker;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,8 @@ import java.util.Random;
 @Slf4j
 @Component
 @Profile("dev")
+// Berjalan sebelum DemoTemplateSeeder (yang menambah akun demo), karena seeder ini butuh tabel users kosong.
+@Order(1)
 @RequiredArgsConstructor
 public class DummyDataSeeder implements ApplicationRunner {
 
@@ -69,9 +72,9 @@ public class DummyDataSeeder implements ApplicationRunner {
         // BCrypt sengaja lambat, jadi hash dibuat sekali lalu dipakai bersama oleh semua user dummy.
         String passwordHash = passwordEncoder.encode(PASSWORD);
         WebsitePurpose[] purposes = WebsitePurpose.values();
-        // Tiga user terakhir menjadi provider dengan status berbeda.
+        // Tiga user terakhir menjadi provider: dua aktif, satu ditangguhkan (untuk mencoba mode provider terkunci).
         List<ProviderStatus> providerStatuses = List.of(
-                ProviderStatus.PENDING, ProviderStatus.APPROVED, ProviderStatus.REJECTED);
+                ProviderStatus.ACTIVE, ProviderStatus.ACTIVE, ProviderStatus.SUSPENDED);
 
         for (int i = 1; i <= USER_COUNT; i++) {
             String name = faker.options().option(FIRST_NAMES) + " " + faker.options().option(LAST_NAMES);
@@ -97,9 +100,6 @@ public class DummyDataSeeder implements ApplicationRunner {
                 provider.setBio("Pembuat template website untuk " + faker.options().option(SPECIALTIES).toLowerCase() + ".");
                 provider.setSpecialties(List.of(faker.options().option(SPECIALTIES)));
                 provider.setStatus(status);
-                if (status == ProviderStatus.REJECTED) {
-                    provider.setRejectionReason("Contoh template belum memenuhi standar.");
-                }
                 providerProfileRepository.save(provider);
                 user.setActiveMode(ActiveMode.PROVIDER);
             }

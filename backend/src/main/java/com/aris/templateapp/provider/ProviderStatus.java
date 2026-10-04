@@ -5,12 +5,13 @@ import com.aris.templateapp.common.persistence.PersistableEnumConverter;
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.Converter;
 
-/** Status verifikasi penyedia template. Diubah manual lewat SQL karena belum ada panel admin. */
+/**
+ * Status akun penyedia template: langsung {@code active} setelah mengisi form; {@code suspended} adalah rem darurat
+ * untuk provider yang mengunggah konten berbahaya. Diubah manual lewat SQL karena belum ada panel admin.
+ */
 public enum ProviderStatus implements PersistableEnum {
 
-    PENDING("pending"),
-    APPROVED("approved"),
-    REJECTED("rejected"),
+    ACTIVE("active"),
     SUSPENDED("suspended");
 
     private final String value;

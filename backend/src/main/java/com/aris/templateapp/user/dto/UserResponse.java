@@ -13,7 +13,6 @@ import java.util.UUID;
  * @param roles          mode yang dimiliki user: "creator" jika punya profil pembuat website,
  *                       "provider" jika punya profil provider. Kosong sebelum onboarding.
  * @param providerStatus null jika user belum mendaftar sebagai provider
- * @param providerRejectionReason alasan penolakan, hanya diisi jika providerStatus = rejected (untuk banner di app)
  * @param creatorProfile null jika user belum punya profil pembuat website
  */
 public record UserResponse(
@@ -25,7 +24,6 @@ public record UserResponse(
         boolean onboardingCompleted,
         List<ActiveMode> roles,
         ProviderStatus providerStatus,
-        String providerRejectionReason,
         CreatorProfileResponse creatorProfile) {
 
     public record CreatorProfileResponse(WebsitePurpose websitePurpose, String organizationName) {

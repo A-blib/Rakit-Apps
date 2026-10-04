@@ -85,13 +85,13 @@ class OnboardingIntegrationTest {
     }
 
     @Test
-    void providerOnboardingStartsPendingInProviderMode() throws Exception {
-        // Skenario 9: dari menu "Jadi penyedia template", tanpa memilih peran.
+    void providerOnboardingIsActiveImmediatelyInProviderMode() throws Exception {
+        // Dari menu "Jadi penyedia template", tanpa memilih peran; provider langsung aktif (tanpa verifikasi).
         send(post("/api/users/me/onboarding/provider"), VALID_PROVIDER)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.activeMode").value("provider"))
                 .andExpect(jsonPath("$.onboardingCompleted").value(true))
-                .andExpect(jsonPath("$.providerStatus").value("pending"))
+                .andExpect(jsonPath("$.providerStatus").value("active"))
                 .andExpect(jsonPath("$.roles", contains("provider")));
     }
 
