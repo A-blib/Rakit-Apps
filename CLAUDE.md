@@ -901,3 +901,19 @@ Aris menambahkan rancangan **`docs/rancangan/alur-provider.md`** (salinan dari `
 - Grafik tren download dibuat sebagai **custom View sendiri** (tanpa MPAndroidChart).
 - **Push notification (Firebase Cloud Messaging) ditunda** sampai segmen Upload dibangun; versi ini hanya notifikasi di dalam app.
 - Bagian 9 dokumen itu (Upload, Template Anda lanjutan, Profil lanjutan) **belum boleh dibangun**.
+
+---
+
+## 16. Tambahan: fitur pembuatan website (Oktober 2026)
+
+Aris menambahkan rancangan **`docs/rancangan/alur-pembuatan-website.md`** (salinan dari `Instruksi dan alur/alurFiturPembuatanWibesite.md`). Untuk hal yang dibahasnya, dokumen itu **mengesampingkan** bagian 2.2, 2.3, 4.2, dan 6.6 (menu profil) di file ini:
+
+- Dashboard Pembuat Website memakai bottom navigation: Beranda, Project, tombol **+** di tengah, Template, Profil.
+- **Room** boleh dipasang untuk tabel `projects` (metadata saja; isi project JSON menunggu diskusi editor).
+- Tab Project dibangun lengkap (cari, filter status, urutan, ganti nama, duplikat, hapus). Export = dialog "Segera hadir".
+- Dua halaman editor (template mode & custom mode) dibuat sebagai layar "Segera hadir"; membukanya tidak membuat project.
+- Galeri Template versi awal memakai tabel `templates` + seeder demo provider, lewat endpoint publik `GET /api/templates`. Tampilan **list satu kolom** (keputusan Aris).
+- **"Dilihat"** milik provider dihitung saat template diklik (editor template mode terbuka), keputusan Aris; definisi di `alur-provider.md` 3.4 ikut diperbarui.
+- Avatar di app bar membuka **tab Profil** di kedua dashboard; bottom sheet menu profil (`ProfileSheet`) dihapus (keputusan Aris).
+- Tombol debug "Isi/Hapus project contoh" di Pengaturan, hanya di source set `src/debug/`.
+- Bagian 9 dokumen itu (editor, kerangka section, format project JSON, galeri lanjutan, preview & export) **belum boleh dibangun**.

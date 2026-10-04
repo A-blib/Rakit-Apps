@@ -133,7 +133,7 @@ Angka kecil di tab Beranda adalah jumlah item di "Perlu tindakan". `[▢]` adala
 | Angka | Arti | Kapan bertambah |
 |---|---|---|
 | **Aktif** | Jumlah template milik provider yang sedang tayang di galeri | Kondisi saat ini; tidak terpengaruh pilihan periode. Draft, tidak lolos pengecekan, dan dinonaktifkan tidak dihitung. |
-| **Dilihat** | Berapa kali halaman detail template milik provider dibuka pembuat website | Saat pembuat website membuka detail template di galeri |
+| **Dilihat** | Berapa kali template milik provider diklik pembuat website (membuka editor template mode) | Saat pembuat website mengklik template di galeri atau "Template untuk anda" (keputusan 4 Okt 2026, lihat `alur-pembuatan-website.md` bagian 7) |
 | **Didownload** | Berapa kali website **jadi** dari template milik provider diexport menjadi file ZIP (HTML, CSS, JS) | Saat pembuat website menekan **Export** pada project yang dibuat dari template provider |
 
 Pilihan periode 7 atau 30 hari hanya mengubah angka Dilihat dan Didownload. Panah perbandingan dengan periode sebelumnya bersifat opsional.
