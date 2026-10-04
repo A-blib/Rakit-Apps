@@ -408,7 +408,7 @@ Tujuan versi awal: **menguji tampilan dan alur** tab Template dan section "Templ
 | No | Pertanyaan | Usulan |
 |---|---|---|
 | 1 | ~~Daftar di tab Template: list satu kolom atau grid 2 kolom?~~ | **Diputuskan Aris (4 Okt 2026): list satu kolom.** |
-| 2 | ~~Angka **"Dilihat"** milik provider didefinisikan sebagai "halaman detail template dibuka" (`alurUntukProvider.md` 3.4), padahal di sisi pembuat website **klik template langsung membuka editor** tanpa halaman detail. Kapan "Dilihat" dihitung? | Dihitung saat **template diklik** (editor template mode terbuka). Berlaku juga di versi awal saat editor masih "Segera hadir", supaya mekanisme event bisa dites. Jika disetujui, definisi di `alurUntukProvider.md` 3.4 ikut diperbarui~~ **Diputuskan Aris (4 Okt 2026): dihitung saat template diklik**; definisi provider 3.4 sudah diperbarui. |
+| 2 | Kapan angka **"Dilihat"** milik provider dihitung, padahal klik template langsung membuka editor tanpa halaman detail? | **Diputuskan Aris (4 Okt 2026): dihitung saat template diklik** (editor template mode terbuka), termasuk di versi awal. Definisi di `alurUntukProvider.md` 3.4 sudah diperbarui. |
 | 3 | Menu profil (bottom sheet) di Dashboard Provider setelah Profil jadi tab | **Diputuskan Aris (4 Okt 2026): avatar di kedua dashboard membuka tab Profil; bottom sheet dihapus.** |
 
 ---
