@@ -1,4 +1,4 @@
-# Dokumentasi Project: App Template Website
+# Dokumentasi Project: Rakit
 
 Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, cara bagian itu saling terhubung, dan alasan dibuat seperti itu. Bacalah dari atas ke bawah. Setiap bagian merujuk ke file aslinya supaya bisa langsung dibuka di VS Code atau Android Studio.
 

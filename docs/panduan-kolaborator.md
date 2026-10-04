@@ -1,6 +1,6 @@
 # Panduan Kolaborator: Menyiapkan Project dari Nol (Windows & Linux)
 
-Panduan ini untuk **teman yang ikut mengembangkan** App Template Website. Setiap langkah ditulis untuk **Windows 10/11** terlebih dahulu, lalu disertai versi **Linux (Ubuntu)**.
+Panduan ini untuk **teman yang ikut mengembangkan** Rakit (app pembuat website tanpa coding). Setiap langkah ditulis untuk **Windows 10/11** terlebih dahulu, lalu disertai versi **Linux (Ubuntu)**.
 
 - Pemilik project (Aris) → baca juga bagian [0. Tugas pemilik project](#0-tugas-pemilik-project-aris).
 - Kolaborator → mulai dari [1. Pilih peranmu](#1-pilih-peranmu).
@@ -443,7 +443,7 @@ Isi `GITHUB_CLIENT_ID` dan `GITHUB_CLIENT_SECRET` di `backend/.env` dengan nilai
 
 1. https://github.com/settings/developers → **OAuth Apps → New OAuth App**
 2. Isi:
-   - Application name: `Template App (dev - <nama>)`
+   - Application name: `Rakit (dev - <nama>)`
    - Homepage URL: `http://localhost:8080`
    - **Authorization callback URL** (di tampilan baru GitHub bernama **Redirect URL**): `http://localhost:8080/api/auth/github/callback`
    - *Enable Device Flow*: jangan dicentang

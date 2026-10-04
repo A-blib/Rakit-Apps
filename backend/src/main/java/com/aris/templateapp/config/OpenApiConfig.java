@@ -20,7 +20,7 @@ public class OpenApiConfig {
     public OpenAPI templateAppOpenApi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("App Template Website API")
+                        .title("Rakit API")
                         .description("Autentikasi, penyambungan akun, onboarding, dan mode.")
                         .version("v1"))
                 .components(new Components().addSecuritySchemes(BEARER_AUTH, new SecurityScheme()

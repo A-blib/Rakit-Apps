@@ -1,6 +1,6 @@
-# App Template Website
+# Rakit
 
-App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pembuat website** (memilih template, mengedit teks/warna/foto, lalu export ke HTML/CSS/JS) dan **penyedia template** (mengunggah template untuk dipakai orang lain). User bisa langsung mencoba sebagai tamu; login hanya diminta saat butuh fitur online.
+**Rakit** adalah app Android untuk merakit website tanpa coding. Satu akun punya dua mode: **pembuat website** (memilih template, mengedit teks/warna/foto, lalu export ke HTML/CSS/JS) dan **penyedia template** (mengunggah template untuk dipakai orang lain). User bisa langsung mencoba sebagai tamu; login hanya diminta saat butuh fitur online.
 
 ### Status fitur
 
@@ -22,6 +22,8 @@ App Android untuk membuat website tanpa coding. Satu akun punya dua mode: **pemb
 | Upload template, push notification | Segera hadir (lihat `docs/rancangan/alur-provider.md`) |
 | Dashboard Pembuat Website | Segera hadir (hanya layar "Segera hadir") |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
+
+> 🏷️ **Nama app: Rakit.** Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
 
 > 👥 **Ikut mengembangkan bersama tim / memakai Windows?** Ikuti [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md): langkah lengkap dari nol untuk **Windows** dan Linux, cara mendaftarkan SHA-1 & Test user Google, berbagi kredensial dengan aman, dan alur kerja Git tim. README ini berisi rangkuman untuk Linux (Ubuntu).
 
@@ -224,7 +226,7 @@ Login Google dan GitHub butuh "kartu identitas" app di Google dan GitHub. Langka
 
 1. Buka https://console.cloud.google.com → pilih project di kiri atas → **New Project** → nama mis. `templateapp-dev` → **Create**.
 2. Menu **Google Auth Platform** (dulu bernama "OAuth consent screen") → **Get started**:
-   - *App information*: nama app `Template App`, user support email = emailmu.
+   - *App information*: nama app `Rakit`, user support email = emailmu. (Project yang sudah terlanjur memakai nama lama cukup diganti di *Branding*; Client ID tidak berubah.)
    - *Audience*: **External**.
    - *Contact information*: emailmu → setuju kebijakan → **Create**.
 3. **Audience** → bagian *Test users* → **Add users** → tambahkan email Google yang akan dipakai mencoba. Selama status app masih *Testing*, hanya email di daftar ini yang bisa login.
@@ -253,7 +255,7 @@ keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -sto
 
 1. Buka https://github.com/settings/developers → **OAuth Apps** → **New OAuth App**.
 2. Isi:
-   - Application name: `Template App (dev)`
+   - Application name: `Rakit (dev)` (boleh diganti kapan saja di pengaturan OAuth App; Client ID & secret tidak berubah)
    - Homepage URL: `http://localhost:8080`
    - Authorization callback URL: `http://localhost:8080/api/auth/github/callback`
 3. **Register application** → salin **Client ID** → klik **Generate a new client secret** → salin secret-nya. Secret hanya ditampilkan sekali.
@@ -401,7 +403,7 @@ Saat pertama kali dibuka, app menampilkan intro 3 halaman, lalu Dashboard Pembua
 
 Animasi Lottie (`app/src/main/res/raw/*.json`) dibuat oleh skrip `android/tools/generate_lottie.py`. Kalau ingin mengubah animasi, ubah skripnya lalu jalankan `python3 tools/generate_lottie.py` dari folder `android/`.
 
-Build debug memasang **dua ikon** di HP: **Template App** (app) dan **Katalog komponen** (semua komponen & token desain; tombol "Ganti terang / gelap" untuk memeriksa mode gelap). Katalog tidak ada di build rilis.
+Build debug memasang **dua ikon** di HP: **Rakit** (app) dan **Katalog komponen** (semua komponen & token desain; tombol "Ganti terang / gelap" untuk memeriksa mode gelap). Katalog tidak ada di build rilis.
 
 ### 4. Log & layar
 

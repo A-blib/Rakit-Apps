@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Semua teks UI ada di sini (Bahasa Indonesia). Kode dan layout tidak boleh menulis teks langsung. -->
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">Template App</string>
+    <string name="app_name">Rakit</string>
 
     <!-- Aksi umum -->
     <string name="action_retry">Coba lagi</string>
