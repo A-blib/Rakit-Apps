@@ -44,16 +44,163 @@
     <!-- Dashboard pembuat website (bagian 2.3) -->
     <string name="creator_dashboard_title">Buat website pertamamu</string>
     <string name="creator_dashboard_body">Fitur pembuatan website segera hadir.</string>
-    <string name="provider_suspended_redirect">Akun provider ditangguhkan. Kamu dialihkan ke mode pembuat website.</string>
+    <string name="provider_suspended_redirect">Mode provider dinonaktifkan. Hubungi admin untuk informasi lebih lanjut.</string>
 
-    <!-- Dashboard provider (bagian 2.3 & 6.6) -->
-    <string name="provider_dashboard_title">Dashboard provider</string>
-    <string name="provider_dashboard_body">Dashboard provider segera hadir.</string>
-    <string name="provider_status_pending">Akunmu sedang diverifikasi.</string>
-    <!-- %1$s = alasan penolakan dari admin -->
-    <string name="provider_status_rejected">Pengajuan provider ditolak: %1$s.</string>
-    <string name="provider_status_rejected_no_reason">Pengajuan provider ditolak.</string>
-    <string name="provider_status_suspended">Akun provider ditangguhkan.</string>
+    <!-- Dashboard provider (docs/rancangan/alur-provider.md). Bahasa Indonesia tidak punya bentuk jamak,
+         jadi saran lint "pakai plurals" untuk teks berangka diabaikan. -->
+    <string name="provider_mode_badge">Mode provider</string>
+    <string name="tab_home">Beranda</string>
+    <string name="tab_upload">Upload</string>
+    <string name="tab_templates">Template Anda</string>
+    <string name="tab_profile">Profil</string>
+
+    <!-- Beranda -->
+    <!-- %1$s = nama kreator -->
+    <string name="home_greeting">Halo, %1$s</string>
+    <string name="home_action_title">Perlu tindakan</string>
+    <string name="home_action_see_all">Lihat semua</string>
+    <string name="action_profile_incomplete">Lengkapi profil kreatormu</string>
+    <string name="action_draft_detail">Draft · belum dikirim</string>
+    <string name="home_summary_title">Ringkasan</string>
+    <string name="period_7_days">7 hari</string>
+    <string name="period_30_days">30 hari</string>
+    <string name="summary_active">Aktif</string>
+    <string name="summary_views">Dilihat</string>
+    <string name="summary_downloads">Didownload</string>
+    <string name="home_trend_title">Tren download</string>
+    <string name="home_trend_empty">Belum ada download di periode ini.</string>
+    <string name="home_popular_title" tools:ignore="Typos">Template populer</string>
+    <string name="home_popular_empty" tools:ignore="Typos">Belum ada template yang didownload di periode ini.</string>
+    <!-- %1$d = jumlah download -->
+    <string name="popular_downloads" tools:ignore="PluralsCandidate">%1$d ↓</string>
+    <string name="home_guides_title">Panduan</string>
+    <string name="cd_guide_new">Belum dibuka</string>
+    <string name="action_upload_new">Upload template baru</string>
+    <string name="action_upload_first">Upload template pertama</string>
+    <!-- %1$s = tanggal, %2$d = jumlah download (tooltip grafik) -->
+    <string name="chart_tooltip" tools:ignore="PluralsCandidate">%1$s · %2$d download</string>
+
+    <!-- Checklist provider baru -->
+    <string name="checklist_title">Mulai sebagai provider</string>
+    <!-- %1$d = langkah selesai, %2$d = jumlah langkah -->
+    <string name="checklist_progress" tools:ignore="PluralsCandidate">%1$d dari %2$d langkah selesai</string>
+    <string name="checklist_profile">Lengkapi profil</string>
+    <string name="checklist_guide">Baca panduan</string>
+    <string name="checklist_upload">Upload template pertama</string>
+    <string name="cd_step_done">Selesai</string>
+    <string name="cd_step_todo">Belum selesai</string>
+
+    <!-- Upload (segera hadir) -->
+    <string name="upload_title">Upload template</string>
+    <string name="upload_body">Fitur upload template segera hadir. Sambil menunggu, pelajari cara menyiapkan template di Panduan.</string>
+    <string name="action_open_guide">Buka panduan</string>
+
+    <!-- Template Anda -->
+    <string name="templates_search_hint">Cari nama template…</string>
+    <!-- %1$s = nama filter, %2$d = jumlah template -->
+    <string name="chip_with_count">%1$s (%2$d)</string>
+    <string name="filter_all">Semua</string>
+    <string name="filter_published">Tayang</string>
+    <string name="filter_needs_fix">Perlu perbaikan</string>
+    <string name="filter_checking">Sedang dicek</string>
+    <string name="filter_draft">Draft</string>
+    <string name="filter_disabled">Dinonaktifkan</string>
+    <string name="filter_category_all">Semua kategori</string>
+    <string name="sort_updated">Terbaru diperbarui</string>
+    <string name="sort_downloads">Download terbanyak</string>
+    <string name="sort_views">Dilihat terbanyak</string>
+    <string name="sort_name">Nama A–Z</string>
+    <string name="templates_empty">Belum ada template. Fitur upload segera hadir.</string>
+    <string name="templates_filter_empty">Tidak ada template dengan filter ini.</string>
+    <string name="action_clear_filter">Hapus filter</string>
+    <!-- %1$s = kategori, %2$d = dilihat, %3$d = didownload, %4$s = "Diperbarui 2 hari lalu" -->
+    <string name="template_card_meta" tools:ignore="PluralsCandidate">%1$s · %2$d dilihat · %3$d download · %4$s</string>
+    <!-- Untuk template yang belum tayang (tanpa angka) -->
+    <string name="template_card_meta_short">%1$s · %2$s</string>
+    <string name="template_status_published">Tayang</string>
+    <string name="template_status_checking">Sedang dicek</string>
+    <string name="template_status_check_failed">Tidak lolos</string>
+    <string name="template_status_draft">Draft</string>
+    <string name="template_status_disabled">Dinonaktifkan</string>
+    <string name="template_status_with_count">%1$s · %2$s</string>
+    <string name="template_errors" tools:ignore="PluralsCandidate">%1$d error</string>
+    <string name="template_warnings" tools:ignore="PluralsCandidate">%1$d peringatan</string>
+    <string name="updated_just_now">Diperbarui baru saja</string>
+    <string name="updated_minutes_ago" tools:ignore="PluralsCandidate">Diperbarui %1$d menit lalu</string>
+    <string name="updated_hours_ago" tools:ignore="PluralsCandidate">Diperbarui %1$d jam lalu</string>
+    <string name="updated_days_ago" tools:ignore="PluralsCandidate">Diperbarui %1$d hari lalu</string>
+    <string name="updated_weeks_ago" tools:ignore="PluralsCandidate">Diperbarui %1$d minggu lalu</string>
+    <string name="updated_months_ago" tools:ignore="PluralsCandidate">Diperbarui %1$d bulan lalu</string>
+    <string name="updated_years_ago" tools:ignore="PluralsCandidate">Diperbarui %1$d tahun lalu</string>
+
+    <!-- Detail template -->
+    <string name="detail_title">Detail template</string>
+    <!-- %1$d = versi pengecekan -->
+    <string name="detail_version">v%1$d</string>
+    <string name="detail_errors_title">Error (%1$d)</string>
+    <string name="detail_warnings_title">Peringatan (%1$d)</string>
+    <string name="detail_no_check">Template ini belum pernah dicek.</string>
+    <string name="detail_check_running">Pengecekan sedang berjalan.</string>
+    <string name="detail_check_passed">Lolos pengecekan tanpa masalah.</string>
+    <!-- %1$s = file, %2$d = baris -->
+    <string name="issue_location_line">%1$s baris %2$d</string>
+
+    <!-- Panduan -->
+    <string name="guide_prepare_title">Cara menyiapkan template</string>
+    <string name="guide_mark_title">Menandai bagian yang bisa diedit</string>
+    <string name="guide_rules_title">Syarat lolos pengecekan</string>
+    <string name="guide_fix_title">Memperbaiki template yang tidak lolos</string>
+    <string name="guide_numbers_title">Membaca angka Dilihat dan Didownload</string>
+    <string name="guide_coming_soon_body">Panduan ini sedang disiapkan bersama fitur Upload.</string>
+    <string name="guide_prepare_body">"Template adalah satu folder website statis (HTML, CSS, JS, dan gambar) yang dikemas menjadi file ZIP.
+
+STRUKTUR FOLDER
+• index.html wajib ada di folder paling atas, bukan di dalam subfolder.
+• Simpan CSS, JS, dan gambar di dalam folder template, misalnya assets/style.css dan assets/foto.jpg.
+• Pakai path relatif (assets/foto.jpg), bukan alamat dari komputermu (C:\\Users\\…).
+
+MEMBUAT ZIP DI WINDOWS
+1. Buka File Explorer, masuk ke dalam folder template.
+2. Pilih semua isinya (Ctrl + A).
+3. Klik kanan → Kirim ke → Folder terkompresi (zip).
+
+MEMBUAT ZIP DI UBUNTU
+1. Buka folder template di Files.
+2. Pilih semua isinya (Ctrl + A), klik kanan → Kompres…
+3. Pilih format .zip, beri nama, lalu Buat.
+Lewat terminal: cd folder-template lalu zip -r ../template.zip .
+
+MEMBUAT ZIP DI MAC
+1. Buka folder template di Finder.
+2. Pilih semua isinya (Cmd + A).
+3. Klik kanan → Kompres.
+
+Format yang didukung hanya ZIP. File RAR belum didukung."</string>
+    <string name="guide_numbers_body">"Ringkasan di Beranda punya tiga angka.
+
+AKTIF
+Jumlah templatemu yang sedang tayang di galeri sekarang. Draft, template yang tidak lolos pengecekan, dan yang dinonaktifkan tidak dihitung. Angka ini tidak terpengaruh pilihan periode.
+
+DILIHAT
+Berapa kali halaman detail templatemu dibuka pembuat website dalam periode yang dipilih (7 atau 30 hari).
+
+DIDOWNLOAD
+Berapa kali website yang dibuat dari templatemu selesai dan diexport menjadi file ZIP. Satu project dihitung satu kali (export pertama saja), dan export oleh pemilik template sendiri tidak dihitung. Export bisa terjadi tanpa internet, jadi angkanya bisa bertambah sedikit terlambat.
+
+TREN DOWNLOAD
+Grafik jumlah Didownload per hari. Hari tanpa download tetap tampil sebagai 0. Ketuk grafik untuk melihat tanggal dan jumlahnya."</string>
+
+    <!-- Profil provider -->
+    <string name="profile_edit">Edit profil</string>
+    <string name="profile_stat_published">Template tayang</string>
+    <string name="profile_stat_downloads">Total download</string>
+    <string name="profile_no_bio">Belum ada bio.</string>
+    <string name="profile_group_account">Akun</string>
+    <string name="profile_group_actions">Lainnya</string>
+    <string name="profile_edit_title">Edit profil</string>
+    <string name="profile_edit_subtitle">Profil ini dilihat pembuat website yang memakai templatemu.</string>
+    <string name="action_save">Simpan</string>
+    <string name="profile_saved">Profil disimpan.</string>
 
     <!-- Masuk & daftar (bagian 6.2 & 9.4) -->
     <string name="login_title">Masuk</string>
@@ -123,7 +270,7 @@
 
     <!-- Onboarding: form provider -->
     <string name="provider_form_title">Jadi penyedia template</string>
-    <string name="provider_form_subtitle">Isi profil kreatormu. Akunmu akan diverifikasi sebelum bisa mengunggah template.</string>
+    <string name="provider_form_subtitle">Isi profil kreatormu. Mode provider langsung aktif setelah kamu mengirim form ini.</string>
     <string name="field_creator_name">Nama kreator</string>
     <string name="field_bio">Bio (opsional)</string>
     <string name="field_portfolio">Link portofolio atau GitHub (opsional)</string>
@@ -135,7 +282,7 @@
     <string name="specialty_organisasi">Organisasi</string>
     <string name="specialty_acara">Acara</string>
     <string name="provider_terms_agree">Saya menyetujui aturan penyedia template.</string>
-    <string name="action_submit_provider">Kirim pengajuan</string>
+    <string name="action_submit_provider">Aktifkan mode provider</string>
     <string name="error_creator_name_required">Nama kreator wajib diisi</string>
     <string name="error_bio_too_long">Bio maksimal 300 karakter</string>
     <string name="error_url_invalid">Link harus diawali http:// atau https://</string>

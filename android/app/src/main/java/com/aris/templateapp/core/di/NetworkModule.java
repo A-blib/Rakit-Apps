@@ -4,6 +4,7 @@ import com.aris.templateapp.BuildConfig;
 import com.aris.templateapp.core.network.AuthInterceptor;
 import com.aris.templateapp.core.network.TokenAuthenticator;
 import com.aris.templateapp.data.remote.api.AuthApi;
+import com.aris.templateapp.data.remote.api.ProviderApi;
 import com.aris.templateapp.data.remote.api.UserApi;
 import com.google.gson.Gson;
 
@@ -60,6 +61,12 @@ public final class NetworkModule {
     @Singleton
     static UserApi provideUserApi(Retrofit retrofit) {
         return retrofit.create(UserApi.class);
+    }
+
+    @Provides
+    @Singleton
+    static ProviderApi provideProviderApi(Retrofit retrofit) {
+        return retrofit.create(ProviderApi.class);
     }
 
     /** AuthApi khusus TokenAuthenticator: tanpa interceptor & authenticator agar tidak memanggil dirinya sendiri. */

@@ -63,4 +63,24 @@
         <item name="android:letterSpacing">0</item>
         <item name="android:textAllCaps">false</item>
     </style>
+
+    <!-- Label tab bottom navigation. -->
+    <style name="TextAppearance.App.NavLabel" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">@dimen/text_label</item>
+        <item name="fontFamily">@font/geist_regular</item>
+        <item name="android:fontFamily">@font/geist_regular</item>
+    </style>
+
+    <style name="TextAppearance.App.NavLabel.Active">
+        <item name="fontFamily">@font/geist_semibold</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+    </style>
+
+    <!-- Angka besar di kotak ringkasan (Geist Mono agar digit sejajar). -->
+    <style name="TextAppearance.App.Stat" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">@dimen/text_headline</item>
+        <item name="fontFamily">@font/geist_mono_medium</item>
+        <item name="android:fontFamily">@font/geist_mono_medium</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
 </resources>

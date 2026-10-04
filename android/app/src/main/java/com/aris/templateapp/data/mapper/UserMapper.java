@@ -33,7 +33,6 @@ public final class UserMapper {
                 dto.onboardingCompleted,
                 roles,
                 ProviderStatus.fromValue(dto.providerStatus),
-                dto.providerRejectionReason,
                 dto.creatorProfile == null ? null : dto.creatorProfile.websitePurpose,
                 dto.creatorProfile == null ? null : dto.creatorProfile.organizationName);
     }

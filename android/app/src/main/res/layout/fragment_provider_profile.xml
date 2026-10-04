@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Tab Profil versi awal (alur-provider.md bagian 7): kepala profil + chip keahlian, Edit profil,
+    ringkasan singkat, akun (email, metode login terhubung), lalu beralih mode, Pengaturan, Keluar.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/space_6">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                android:paddingTop="@dimen/space_6">
+
+                <TextView
+                    android:id="@+id/avatar"
+                    android:layout_width="@dimen/space_12"
+                    android:layout_height="@dimen/space_12"
+                    android:background="@drawable/bg_avatar"
+                    android:gravity="center"
+                    android:importantForAccessibility="no"
+                    android:textAppearance="@style/TextAppearance.App.Title" />
+
+                <TextView
+                    android:id="@+id/creator_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_3"
+                    android:textAppearance="@style/TextAppearance.App.Headline" />
+
+                <TextView
+                    android:id="@+id/bio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:textAppearance="@style/TextAppearance.App.Body"
+                    android:textColor="@color/color_muted" />
+
+                <TextView
+                    android:id="@+id/portfolio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:autoLink="web"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_link"
+                    android:textColorLink="@color/color_link" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/specialties"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_3" />
+
+                <Button
+                    android:id="@+id/edit_button"
+                    style="@style/Widget.App.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:text="@string/profile_edit"
+                    app:icon="@drawable/ic_edit"
+                    app:iconGravity="textStart" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/stat_published"
+                        layout="@layout/item_stat_box" />
+
+                    <Space
+                        android:layout_width="@dimen/space_2"
+                        android:layout_height="0dp" />
+
+                    <include
+                        android:id="@+id/stat_downloads"
+                        layout="@layout/item_stat_box" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/Widget.App.ListGroupTitle"
+                android:text="@string/profile_group_account" />
+
+            <TextView
+                android:id="@+id/email"
+                style="@style/Widget.App.ListItem.Text"
+                android:clickable="false"
+                android:focusable="false"
+                app:drawableStartCompat="@drawable/ic_mail" />
+
+            <TextView
+                android:id="@+id/linked_methods_item"
+                style="@style/Widget.App.ListItem.Text"
+                android:text="@string/settings_linked_methods"
+                app:drawableStartCompat="@drawable/ic_link" />
+
+            <TextView
+                style="@style/Widget.App.ListGroupTitle"
+                android:text="@string/profile_group_actions" />
+
+            <TextView
+                android:id="@+id/switch_mode_item"
+                style="@style/Widget.App.ListItem.Text"
+                android:text="@string/profile_switch_to_creator"
+                app:drawableStartCompat="@drawable/ic_swap_horiz" />
+
+            <TextView
+                android:id="@+id/settings_item"
+                style="@style/Widget.App.ListItem.Text"
+                android:text="@string/profile_settings"
+                app:drawableStartCompat="@drawable/ic_settings" />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/sign_out_item"
+                style="@style/Widget.App.ListItem.Text"
+                android:text="@string/profile_sign_out"
+                app:drawableStartCompat="@drawable/ic_logout" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.aris.templateapp.ui.common.StateView
+        android:id="@+id/state"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</FrameLayout>

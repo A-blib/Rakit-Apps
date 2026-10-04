@@ -24,7 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 /**
  * Form penyedia template (bagian 6.6): nama kreator (wajib), bio (maks 300), link portofolio (URL valid),
  * keahlian (chip), dan persetujuan aturan (wajib). Dipakai dari onboarding maupun dari menu
- * "Jadi penyedia template" milik user lama. Status awal pending.
+ * "Jadi penyedia template" milik user lama. Mode provider langsung aktif setelah dikirim.
  */
 @AndroidEntryPoint
 public class ProviderFormFragment extends Fragment {

@@ -114,6 +114,41 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
     </style>
 
+    <!-- Bottom navigation Dashboard Provider: latar layar, tanpa bayangan dan tanpa "pil" warna di tab aktif.
+         Garis atas 1dp dipasang di layout (MaterialDivider). -->
+    <style name="Widget.App.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
+        <item name="backgroundTint">@color/color_background</item>
+        <item name="android:elevation">0dp</item>
+        <item name="elevation">0dp</item>
+        <item name="itemIconTint">@color/selector_bottom_nav</item>
+        <item name="itemTextColor">@color/selector_bottom_nav</item>
+        <item name="itemActiveIndicatorStyle">@null</item>
+        <item name="itemRippleColor">@color/color_border</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.App.NavLabel.Active</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.App.NavLabel</item>
+        <item name="labelVisibilityMode">labeled</item>
+    </style>
+
+    <!-- Tombol kecil bergaris untuk dropdown filter (Kategori, Urutkan): ikon panah di kanan teks. -->
+    <style name="Widget.App.Button.Dropdown" parent="Widget.App.Button.Outlined">
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:paddingStart">@dimen/space_3</item>
+        <item name="android:paddingEnd">@dimen/space_2</item>
+        <item name="icon">@drawable/ic_expand_more</item>
+        <item name="iconGravity">textEnd</item>
+        <item name="iconSize">@dimen/icon_size_small</item>
+        <item name="iconPadding">@dimen/space_1</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.BodySmall</item>
+        <item name="android:textColor">@color/color_foreground</item>
+    </style>
+
+    <!-- Judul bagian Beranda (mis. "RINGKASAN"): Label mono di kiri, padding seragam. -->
+    <style name="Widget.App.SectionTitle" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
+    </style>
+
     <style name="Widget.App.Divider" parent="Widget.Material3.MaterialDivider">
         <item name="dividerColor">@color/color_border</item>
         <item name="dividerThickness">@dimen/border_width</item>

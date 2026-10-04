@@ -5,29 +5,53 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavOptions;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.R;
-import com.aris.templateapp.data.model.ProviderStatus;
-import com.aris.templateapp.data.model.User;
 import com.aris.templateapp.databinding.FragmentProviderDashboardBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
-import com.aris.templateapp.ui.common.LottieTint;
-import com.aris.templateapp.ui.common.StatusBannerView;
+import com.aris.templateapp.ui.common.HomeNavigator;
+import com.aris.templateapp.ui.creator.CreatorDashboardFragment;
 import com.aris.templateapp.ui.profile.ProfileSheet;
+import com.google.android.material.badge.BadgeDrawable;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
-/** Dashboard Provider: "Segera hadir" + banner status verifikasi (bagian 6.6). */
+/**
+ * Shell Dashboard Provider (alur-provider.md bagian 2): app bar + 4 tab di bottom navigation.
+ * <p>
+ * Setiap tab adalah Fragment anak yang dibuat saat pertama kali dibuka lalu hanya disembunyikan/ditampilkan,
+ * sehingga isi dan posisi scroll tab tetap utuh. Layar lanjutan (detail template, panduan, edit profil) dibuka
+ * lewat Navigation utama di atas shell ini (lihat {@link ProviderNav}).
+ */
 @AndroidEntryPoint
 public class ProviderDashboardFragment extends Fragment {
 
+    private static final String STATE_TAB = "selectedTab";
+    private static final int[] TABS = {R.id.tab_home, R.id.tab_upload, R.id.tab_templates, R.id.tab_profile};
+
     private FragmentProviderDashboardBinding binding;
-    private CurrentUserViewModel viewModel;
+    private CurrentUserViewModel userViewModel;
+    @IdRes
+    private int selectedTab = R.id.tab_home;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            selectedTab = savedInstanceState.getInt(STATE_TAB, R.id.tab_home);
+        }
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -38,46 +62,105 @@ public class ProviderDashboardFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        viewModel = new ViewModelProvider(this).get(CurrentUserViewModel.class);
-        LottieTint.applyForeground(binding.illustration);
+        userViewModel = new ViewModelProvider(this).get(CurrentUserViewModel.class);
+        ProviderDashboardViewModel dashboardViewModel = new ViewModelProvider(this).get(ProviderDashboardViewModel.class);
+
         binding.account.avatarContainer.setOnClickListener(v ->
                 new ProfileSheet().show(getChildFragmentManager(), ProfileSheet.TAG));
-        viewModel.getUser().observe(getViewLifecycleOwner(), user -> {
+        userViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
             AppBarAccount.bind(binding.account, user);
-            bindStatus(user);
+            // Ditangguhkan saat app terbuka (data /users/me terbaru): mode provider dikunci (bagian 3.2).
+            if (user != null && user.isProviderSuspended()) {
+                HomeNavigator.navigateHome(this, user);
+            }
+        });
+
+        binding.bottomNav.setOnItemSelectedListener(item -> {
+            showTab(item.getItemId());
+            return true;
+        });
+        binding.bottomNav.setSelectedItemId(selectedTab);
+        showTab(selectedTab);
+
+        // Badge tab Beranda = jumlah "Perlu tindakan" (bagian 3.3), monokrom seperti komponen lain.
+        dashboardViewModel.getDashboard().observe(getViewLifecycleOwner(), resource -> {
+            if (resource == null || resource.getData() == null) {
+                return;
+            }
+            int count = resource.getData().actionItems == null ? 0 : resource.getData().actionItems.size();
+            BadgeDrawable badge = binding.bottomNav.getOrCreateBadge(R.id.tab_home);
+            badge.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.color_foreground));
+            badge.setBadgeTextColor(ContextCompat.getColor(requireContext(), R.color.color_background));
+            badge.setNumber(count);
+            badge.setVisible(count > 0);
+        });
+        dashboardViewModel.getAccessLost().observe(getViewLifecycleOwner(), event -> {
+            String code = event.getContentIfNotHandled();
+            if (code != null) {
+                NavHostFragment.findNavController(this).navigate(R.id.creatorDashboardFragment,
+                        CreatorDashboardFragment.args("PROVIDER_SUSPENDED".equals(code)),
+                        new NavOptions.Builder().setPopUpTo(R.id.nav_graph, true).build());
+            }
         });
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        viewModel.reload();
+        userViewModel.reload();
     }
 
-    /** pending → kuning, rejected → merah + alasan, suspended → merah, approved → tanpa banner. */
-    private void bindStatus(@Nullable User user) {
-        ProviderStatus status = user == null ? null : user.getProviderStatus();
-        if (status == null || status == ProviderStatus.APPROVED) {
-            binding.statusBanner.setVisibility(View.GONE);
-            return;
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(STATE_TAB, selectedTab);
+    }
+
+    /** Dipanggil tab lain, mis. tombol "Upload template baru" di Beranda membuka tab Upload. */
+    public void selectTab(@IdRes int tab) {
+        if (binding != null) {
+            binding.bottomNav.setSelectedItemId(tab);
         }
-        binding.statusBanner.setVisibility(View.VISIBLE);
-        switch (status) {
-            case PENDING:
-                binding.statusBanner.bind(StatusBannerView.Kind.WARNING, getString(R.string.provider_status_pending));
-                break;
-            case REJECTED:
-                String reason = user.getProviderRejectionReason();
-                binding.statusBanner.bind(StatusBannerView.Kind.ERROR, reason == null || reason.isEmpty()
-                        ? getString(R.string.provider_status_rejected_no_reason)
-                        : getString(R.string.provider_status_rejected, reason));
-                break;
-            case SUSPENDED:
-            default:
-                binding.statusBanner.bind(StatusBannerView.Kind.ERROR, getString(R.string.provider_status_suspended),
-                        R.drawable.ic_block);
-                break;
+    }
+
+    /** "Lihat semua" di Perlu tindakan: buka Template Anda dengan filter status tertentu. */
+    public void openTemplates(String status) {
+        new ViewModelProvider(requireActivity()).get(ProviderTemplatesViewModel.class).setStatus(status);
+        selectTab(R.id.tab_templates);
+    }
+
+    private void showTab(@IdRes int tab) {
+        selectedTab = tab;
+        FragmentManager fm = getChildFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction().setReorderingAllowed(true);
+        for (int id : TABS) {
+            Fragment fragment = fm.findFragmentByTag(tagOf(id));
+            if (id == tab) {
+                if (fragment == null) {
+                    transaction.add(R.id.tab_container, newTab(id), tagOf(id));
+                } else {
+                    transaction.show(fragment);
+                }
+            } else if (fragment != null) {
+                transaction.hide(fragment);
+            }
         }
+        transaction.commitNow();
+    }
+
+    private static String tagOf(@IdRes int tab) {
+        return "provider_tab_" + tab;
+    }
+
+    private static Fragment newTab(@IdRes int tab) {
+        if (tab == R.id.tab_upload) {
+            return new ProviderUploadFragment();
+        } else if (tab == R.id.tab_templates) {
+            return new ProviderTemplatesFragment();
+        } else if (tab == R.id.tab_profile) {
+            return new ProviderProfileFragment();
+        }
+        return new ProviderHomeFragment();
     }
 
     @Override

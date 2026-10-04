@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Garis pemisah 1dp antar-baris di dalam kartu (dipakai android:divider + showDividers="middle"). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <size android:height="@dimen/border_width" />
+    <solid android:color="@color/color_border" />
+</shape>

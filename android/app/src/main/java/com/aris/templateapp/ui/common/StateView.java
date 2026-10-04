@@ -13,7 +13,7 @@ import com.aris.templateapp.R;
 import com.aris.templateapp.databinding.ViewStateBinding;
 
 /**
- * Tampilan status untuk layar yang memuat data (bagian 8): loading (animasi), kosong, atau error + "Coba lagi".
+ * Tampilan status untuk layar yang memuat data (bagian 8): loading (animasi), kosong (boleh dengan satu tombol aksi), atau error + "Coba lagi".
  * Saat data berhasil dimuat, panggil {@link #hide()} lalu tampilkan isi layar.
  */
 public class StateView extends FrameLayout {
@@ -32,15 +32,20 @@ public class StateView extends FrameLayout {
     }
 
     public void showLoading() {
-        show(R.raw.loading, getContext().getString(R.string.state_loading), null);
+        show(R.raw.loading, getContext().getString(R.string.state_loading), null, null);
     }
 
     public void showEmpty(CharSequence message) {
-        show(R.raw.empty, message, null);
+        show(R.raw.empty, message, null, null);
+    }
+
+    /** Kosong + satu tombol aksi, mis. "Hapus filter" atau "Buka panduan". */
+    public void showEmpty(CharSequence message, CharSequence actionText, Runnable action) {
+        show(R.raw.empty, message, actionText, action);
     }
 
     public void showError(CharSequence message, Runnable retry) {
-        show(R.raw.empty, message, retry);
+        show(R.raw.empty, message, getContext().getString(R.string.action_retry), retry);
     }
 
     public void hide() {
@@ -48,11 +53,13 @@ public class StateView extends FrameLayout {
         setVisibility(GONE);
     }
 
-    private void show(int animation, CharSequence message, @Nullable Runnable retry) {
+    private void show(int animation, CharSequence message, @Nullable CharSequence actionText,
+                      @Nullable Runnable retry) {
         setVisibility(VISIBLE);
         binding.animation.setAnimation(animation);
         binding.animation.playAnimation();
         binding.message.setText(message);
+        binding.retryButton.setText(actionText);
         binding.retryButton.setVisibility(retry == null ? View.GONE : View.VISIBLE);
         binding.retryButton.setOnClickListener(retry == null ? null : v -> retry.run());
     }

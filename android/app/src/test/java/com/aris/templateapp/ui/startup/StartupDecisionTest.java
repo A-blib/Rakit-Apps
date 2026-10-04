@@ -31,7 +31,7 @@ public class StartupDecisionTest {
 
     @Test
     public void providerModeOpensProviderDashboard() {
-        User user = user(true, UserRole.PROVIDER, EnumSet.of(UserRole.CREATOR, UserRole.PROVIDER), ProviderStatus.PENDING);
+        User user = user(true, UserRole.PROVIDER, EnumSet.of(UserRole.CREATOR, UserRole.PROVIDER), ProviderStatus.ACTIVE);
 
         StartupDecision decision = StartupDecision.forUser(user);
 
@@ -58,7 +58,7 @@ public class StartupDecisionTest {
 
     @Test
     public void creatorModeOpensCreatorDashboard() {
-        User user = user(true, UserRole.CREATOR, EnumSet.of(UserRole.CREATOR, UserRole.PROVIDER), ProviderStatus.APPROVED);
+        User user = user(true, UserRole.CREATOR, EnumSet.of(UserRole.CREATOR, UserRole.PROVIDER), ProviderStatus.ACTIVE);
 
         StartupDecision decision = StartupDecision.forUser(user);
 
@@ -67,6 +67,6 @@ public class StartupDecisionTest {
     }
 
     private static User user(boolean onboarded, UserRole mode, EnumSet<UserRole> roles, ProviderStatus status) {
-        return new User("u-1", "Aris", "aris@mail.com", null, mode, onboarded, roles, status, null, null, null);
+        return new User("u-1", "Aris", "aris@mail.com", null, mode, onboarded, roles, status, null, null);
     }
 }

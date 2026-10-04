@@ -11,17 +11,17 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Map;
 
-/** Pembantu kecil yang dipakai kedua form onboarding. */
-final class OnboardingUi {
+/** Pembantu kecil yang dipakai kedua form onboarding dan "Edit profil" provider. */
+public final class OnboardingUi {
 
     private OnboardingUi() {
     }
 
-    static String text(EditText input) {
+    public static String text(EditText input) {
         return input.getText() == null ? "" : input.getText().toString();
     }
 
-    static void showError(TextInputLayout input, Integer messageRes) {
+    public static void showError(TextInputLayout input, Integer messageRes) {
         input.setError(messageRes == null ? null : input.getContext().getString(messageRes));
     }
 
@@ -29,7 +29,7 @@ final class OnboardingUi {
      * Error per field dari backend ditaruh di input yang sesuai; sisanya snackbar.
      * Error koneksi diberi tombol "Coba lagi" yang menjalankan {@code retry}.
      */
-    static void showFailure(View root, ApiError error, Map<String, TextInputLayout> inputsByServerField,
+    public static void showFailure(View root, ApiError error, Map<String, TextInputLayout> inputsByServerField,
                             Runnable retry) {
         if (error != null) {
             boolean shown = false;

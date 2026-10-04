@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Tab Beranda (alur-provider.md bagian 3): sapaan, Perlu tindakan, lalu salah satu dari
+    checklist provider baru (belum punya template) ATAU ringkasan + grafik tren + template populer,
+    kemudian panduan dan tombol Upload. Baris di dalam kartu ditambahkan dari kode (item_row / item_popular_row).
+-->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:paddingVertical="@dimen/space_6">
+
+        <TextView
+            android:id="@+id/greeting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.Headline" />
+
+        <com.aris.templateapp.ui.common.StateView
+            android:id="@+id/state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_8" />
+
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <!-- PERLU TINDAKAN (disembunyikan jika kosong) -->
+            <LinearLayout
+                android:id="@+id/action_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_2"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Widget.App.SectionTitle"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="@string/home_action_title" />
+
+                    <TextView
+                        android:id="@+id/action_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.App.Label"
+                        android:textColor="@color/color_foreground" />
+                </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:id="@+id/action_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:divider="@drawable/divider_horizontal"
+                        android:orientation="vertical"
+                        android:showDividers="middle" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <Button
+                    android:id="@+id/see_all_button"
+                    style="@style/Widget.App.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:text="@string/home_action_see_all" />
+            </LinearLayout>
+
+            <!-- CHECKLIST PROVIDER BARU (menggantikan ringkasan, grafik, dan populer) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/checklist_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_4">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/checklist_title"
+                            android:textAppearance="@style/TextAppearance.App.Title" />
+
+                        <TextView
+                            android:id="@+id/checklist_progress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_1"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+                        <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/checklist_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_3"
+                            app:indicatorColor="@color/color_foreground"
+                            app:trackColor="@color/color_border"
+                            app:trackCornerRadius="@dimen/radius_small"
+                            app:trackStopIndicatorSize="0dp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <LinearLayout
+                        android:id="@+id/checklist_steps"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:divider="@drawable/divider_horizontal"
+                        android:orientation="vertical"
+                        android:showDividers="middle" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- RINGKASAN + TREN + POPULER (hanya jika sudah punya template) -->
+            <LinearLayout
+                android:id="@+id/stats_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Widget.App.SectionTitle"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="@string/home_summary_title" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/period_group"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:chipSpacingHorizontal="@dimen/space_2"
+                        app:selectionRequired="true"
+                        app:singleLine="true"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/period_7"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checkable="true"
+                            android:text="@string/period_7_days" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/period_30"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checkable="true"
+                            android:text="@string/period_30_days" />
+                    </com.google.android.material.chip.ChipGroup>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/stat_active"
+                        layout="@layout/item_stat_box" />
+
+                    <Space
+                        android:layout_width="@dimen/space_2"
+                        android:layout_height="0dp" />
+
+                    <include
+                        android:id="@+id/stat_views"
+                        layout="@layout/item_stat_box" />
+
+                    <Space
+                        android:layout_width="@dimen/space_2"
+                        android:layout_height="0dp" />
+
+                    <include
+                        android:id="@+id/stat_downloads"
+                        layout="@layout/item_stat_box" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Widget.App.SectionTitle"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:layout_marginBottom="@dimen/space_2"
+                    android:text="@string/home_trend_title" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <com.aris.templateapp.ui.common.AreaChartView
+                            android:id="@+id/chart"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/chart_height"
+                            android:padding="@dimen/space_3" />
+
+                        <TextView
+                            android:id="@+id/trend_empty"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:background="@color/color_surface"
+                            android:padding="@dimen/space_2"
+                            android:text="@string/home_trend_empty"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall"
+                            android:visibility="gone" />
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    style="@style/Widget.App.SectionTitle"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:layout_marginBottom="@dimen/space_2"
+                    android:text="@string/home_popular_title" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/popular_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:id="@+id/popular_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:divider="@drawable/divider_horizontal"
+                        android:orientation="vertical"
+                        android:showDividers="middle" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/popular_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/home_popular_empty"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- PANDUAN -->
+            <TextView
+                style="@style/Widget.App.SectionTitle"
+                android:layout_marginTop="@dimen/space_6"
+                android:layout_marginBottom="@dimen/space_2"
+                android:text="@string/home_guides_title" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:id="@+id/guide_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="@drawable/divider_horizontal"
+                    android:orientation="vertical"
+                    android:showDividers="middle" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- AKSES CEPAT UPLOAD -->
+            <Button
+                android:id="@+id/upload_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                android:text="@string/action_upload_new" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

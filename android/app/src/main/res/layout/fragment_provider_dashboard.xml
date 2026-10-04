@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dashboard Provider "Segera hadir" + banner status di paling atas (bagian 2.3, 6.6, 9.4). -->
+<!--
+    Shell Dashboard Provider (alur-provider.md bagian 2 & 3.3): app bar (nama app + badge MODE PROVIDER + avatar),
+    wadah tab, dan bottom navigation 4 tab. Isi tiap tab adalah Fragment anak yang ditukar dengan show/hide,
+    sehingga posisi scroll dan isi setiap tab tetap utuh saat berpindah tab.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -9,62 +13,46 @@
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/app_bar_height"
-        app:title="@string/provider_dashboard_title">
+        android:layout_height="@dimen/app_bar_height">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center_vertical"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textAppearance="@style/TextAppearance.App.Title" />
+
+            <TextView
+                style="@style/Widget.App.Badge"
+                android:layout_marginStart="@dimen/space_2"
+                android:text="@string/provider_mode_badge" />
+        </LinearLayout>
 
         <include
             android:id="@+id/account"
             layout="@layout/view_app_bar_account" />
     </com.google.android.material.appbar.MaterialToolbar>
 
-    <ScrollView
+    <FrameLayout
+        android:id="@+id/tab_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="@dimen/screen_padding_horizontal"
-            android:paddingVertical="@dimen/space_8">
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
-            <com.aris.templateapp.ui.common.StatusBannerView
-                android:id="@+id/status_banner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/space_6"
-                android:visibility="gone" />
-
-            <TextView
-                style="@style/Widget.App.Badge"
-                android:text="@string/badge_coming_soon" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_4"
-                android:text="@string/provider_dashboard_title"
-                android:textAppearance="@style/TextAppearance.App.Display" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_3"
-                android:text="@string/provider_dashboard_body"
-                android:textAppearance="@style/TextAppearance.App.Body"
-                android:textColor="@color/color_muted" />
-
-            <com.airbnb.lottie.LottieAnimationView
-                android:id="@+id/illustration"
-                android:layout_width="@dimen/illustration_size"
-                android:layout_height="@dimen/illustration_size"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/space_8"
-                android:importantForAccessibility="no"
-                app:lottie_autoPlay="true"
-                app:lottie_loop="true"
-                app:lottie_rawRes="@raw/intro_share" />
-        </LinearLayout>
-    </ScrollView>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        style="@style/Widget.App.BottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/menu_provider_tabs" />
 </LinearLayout>

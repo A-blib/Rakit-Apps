@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tab Upload versi awal: layar "Segera hadir" (alur-provider.md bagian 5.0). -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:paddingVertical="@dimen/space_8">
+
+        <TextView
+            style="@style/Widget.App.Badge"
+            android:text="@string/badge_coming_soon" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_4"
+            android:text="@string/upload_title"
+            android:textAppearance="@style/TextAppearance.App.Display" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_3"
+            android:text="@string/upload_body"
+            android:textAppearance="@style/TextAppearance.App.Body"
+            android:textColor="@color/color_muted" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/illustration"
+            android:layout_width="@dimen/illustration_size"
+            android:layout_height="@dimen/illustration_size"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/space_8"
+            android:importantForAccessibility="no"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/coming_soon" />
+
+        <Button
+            android:id="@+id/open_guide_button"
+            style="@style/Widget.App.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_8"
+            android:text="@string/action_open_guide" />
+    </LinearLayout>
+</ScrollView>

@@ -1,4 +1,5 @@
 # Aturan R8 (pengecil kode build rilis).
 # DTO dibaca/ditulis Gson lewat refleksi berdasarkan NAMA field. R8 biasanya mengganti nama field menjadi a, b, c,
-# sehingga JSON tidak cocok lagi; aturan ini menjaga nama field DTO tetap utuh.
+# sehingga JSON tidak cocok lagi; aturan ini menjaga nama field DTO tetap utuh. Pola "**" juga mencakup
+# class di dalam class (mis. ProviderDashboardDto$SummaryDto).
 -keep class com.aris.templateapp.data.remote.dto.** { <fields>; <init>(...); }

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Satu masalah hasil pengecekan: ikon (✕ error / ! peringatan), pesan, letak (file + baris), saran perbaikan. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="@dimen/space_2">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="@dimen/icon_size_small"
+        android:layout_height="@dimen/icon_size_small"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_3"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/geist_medium"
+            android:textAppearance="@style/TextAppearance.App.Body" />
+
+        <TextView
+            android:id="@+id/location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_1"
+            android:fontFamily="@font/geist_mono_regular"
+            android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+        <TextView
+            android:id="@+id/suggestion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_1"
+            android:textAppearance="@style/TextAppearance.App.BodySmall" />
+    </LinearLayout>
+</LinearLayout>

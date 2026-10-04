@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Detail template sederhana (alur-provider.md bagian 4.5 & 6.2): thumbnail besar, nama, kategori, status,
+    angka Dilihat/Didownload, lalu daftar error & peringatan dari pengecekan terakhir. Belum ada tombol aksi.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/detail_title" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                android:paddingVertical="@dimen/space_6">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/thumbnail_size_large"
+                    android:background="@drawable/bg_thumbnail">
+
+                    <ImageView
+                        android:layout_width="@dimen/space_12"
+                        android:layout_height="@dimen/space_12"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_web"
+                        app:tint="@color/color_muted" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textAppearance="@style/TextAppearance.App.Headline" />
+
+                    <TextView
+                        android:id="@+id/version"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_2"
+                        android:fontFamily="@font/geist_mono_regular"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:textAppearance="@style/TextAppearance.App.Label" />
+
+                <TextView
+                    android:id="@+id/category"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/stat_views"
+                        layout="@layout/item_stat_box" />
+
+                    <Space
+                        android:layout_width="@dimen/space_2"
+                        android:layout_height="0dp" />
+
+                    <include
+                        android:id="@+id/stat_downloads"
+                        layout="@layout/item_stat_box" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/check_message"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:textAppearance="@style/TextAppearance.App.Body"
+                    android:textColor="@color/color_muted"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/errors_title"
+                    style="@style/Widget.App.SectionTitle"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:layout_marginBottom="@dimen/space_2"
+                    android:textColor="@color/color_error" />
+
+                <LinearLayout
+                    android:id="@+id/errors_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/warnings_title"
+                    style="@style/Widget.App.SectionTitle"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:layout_marginBottom="@dimen/space_2"
+                    android:textColor="@color/color_warning" />
+
+                <LinearLayout
+                    android:id="@+id/warnings_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <com.aris.templateapp.ui.common.StateView
+            android:id="@+id/state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+</LinearLayout>

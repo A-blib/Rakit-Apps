@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Titik kecil "baru" pada kartu panduan yang belum pernah dibuka. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/color_link" />
+    <size android:width="@dimen/new_dot_size" android:height="@dimen/new_dot_size" />
+</shape>

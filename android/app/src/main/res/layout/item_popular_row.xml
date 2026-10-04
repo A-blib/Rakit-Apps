@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Satu baris "Template populer": peringkat, thumbnail, nama, jumlah download (alur-provider.md bagian 3.8). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    tools:ignore="Overdraw"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/list_item_min_height"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/space_4"
+    android:paddingVertical="@dimen/space_2">
+
+    <TextView
+        android:id="@+id/rank"
+        android:layout_width="@dimen/space_6"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/geist_mono_medium"
+        android:textAppearance="@style/TextAppearance.App.Body" />
+
+    <FrameLayout
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_thumbnail">
+
+        <ImageView
+            android:layout_width="@dimen/icon_size_small"
+            android:layout_height="@dimen/icon_size_small"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_web"
+            app:tint="@color/color_muted" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/space_3"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.App.Body" />
+
+    <TextView
+        android:id="@+id/downloads"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/geist_mono_regular"
+        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+    <ImageView
+        android:layout_width="@dimen/icon_size_small"
+        android:layout_height="@dimen/icon_size_small"
+        android:layout_marginStart="@dimen/space_2"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_chevron_right"
+        app:tint="@color/color_muted" />
+</LinearLayout>

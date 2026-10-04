@@ -24,7 +24,7 @@ public final class AppBarAccount {
         }
     }
 
-    static String initialOf(String name) {
+    public static String initialOf(String name) {
         if (name == null || name.trim().isEmpty()) {
             return "?";
         }

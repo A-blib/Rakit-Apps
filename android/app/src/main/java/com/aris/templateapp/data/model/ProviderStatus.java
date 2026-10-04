@@ -1,10 +1,8 @@
 package com.aris.templateapp.data.model;
 
-/** Status verifikasi penyedia template. */
+/** Status akun penyedia template: langsung aktif setelah mengisi form; ditangguhkan sebagai rem darurat. */
 public enum ProviderStatus {
-    PENDING("pending"),
-    APPROVED("approved"),
-    REJECTED("rejected"),
+    ACTIVE("active"),
     SUSPENDED("suspended");
 
     private final String value;

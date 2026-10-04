@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 4 tab Dashboard Provider (alur-provider.md bagian 2). -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/tab_home"
+        android:icon="@drawable/ic_home"
+        android:title="@string/tab_home" />
+    <item
+        android:id="@+id/tab_upload"
+        android:icon="@drawable/ic_upload"
+        android:title="@string/tab_upload" />
+    <item
+        android:id="@+id/tab_templates"
+        android:icon="@drawable/ic_grid_view"
+        android:title="@string/tab_templates" />
+    <item
+        android:id="@+id/tab_profile"
+        android:icon="@drawable/ic_person"
+        android:title="@string/tab_profile" />
+</menu>

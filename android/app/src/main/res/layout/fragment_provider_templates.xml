@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Tab Template Anda (alur-provider.md bagian 6): pencarian, chip status beserta jumlahnya, dropdown kategori
+    dan urutan, lalu daftar kartu dengan pemuatan lanjutan saat di-scroll. Kerangka (skeleton) tampil saat memuat
+    halaman pertama; StateView untuk kosong / filter kosong / error.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/search_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/screen_padding_horizontal"
+        android:layout_marginTop="@dimen/space_4"
+        app:endIconMode="clear_text"
+        app:hintEnabled="false"
+        app:startIconDrawable="@drawable/ic_search"
+        app:startIconTint="@color/color_muted">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/search_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/templates_search_hint"
+            android:imeOptions="actionSearch"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_2"
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/status_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:chipSpacingHorizontal="@dimen/space_2"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip android:id="@+id/status_all" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" />
+            <com.google.android.material.chip.Chip android:id="@+id/status_published" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" />
+            <com.google.android.material.chip.Chip android:id="@+id/status_needs_fix" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" />
+            <com.google.android.material.chip.Chip android:id="@+id/status_checking" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" />
+            <com.google.android.material.chip.Chip android:id="@+id/status_draft" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" />
+            <com.google.android.material.chip.Chip android:id="@+id/status_disabled" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal">
+
+        <Button
+            android:id="@+id/category_button"
+            style="@style/Widget.App.Button.Dropdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <Space
+            android:layout_width="@dimen/space_2"
+            android:layout_height="0dp" />
+
+        <Button
+            android:id="@+id/sort_button"
+            style="@style/Widget.App.Button.Dropdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingTop="@dimen/space_2"
+            android:paddingBottom="@dimen/space_6" />
+
+        <LinearLayout
+            android:id="@+id/skeleton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingTop="@dimen/space_2"
+            android:visibility="gone">
+
+            <include layout="@layout/item_template_skeleton" />
+
+            <include layout="@layout/item_template_skeleton" />
+
+            <include layout="@layout/item_template_skeleton" />
+        </LinearLayout>
+
+        <com.aris.templateapp.ui.common.StateView
+            android:id="@+id/state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+</LinearLayout>

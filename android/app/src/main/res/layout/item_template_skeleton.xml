@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kartu kerangka (skeleton) seukuran item_template, tampil saat halaman pertama dimuat. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_2"
+    android:importantForAccessibility="noHideDescendants">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/space_3">
+
+        <View
+            android:layout_width="@dimen/thumbnail_size"
+            android:layout_height="@dimen/thumbnail_size"
+            android:background="@drawable/bg_skeleton" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_3"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <View
+                android:layout_width="160dp"
+                android:layout_height="@dimen/skeleton_line_height"
+                android:layout_marginTop="@dimen/space_1"
+                android:background="@drawable/bg_skeleton" />
+
+            <View
+                android:layout_width="96dp"
+                android:layout_height="@dimen/skeleton_line_height"
+                android:layout_marginTop="@dimen/space_2"
+                android:background="@drawable/bg_skeleton" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/skeleton_line_height"
+                android:layout_marginTop="@dimen/space_2"
+                android:background="@drawable/bg_skeleton" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

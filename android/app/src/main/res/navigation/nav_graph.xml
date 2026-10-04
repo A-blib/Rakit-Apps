@@ -58,9 +58,32 @@
             app:argType="boolean" />
     </fragment>
 
+    <!-- Shell Dashboard Provider: 4 tab (Beranda, Upload, Template Anda, Profil) adalah Fragment anak di dalamnya. -->
     <fragment
         android:id="@+id/providerDashboardFragment"
         android:name="com.aris.templateapp.ui.provider.ProviderDashboardFragment" />
+
+    <!-- Layar lanjutan Dashboard Provider, dibuka di atas shell lewat ProviderNav. -->
+    <fragment
+        android:id="@+id/templateDetailFragment"
+        android:name="com.aris.templateapp.ui.provider.TemplateDetailFragment">
+        <argument
+            android:name="templateId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/guideFragment"
+        android:name="com.aris.templateapp.ui.provider.GuideFragment">
+        <!-- Nama enum Guide, mis. "PREPARE_TEMPLATE". -->
+        <argument
+            android:name="guide"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/providerProfileEditFragment"
+        android:name="com.aris.templateapp.ui.provider.ProviderProfileEditFragment" />
 
     <!-- Onboarding akun baru (bagian 6.6). Pilih peran adalah layar paling bawah, jadi kembali = keluar app. -->
     <fragment

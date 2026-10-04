@@ -15,6 +15,5 @@ public class UserDto {
     public boolean onboardingCompleted;
     public List<String> roles;
     public String providerStatus;
-    public String providerRejectionReason;
     public CreatorProfileDto creatorProfile;
 }
