@@ -48,6 +48,7 @@ public class ComponentCatalogActivity extends AppCompatActivity {
         });
 
         binding.toggleTheme.setOnClickListener(v -> toggleNightMode());
+        binding.loadingState.showLoading();
         binding.inputWithError.setError(getString(R.string.catalog_input_error));
         binding.selectableCard.setOnClickListener(v -> {
             boolean checked = !binding.selectableCard.isChecked();

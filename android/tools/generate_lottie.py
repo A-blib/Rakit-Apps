@@ -151,17 +151,62 @@ def empty():
     return animation("empty", total, [layer(1, "tray", shapes, total, position=bob(total, 6))])
 
 
+LINEAR_IN = {"x": [1], "y": [1]}
+LINEAR_OUT = {"x": [0], "y": [0]}
+
+
+def sampled(fn, total, step=2):
+    """Animasi dari fungsi fn(frame) → list angka, dicuplik setiap `step` frame dengan perpindahan linear.
+    Dipakai untuk gerakan yang berulang dengan fase berbeda (garis angin), yang sulit ditulis sebagai beberapa
+    keyframe saja."""
+    frames = []
+    times = list(range(0, total + 1, step))
+    for index, t in enumerate(times):
+        frame = {"t": t, "s": fn(t)}
+        if index < len(times) - 1:
+            frame["i"] = LINEAR_IN
+            frame["o"] = LINEAR_OUT
+        frames.append(frame)
+    return {"a": 1, "k": frames}
+
+
 def loading():
-    """Busur yang berputar."""
-    total = 45
-    spin = animated([(0, 0), (total, 360)])
-    shapes = [group([ellipse(120, 120, 80, 80), stroke(8),
-                     {"ty": "tm", "s": static(0), "e": static(28), "o": static(0), "m": 1, "nm": "trim"}], "arc")]
-    track = [group([ellipse(120, 120, 80, 80), stroke(2)], "track")]
-    return animation("loading", total, [
-        layer(1, "arc", shapes, total, rotation=spin),
-        layer(2, "track", track, total, opacity=static(25)),
-    ])
+    """Pesawat kertas terbang: melayang naik-turun & sedikit miring, dengan garis angin mengalir ke belakang.
+    Semua gerakan berulang mulus karena panjang animasi (120 frame) habis dibagi siklus garis angin (40 frame)."""
+    total = 120
+    c = SIZE / 2
+
+    # Pesawat kertas tampak samping, menghadap kanan: sayap (segi empat tertutup) + garis lipatan ke ujung depan.
+    plane = [
+        group([line([[180, 104], [92, 80], [120, 112], [104, 144]], closed=True), stroke()], "wing"),
+        group([line([[120, 112], [180, 104]]), stroke(4)], "fold"),
+    ]
+    plane_position = animated([(0, [c, c + 4, 0]), (60, [c, c - 8, 0]), (total, [c, c + 4, 0])])
+    plane_tilt = animated([(0, -4), (60, 3), (total, -4)])
+
+    # Garis angin: (tinggi, panjang, fase 0..1). Masing-masing bergeser 56 px ke kiri sambil muncul lalu memudar,
+    # tetap di dalam kanvas.
+    cycle = 40
+    streaks = []
+    for i, (y, length, phase) in enumerate(((92, 30, 0.0), (114, 48, 0.35), (136, 36, 0.7), (154, 22, 0.15))):
+        def progress(t, phase=phase):
+            return (t / cycle + phase) % 1.0
+
+        def position(t, progress=progress):
+            return [c - 56 * progress(t), c, 0]
+
+        def fade(t, progress=progress):
+            p = progress(t)
+            # Muncul cepat di awal (0→100 pada 25% pertama), lalu memudar sampai habis di akhir siklus.
+            return [100 * p / 0.25 if p < 0.25 else 100 * (1 - p) / 0.75]
+
+        x_end = 96
+        shapes = [group([line([[x_end - length, y], [x_end, y]]), stroke(4)], f"wind-{i}")]
+        streaks.append(layer(10 + i, f"wind-{i}", shapes, total,
+                             position=sampled(position, total), opacity=sampled(fade, total)))
+
+    return animation("loading", total, [layer(1, "plane", plane, total, position=plane_position,
+                                              rotation=plane_tilt)] + streaks)
 
 
 def intro_build():

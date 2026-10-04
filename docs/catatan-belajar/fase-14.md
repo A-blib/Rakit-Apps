@@ -70,6 +70,11 @@ Sumber rancangan: [`docs/rancangan/alur-pembuatan-website.md`](../rancangan/alur
 - `core/storage/ThemeStore` + `TemplateApp` + Pengaturan → Tampilan → Tema (Ikuti sistem / Terang / Gelap).
 - Uji di HP: HP dalam mode gelap, Tema → Terang → app langsung terang dan tetap di Pengaturan. Setelah app ditutup lalu dibuka lagi, app tetap terang.
 
+## Tambahan: animasi loading pesawat kertas (permintaan Aris)
+- `android/tools/generate_lottie.py` → `loading()` sekarang membuat pesawat kertas bergaya garis yang melayang, dengan garis angin yang mengalir ke belakang. Hasilnya `res/raw/loading.json` (file animasi lain tidak berubah).
+- Contoh `StateView` loading ditambahkan di bagian bawah Katalog komponen (build debug) untuk mengecek animasinya.
+- Uji di HP: animasi berjalan dan berulang mulus; warnanya mengikuti tema.
+
 ## Konsep yang dipelajari
 - Room: Entity, DAO, Database, `TypeConverter`, LiveData yang otomatis diperbarui, `switchMap`.
 - Annotation processor & kenapa ia bisa gagal karena lingkungan build (kasus "musl").

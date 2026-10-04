@@ -704,6 +704,7 @@ Pindah layar memakai ID aksi di `nav_graph.xml` (`R.id.action_startup_to_intro`)
 - Efek "menggambar garis" memakai **trim path**: bagian garis yang terlihat dianimasikan dari 0% sampai 100%.
 - Di JSON garisnya hitam. `LottieTint.applyForeground(view)` mengganti warna semua layer menjadi `color_foreground` lewat *dynamic properties*, jadi animasi ikut tema terang/gelap.
 - Animasi disembunyikan dari pembaca layar (`importantForAccessibility="no"`) karena hanya berfungsi sebagai hiasan.
+- **Animasi loading** (`loading.json`, dipakai `StateView.showLoading()` di semua layar yang memuat data) berupa **pesawat kertas yang terbang** (permintaan Aris): pesawat melayang naik-turun dan sedikit miring, sementara 4 garis angin dengan panjang dan fase berbeda mengalir ke belakang sambil muncul lalu memudar. Gerakan garis angin ditulis sebagai fungsi waktu lalu "dicuplik" setiap 2 frame (`sampled()` di skrip), dan panjang animasi (120 frame) habis dibagi siklus anginnya (40 frame), sehingga perulangannya mulus tanpa patahan. Contohnya bisa dilihat terus-menerus di app **Katalog komponen** (bagian paling bawah).
 
 ---
 
