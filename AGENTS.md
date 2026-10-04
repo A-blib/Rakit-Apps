@@ -5,7 +5,7 @@ Bangun **App Template Website** mengikuti instruksi di file ini.
 - Baca file ini sampai habis sebelum menulis kode apa pun.
 - Jadikan bagian 13 (hasil akhir yang diharapkan) sebagai target akhir pekerjaan.
 - Jika permintaan Aris di chat berbeda dengan file ini, ikuti permintaan Aris, lalu sebutkan bagian file ini yang berbeda.
-- Jika memakai Claude Code, salin atau ganti nama file ini menjadi `CLAUDE.md` di root repo.
+- Jika memakai Claude Code, salin file ini menjadi `CLAUDE.md` di root repo. `CLAUDE.md` tidak di-commit (ada di `.gitignore`); yang dirawat di repo hanya `AGENTS.md`.
 
 ---
 

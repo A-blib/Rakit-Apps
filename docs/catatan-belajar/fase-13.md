@@ -12,7 +12,7 @@ Sumber rancangan: [`docs/rancangan/alur-pembuatan-website.md`](../rancangan/alur
 | `user/UserController`, `UserService`, `user/dto/CreatorProfileUpdateRequest` | `PATCH /api/users/me/creator-profile` |
 | `security/SecurityConfig` | `GET /api/templates` boleh tanpa login |
 | `GalleryIntegrationTest` (8 test) | Galeri (status, provider ditangguhkan, urutan, filter, pencarian `%`, paginasi, size, parameter salah, event dilihat oleh tamu) + edit profil pembuat website |
-| `CLAUDE.md`/`AGENTS.md` bagian 16, `docs/rancangan/alur-pembuatan-website.md`, `alur-provider.md` 3.4 | Rancangan + keputusan Aris |
+| `AGENTS.md` bagian 16, `docs/rancangan/alur-pembuatan-website.md`, `alur-provider.md` 3.4 | Rancangan + keputusan Aris |
 
 ## Alasan keputusan
 - Galeri list satu kolom, "Dilihat" saat template diklik, avatar → tab Profil di kedua dashboard → **keputusan Aris** (bagian 7 rancangan).

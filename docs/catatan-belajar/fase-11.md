@@ -18,7 +18,7 @@ Sumber rancangan: [`docs/rancangan/alur-provider.md`](../rancangan/alur-provider
 | `security/SecurityConfig`, `CurrentUser` | Event boleh tanpa login; `/api/dev/**` (hanya ada di profile dev); `optionalId()` |
 | `seed/DemoTemplateSeeder`, `DevDemoController` | Seeder demo opsional + `DELETE /api/dev/demo-templates` |
 | Test: `ProviderDashboardIntegrationTest` (12), `DemoTemplateSeederTest` (1), tambahan `FlywayMigrationTest` (2), penyesuaian test lama | |
-| `docs/rancangan/alur-provider.md`, `CLAUDE.md` bagian 15, `README.md`, `docs/dokumentasi-project.md` bab 21 | |
+| `docs/rancangan/alur-provider.md`, `AGENTS.md` bagian 15, `README.md`, `docs/dokumentasi-project.md` bab 21 | |
 
 ## Alasan keputusan
 - Grafik dibuat sendiri (keputusan Aris) → tidak butuh MPAndroidChart yang sudah tidak diperbarui dan hanya ada di JitPack.

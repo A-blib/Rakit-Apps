@@ -63,7 +63,7 @@ Diambil dari HP asli (realme, Android 13) dengan akun dummy. File lengkap ada di
 
 ```
 Rakit Apps/
-├── AGENTS.md / CLAUDE.md   ← instruksi pengembangan untuk agent AI
+├── AGENTS.md             ← instruksi pengembangan untuk agent AI (pengguna Claude Code: salin menjadi CLAUDE.md, tidak di-commit)
 ├── README.md               ← file ini
 ├── docs/
 │   ├── rancangan-app-template-website.pdf   ← alur besar app

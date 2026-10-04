@@ -1,3 +1,6 @@
+# --- Salinan lokal AGENTS.md untuk Claude Code (yang di-commit hanya AGENTS.md) ---
+CLAUDE.md
+
 # --- Rahasia: jangan pernah di-commit ---
 .env
 *.env

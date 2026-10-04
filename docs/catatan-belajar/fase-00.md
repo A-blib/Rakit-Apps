@@ -4,7 +4,7 @@
 | File | Fungsi |
 |---|---|
 | `template-app/` | Folder monorepo berisi `backend/`, `android/`, `docs/` |
-| `AGENTS.md`, `CLAUDE.md` | Salinan instruksi pengembangan; `CLAUDE.md` dibaca otomatis oleh Claude Code |
+| `AGENTS.md` | Instruksi pengembangan untuk agent AI. Pengguna Claude Code menyalinnya menjadi `CLAUDE.md` di laptop masing-masing (file itu tidak di-commit sejak Oktober 2026) |
 | `.gitignore` | Mencegah rahasia (`.env`, `local.properties`, keystore), hasil build, dan `.idea/` ikut ter-commit; `backend/.vscode/` tetap di-commit |
 | `README.md` | README awal: status fitur, struktur repo, prasyarat, persiapan Ubuntu, alat kerja, setup database, menyiapkan HP |
 | `docs/rancangan-app-template-website.pdf` | Salinan alur besar app dari folder "Instruksi dan alur" |
