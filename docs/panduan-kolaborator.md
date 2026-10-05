@@ -66,7 +66,9 @@ GitHub → buka repo → **Settings → Collaborators → Add people** → masuk
 
 Lakukan ini hanya kalau teman perlu ikut mengatur console, mis. menambah client atau Test user sendiri.
 
-Google Cloud Console → menu ☰ → **IAM & Admin → IAM → Grant access** → email teman → role **Editor** → **Save**.
+Google Cloud Console → menu ☰ → **IAM & Admin → IAM → Grant access** → isi email Google teman di kolom **New principals** (Console berbahasa Indonesia: **Akun utama baru**) → di **Assign roles** pilih **Editor** → **Save**.
+
+> Akses Console tidak otomatis membuat teman bisa login Google di app. Emailnya tetap perlu didaftarkan sebagai Test user (0.4).
 
 ### 0.4 Daftarkan teman sebagai Test user
 
@@ -107,7 +109,8 @@ Google Auth Platform → **Audience** → **Test users** → **+ Add users** →
 | PostgreSQL | 18 | Database development |
 | Docker Desktop (Windows) / Docker Engine (Linux) | terbaru | Menjalankan test backend (Testcontainers) |
 | VS Code + extension Java & Spring | terbaru | Editor backend |
-| Android Studio | terbaru (stabil) | Editor Android, Android SDK, `adb` |
+| Android SDK | platform `android-37.0`, build-tools `36.0.0`, platform-tools | **Wajib** untuk build app Android dan `adb`. Dipasang lewat Android Studio (2.7) **atau** command line tools (2.8) |
+| Android Studio | terbaru (stabil) | Editor Android (preview layout, Logcat, debugger). **Disarankan, tidak wajib** |
 | Maven & Gradle | **jangan dipasang** | Sudah ada di project (`mvnw`, `gradlew`) |
 
 > **Tips Windows:** semua software bisa dipasang lewat installer biasa (klik Next–Next). Sebagai alternatif, Windows 10/11 punya `winget` (pemasang lewat PowerShell). Perintah `winget` disertakan di setiap langkah sebagai pilihan.
@@ -152,6 +155,8 @@ git config --global user.email "email@kamu.com"
 java -version          # harus menampilkan "21.x"
 echo $env:JAVA_HOME    # harus berisi folder JDK 21, mis. C:\Program Files\Eclipse Adoptium\jdk-21...
 ```
+
+> Jika yang muncul persis tulisan `$env:JAVA_HOME`, kamu sedang di **Command Prompt (cmd)**, bukan PowerShell. Buka **PowerShell** (awal barisnya `PS C:\...>`), atau di cmd pakai `echo %JAVA_HOME%`. Di cmd, hasil berupa tulisan `%JAVA_HOME%` berarti variabelnya belum diatur.
 
 Jika `JAVA_HOME` kosong, atur manual: *Start* → ketik **"environment variables"** → *Edit the system environment variables* → **Environment Variables…** → di *User variables* klik **New** → Name `JAVA_HOME`, Value = folder JDK (mis. `C:\Program Files\Eclipse Adoptium\jdk-21.0.x-hotspot`) → OK.
 
@@ -210,7 +215,16 @@ docker run hello-world
 
 Extension yang direkomendasikan muncul **otomatis** saat folder `backend/` dibuka (bagian 6).
 
-### 2.7 Android Studio + SDK
+### 2.7 Android SDK, pilihan A: lewat Android Studio (disarankan)
+
+Yang **wajib** untuk build app Android adalah **Android SDK**, bukan Android Studio. Developer backend dan penguji tidak butuh keduanya.
+
+| Pilihan | Cocok untuk | Kelebihan | Kekurangan |
+|---|---|---|---|
+| **A. Android Studio** (bagian ini) | Developer Android, terutama yang masih belajar | SDK terpasang otomatis lewat Setup Wizard. Ada preview layout, Logcat, debugger, tombol Run | Unduhan besar, butuh RAM lebih |
+| **B. Command line tools** (bagian 2.8) | Yang cukup build & pasang lewat terminal, atau laptop terbatas | Unduhan kecil, ringan | Semua lewat terminal; log lewat `adb logcat`, tanpa preview layout |
+
+Pilih salah satu saja. Kalau ragu, pilih A.
 
 🪟 **Windows**
 1. Unduh dari https://developer.android.com/studio → jalankan installer (biarkan default).
@@ -236,6 +250,65 @@ echo 'export PATH=$ANDROID_HOME/platform-tools:$PATH' >> ~/.bashrc
 source ~/.bashrc
 sudo apt install -y android-sdk-platform-tools-common   # aturan udev agar HP dikenali lewat USB
 ```
+
+### 2.8 Android SDK, pilihan B: tanpa Android Studio (command line tools)
+
+Lewati bagian ini jika sudah memakai pilihan A.
+
+Paket SDK yang dibutuhkan project:
+
+| Paket | Fungsi |
+|---|---|
+| `cmdline-tools;latest` | Berisi `sdkmanager`, pengunduh paket SDK lain |
+| `platform-tools` | `adb`, untuk memasang dan menjalankan app di HP |
+| `platforms;android-37.0` | Library Android untuk compile (sesuai `compileSdk` 37) |
+| `build-tools;36.0.0` | Alat pengemas APK |
+
+🪟 **Windows**
+1. Buka https://developer.android.com/studio → gulir ke bawah ke **Command line tools only** → unduh versi **Windows**.
+2. Buat folder `C:\Users\<nama>\AppData\Local\Android\Sdk\cmdline-tools\latest`.
+3. Ekstrak ZIP. Isinya folder `cmdline-tools` berisi `bin`, `lib`, dst. Pindahkan **isi** folder itu ke dalam `...\cmdline-tools\latest`, sehingga ada file `...\cmdline-tools\latest\bin\sdkmanager.bat`.
+   > Struktur `cmdline-tools\latest\bin` wajib persis begitu. Jika `bin` berada langsung di `cmdline-tools\bin`, `sdkmanager` menolak jalan dengan error *Could not determine SDK root*.
+4. Atur environment variable (*Start* → **"environment variables"** → *Edit the system environment variables* → **Environment Variables…**):
+   - *User variables* → **New** → Name `ANDROID_HOME`, Value `%LOCALAPPDATA%\Android\Sdk` → OK
+   - *User variables* → **Path** → **Edit** → tambahkan dua baris: `%ANDROID_HOME%\cmdline-tools\latest\bin` dan `%ANDROID_HOME%\platform-tools` → OK → OK
+5. Tutup semua PowerShell, buka yang baru, lalu pasang paket:
+
+```powershell
+# Menerima lisensi SDK (ketik y lalu Enter untuk setiap lisensi). Tanpa ini Gradle menolak build.
+sdkmanager --licenses
+# Mengunduh paket yang dibutuhkan project
+sdkmanager "platform-tools" "platforms;android-37.0" "build-tools;36.0.0"
+# Khusus HP Google Pixel: driver USB (merek lain pakai driver dari situs mereknya, lihat 2.7 no. 6)
+sdkmanager "extras;google;usb_driver"
+# Cek hasil
+sdkmanager --list_installed
+adb version
+```
+
+🐧 **Linux**
+1. Unduh **Command line tools only** versi **Linux** dari https://developer.android.com/studio, lalu:
+
+```bash
+# Menyusun folder SDK dengan struktur yang diharapkan sdkmanager: cmdline-tools/latest/bin
+mkdir -p ~/Android/Sdk/cmdline-tools
+cd ~/Downloads && unzip commandlinetools-linux-*_latest.zip      # menghasilkan folder cmdline-tools/
+mv cmdline-tools ~/Android/Sdk/cmdline-tools/latest
+
+# Menyimpan lokasi SDK dan PATH agar sdkmanager & adb bisa dipanggil dari terminal mana pun
+echo 'export ANDROID_HOME=$HOME/Android/Sdk' >> ~/.bashrc
+echo 'export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH' >> ~/.bashrc
+source ~/.bashrc
+
+sdkmanager --licenses                                             # terima lisensi (y)
+sdkmanager "platform-tools" "platforms;android-37.0" "build-tools;36.0.0"
+sudo apt install -y android-sdk-platform-tools-common             # aturan udev agar HP dikenali lewat USB
+adb version
+```
+
+2. `sdkmanager` butuh Java. JDK 21 dari bagian 2.3 sudah cukup.
+
+Setelah itu, lanjutkan ke bagian 9. Untuk pilihan B, `local.properties` dibuat manual (lihat 9.1) dan app dijalankan lewat terminal (9.5).
 
 ---
 
@@ -399,7 +472,7 @@ Login Google di HP hanya berhasil kalau **sidik jari (SHA-1) kunci debug laptop 
 
 ### 7.1 Ambil SHA-1
 
-Kunci debug dibuat otomatis oleh Android Studio saat build pertama. Jalankan app sekali dulu (bagian 9) kalau file-nya belum ada.
+Kunci debug dibuat otomatis saat build debug pertama, baik lewat Android Studio maupun `gradlew` di terminal. Jalankan app sekali dulu (bagian 9) kalau file-nya belum ada.
 
 🪟 **Windows (PowerShell)**
 ```powershell
@@ -458,7 +531,7 @@ Isi `GITHUB_CLIENT_ID` dan `GITHUB_CLIENT_SECRET` di `backend/.env` dengan nilai
 
 1. Android Studio → **Open** → pilih folder **`android`** (bukan folder root) → tunggu **Gradle Sync** selesai.
 2. Pastikan Gradle memakai JDK 21: *File → Settings* (Windows/Linux) → *Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK* → pilih **JDK 21** (mis. "temurin-21" atau `/usr/lib/jvm/java-21-openjdk-amd64`).
-3. File `android/local.properties` dibuat otomatis oleh Android Studio. Tambahkan baris Client ID Web Google di paling bawah:
+3. File `android/local.properties` dibuat otomatis oleh Android Studio. **Tanpa Android Studio (pilihan B, 2.8):** lewati langkah 1–2 dan buat file ini sendiri dengan isi di bawah, sesuaikan `sdk.dir` dengan lokasi SDK-mu. Tambahkan baris Client ID Web Google di paling bawah:
 
 ```properties
 # Windows (dibuat otomatis; garis miring terbalik memang ditulis dobel):
@@ -520,7 +593,7 @@ powershell -ExecutionPolicy Bypass -File tools\keep-adb-reverse.ps1
 ### 9.5 Run
 
 - Android Studio: pilih HP di daftar perangkat (atas) → klik **Run ▶**.
-- Atau dari terminal (folder `android`):
+- Atau dari terminal (folder `android`). Ini satu-satunya cara jika memakai pilihan B (2.8); log app dilihat dengan `adb logcat --pid=<pid>` (Linux: `adb logcat --pid=$(adb shell pidof -s com.aris.templateapp)`):
 
 🪟 **Windows**
 ```powershell
@@ -579,7 +652,7 @@ main ───●───────────●─────────
 |---|---|
 | `'.\mvnw' is not recognized` / `./mvnw` tidak jalan | Di Windows pakai `.\mvnw.cmd`. Di VS Code, task sudah otomatis memakai `mvnw.cmd`. |
 | `Unknown lifecycle phase ".run.profiles=dev"` | PowerShell memotong parameter di titik. Beri tanda kutip: `"-Dspring-boot.run.profiles=dev"`. |
-| `java` / `keytool` / `adb` is not recognized | PATH belum benar, atau PowerShell belum dibuka ulang setelah instalasi. Cek bagian 2.3 dan 2.7, lalu tutup dan buka lagi PowerShell/VS Code/Android Studio. |
+| `java` / `keytool` / `adb` is not recognized | PATH belum benar, atau PowerShell belum dibuka ulang setelah instalasi. Cek bagian 2.3 dan 2.7/2.8, lalu tutup dan buka lagi PowerShell/VS Code/Android Studio. |
 | `JAVA_HOME is set to an invalid directory` / versi Java bukan 21 | Atur `JAVA_HOME` ke folder JDK 21 (bagian 2.3), lalu buka ulang terminal. Cek dengan `java -version`. |
 | `/usr/bin/env: 'sh\r': No such file or directory` (di WSL/Linux) | `mvnw`/`gradlew` tersimpan dengan akhir baris CRLF. Jalankan `git rm --cached -r . && git reset --hard` (perubahan lokal yang belum di-commit akan hilang; simpan dulu). `.gitattributes` mencegah hal ini terulang. |
 | `Filename too long` saat clone atau build | `git config --global core.longpaths true`, dan simpan project di path pendek (`C:\dev\template-app`). |
@@ -607,7 +680,8 @@ Developer backend:
 - [ ] `mvnw test` lulus (Docker jalan)
 
 Developer Android (tambahan):
-- [ ] Android Studio membuka folder `android` tanpa error setelah Sync
+- [ ] Android SDK terpasang (`adb version` jalan, `ANDROID_HOME` terisi)
+- [ ] Pilihan A: Android Studio membuka folder `android` tanpa error setelah Sync. Pilihan B: `gradlew assembleDebug` berhasil dari terminal
 - [ ] `adb devices` menampilkan HP berstatus `device`
 - [ ] `adb reverse tcp:8080 tcp:8080` sudah dijalankan
 - [ ] App terpasang dan bisa masuk dengan akun dummy
