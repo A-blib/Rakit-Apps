@@ -10,7 +10,7 @@ Sumber rancangan: [`docs/rancangan/alur-fitur-upload.md`](../rancangan/alur-fitu
 | `db/migration/V12__upload.sql` | Kolom upload di `templates` (deskripsi, kata kunci, info teknis, nama/ukuran ZIP, langkah wizard), `template_checks.stage`, `template_check_issues.rule_version/snippet`, tabel `upload_sessions` dan `check_reports`, jenis notifikasi baru |
 | `db/migration/V13__create_help_articles.sql` | Tabel `help_articles` + 16 artikel Panduan pertama |
 | `config/AppProperties` (`Upload`, `Limits`, ...), `application.yml` (`app.upload`) | Semua batas ukuran, CDN terpercaya, daftar library, hash library terkenal, iframe yang boleh, pola pelacak |
-| `upload/check/CheckRule` | Daftar 67 aturan (kode, tingkat E/P, versi, judul, fatal atau tidak) |
+| `upload/check/CheckRule` | Daftar 68 aturan (kode, tingkat E/P, versi, judul, fatal atau tidak) |
 | `upload/check/ZipArchive`, `ZipReader`, `TemplateFiles` | Pembaca ZIP buatan sendiri yang aman: password, symlink, zip slip, zip bomb, folder pembungkus |
 | `upload/check/CheckContext`, `Ref`, `Texts`, `JsScanner`, `Findings`, `Finding` | Bahan bersama: halaman ter-parse, penyelesai path, pembuang komentar & cek kurung, penampung masalah |
 | `upload/check/StructureRules`, `HtmlRules`, `ExternalRules`, `ReferenceRules`, `CssRules`, `ScriptRules`, `SizeRules` | Aturan bagian 5.6 A–G |
@@ -22,7 +22,7 @@ Sumber rancangan: [`docs/rancangan/alur-fitur-upload.md`](../rancangan/alur-fitu
 | `help/HelpController`, `HelpArticle` | `GET /api/help/articles/{kode}` (publik) |
 | `template/CheckResponses`, `dto/IssueResponse`, `dto/CheckResponse` | Masalah kini membawa `id`, `title`, `ruleVersion`, `reported`; pengecekan membawa `stage` |
 | `template/ProviderTemplateQueries` | Upload yang belum mengisi Info template tampil dengan nama file ZIP |
-| `tools/buat-zip-uji.py`, `src/test/resources/test-fixtures/` | Generator 131 ZIP uji (gagal/lolos per aturan + template bersih) |
+| `tools/buat-zip-uji.py`, `src/test/resources/test-fixtures/` | Generator 133 ZIP uji (gagal/lolos per aturan + template bersih) |
 | `CheckRuleFixturesTest`, `UploadIntegrationTest` | Test semua aturan dan alur upload dari ujung ke ujung |
 
 ## Alasan keputusan
@@ -36,6 +36,8 @@ Sumber rancangan: [`docs/rancangan/alur-fitur-upload.md`](../rancangan/alur-fitu
 - **Versi CDN "jelas" = tiga angka lengkap** (`@3.14.1`) → `@3` atau `@3.x` juga bisa berubah diam-diam seperti `@latest`. Tailwind Play CDN tidak dicek versinya karena rancangan hanya memberinya Peringatan.
 - **Redirect JS hanya ditolak jika otomatis** → `location.href = 'https://wa.me/...'` di dalam handler klik adalah tombol "Pesan via WhatsApp" yang sah. Yang ditolak: di tingkat paling luar, di dalam `DOMContentLoaded`/`load`/`setTimeout`, atau IIFE.
 - **Link tersembunyi**: pembungkus `display:none` tidak dihitung → menu HP/dropdown memang sering disembunyikan dulu; yang ditolak adalah link yang disembunyikan sendiri atau lewat ukuran 0/posisi -9999px.
+- **File `.scss/.less` yang tidak dipakai HTML → Peringatan `SOURCE_FILES_INCLUDED`** (keputusan Aris setelah uji template HTML5 UP) → jangan diabaikan diam-diam; provider perlu tahu ada file sumber yang ikut terupload. Tetap Error jika HTML memuat `.scss` langsung atau tidak ada CSS hasil build sama sekali.
+- **Font `.eot` tetap Error** sesuai daftar rancangan 5.6 B (belum ada keputusan untuk melonggarkannya). Dampaknya: template lama dengan Font Awesome 4/5 (mis. HTML5 UP) harus menghapus file `.eot`-nya.
 - **Kuota draft = draft + upload yang sedang dicek** → upload yang sedang dicek hampir pasti menjadi draft; tanpa ini provider bisa melewati batas 5 dengan mengupload banyak sekaligus.
 - **Error pengecekan karena bug server** dicatat sebagai `CHECK_INTERNAL_ERROR` dengan pesan "bukan karena file-mu" → provider tidak disalahkan, dan stack trace hanya di log server.
 
@@ -54,8 +56,15 @@ Sumber rancangan: [`docs/rancangan/alur-fitur-upload.md`](../rancangan/alur-fitu
 7. `GET /api/help/articles/CASE_MISMATCH` tanpa login.
 
 ## Hasil tes
-- `./mvnw test`: **lulus, 226 test** (140 baru: 133 ZIP uji + 7 integration test upload).
-- Uji manual: alur langkah 3–7 di atas lewat Swagger + curl (lihat bagian berikutnya di laporan fase 16 untuk uji dari HP).
+- `./mvnw test`: **lulus, 228 test** (142 baru: 135 test ZIP uji + 7 integration test upload).
+- Uji manual di backend dev (database lokal, akun `dummy8`) lewat curl: upload ZIP `BASE_HREF/gagal.zip` → tahap berjalan sampai `done`, `check_failed`, Error lengkap dengan judul, baris 8, dan saran; halaman awal Upload menampilkan kartu "Perlu diperbaiki"; hapus → 204.
+- Uji dengan template gratis sungguhan:
+  | Template | Hasil |
+  |---|---|
+  | StartBootstrap Landing Page, Agency, Freelancer, Grayscale | Gagal: script dari `use.fontawesome.com` dan `cdn.startbootstrap.com` (bukan CDN terpercaya). Bootstrap 5.2.3 dari jsDelivr dikenali |
+  | HTML5 UP Massively | Gagal: font `.eot`, dan `noscript.css` meng-import file yang memang tidak ada. 31 file `.scss` → 1 Peringatan. jQuery 3.6.0 dikenali dari hash |
+  | Tailwind Toolbox Landing Page | **Lolos** dengan 2 Peringatan (Google Fonts, 1 gambar tanpa alt) |
+- Masalah yang ditemukan dari uji ini dan sudah diperbaiki: `.scss` sisa build menjadi puluhan Error (→ satu Peringatan), peringatan innerHTML dari file library `.min.js`, jQuery versi lama belum dikenali hash-nya, urutan masalah berpindah-pindah.
 
 ## Konsep yang dipelajari
 - **Upload per potongan (chunked upload)**: file dikirim sepotong-sepotong; server mencatat sudah sampai byte ke berapa, sehingga upload bisa dilanjutkan.
