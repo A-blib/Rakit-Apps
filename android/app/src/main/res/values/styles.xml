@@ -172,6 +172,29 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
     </style>
 
+    <!-- Baris checklist "Sebelum upload": ikon ✓ di kiri, teks biasa. -->
+    <style name="Widget.App.ChecklistItem" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_2</item>
+        <item name="android:drawableStart">@drawable/ic_check_small</item>
+        <item name="android:drawablePadding">@dimen/space_2</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Body</item>
+    </style>
+
+    <!-- Contoh kode di artikel Panduan: huruf mono di kotak abu-abu bergaris tipis, bisa digulir ke samping. -->
+    <style name="Widget.App.CodeBlock" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_2</item>
+        <item name="android:background">@drawable/bg_thumbnail</item>
+        <item name="android:padding">@dimen/space_3</item>
+        <item name="android:fontFamily">@font/geist_mono_regular</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.BodySmall</item>
+        <item name="android:textIsSelectable">true</item>
+    </style>
+
     <style name="Widget.App.Divider" parent="Widget.Material3.MaterialDivider">
         <item name="dividerColor">@color/color_border</item>
         <item name="dividerThickness">@dimen/border_width</item>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Sebelum upload": 4 syarat terpenting dari aturan pengecekan + tautan Panduan, lalu garis alur 6 langkah (bagian 3.1). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/Widget.App.SectionTitle"
+        android:text="@string/upload_before_title" />
+
+    <TextView style="@style/Widget.App.ChecklistItem" android:text="@string/upload_before_index" />
+    <TextView style="@style/Widget.App.ChecklistItem" android:text="@string/upload_before_html" />
+    <TextView style="@style/Widget.App.ChecklistItem" android:text="@string/upload_before_library" />
+    <TextView style="@style/Widget.App.ChecklistItem" android:text="@string/upload_before_dist" />
+
+    <Button
+        android:id="@+id/guide_button"
+        style="@style/Widget.App.Button.Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="0dp"
+        android:text="@string/upload_see_guide"
+        app:icon="@drawable/ic_arrow_forward"
+        app:iconGravity="end" />
+
+    <TextView
+        style="@style/Widget.App.SectionTitle"
+        android:layout_marginTop="@dimen/space_4"
+        android:text="@string/upload_flow_title" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_2"
+        android:fontFamily="@font/geist_mono_regular"
+        android:text="@string/upload_flow_steps"
+        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+</LinearLayout>

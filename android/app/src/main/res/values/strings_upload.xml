@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Teks fitur Upload provider (docs/rancangan/alur-fitur-upload.md). Dipisah dari strings.xml agar mudah dicari.
+    Bahasa Indonesia tidak punya bentuk jamak, jadi saran lint "pakai plurals" untuk teks berangka diabaikan.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="PluralsCandidate">
+
+    <!-- Halaman awal tab Upload (bagian 3.1) -->
+    <string name="upload_new_title">Upload template baru</string>
+    <string name="upload_new_body">Ubah project websitemu jadi template yang bisa dipakai orang lain.</string>
+    <string name="upload_pick_zip">Pilih file ZIP</string>
+    <string name="upload_pick_limit">ZIP · maks %1$s</string>
+    <string name="upload_zip_help">Cara membuat ZIP di Windows: klik kanan folder → Kirim ke → Folder terkompresi (zip).</string>
+    <string name="upload_before_title">Sebelum upload</string>
+    <string name="upload_before_index">Ada index.html</string>
+    <string name="upload_before_html">Konten ditulis di HTML</string>
+    <string name="upload_before_library">Library dari daftar resmi</string>
+    <string name="upload_before_dist">Pakai Vite? Upload dist/</string>
+    <string name="upload_see_guide">Lihat panduan lengkap</string>
+    <string name="upload_flow_title">Alur upload</string>
+    <string name="upload_flow_steps">1 Pilih → 2 Cek → 3 Info → 4 Tandai → 5 Coba → 6 Kirim</string>
+    <string name="upload_needs_fix_title">Perlu diperbaiki (%1$d)</string>
+    <string name="upload_issue_counts">%1$d error · %2$d peringatan</string>
+    <string name="upload_fix_button">Upload file perbaikan</string>
+    <string name="upload_checking_title">Sedang dicek</string>
+    <string name="upload_drafts_title">Lanjutkan draft</string>
+    <string name="upload_draft_quota">%1$d dari %2$d</string>
+    <string name="upload_draft_step">Langkah %1$d/6 · %2$s</string>
+    <string name="upload_draft_expiring">Dihapus dalam %1$d hari</string>
+    <string name="upload_draft_expiring_today">Dihapus hari ini</string>
+    <string name="upload_quota_full">Selesaikan atau hapus draft dulu (maks %1$d)</string>
+    <string name="upload_delete_draft">Hapus draft</string>
+    <string name="upload_delete_failed">Hapus upload</string>
+    <string name="upload_delete_title">Hapus “%1$s”?</string>
+    <string name="upload_delete_body">Draft dan file ZIP-nya dihapus permanen.</string>
+    <string name="upload_deleted">Dihapus</string>
+    <string name="action_delete">Hapus</string>
+    <string name="cd_upload_more">Pilihan lain untuk %1$s</string>
+
+    <!-- Nama langkah wizard (bagian 3) -->
+    <string name="upload_step_pick">Pilih file</string>
+    <string name="upload_step_check">Pengecekan file</string>
+    <string name="upload_step_info">Info template</string>
+    <string name="upload_step_mark">Tandai bagian</string>
+    <string name="upload_step_try">Coba sebagai pengguna</string>
+    <string name="upload_step_send">Kirim</string>
+    <string name="upload_step_of">Langkah %1$d dari 6</string>
+
+    <!-- Keluar wizard (bagian 3.2) -->
+    <string name="upload_exit_title">Keluar dari upload?</string>
+    <string name="upload_exit_draft_body">Pekerjaanmu tersimpan sebagai draft. Lanjutkan kapan saja dari tab Upload.</string>
+    <string name="upload_exit_uploading_body">Upload belum selesai dan akan dibatalkan.</string>
+    <string name="upload_exit">Keluar</string>
+    <string name="cd_close_wizard">Tutup upload</string>
+
+    <!-- Langkah 1–2: cek kilat di HP, upload, pengecekan (bagian 4 & 5) -->
+    <string name="upload_file_meta">%1$s · %2$s</string>
+    <string name="upload_stage_upload">Mengunggah file</string>
+    <string name="upload_stage_open">Membuka ZIP</string>
+    <string name="upload_stage_structure">Memeriksa struktur &amp; file</string>
+    <string name="upload_stage_html">Memeriksa HTML &amp; library</string>
+    <string name="upload_stage_size">Memeriksa ukuran</string>
+    <string name="upload_stage_device">Menjalankan halaman di HP</string>
+    <string name="upload_progress">%1$s dari %2$s MB</string>
+    <string name="upload_waiting_network">Sinyal putus. Menyambung lagi… (percobaan %1$d)</string>
+    <string name="upload_check_hint">Biasanya kurang dari 30 detik. Boleh tinggalkan layar ini, hasilnya dikirim lewat notifikasi.</string>
+    <string name="upload_mobile_data_title">Pakai data seluler?</string>
+    <string name="upload_mobile_data_body">File ini %1$s. Kamu sedang memakai data seluler. Lanjutkan?</string>
+    <string name="upload_continue">Lanjutkan</string>
+    <string name="upload_local_rar">Format RAR belum didukung. Simpan ulang template sebagai ZIP.</string>
+    <string name="upload_local_not_zip">File ini bukan ZIP. Upload template dalam format ZIP.</string>
+    <string name="upload_local_corrupt">ZIP rusak atau tidak bisa dibuka. Buat ulang file ZIP-nya.</string>
+    <string name="upload_local_no_index">File index.html tidak ada di folder paling luar ZIP.</string>
+    <string name="upload_local_no_index_deeper">index.html ada di folder %1$s. ZIP ulang isi folder itu saja.</string>
+    <string name="upload_local_too_large">ZIP %1$s, batasnya %2$s. 5 file terbesar: %3$s.</string>
+    <string name="upload_local_too_large_hint">Kompres gambar atau ubah ke WebP, dan jangan sertakan video atau node_modules.</string>
+    <string name="upload_local_failed_title">File belum bisa diupload</string>
+    <string name="upload_see_how">Lihat caranya</string>
+    <string name="upload_pick_other">Pilih file lain</string>
+    <string name="upload_failed_title">Belum memenuhi standar</string>
+    <string name="upload_errors_title">Error (%1$d)</string>
+    <string name="upload_warnings_title">Peringatan (%1$d)</string>
+    <string name="upload_later">Nanti saja</string>
+    <string name="upload_passed_title">File lolos pengecekan</string>
+    <string name="upload_passed_body">Lanjut isi info template.</string>
+    <string name="upload_passed_warnings">Ada %1$d peringatan. Kamu tetap boleh lanjut, tapi sebaiknya diperbaiki.</string>
+    <string name="upload_next">Lanjut</string>
+    <string name="upload_back">Kembali</string>
+    <string name="upload_device_js_error">%1$s baris %2$d: %3$s</string>
+    <string name="upload_device_overflow">%1$s: ada elemen yang lebih lebar dari layar HP (%2$d px, layar %3$d px).</string>
+
+    <!-- Masalah pengecekan: tautan Panduan & laporan keliru (bagian 5.9 & 5.11) -->
+    <string name="issue_learn">Pelajari cara memperbaikinya</string>
+    <string name="issue_report">Ini keliru? Laporkan</string>
+    <string name="issue_reported">Sudah dilaporkan</string>
+    <string name="report_title">Laporkan pengecekan keliru</string>
+    <string name="report_body">Ceritakan kenapa menurutmu ini keliru (boleh dikosongkan). Template tidak otomatis lolos; aturannya akan kami periksa.</string>
+    <string name="report_hint">Alasan</string>
+    <string name="report_send">Kirim laporan</string>
+    <string name="report_thanks">Terima kasih, laporanmu kami tinjau.</string>
+
+    <!-- Artikel Panduan per aturan -->
+    <string name="help_title">Panduan</string>
+    <string name="help_why">Kenapa ini masalah</string>
+    <string name="help_wrong">Contoh salah</string>
+    <string name="help_right">Contoh benar</string>
+    <string name="help_fix">Cara memperbaiki</string>
+    <string name="help_tips">Tips mencegah</string>
+
+    <!-- Langkah 3: Info template (bagian 6) -->
+    <string name="upload_thumbnail">Thumbnail</string>
+    <string name="upload_thumbnail_auto">Otomatis</string>
+    <string name="upload_thumbnail_section">Dari section</string>
+    <string name="upload_thumbnail_custom">Upload gambar</string>
+    <string name="upload_thumbnail_capturing">Memotret tampilan…</string>
+    <string name="upload_thumbnail_failed">Thumbnail gagal dibuat. Coba lagi.</string>
+    <string name="upload_thumbnail_too_large">Gambar terlalu besar. Pilih gambar lain.</string>
+    <string name="upload_section_pick_title">Pilih section untuk thumbnail</string>
+    <string name="upload_view_mobile">HP</string>
+    <string name="upload_view_desktop">Desktop</string>
+    <string name="cd_thumbnail">Thumbnail template</string>
+    <string name="upload_name">Nama template</string>
+    <string name="upload_name_helper">3–60 karakter</string>
+    <string name="upload_name_short">Minimal 3 karakter</string>
+    <string name="upload_name_duplicate">Nama ini sama dengan template lain milikmu.</string>
+    <string name="upload_category">Kategori</string>
+    <string name="upload_description">Deskripsi singkat</string>
+    <string name="upload_description_hint">Mis. Landing page satu halaman untuk toko kue rumahan, ada katalog produk dan tombol pesan via WhatsApp</string>
+    <string name="upload_description_short">Minimal 20 karakter</string>
+    <string name="upload_keywords">Kata kunci (1–5)</string>
+    <string name="upload_keyword_hint">Ketik lalu tekan Enter</string>
+    <string name="upload_keyword_add">Tambah</string>
+    <string name="upload_keyword_max">Maksimal 5 kata kunci</string>
+    <string name="upload_keyword_too_long">Kata kunci maksimal 20 karakter</string>
+    <string name="upload_keyword_exists">Kata kunci sudah ada</string>
+    <string name="cd_remove_keyword">Hapus kata kunci %1$s</string>
+    <string name="upload_tech_title">Info teknis (otomatis)</string>
+    <string name="upload_tech_pages">%1$d halaman</string>
+    <string name="upload_tech_responsive">Responsif</string>
+    <string name="upload_tech_not_responsive">Belum responsif</string>
+    <string name="upload_saving">Menyimpan…</string>
+    <string name="upload_saved">Tersimpan</string>
+    <string name="upload_save_failed">Belum tersimpan. Periksa koneksi.</string>
+
+    <!-- Langkah 4 sementara (dibangun di Fase 17) -->
+    <string name="upload_mark_pending">Langkah menandai bagian sedang disiapkan.</string>
+
+    <!-- Detail template -->
+    <string name="detail_continue_draft">Lanjutkan draft</string>
+</resources>

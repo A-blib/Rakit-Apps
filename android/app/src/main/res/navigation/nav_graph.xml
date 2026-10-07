@@ -170,4 +170,55 @@
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
     </fragment>
+
+    <!-- Wizard Upload provider (docs/rancangan/alur-fitur-upload.md): layar penuh di atas Dashboard Provider. -->
+    <fragment
+        android:id="@+id/uploadCheckFragment"
+        android:name="com.aris.templateapp.ui.upload.UploadCheckFragment">
+        <!-- uri + fileName + fileSize: file baru dipilih. Hanya templateId: membuka hasil/progres pengecekan. -->
+        <argument
+            android:name="uri"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="fileName"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="fileSize"
+            android:defaultValue="0L"
+            app:argType="long" />
+        <argument
+            android:name="templateId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/uploadInfoFragment"
+        android:name="com.aris.templateapp.ui.upload.UploadInfoFragment">
+        <argument
+            android:name="templateId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/uploadMarkFragment"
+        android:name="com.aris.templateapp.ui.upload.UploadMarkFragment">
+        <argument
+            android:name="templateId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/helpArticleFragment"
+        android:name="com.aris.templateapp.ui.upload.HelpArticleFragment">
+        <argument
+            android:name="code"
+            app:argType="string" />
+    </fragment>
+
 </navigation>
