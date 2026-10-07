@@ -1,6 +1,7 @@
 package com.aris.templateapp.template;
 
 import com.aris.templateapp.upload.check.TechInfo;
+import com.aris.templateapp.upload.marking.MarkingData;
 import com.aris.templateapp.user.WebsitePurpose;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -92,6 +93,13 @@ public class Template {
 
     @Column(length = 10)
     private String thumbnailView;
+
+    // Tandaan provider (langkah 4) dan jumlah isiannya.
+    @JdbcTypeCode(SqlTypes.JSON)
+    private MarkingData marking;
+
+    @Column(nullable = false)
+    private int markingFieldCount;
 
     public Template(UUID providerId, String name, WebsitePurpose category) {
         this.providerId = providerId;

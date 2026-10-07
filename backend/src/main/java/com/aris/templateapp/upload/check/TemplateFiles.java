@@ -1,5 +1,7 @@
 package com.aris.templateapp.upload.check;
 
+import com.aris.templateapp.config.AppProperties;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +24,14 @@ public final class TemplateFiles {
     private final Map<String, String> lowerCaseIndex = new HashMap<>();
     private final List<String> ignored = new ArrayList<>();
     private boolean hasNodeModules;
+
+    /**
+     * Membaca ZIP yang sudah lolos pengecekan (untuk salinan bernomor dan paket template). Null jika ZIP tidak bisa
+     * dibaca lagi, mis. file di server rusak.
+     */
+    public static TemplateFiles readZip(byte[] zip, AppProperties.Limits limits) {
+        return new ZipReader(limits, new Findings()).read(zip, "source.zip");
+    }
 
     TemplateFiles(String rootFolder) {
         this.rootFolder = rootFolder;

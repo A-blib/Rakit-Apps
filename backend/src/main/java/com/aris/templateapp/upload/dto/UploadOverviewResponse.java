@@ -26,10 +26,11 @@ public record UploadOverviewResponse(List<NeedsFix> needsFix, List<Checking> che
     /**
      * Draft yang bisa dilanjutkan.
      *
+     * @param fieldCount   jumlah isian yang sudah ditandai dan disimpan
      * @param deleteAt     kapan draft dihapus otomatis jika tidak disentuh
      * @param expiringSoon true jika {@code deleteAt} tinggal beberapa hari ("⚠ Dihapus dalam 5 hari")
      */
-    public record Draft(UUID templateId, String name, String thumbnailUrl, int wizardStep, Instant updatedAt,
+    public record Draft(UUID templateId, String name, String thumbnailUrl, int wizardStep, int fieldCount, Instant updatedAt,
                         Instant deleteAt, boolean expiringSoon) {
     }
 }

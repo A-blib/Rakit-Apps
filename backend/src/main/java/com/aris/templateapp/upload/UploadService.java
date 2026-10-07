@@ -102,7 +102,7 @@ public class UploadService {
                 .map(t -> {
                     Instant deleteAt = t.getUpdatedAt().plus(keep);
                     return new UploadOverviewResponse.Draft(t.getId(), t.getName(), t.getThumbnailUrl(), t.getWizardStep(),
-                            t.getUpdatedAt(), deleteAt, !now.isBefore(deleteAt.minus(warn)));
+                            t.getMarkingFieldCount(), t.getUpdatedAt(), deleteAt, !now.isBefore(deleteAt.minus(warn)));
                 })
                 .toList();
         int draftCount = drafts.size() + checking.size();

@@ -16,5 +16,5 @@ import java.util.UUID;
 public record DraftResponse(UUID templateId, TemplateStatus status, int wizardStep, String sourceFileName,
                             Long sourceSize, String name, WebsitePurpose category, String description,
                             List<String> keywords, String thumbnailUrl, String thumbnailSource, String thumbnailView,
-                            TechInfo techInfo, int warningCount, boolean nameDuplicate, Instant updatedAt) {
+                            TechInfo techInfo, int warningCount, int fieldCount, boolean nameDuplicate, Instant updatedAt) {
 }

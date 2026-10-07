@@ -132,6 +132,11 @@ public class UploadStorage {
         return null;
     }
 
+    /** Salinan bernomor untuk mode tandai (dibuat ulang jika ZIP sumber lebih baru). */
+    public Path workZipPath(UUID templateId) {
+        return root.resolve("templates").resolve(templateId.toString()).resolve("work.zip");
+    }
+
     public Path sourceZipPath(UUID templateId) {
         return sourceZip(templateId);
     }

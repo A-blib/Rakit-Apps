@@ -304,6 +304,47 @@ class UploadIntegrationTest {
                 .andExpect(jsonPath("$.allowedHosts", hasItem("www.youtube.com")));
     }
 
+    @Test
+    void workPackageIsNumberedAndMarkingIsValidatedOnSave() throws Exception {
+        String templateId = uploadAndWait("toko-kue.zip", FIXTURES.resolve("_DASAR/bersih.zip"), null);
+        String base = "/api/providers/me/uploads/" + templateId;
+
+        byte[] work = send(get(base + "/work-package"), null).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+        String index = null;
+        try (java.util.zip.ZipInputStream zip = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(work))) {
+            java.util.zip.ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                if (entry.getName().equals("index.html")) {
+                    index = new String(zip.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                }
+            }
+        }
+        assertThat(index).contains("data-tpl-id=\"1\"").contains("<h1 data-tpl-id=");
+
+        send(get(base + "/marking"), null).andExpect(status().isNoContent());
+        String valid = marking("judul_utama", "Judul utama", 14);
+        send(put(base + "/marking"), valid).andExpect(status().isOk());
+        send(get(base + "/marking"), null).andExpect(jsonPath("$.fields[0].key").value("judul_utama"));
+        send(get("/api/providers/me/uploads"), null).andExpect(jsonPath("$.drafts[0].fieldCount").value(1));
+
+        // Elemen yang tidak ada di HTML asli (dibuat JavaScript), label kosong, dan kunci tidak valid ditolak.
+        send(put(base + "/marking"), marking("judul_utama", "Judul utama", 9999))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+        send(put(base + "/marking"), marking("judul_utama", " ", 14)).andExpect(status().isBadRequest());
+        send(put(base + "/marking"), marking("Judul Utama", "Judul", 14)).andExpect(status().isBadRequest());
+    }
+
+    private static String marking(String key, String label, int tplId) {
+        return """
+                {"pages":[{"file":"index.html","name":"Beranda"},{"file":"tentang.html","name":"Tentang"}],
+                 "sections":[{"id":"s1","page":"index.html","name":"Hero","tplId":13}],
+                 "fields":[{"key":"%s","label":"%s","type":"text","maxLength":30,"required":true,"order":1,
+                            "styles":[{"prop":"color"},{"prop":"font-size","min":24,"max":40,"unit":"px"}],
+                            "sectionId":"s1","elements":[{"page":"index.html","tplId":%d,"visibleIn":["mobile","desktop"]}]}],
+                 "theme":[{"var":"--primary","label":"Warna utama","type":"color"}]}""".formatted(key, label, tplId);
+    }
+
     // ---------- helper ----------
 
     private String uploadAndWait(String fileName, Path zipPath, String fixTemplateId) throws Exception {

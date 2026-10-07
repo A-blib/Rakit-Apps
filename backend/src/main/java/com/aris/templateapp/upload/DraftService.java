@@ -235,7 +235,7 @@ public class DraftService {
         boolean duplicate = templateRepository.existsByProviderIdAndNameIgnoreCaseAndIdNot(t.getProviderId(), t.getName(), t.getId());
         return new DraftResponse(t.getId(), t.getStatus(), t.getWizardStep(), t.getSourceFileName(), t.getSourceSize(),
                 t.getName(), t.getCategory(), t.getDescription(), List.copyOf(t.getKeywords()), t.getThumbnailUrl(),
-                t.getThumbnailSource(), t.getThumbnailView(), t.getTechInfo(), t.getWarningCount(), duplicate,
+                t.getThumbnailSource(), t.getThumbnailView(), t.getTechInfo(), t.getWarningCount(), t.getMarkingFieldCount(), duplicate,
                 t.getUpdatedAt());
     }
 }
