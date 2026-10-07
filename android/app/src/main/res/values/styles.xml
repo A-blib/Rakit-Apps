@@ -172,6 +172,14 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
     </style>
 
+    <!-- Tombol ikon toolbar editor Tandai: area sentuh 48dp, tanpa latar. -->
+    <style name="Widget.App.ToolbarIcon" parent="">
+        <item name="android:layout_width">@dimen/touch_target_min</item>
+        <item name="android:layout_height">@dimen/touch_target_min</item>
+        <item name="android:layout_marginHorizontal">@dimen/space_1</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+    </style>
+
     <!-- Baris checklist "Sebelum upload": ikon ✓ di kiri, teks biasa. -->
     <style name="Widget.App.ChecklistItem" parent="">
         <item name="android:layout_width">match_parent</item>

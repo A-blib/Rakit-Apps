@@ -214,6 +214,14 @@
     </fragment>
 
     <fragment
+        android:id="@+id/uploadTryFragment"
+        android:name="com.aris.templateapp.ui.upload.UploadTryFragment">
+        <argument
+            android:name="templateId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
         android:id="@+id/helpArticleFragment"
         android:name="com.aris.templateapp.ui.upload.HelpArticleFragment">
         <argument

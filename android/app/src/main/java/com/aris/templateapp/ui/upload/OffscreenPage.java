@@ -152,6 +152,10 @@ public class OffscreenPage {
         void onCaptured(@Nullable Bitmap bitmap);
     }
 
+    Context hostContext() {
+        return host.getContext();
+    }
+
     public int cssWidth() {
         return cssWidth;
     }

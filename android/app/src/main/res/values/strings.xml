@@ -268,6 +268,24 @@ MEMBUAT ZIP DI MAC
 3. Klik kanan → Kompres.
 
 Format yang didukung hanya ZIP. File RAR belum didukung."</string>
+    <string name="guide_mark_body">"Di langkah Tandai bagian, kamu memilih teks, gambar, link, dan tombol yang boleh diedit pembuat website. Tata letak tetap terkunci.
+
+CARA MENANDAI
+1. Website tampil per section seperti slide. Pindah section lewat strip di bawah.
+2. Ketuk elemen → elemen bergaris biru → isi bottom sheet: jenis isian, label, petunjuk, batas karakter.
+3. Pakai Induk/Anak untuk memperluas atau mempersempit pilihan.
+4. Elemen tersembunyi (menu HP, isi tab) dipilih lewat ikon daftar elemen.
+5. Tekan Simpan. Isian yang tersimpan bisa dicoba di langkah Coba.
+
+TIPS
+• Saran otomatis menandai judul, deskripsi, gambar, dan tombol sekaligus.
+• Teks yang ditulis dua kali (versi HP dan desktop) cukup dihubungkan ke isian yang sama.
+• Header/footer yang sama di beberapa halaman bisa ditandai sekali untuk semua halaman.
+• Centang gaya (warna, ukuran huruf, sudut) jika pembuat website boleh mengubahnya.
+• Pakai &lt;section&gt; atau data-section=\"Hero\" di HTML agar section terdeteksi rapi.
+• Teks yang dibuat JavaScript (mis. x-text Alpine) tidak bisa ditandai; tulis isinya langsung di HTML.
+
+Minimal 3 isian agar template bisa dikirim."</string>
     <string name="guide_rules_body">"Setelah ZIP diupload, server mengecek file-mu. Error membuat template belum bisa dilanjutkan; Peringatan boleh dilewati, tapi sebaiknya diperbaiki.
 
 WAJIB (ERROR)

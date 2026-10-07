@@ -247,6 +247,8 @@ public class UploadCheckViewModel extends ViewModel {
     /** Tahap C: siapkan situs di HP, lalu minta Fragment menjalankan halaman di WebView. */
     private void startDeviceCheck(UploadCheckDto check) {
         state.postValue(UploadCheckState.result(Phase.DEVICE_CHECK, check));
+        // ZIP baru (termasuk upload perbaikan): salinan situs lama di HP tidak berlaku lagi.
+        repository.forgetSite(check.templateId);
         Resource<File> site = repository.prepareSite(check.templateId, uri);
         Resource<UploadSettingsDto> settings = repository.settings();
         if (site.getStatus() != Resource.Status.SUCCESS || settings.getStatus() != Resource.Status.SUCCESS) {

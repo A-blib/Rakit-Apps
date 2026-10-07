@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Bottom sheet "Tandai elemen" (alur-fitur-upload.md bagian 7.3): induk/anak, jenis isian, label, petunjuk,
+    batas isian, gaya yang boleh diubah (bagian 7.11), hubungkan ke isian lain, hapus tandaan.
+-->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:paddingTop="@dimen/space_4"
+        android:paddingBottom="@dimen/space_6">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/mark_sheet_title"
+                android:textAppearance="@style/TextAppearance.App.Title" />
+
+            <TextView
+                android:id="@+id/element_tag"
+                style="@style/Widget.App.Badge" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/element_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="@style/TextAppearance.App.BodySmall"
+            android:textColor="@color/color_muted" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/parent_button"
+                style="@style/Widget.App.Button.Outlined.Compact"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mark_parent"
+                app:icon="@drawable/ic_arrow_back"
+                app:iconSize="@dimen/icon_size_small" />
+
+            <Button
+                android:id="@+id/child_button"
+                style="@style/Widget.App.Button.Outlined.Compact"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_2"
+                android:text="@string/mark_child"
+                app:icon="@drawable/ic_arrow_forward"
+                app:iconGravity="textEnd"
+                app:iconSize="@dimen/icon_size_small" />
+
+            <Button
+                android:id="@+id/section_button"
+                style="@style/Widget.App.Button.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_2"
+                android:text="@string/mark_make_section" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/Widget.App.SectionTitle"
+            android:layout_marginTop="@dimen/space_4"
+            android:text="@string/mark_type" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/type_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip android:id="@+id/type_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/mark_type_text" />
+            <com.google.android.material.chip.Chip android:id="@+id/type_paragraph" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/mark_type_paragraph" />
+            <com.google.android.material.chip.Chip android:id="@+id/type_image" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/mark_type_image" />
+            <com.google.android.material.chip.Chip android:id="@+id/type_link" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/mark_type_link" />
+            <com.google.android.material.chip.Chip android:id="@+id/type_button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/mark_type_button" />
+        </com.google.android.material.chip.ChipGroup>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/label_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_4"
+            android:hint="@string/mark_label"
+            app:counterEnabled="true"
+            app:counterMaxLength="60"
+            app:placeholderText="@string/mark_label_placeholder">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/label_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:importantForAutofill="no"
+                android:inputType="textCapSentences"
+                android:maxLength="60"
+                android:maxLines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/hint_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_3"
+            android:hint="@string/mark_hint"
+            app:placeholderText="@string/mark_hint_placeholder">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/hint_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:importantForAutofill="no"
+                android:inputType="textCapSentences"
+                android:maxLength="120"
+                android:maxLines="2" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:id="@+id/limits_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_3"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/max_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/mark_max_length">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/max_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:maxLength="4" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/required_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_4"
+                android:text="@string/mark_required" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/ratio_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_3"
+            android:fontFamily="@font/geist_mono_regular"
+            android:textAppearance="@style/TextAppearance.App.BodySmall"
+            android:visibility="gone" />
+
+        <TextView
+            style="@style/Widget.App.SectionTitle"
+            android:layout_marginTop="@dimen/space_4"
+            android:text="@string/mark_styles" />
+
+        <CheckBox
+            android:id="@+id/style_color"
+            style="@style/Widget.App.CheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mark_style_color" />
+
+        <CheckBox
+            android:id="@+id/style_background"
+            style="@style/Widget.App.CheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mark_style_background" />
+
+        <CheckBox
+            android:id="@+id/style_radius"
+            style="@style/Widget.App.CheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mark_style_radius" />
+
+        <CheckBox
+            android:id="@+id/style_font"
+            style="@style/Widget.App.CheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mark_style_font" />
+
+        <LinearLayout
+            android:id="@+id/font_range"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/font_min_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/mark_font_min">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/font_min_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:maxLength="3" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/font_max_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_3"
+                android:layout_weight="1"
+                android:hint="@string/mark_font_max">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/font_max_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:maxLength="3" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/link_button"
+            style="@style/Widget.App.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            android:paddingHorizontal="0dp"
+            android:text="@string/mark_link_existing"
+            app:icon="@drawable/ic_link"
+            app:iconSize="@dimen/icon_size_small" />
+
+        <Button
+            android:id="@+id/unmark_button"
+            style="@style/Widget.App.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="0dp"
+            android:text="@string/mark_unmark"
+            android:textColor="@color/color_error"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_4"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/cancel_button"
+                style="@style/Widget.App.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/action_cancel" />
+
+            <Button
+                android:id="@+id/save_button"
+                style="@style/Widget.App.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_3"
+                android:layout_weight="1"
+                android:text="@string/mark_save" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -14,7 +14,7 @@ import java.util.List;
 public enum Guide {
     // Dashboard Provider (alur-provider.md bagian 3.9)
     PREPARE_TEMPLATE(Audience.PROVIDER, R.string.guide_prepare_title, R.string.guide_prepare_body),
-    MARK_EDITABLE(Audience.PROVIDER, R.string.guide_mark_title, 0),
+    MARK_EDITABLE(Audience.PROVIDER, R.string.guide_mark_title, R.string.guide_mark_body),
     CHECK_RULES(Audience.PROVIDER, R.string.guide_rules_title, R.string.guide_rules_body),
     FIX_FAILED(Audience.PROVIDER, R.string.guide_fix_title, R.string.guide_fix_body),
     READ_NUMBERS(Audience.PROVIDER, R.string.guide_numbers_title, R.string.guide_numbers_body),

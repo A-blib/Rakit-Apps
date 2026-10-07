@@ -35,6 +35,7 @@ public class UploadOverviewDto {
         public String name;
         public String thumbnailUrl;
         public int wizardStep;
+        public int fieldCount;
         public String updatedAt;
         public String deleteAt;
         public boolean expiringSoon;

@@ -6,6 +6,7 @@ import com.aris.templateapp.data.remote.dto.DraftDto;
 import com.aris.templateapp.data.remote.dto.DraftInfoDto;
 import com.aris.templateapp.data.remote.dto.DraftStepDto;
 import com.aris.templateapp.data.remote.dto.HelpArticleDto;
+import com.aris.templateapp.data.remote.dto.MarkingDto;
 import com.aris.templateapp.data.remote.dto.ReportIssueDto;
 import com.aris.templateapp.data.remote.dto.UploadCheckDto;
 import com.aris.templateapp.data.remote.dto.UploadOverviewDto;
@@ -69,6 +70,18 @@ public interface UploadApi {
     @Streaming
     @GET("providers/me/uploads/{id}/source")
     Call<ResponseBody> source(@Path("id") String templateId);
+
+    /** Salinan HTML bernomor data-tpl-id untuk mode tandai. */
+    @Streaming
+    @GET("providers/me/uploads/{id}/work-package")
+    Call<ResponseBody> workPackage(@Path("id") String templateId);
+
+    /** 204 (body null) jika belum pernah disimpan. */
+    @GET("providers/me/uploads/{id}/marking")
+    Call<MarkingDto> marking(@Path("id") String templateId);
+
+    @PUT("providers/me/uploads/{id}/marking")
+    Call<MarkingDto> saveMarking(@Path("id") String templateId, @Body MarkingDto body);
 
     @PUT("providers/me/uploads/{id}/device-warnings")
     Call<DraftDto> deviceWarnings(@Path("id") String templateId, @Body DeviceWarningsDto body);

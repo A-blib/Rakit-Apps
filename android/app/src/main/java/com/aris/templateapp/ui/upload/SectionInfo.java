@@ -2,6 +2,7 @@ package com.aris.templateapp.ui.upload;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
+import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
@@ -13,6 +14,9 @@ public class SectionInfo {
     public int top;
     public int height;
     public String tag;
+    /** Nomor data-tpl-id elemen section (null untuk "Halaman" atau situs tanpa nomor). */
+    @SerializedName("id")
+    public Integer tplId;
 
     /** Hasil evaluateJavascript berupa string JSON yang dibungkus tanda kutip, jadi di-parse dua kali. */
     static List<SectionInfo> parse(String evaluated) {

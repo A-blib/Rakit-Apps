@@ -143,8 +143,115 @@
     <string name="upload_saved">Tersimpan</string>
     <string name="upload_save_failed">Belum tersimpan. Periksa koneksi.</string>
 
-    <!-- Langkah 4 sementara (dibangun di Fase 17) -->
-    <string name="upload_mark_pending">Langkah menandai bagian sedang disiapkan.</string>
+    <!-- Langkah 5 sementara (dibangun di Fase 18) -->
+    <string name="upload_try_pending">Langkah mencoba template sedang disiapkan.</string>
+
+    <!-- Langkah 4: Tandai bagian (bagian 7) -->
+    <string name="mark_counter">%1$d isian ditandai (minimal %2$d)</string>
+    <string name="mark_counter_ok">✓ %1$d isian ditandai</string>
+    <string name="mark_slide">Slide %1$d/%2$d · %3$s</string>
+    <string name="mark_unsaved">● %1$d perubahan belum disimpan</string>
+    <string name="mark_all_saved">Semua tandaan tersimpan</string>
+    <string name="mark_save">Simpan</string>
+    <string name="mark_try">Coba</string>
+    <string name="mark_saved">Tandaan tersimpan</string>
+    <string name="mark_save_failed">Tandaan gagal disimpan. Periksa isian lalu coba lagi.</string>
+    <string name="mark_error_label">Ada isian tanpa label. Beri label dulu.</string>
+    <string name="mark_error_key">Ada kunci isian ganda.</string>
+    <string name="mark_try_unsaved_title">Ada %1$d perubahan belum disimpan</string>
+    <string name="mark_try_unsaved_body">Simpan dulu agar bisa dicoba.</string>
+    <string name="mark_save_and_try">Simpan &amp; coba</string>
+    <string name="mark_exit_unsaved_body">Ada perubahan yang belum disimpan.</string>
+    <string name="mark_save_and_exit">Simpan &amp; keluar</string>
+    <string name="mark_exit_discard">Keluar tanpa simpan</string>
+    <string name="mark_restore_title">Pulihkan perubahan?</string>
+    <string name="mark_restore_body">Ada perubahan yang belum disimpan dari sesi sebelumnya. Pulihkan?</string>
+    <string name="mark_restore">Pulihkan</string>
+    <string name="mark_discard">Buang</string>
+    <string name="mark_generated">Elemen ini dibuat oleh JavaScript dan tidak bisa ditandai. Tulis isinya langsung di HTML jika ingin bisa diedit.</string>
+    <string name="mark_loading_page">Memuat halaman…</string>
+    <string name="mark_suggest">Saran: %1$d elemen lagi biasanya diedit</string>
+    <string name="mark_mark_all">Tandai semua</string>
+    <string name="mark_suggest_added">%1$d isian ditambahkan</string>
+    <string name="mark_similar">“%1$s” mirip isian yang sudah ditandai tapi belum dihubungkan.</string>
+    <string name="mark_link_now">Hubungkan</string>
+    <string name="cd_undo">Urungkan</string>
+    <string name="cd_redo">Ulangi</string>
+    <string name="cd_element_list">Daftar elemen</string>
+    <string name="cd_fields_panel">Semua isian</string>
+    <string name="cd_sections">Daftar section</string>
+    <string name="cd_mark_help">Bantuan menandai</string>
+    <string name="cd_page_select">Pilih halaman</string>
+    <string name="cd_slide">Section %1$d: %2$s</string>
+
+    <!-- Bottom sheet Tandai elemen (bagian 7.3) -->
+    <string name="mark_sheet_title">Tandai elemen</string>
+    <string name="mark_parent">Induk</string>
+    <string name="mark_child">Anak</string>
+    <string name="mark_type">Jenis isian</string>
+    <string name="mark_type_text">Teks pendek</string>
+    <string name="mark_type_paragraph">Paragraf</string>
+    <string name="mark_type_image">Gambar</string>
+    <string name="mark_type_link">Link</string>
+    <string name="mark_type_button">Tombol</string>
+    <string name="mark_label">Label untuk pengguna</string>
+    <string name="mark_label_placeholder">Mis. Judul utama</string>
+    <string name="mark_label_required">Label wajib diisi</string>
+    <string name="mark_hint">Petunjuk (opsional)</string>
+    <string name="mark_hint_placeholder">Mis. Tulis nama usahamu, maks 3 kata</string>
+    <string name="mark_max_length">Maks karakter</string>
+    <string name="mark_required">Wajib diisi</string>
+    <string name="mark_ratio">Rasio gambar %1$s (otomatis dari gambar asli)</string>
+    <string name="mark_styles">Juga boleh diubah (gaya)</string>
+    <string name="mark_style_color">Warna teks</string>
+    <string name="mark_style_background">Warna latar</string>
+    <string name="mark_style_font">Ukuran huruf</string>
+    <string name="mark_style_radius">Sudut</string>
+    <string name="mark_font_min">Min (px)</string>
+    <string name="mark_font_max">Maks (px)</string>
+    <string name="mark_font_range_invalid">Rentang tidak valid</string>
+    <string name="mark_link_existing">Hubungkan ke isian lain</string>
+    <string name="mark_link_pick_title">Elemen ini ikut diubah oleh isian…</string>
+    <string name="mark_linked">Dihubungkan ke “%1$s”</string>
+    <string name="mark_unmark">Hapus tandaan</string>
+    <string name="mark_only_desktop">HANYA DESKTOP</string>
+    <string name="mark_only_mobile">HANYA HP</string>
+    <string name="mark_make_section">Jadikan section</string>
+
+    <!-- Bagian yang sama di beberapa halaman (bagian 7.6) -->
+    <string name="mark_same_title">Bagian ini sama di %1$d halaman</string>
+    <string name="mark_same_body">Tandai sekali untuk semua halaman? Pembuat website cukup mengganti sekali.</string>
+    <string name="mark_same_yes">Semua halaman</string>
+    <string name="mark_same_no">Halaman ini saja</string>
+
+    <!-- Daftar elemen, panel isian, section, tema -->
+    <string name="mark_elements_title">Elemen di section ini</string>
+    <string name="mark_element_hidden">TERSEMBUNYI</string>
+    <string name="mark_elements_empty">Tidak ada elemen teks atau gambar di section ini.</string>
+    <string name="mark_fields_title">Semua isian (%1$d)</string>
+    <string name="mark_fields_empty">Belum ada isian. Ketuk elemen di slide untuk menandai.</string>
+    <string name="mark_field_detail">%1$s · %2$s · %3$d elemen</string>
+    <string name="mark_theme_var">%1$s · %2$s</string>
+    <string name="mark_section_row">%1$d · %2$s</string>
+    <string name="mark_strip_chip">%1$d %2$s</string>
+    <string name="mark_strip_chip_marked">%1$d ✓ %2$s</string>
+    <string name="mark_theme_title">Tema global</string>
+    <string name="mark_theme_body">Variabel CSS di template. Beri label agar pembuat website bisa mengganti warna atau ukuran ini untuk seluruh website.</string>
+    <string name="mark_theme_label_hint">Label, mis. Warna utama</string>
+    <string name="mark_sections_title">Section di halaman ini</string>
+    <string name="mark_section_rename">Ganti nama</string>
+    <string name="mark_section_merge">Gabung dengan berikutnya</string>
+    <string name="mark_section_delete">Hapus section</string>
+    <string name="mark_section_name">Nama section</string>
+
+    <!-- Tur singkat pertama kali (bagian 7.10 A6) -->
+    <string name="mark_tour_1">Ketuk elemen di slide untuk menandainya sebagai bagian yang boleh diedit pembuat website.</string>
+    <string name="mark_tour_2">Strip di bawah berisi section halaman ini. Ketuk untuk pindah slide.</string>
+    <string name="mark_tour_3">Ikon daftar membantu memilih elemen yang tersembunyi atau terlalu kecil untuk diketuk.</string>
+    <string name="mark_tour_4">Tekan Simpan sesekali. Tandaan yang tersimpan bisa dicoba, dan minimal 3 isian dibutuhkan untuk Kirim.</string>
+    <string name="mark_tour_count">%1$d/4</string>
+    <string name="mark_tour_next">Lanjut</string>
+    <string name="mark_tour_done">Mengerti</string>
 
     <!-- Detail template -->
     <string name="detail_continue_draft">Lanjutkan draft</string>

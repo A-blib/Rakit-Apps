@@ -19,6 +19,7 @@ import com.aris.templateapp.data.remote.dto.DraftDto;
 import com.aris.templateapp.data.remote.dto.DraftInfoDto;
 import com.aris.templateapp.data.remote.dto.DraftStepDto;
 import com.aris.templateapp.data.remote.dto.HelpArticleDto;
+import com.aris.templateapp.data.remote.dto.MarkingDto;
 import com.aris.templateapp.data.remote.dto.ReportIssueDto;
 import com.aris.templateapp.data.remote.dto.UploadCheckDto;
 import com.aris.templateapp.data.remote.dto.UploadOverviewDto;
@@ -54,6 +55,7 @@ public class UploadRepository {
         void onWaitingForNetwork(int attempt);
     }
 
+    private static final String WORK_PREFIX = "work-";
     private static final MediaType OCTET_STREAM = MediaType.get("application/octet-stream");
     // Percobaan ulang otomatis saat sinyal putus: 2, 4, 8, 16, 32 detik.
     private static final int MAX_RETRIES = 5;
@@ -237,7 +239,7 @@ public class UploadRepository {
     public Resource<Boolean> delete(String templateId) {
         Resource<Boolean> result = executeEmpty(api.delete(templateId));
         if (result.getStatus() == Resource.Status.SUCCESS) {
-            siteStore.delete(templateId);
+            forgetSite(templateId);
         }
         return result;
     }
@@ -281,6 +283,51 @@ public class UploadRepository {
         } catch (IOException e) {
             return Resource.error(errorParser.parse(e));
         }
+    }
+
+    /** Tandaan tersimpan; data kosong (bukan error) jika belum pernah disimpan. */
+    @WorkerThread
+    public Resource<MarkingDto> marking(String templateId) {
+        try {
+            Response<MarkingDto> response = api.marking(templateId).execute();
+            if (!response.isSuccessful()) {
+                return Resource.error(errorParser.parse(response));
+            }
+            return Resource.success(response.body() != null ? response.body() : new MarkingDto());
+        } catch (IOException e) {
+            return Resource.error(errorParser.parse(e));
+        }
+    }
+
+    @WorkerThread
+    public Resource<MarkingDto> saveMarking(String templateId, MarkingDto marking) {
+        return execute(api.saveMarking(templateId, marking));
+    }
+
+    /**
+     * Salinan bernomor untuk mode tandai, diunduh ulang setiap kali editor dibuka (ZIP bisa sudah diganti lewat
+     * upload perbaikan). Disimpan terpisah dari salinan asli yang dipakai thumbnail.
+     */
+    @WorkerThread
+    public Resource<File> prepareWorkSite(String templateId) {
+        try {
+            Response<ResponseBody> response = api.workPackage(templateId).execute();
+            ResponseBody body = response.body();
+            if (!response.isSuccessful() || body == null) {
+                return Resource.error(errorParser.parse(response));
+            }
+            try (InputStream in = body.byteStream()) {
+                return Resource.success(siteStore.extract(WORK_PREFIX + templateId, in));
+            }
+        } catch (IOException e) {
+            return Resource.error(errorParser.parse(e));
+        }
+    }
+
+    /** Salinan situs di HP sudah usang (mis. setelah upload perbaikan lolos). */
+    public void forgetSite(String templateId) {
+        siteStore.delete(templateId);
+        siteStore.delete(WORK_PREFIX + templateId);
     }
 
     private static void sleep(long millis) {

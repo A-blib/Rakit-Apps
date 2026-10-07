@@ -20,6 +20,8 @@ public class DraftDto {
     public String thumbnailView;
     public TechInfoDto techInfo;
     public int warningCount;
+    /** Jumlah isian yang sudah disimpan (langkah 4). */
+    public int fieldCount;
     /** Nama sama dengan template lain milik provider ini (Peringatan). */
     public boolean nameDuplicate;
     public String updatedAt;
