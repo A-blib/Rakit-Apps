@@ -32,6 +32,7 @@ public enum ErrorCode {
     UPLOAD_OFFSET_MISMATCH(HttpStatus.CONFLICT, "Posisi potongan upload tidak cocok. Tanyakan posisi terakhir lalu lanjutkan."),
     UPLOAD_INCOMPLETE(HttpStatus.CONFLICT, "Upload belum selesai."),
     TEMPLATE_NOT_EDITABLE(HttpStatus.CONFLICT, "Template ini tidak bisa diubah pada status sekarang."),
+    IMAGE_INVALID(HttpStatus.BAD_REQUEST, "Gambar harus JPG, PNG, atau WebP, maksimal 1 MB."),
     ALREADY_REPORTED(HttpStatus.CONFLICT, "Masalah ini sudah dilaporkan."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Silakan masuk terlebih dahulu."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Data tidak ditemukan."),

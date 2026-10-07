@@ -3,6 +3,11 @@ package com.aris.templateapp.upload;
 import com.aris.templateapp.config.OpenApiConfig;
 import com.aris.templateapp.security.CurrentUser;
 import com.aris.templateapp.upload.dto.CreateUploadSessionRequest;
+import com.aris.templateapp.upload.dto.DeviceWarningsRequest;
+import com.aris.templateapp.upload.dto.DraftInfoRequest;
+import com.aris.templateapp.upload.dto.DraftResponse;
+import com.aris.templateapp.upload.dto.DraftStepRequest;
+import com.aris.templateapp.upload.dto.UploadSettingsResponse;
 import com.aris.templateapp.upload.dto.ReportIssueRequest;
 import com.aris.templateapp.upload.dto.UploadCheckResponse;
 import com.aris.templateapp.upload.dto.UploadOverviewResponse;
@@ -16,7 +21,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +47,7 @@ import java.util.UUID;
 public class UploadController {
 
     private final UploadService uploadService;
+    private final DraftService draftService;
     private final CurrentUser currentUser;
 
     @Operation(summary = "Halaman awal tab Upload: perlu diperbaiki, sedang dicek, draft, kuota")
@@ -94,5 +104,54 @@ public class UploadController {
     @ResponseStatus(HttpStatus.CREATED)
     public void report(@PathVariable UUID issueId, @Valid @RequestBody(required = false) ReportIssueRequest request) {
         uploadService.report(currentUser.id(), issueId, request == null ? null : request.reason());
+    }
+
+    // ---------- draft: langkah 3 dan seterusnya ----------
+
+    @Operation(summary = "Pengaturan upload untuk app (batas ukuran, potongan, host luar yang boleh dimuat WebView)")
+    @GetMapping("/settings")
+    public UploadSettingsResponse settings() {
+        return draftService.settings(currentUser.id());
+    }
+
+    @Operation(summary = "Isi draft (Info template, thumbnail, info teknis, langkah terakhir)")
+    @GetMapping("/{templateId}")
+    public DraftResponse draft(@PathVariable UUID templateId) {
+        return draftService.draft(currentUser.id(), templateId);
+    }
+
+    @Operation(summary = "Simpan otomatis Info template (field null tidak diubah)")
+    @PatchMapping("/{templateId}/info")
+    public DraftResponse updateInfo(@PathVariable UUID templateId, @Valid @RequestBody DraftInfoRequest request) {
+        return draftService.updateInfo(currentUser.id(), templateId, request);
+    }
+
+    @Operation(summary = "Catat langkah wizard yang sedang dibuka (3–6)")
+    @PatchMapping("/{templateId}/step")
+    public DraftResponse updateStep(@PathVariable UUID templateId, @Valid @RequestBody DraftStepRequest request) {
+        return draftService.updateStep(currentUser.id(), templateId, request.step());
+    }
+
+    @Operation(summary = "Ganti thumbnail (body = gambar JPG/PNG/WebP, maks 1 MB)",
+            description = "source: auto · section · custom; view: mobile · desktop")
+    @PutMapping(value = "/{templateId}/thumbnail", consumes = {MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE,
+            "image/webp", MediaType.APPLICATION_OCTET_STREAM_VALUE})
+    public DraftResponse updateThumbnail(@PathVariable UUID templateId, @RequestParam String source,
+                                         @RequestParam String view, HttpServletRequest request) throws IOException {
+        byte[] image = request.getInputStream().readNBytes(DraftService.MAX_THUMBNAIL_BYTES + 1);
+        return draftService.updateThumbnail(currentUser.id(), templateId, image, source, view);
+    }
+
+    @Operation(summary = "Unduh ZIP template untuk ditampilkan di HP")
+    @GetMapping(value = "/{templateId}/source", produces = "application/zip")
+    public ResponseEntity<Resource> source(@PathVariable UUID templateId) {
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/zip"))
+                .body(new FileSystemResource(draftService.source(currentUser.id(), templateId)));
+    }
+
+    @Operation(summary = "Peringatan dari WebView HP (tahap C): error JavaScript & tampilan melebar")
+    @PutMapping("/{templateId}/device-warnings")
+    public DraftResponse deviceWarnings(@PathVariable UUID templateId, @Valid @RequestBody DeviceWarningsRequest request) {
+        return draftService.deviceWarnings(currentUser.id(), templateId, request);
     }
 }

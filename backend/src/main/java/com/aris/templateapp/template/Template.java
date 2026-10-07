@@ -86,6 +86,13 @@ public class Template {
 
     private Instant expiryNotifiedAt;
 
+    // auto · section · custom, dan tampilan asal thumbnail (mobile · desktop), bagian 6.2.
+    @Column(length = 10)
+    private String thumbnailSource;
+
+    @Column(length = 10)
+    private String thumbnailView;
+
     public Template(UUID providerId, String name, WebsitePurpose category) {
         this.providerId = providerId;
         this.name = name;

@@ -29,6 +29,8 @@ import java.util.UUID;
 @Component
 public class UploadStorage {
 
+    private static final String[] THUMBNAIL_EXTENSIONS = {"jpg", "png", "webp"};
+
     private final Path root;
 
     public UploadStorage(AppProperties properties) {
@@ -102,6 +104,36 @@ public class UploadStorage {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /** Menyimpan thumbnail (menggantikan yang lama, apa pun formatnya). */
+    public void writeThumbnail(UUID templateId, byte[] image, String extension) {
+        try {
+            Path folder = root.resolve("templates").resolve(templateId.toString());
+            Files.createDirectories(folder);
+            for (String ext : THUMBNAIL_EXTENSIONS) {
+                Files.deleteIfExists(folder.resolve("thumbnail." + ext));
+            }
+            Files.write(folder.resolve("thumbnail." + extension), image);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /** File thumbnail template, atau null jika belum ada. */
+    public Path thumbnail(UUID templateId) {
+        Path folder = root.resolve("templates").resolve(templateId.toString());
+        for (String ext : THUMBNAIL_EXTENSIONS) {
+            Path file = folder.resolve("thumbnail." + ext);
+            if (Files.exists(file)) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    public Path sourceZipPath(UUID templateId) {
+        return sourceZip(templateId);
     }
 
     private Path sessionFile(UUID sessionId) {

@@ -50,6 +50,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/templates").permitAll()
                         // Artikel Panduan pengecekan upload (alur-fitur-upload.md 5.11) bisa dibaca siapa saja.
                         .requestMatchers(HttpMethod.GET, "/api/help/articles/*").permitAll()
+                        // Thumbnail template tayang tampil di galeri tamu; pemeriksaan pemilik untuk draft ada di controller.
+                        .requestMatchers(HttpMethod.GET, "/api/templates/*/thumbnail").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
                 // Filter JWT dipasang sebelum filter login bawaan Spring agar user sudah dikenali lebih dulu.

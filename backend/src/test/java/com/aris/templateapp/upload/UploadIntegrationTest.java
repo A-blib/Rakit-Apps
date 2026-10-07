@@ -25,10 +25,12 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -233,6 +235,73 @@ class UploadIntegrationTest {
                 .andExpect(jsonPath("$.code").value("CASE_MISMATCH"))
                 .andExpect(jsonPath("$.howToFix").isNotEmpty());
         mockMvc.perform(get("/api/help/articles/DOCUMENT_WRITE")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void draftInfoThumbnailStepAndDeviceWarnings() throws Exception {
+        String templateId = uploadAndWait("toko-kue.zip", FIXTURES.resolve("_DASAR/bersih.zip"), null);
+        String base = "/api/providers/me/uploads/" + templateId;
+
+        send(get(base), null).andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Toko Kue"))
+                .andExpect(jsonPath("$.category").doesNotExist())
+                .andExpect(jsonPath("$.techInfo.responsive").value(true));
+
+        // Simpan otomatis per isian: field yang tidak dikirim tidak berubah; kata kunci dirapikan.
+        send(patch(base + "/info"), "{\"category\":\"umkm\",\"keywords\":[\" Kue \",\"kue\",\"Kuliner\",\"\"]}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Toko Kue"))
+                .andExpect(jsonPath("$.category").value("umkm"))
+                .andExpect(jsonPath("$.keywords", contains("kue", "kuliner")));
+        send(patch(base + "/info"), "{\"description\":\"Landing page untuk toko kue rumahan.\"}")
+                .andExpect(jsonPath("$.description").value("Landing page untuk toko kue rumahan."))
+                .andExpect(jsonPath("$.category").value("umkm"));
+        send(patch(base + "/info"), "{\"category\":\"toko\"}").andExpect(status().isBadRequest());
+        send(patch(base + "/info"), "{\"keywords\":[\"kata-kunci-yang-terlalu-panjang\"]}").andExpect(status().isBadRequest());
+
+        // Nama sama dengan template lain milik provider sendiri = Peringatan.
+        jdbc.update("INSERT INTO templates (provider_id, name, category, status) VALUES (?, 'Toko Roti', 'umkm', 'published')", providerId);
+        send(patch(base + "/info"), "{\"name\":\"toko roti\"}").andExpect(jsonPath("$.nameDuplicate").value(true));
+
+        send(patch(base + "/step"), "{\"step\":4}").andExpect(jsonPath("$.wizardStep").value(4));
+        send(patch(base + "/step"), "{\"step\":9}").andExpect(status().isBadRequest());
+
+        // Thumbnail: gambar sungguhan (dikenali dari isinya), maks 1 MB; draft hanya bisa dilihat pemiliknya.
+        byte[] png = java.util.Base64.getDecoder().decode(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+        String thumb = mockMvc.perform(put(base + "/thumbnail").param("source", "auto").param("view", "mobile")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).contentType(MediaType.IMAGE_PNG).content(png))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.thumbnailSource").value("auto"))
+                .andReturn().getResponse().getContentAsString();
+        String url = JsonPath.read(thumb, "$.thumbnailUrl");
+        assertThat(url).startsWith("/api/templates/" + templateId + "/thumbnail?v=");
+        send(get("/api/templates/" + templateId + "/thumbnail"), null).andExpect(status().isOk())
+                .andExpect(result -> assertThat(result.getResponse().getContentType()).isEqualTo("image/png"));
+        mockMvc.perform(get("/api/templates/" + templateId + "/thumbnail")).andExpect(status().isNotFound());
+        mockMvc.perform(put(base + "/thumbnail").param("source", "auto").param("view", "mobile")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token).contentType(MediaType.IMAGE_PNG)
+                        .content("bukan gambar sama sekali".getBytes()))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("IMAGE_INVALID"));
+
+        // ZIP bisa diunduh lagi untuk ditampilkan di HP.
+        send(get(base + "/source"), null).andExpect(status().isOk())
+                .andExpect(result -> assertThat(result.getResponse().getContentAsByteArray())
+                        .isEqualTo(Files.readAllBytes(FIXTURES.resolve("_DASAR/bersih.zip"))));
+
+        // Peringatan tahap C dari WebView: menggantikan hasil HP sebelumnya, bukan menumpuk.
+        String warning = "{\"warnings\":[{\"code\":\"JS_RUNTIME_ERROR\",\"message\":\"main.js baris 3: slider tidak ditemukan\","
+                + "\"file\":\"js/main.js\",\"line\":3}]}";
+        send(put(base + "/device-warnings"), warning).andExpect(status().isOk()).andExpect(jsonPath("$.warningCount").value(1));
+        send(put(base + "/device-warnings"), warning).andExpect(jsonPath("$.warningCount").value(1));
+        send(get(base + "/check"), null).andExpect(jsonPath("$.check.warnings", hasSize(1)))
+                .andExpect(jsonPath("$.check.warnings[0].code").value("JS_RUNTIME_ERROR"));
+        send(put(base + "/device-warnings"), "{\"warnings\":[{\"code\":\"BASE_HREF\",\"message\":\"x\"}]}")
+                .andExpect(status().isBadRequest());
+
+        send(get("/api/providers/me/uploads/settings"), null)
+                .andExpect(jsonPath("$.maxZipBytes").value(20971520))
+                .andExpect(jsonPath("$.allowedHosts", hasItem("cdn.jsdelivr.net")))
+                .andExpect(jsonPath("$.allowedHosts", hasItem("www.youtube.com")));
     }
 
     // ---------- helper ----------
