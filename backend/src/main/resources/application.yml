@@ -84,6 +84,11 @@ app:
     known-libraries:
       - { name: Alpine.js, version: 3.14.1, sha256: 358d9afbb1ab5befa2f48061a30776e5bcd7707f410a606ba985f98bc3b1c034 }
       - { name: jQuery, version: 3.7.1, sha256: fc9a93dd241f6b045cbff0481cf4e1901becd0e12fb45166a8f17f95823f0b1a }
+      - { name: jQuery, version: 3.6.4, sha256: a0fe8723dcf55da64d06b25446d0a8513e52527c45afcb37073465f9c6f352af }
+      - { name: jQuery, version: 3.6.0, sha256: ff1523fb7389539c84c65aba19260648793bb4f5e29329d2ee8804bc37a3fe6e }
+      - { name: jQuery, version: 3.5.1, sha256: f7f6a5894f1d19ddad6fa392b2ece2c5e578cbf7da4ea805b6885eb6985b6e3d }
+      - { name: jQuery, version: 3.4.1, sha256: 0925e8ad7bd971391a8b1e98be8e87a6971919eb5b60c196485941c3c1df089a }
+      - { name: jQuery, version: 3.3.1, sha256: 160a426ff2894252cd7cebbdd6d6b7da8fcd319c65b70468f10b6690c45d02ef }
       - { name: Bootstrap JS, version: 5.3.3, sha256: 0833b2e9c3a26c258476c46266e6877fc75218625162e0460be9a3a098a61c6c }
       - { name: AOS, version: 2.3.4, sha256: a5005b2e414770fd5ccb40bc221a12771966d02b5c1f9c89da48bd8e3811d377 }
       - { name: GSAP, version: 3.12.5, sha256: 28033e449a31ebcc396e5be8b13b63152bf03094288fb5867034321927bce087 }

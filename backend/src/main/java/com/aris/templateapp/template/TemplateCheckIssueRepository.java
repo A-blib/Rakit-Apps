@@ -9,6 +9,6 @@ public interface TemplateCheckIssueRepository extends JpaRepository<TemplateChec
 
     List<TemplateCheckIssue> findByCheckId(UUID checkId);
 
-    // Urutan tetap (per kode aturan) agar daftar masalah tidak berpindah-pindah setiap kali dimuat ulang.
-    List<TemplateCheckIssue> findByCheckIdOrderBySeverityAscCodeAsc(UUID checkId);
+    // Urutan tetap (per kode aturan, lalu file & baris) agar daftar masalah tidak berpindah-pindah setiap kali dimuat ulang.
+    List<TemplateCheckIssue> findByCheckIdOrderBySeverityAscCodeAscFileAscLineAsc(UUID checkId);
 }

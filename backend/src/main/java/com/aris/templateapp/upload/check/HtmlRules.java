@@ -154,6 +154,9 @@ final class HtmlRules {
 
     private void checkDynamicHtmlInScripts() {
         for (CheckContext.JsSource js : ctx.ownScripts()) {
+            if (js.file().endsWith(".min.js")) {
+                continue; // file .min.js hampir selalu library; yang dicari adalah konten buatan provider sendiri
+            }
             String code = JsScanner.stripComments(js.code());
             Matcher m = DYNAMIC_HTML.matcher(code);
             if (m.find()) {

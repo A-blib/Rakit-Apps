@@ -169,8 +169,9 @@ CASES = {
               "index.html": page(scripts='<script type="module" src="assets/index-a1b2c3.js"></script>')})),
     "UNBUILT_RESOURCE": (
         site({"css/style.scss": "$warna: #8b4513;\nbody { color: $warna; }",
-              "index.html": with_body('<include src="partials/header.html"></include>')}),
-        site({"README.md": "# Toko Kue"})),
+              "index.html": page(head_extra='<link rel="stylesheet" href="css/style.scss">\n')}),
+        site({"README.md": "# Toko Kue", "sass/_dasar.scss": "$warna: #8b4513;"})),
+    "SOURCE_FILES_INCLUDED": (site({"sass/_dasar.scss": "$warna: #8b4513;\nbody { color: $warna; }"}), site()),
     "CASE_MISMATCH": (site({"index.html": page().replace("img/hero.png", "img/Hero.png")}), site()),
     "FILE_NAME_STYLE": (site({"img/foto produk (1).png": PNG,
                               "index.html": with_body('<img src="img/foto%20produk%20(1).png" alt="Produk">')}),

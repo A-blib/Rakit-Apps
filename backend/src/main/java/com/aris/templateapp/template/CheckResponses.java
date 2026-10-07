@@ -34,7 +34,7 @@ public class CheckResponses {
     }
 
     public CheckResponse of(TemplateCheck check) {
-        List<TemplateCheckIssue> issues = issueRepository.findByCheckIdOrderBySeverityAscCodeAsc(check.getId());
+        List<TemplateCheckIssue> issues = issueRepository.findByCheckIdOrderBySeverityAscCodeAscFileAscLineAsc(check.getId());
         Set<UUID> reported = reportRepository.findByIssueIdIn(issues.stream().map(TemplateCheckIssue::getId).toList())
                 .stream().map(CheckReport::getIssueId).collect(Collectors.toSet());
         return new CheckResponse(check.getVersion(), check.getStatus(), check.getStage(), check.getFinishedAt(),

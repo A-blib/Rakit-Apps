@@ -28,6 +28,9 @@ public enum CheckRule {
     TOO_MANY_PAGES(ERROR, 1, "Halaman HTML terlalu banyak"),
     SOURCE_NOT_BUILT(ERROR, 1, "Sepertinya ini kode sumber, bukan hasil build"),
     UNBUILT_RESOURCE(ERROR, 1, "Ada file yang belum di-build"),
+    // Keputusan Aris (7 Okt 2026): file sumber .scss/.less yang tidak dipakai HTML tidak diabaikan diam-diam,
+    // tetapi dilaporkan sebagai Peringatan agar provider tahu file itu ikut terupload.
+    SOURCE_FILES_INCLUDED(WARNING, 1, "Ada file sumber yang ikut terupload"),
     CASE_MISMATCH(ERROR, 1, "Huruf besar/kecil nama file tidak cocok"),
     FILE_NAME_STYLE(WARNING, 1, "Nama file memakai spasi atau karakter khusus"),
 

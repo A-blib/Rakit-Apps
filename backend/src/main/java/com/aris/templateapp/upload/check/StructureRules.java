@@ -4,6 +4,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -103,6 +104,9 @@ final class StructureRules {
     }
 
     private void checkFileTypes(boolean sourceNotBuilt) {
+        Set<String> referenced = referencedStylesheets();
+        boolean hasBuiltCss = !ctx.files.withExtension("css").isEmpty();
+        List<String> leftoverSources = new ArrayList<>();
         for (String path : ctx.files.paths()) {
             String ext = Texts.extension(path);
             if (ALLOWED.contains(ext)) {
@@ -112,8 +116,12 @@ final class StructureRules {
                 ctx.findings.add(CheckRule.SERVER_SCRIPT, "Template ini butuh server (PHP): " + path + ".", path, null,
                         "App hanya mendukung website statis HTML/CSS/JS. Ubah halaman PHP menjadi file .html.");
             } else if (UNBUILT_STYLES.contains(ext)) {
-                ctx.findings.add(CheckRule.UNBUILT_RESOURCE, path + " adalah file ." + ext + " mentah yang belum di-build.",
-                        path, null, "Build dulu di laptopmu (mis. npm run build) lalu upload isi folder dist/.");
+                if (referenced.contains(path) || !hasBuiltCss) {
+                    ctx.findings.add(CheckRule.UNBUILT_RESOURCE, path + " adalah file ." + ext + " mentah yang belum di-build.",
+                            path, null, "Build dulu di laptopmu (mis. npm run build) lalu upload isi folder dist/.");
+                } else {
+                    leftoverSources.add(path);
+                }
             } else if (SOURCE_CODE.contains(ext) && sourceNotBuilt) {
                 // Sudah dijelaskan oleh SOURCE_NOT_BUILT; tidak perlu satu error per file sumber.
                 continue;
@@ -123,6 +131,26 @@ final class StructureRules {
                         "Hapus file ini. Yang boleh: HTML, CSS, JS, gambar (png, jpg, webp, gif, svg, ico), font, txt, md.");
             }
         }
+        if (!leftoverSources.isEmpty()) {
+            ctx.findings.add(CheckRule.SOURCE_FILES_INCLUDED, leftoverSources.size() + " file sumber (.scss/.less) ikut terupload, mis. "
+                            + String.join(", ", leftoverSources.subList(0, Math.min(3, leftoverSources.size())))
+                            + ". Website memakai CSS hasil build, jadi file ini tidak dipakai.", leftoverSources.get(0), null,
+                    "Hapus folder sumber (mis. sass/) dari ZIP agar paket lebih kecil dan rapi.");
+        }
+    }
+
+    /** File yang dimuat lewat {@code <link href>} di halaman mana pun (untuk tahu apakah .scss dipakai langsung). */
+    private Set<String> referencedStylesheets() {
+        Set<String> result = new HashSet<>();
+        for (Map.Entry<String, Document> page : ctx.pages.entrySet()) {
+            for (Element link : page.getValue().select("link[href]")) {
+                Ref ref = Ref.of(page.getKey(), link.attr("href"));
+                if (ref.isLocal() && ref.path() != null) {
+                    result.add(ref.path());
+                }
+            }
+        }
+        return result;
     }
 
     /** Tag {@code <include>} atau {@code @@include(...)}: "resep" HTML yang belum di-build (bagian 5.6 A). */
