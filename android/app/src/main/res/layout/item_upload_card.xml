@@ -118,6 +118,7 @@
                 android:layout_width="@dimen/touch_target_min"
                 android:layout_height="@dimen/touch_target_min"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_upload_menu"
                 android:src="@drawable/ic_more_vert"
                 android:visibility="gone" />
         </LinearLayout>

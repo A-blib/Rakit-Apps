@@ -129,21 +129,6 @@ def browser_frame():
     ]
 
 
-def coming_soon():
-    """Jendela browser yang 'mengetik' baris-baris konten berulang: website sedang disiapkan."""
-    total = 120
-    content = [
-        group([line([[52, 108], [150, 108]]), stroke(), trim(10, 40, 90, 110)], "line-1"),
-        group([line([[52, 130], [188, 130]]), stroke(), trim(25, 55, 90, 110)], "line-2"),
-        group([line([[52, 152], [120, 152]]), stroke(), trim(40, 70, 90, 110)], "line-3"),
-        group([rect(170, 160, 28, 20, 4), stroke(), trim(55, 80, 90, 110)], "button"),
-    ]
-    return animation("coming_soon", total, [
-        layer(1, "content", content, total, position=bob(total)),
-        layer(2, "frame", browser_frame(), total, position=bob(total)),
-    ])
-
-
 def empty():
     """Kotak/baki kosong yang naik-turun pelan."""
     total = 90
@@ -317,7 +302,6 @@ def intro_share():
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     files = {
-        "coming_soon.json": coming_soon(),
         "empty.json": empty(),
         "loading.json": loading(),
         "intro_build.json": intro_build(),

@@ -182,9 +182,6 @@ Template akan muncul di sini.</string>
     <string name="cd_step_done">Selesai</string>
     <string name="cd_step_todo">Belum selesai</string>
 
-    <!-- Upload (segera hadir) -->
-    <string name="upload_title">Upload template</string>
-    <string name="upload_body">Fitur upload template segera hadir. Sambil menunggu, pelajari cara menyiapkan template di Panduan.</string>
     <string name="action_open_guide">Buka panduan</string>
 
     <!-- Template Anda -->
@@ -202,7 +199,7 @@ Template akan muncul di sini.</string>
     <string name="sort_downloads">Download terbanyak</string>
     <string name="sort_views">Dilihat terbanyak</string>
     <string name="sort_name">Nama A–Z</string>
-    <string name="templates_empty">Belum ada template. Fitur upload segera hadir.</string>
+    <string name="templates_empty">Belum ada template. Upload template pertamamu dari tab Upload.</string>
     <string name="templates_filter_empty">Tidak ada template dengan filter ini.</string>
     <string name="action_clear_filter">Hapus filter</string>
     <!-- %1$s = kategori, %2$d = dilihat, %3$d = didownload, %4$s = "Diperbarui 2 hari lalu" -->
@@ -271,6 +268,32 @@ MEMBUAT ZIP DI MAC
 3. Klik kanan → Kompres.
 
 Format yang didukung hanya ZIP. File RAR belum didukung."</string>
+    <string name="guide_rules_body">"Setelah ZIP diupload, server mengecek file-mu. Error membuat template belum bisa dilanjutkan; Peringatan boleh dilewati, tapi sebaiknya diperbaiki.
+
+WAJIB (ERROR)
+• index.html ada di folder paling luar ZIP (atau di dalam satu folder pembungkus).
+• Isi halaman ditulis langsung di HTML, bukan dibuat JavaScript. Template React/Vue/Svelte belum didukung.
+• Pakai alat build (Vite, Sass)? Upload isi folder dist/, bukan kode sumbernya.
+• Semua file CSS/JS dan halaman yang ditautkan ada di ZIP, dengan huruf besar/kecil nama file yang sama persis.
+• Library dari CDN hanya dari daftar resmi (Tailwind, Bootstrap, Bulma, Alpine.js, jQuery, AOS, Swiper, Splide, GSAP, Font Awesome, Bootstrap Icons, Lucide, Remix Icon) dengan versi lengkap, mis. @3.14.1.
+• Tanpa form yang mengirim data ke situs lain, tanpa analytics/pelacak, tanpa Service Worker, tanpa kode yang diacak.
+• Hanya file website: HTML, CSS, JS, gambar, font, txt, md. Tanpa PHP atau video.
+• Ukuran ZIP maks 20 MB, isi maks 50 MB dan 500 file, satu file maks 10 MB, maks 10 halaman.
+
+DISARANKAN (PERINGATAN)
+• Gambar di bawah 1 MB (lebih baik WebP), halaman di bawah 5 MB.
+• Ada meta viewport, title, charset UTF-8, dan alt di setiap gambar.
+• Tampilan menyesuaikan layar HP (@media atau framework responsif).
+
+Setiap error punya tautan \"Pelajari cara memperbaikinya\" berisi contoh salah dan benar."</string>
+    <string name="guide_fix_body">"Template yang tidak lolos muncul di tab Upload (Perlu diperbaiki) dan di Beranda (Perlu tindakan).
+
+1. Buka kartunya untuk melihat daftar error: apa yang salah, file dan barisnya, serta saran perbaikan.
+2. Ketuk \"Pelajari cara memperbaikinya\" untuk contoh salah dan benar.
+3. Perbaiki file di laptopmu, lalu buat ZIP baru.
+4. Ketuk \"Upload file perbaikan\" dan pilih ZIP baru. File baru menggantikan file lama di template yang sama dan langsung dicek ulang.
+
+Merasa pengecekannya salah? Ketuk \"Ini keliru? Laporkan\" di error itu. Laporanmu kami pakai untuk memperbaiki aturan, tetapi template tidak otomatis lolos."</string>
     <string name="guide_numbers_body">"Ringkasan di Beranda punya tiga angka.
 
 AKTIF

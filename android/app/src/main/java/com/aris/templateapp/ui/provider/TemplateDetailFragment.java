@@ -1,15 +1,10 @@
 package com.aris.templateapp.ui.provider;
 
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import androidx.annotation.ColorRes;
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -23,8 +18,11 @@ import com.aris.templateapp.data.remote.dto.TemplateDetailDto;
 import com.aris.templateapp.data.remote.dto.TemplateDetailDto.CheckDto;
 import com.aris.templateapp.data.remote.dto.TemplateDetailDto.IssueDto;
 import com.aris.templateapp.databinding.FragmentTemplateDetailBinding;
-import com.aris.templateapp.databinding.ItemIssueBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
+import com.aris.templateapp.ui.upload.IssueListBinder;
+import com.aris.templateapp.ui.upload.ReportIssueDialog;
+import com.aris.templateapp.ui.upload.UploadNav;
+import com.aris.templateapp.ui.upload.ZipPicker;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,13 +30,15 @@ import java.util.List;
 import dagger.hilt.android.AndroidEntryPoint;
 
 /**
- * Detail template + hasil pengecekan terakhir (alur-provider.md bagian 4.5 & 6.2). Versi awal tanpa tombol aksi;
- * "Upload versi perbaikan" ditambahkan bersama fitur Upload.
+ * Detail template + hasil pengecekan terakhir (alur-provider.md bagian 4.5 & 6.2). Template yang tidak lolos punya
+ * tombol "Upload file perbaikan"; draft punya tombol "Lanjutkan draft".
  */
 @AndroidEntryPoint
 public class TemplateDetailFragment extends Fragment {
 
     private FragmentTemplateDetailBinding binding;
+    private final ZipPicker picker = new ZipPicker(this, (uri, name, size, templateId) ->
+            UploadNav.startUpload(this, uri, name, size, templateId));
     private TemplateDetailViewModel viewModel;
 
     @Override
@@ -109,30 +109,38 @@ public class TemplateDetailFragment extends Fragment {
         binding.checkMessage.setText(message);
         binding.checkMessage.setVisibility(message == null ? View.GONE : View.VISIBLE);
 
-        bindIssues(binding.errorsTitle, binding.errorsList, getString(R.string.detail_errors_title, errors.size()),
-                errors, R.drawable.ic_error, R.color.color_error);
-        bindIssues(binding.warningsTitle, binding.warningsList,
-                getString(R.string.detail_warnings_title, warnings.size()), warnings, R.drawable.ic_warning,
-                R.color.color_warning);
+        binding.errorsTitle.setText(getString(R.string.detail_errors_title, errors.size()));
+        binding.errorsTitle.setVisibility(errors.isEmpty() ? View.GONE : View.VISIBLE);
+        binding.warningsTitle.setText(getString(R.string.detail_warnings_title, warnings.size()));
+        binding.warningsTitle.setVisibility(warnings.isEmpty() ? View.GONE : View.VISIBLE);
+        IssueListBinder.Actions actions = new IssueListBinder.Actions() {
+            @Override
+            public void onLearn(IssueDto issue) {
+                UploadNav.openHelp(TemplateDetailFragment.this, issue.code);
+            }
+
+            @Override
+            public void onReport(IssueDto issue) {
+                ReportIssueDialog.show(TemplateDetailFragment.this, reason -> viewModel.report(issue.id, reason));
+            }
+        };
+        IssueListBinder.bind(binding.errorsList, errors, true, actions);
+        IssueListBinder.bind(binding.warningsList, warnings, false, actions);
+        bindUploadAction(detail);
     }
 
-    private void bindIssues(TextView title, LinearLayout list, String titleText, List<IssueDto> issues,
-                            @DrawableRes int icon, @ColorRes int color) {
-        list.removeAllViews();
-        boolean empty = issues.isEmpty();
-        title.setVisibility(empty ? View.GONE : View.VISIBLE);
-        title.setText(titleText);
-        for (IssueDto issue : issues) {
-            ItemIssueBinding row = ItemIssueBinding.inflate(getLayoutInflater(), list, true);
-            row.icon.setImageResource(icon);
-            row.icon.setImageTintList(ColorStateList.valueOf(ContextCompat.getColor(requireContext(), color)));
-            row.message.setText(issue.message);
-            String location = issue.file == null ? null : issue.line == null ? issue.file
-                    : getString(R.string.issue_location_line, issue.file, issue.line);
-            row.location.setText(location);
-            row.location.setVisibility(location == null ? View.GONE : View.VISIBLE);
-            row.suggestion.setText(issue.suggestion);
-            row.suggestion.setVisibility(issue.suggestion == null ? View.GONE : View.VISIBLE);
+    /** Tidak lolos → pilih ZIP perbaikan; draft → lanjutkan wizard di langkah terakhir (alur-fitur-upload.md 3.1 & 5.4). */
+    private void bindUploadAction(TemplateDetailDto detail) {
+        boolean failed = TemplateUi.CHECK_FAILED.equals(detail.status);
+        boolean draft = "draft".equals(detail.status);
+        binding.uploadActionButton.setVisibility(failed || draft ? View.VISIBLE : View.GONE);
+        if (failed) {
+            binding.uploadActionButton.setText(R.string.upload_fix_button);
+            binding.uploadActionButton.setOnClickListener(v -> picker.launch(detail.id));
+        } else if (draft) {
+            binding.uploadActionButton.setText(R.string.detail_continue_draft);
+            binding.uploadActionButton.setOnClickListener(v -> viewModel.resumeDraft(step ->
+                    UploadNav.resumeDraft(this, detail.id, step)));
         }
     }
 

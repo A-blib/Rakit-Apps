@@ -3,6 +3,8 @@ package com.aris.templateapp.ui.upload;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.view.ViewGroup;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -82,6 +84,19 @@ public final class SiteWebView {
             public boolean shouldOverrideUrlLoading(@NonNull WebView view, @NonNull WebResourceRequest request) {
                 boolean sameSite = HOST.equals(request.getUrl().getHost());
                 return !(allowSiteNavigation && sameSite);
+            }
+
+            /**
+             * Proses render WebView bisa dimatikan sistem saat memori HP penuh. Tanpa ini seluruh app ikut tertutup;
+             * dengan ini hanya WebView yang dilepas, dan layar bisa memuat ulang halaman.
+             */
+            @Override
+            public boolean onRenderProcessGone(@NonNull WebView view, @NonNull RenderProcessGoneDetail detail) {
+                if (view.getParent() instanceof ViewGroup) {
+                    ((ViewGroup) view.getParent()).removeView(view);
+                }
+                view.destroy();
+                return true;
             }
 
             @Override

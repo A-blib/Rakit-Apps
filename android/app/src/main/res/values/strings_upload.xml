@@ -35,6 +35,7 @@
     <string name="upload_delete_body">Draft dan file ZIP-nya dihapus permanen.</string>
     <string name="upload_deleted">Dihapus</string>
     <string name="action_delete">Hapus</string>
+    <string name="cd_upload_menu">Pilihan lain</string>
     <string name="cd_upload_more">Pilihan lain untuk %1$s</string>
 
     <!-- Nama langkah wizard (bagian 3) -->
