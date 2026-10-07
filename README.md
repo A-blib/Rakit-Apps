@@ -24,7 +24,8 @@
 | Backend Upload: ZIP per potongan (bisa dilanjutkan), mesin pengecekan 67 aturan + ZIP uji, draft & kuota, laporan "Ini keliru?", artikel Panduan | Sudah (Fase 15) |
 | Android Upload langkah 1–3: tab Upload (draft, perlu diperbaiki), pilih ZIP + cek kilat, upload dengan progres & lanjut otomatis, daftar tahap pengecekan, cek di WebView HP, "Belum memenuhi standar" + Panduan + laporan keliru, Info template + thumbnail | Sudah (Fase 16), menunggu uji di HP |
 | Upload langkah 4: editor Tandai bagian (slide per section, ketuk elemen, gaya, hubungkan isian, saran, koreksi section, undo/redo, cadangan di HP) | Sudah (Fase 17), menunggu uji di HP |
-| Upload langkah 5–6 (Coba, Kirim), push notification | Sedang dibangun (Fase 18); push ditunda |
+| Upload langkah 5–6: Coba sebagai pengguna (preview langsung, gaya, tema, uji isi panjang) dan Kirim (pengecekan akhir, salin library CDN, sisipkan atribut penandaan, tayang di galeri) | Sudah (Fase 18), menunggu uji di HP |
+| Push notification (FCM), versi template, penandaan tingkat section | Segera hadir (menunggu diskusi, rancangan Upload bagian 13–14) |
 | Editor website (template & custom mode), export ZIP | Segera hadir (layar editor sudah ada, isinya menunggu diskusi) |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
@@ -351,7 +352,7 @@ python3 tools/buat-zip-uji.py
 ./mvnw test -Dtest=CheckRuleFixturesTest   # cepat, tanpa Docker
 ```
 
-**Folder upload.** ZIP yang diupload provider disimpan di `backend/uploads/` (sudah di `.gitignore`). Ganti lokasinya dengan `UPLOAD_STORAGE_DIR` di `.env` jika perlu. Batas ukuran, daftar CDN, dan library yang diizinkan ada di `application.yml` bagian `app.upload`.
+**Folder upload.** ZIP yang diupload provider, salinan bernomor (`work.zip`), thumbnail, dan paket template tayang (`package.zip`) disimpan di `backend/uploads/` (sudah di `.gitignore`). Ganti lokasinya dengan `UPLOAD_STORAGE_DIR` di `.env` jika perlu. Batas ukuran, daftar CDN, dan library yang diizinkan ada di `application.yml` bagian `app.upload`.
 
 ### Profile
 

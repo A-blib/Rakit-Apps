@@ -48,7 +48,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 25. [Backend Upload dan mesin pengecekan](#25-backend-upload-dan-mesin-pengecekan)
 26. [Upload di Android (langkah 1–3)](#26-upload-di-android-langkah-13)
 27. [Editor Tandai bagian](#27-editor-tandai-bagian)
-28. [Glosarium](#28-glosarium)
+28. [Coba, Kirim, dan paket template](#28-coba-kirim-dan-paket-template)
+29. [Glosarium](#29-glosarium)
 
 ---
 
@@ -1277,7 +1278,45 @@ Class Java biasa (diuji `MarkingEditorTest`): kunci otomatis dari label (`Judul 
 
 ---
 
-## 28. Glosarium
+## 28. Coba, Kirim, dan paket template
+
+### Langkah 5: Coba sebagai pengguna
+
+Preview memakai salinan bernomor yang sama dengan editor Tandai, ditambah `assets/upload/try.js`. Setiap perubahan di form disimpan ke `TrySession` (memori, tidak dikirim ke server), lalu `RakitTry.apply({fields, theme})` dijalankan:
+
+| Isian | Diterapkan sebagai |
+|---|---|
+| Teks / paragraf / teks tombol | `textContent` elemen (ikon di dalam tombol dipertahankan) |
+| Link / link tombol | atribut `href` |
+| Gambar | `src` (atau `background-image`), dari gambar pilihan sebagai data URL |
+| Gaya | satu `<style id="rakit-custom">` di akhir `<head>`: `[data-tpl-id="24"]{color:#1e3a8a !important}` |
+| Tema | `:root{--primary:#16a34a}` di style yang sama |
+
+Di template sungguhan pembuat website, selector-nya `[data-key="…"]` dan file-nya `custom.css` (bagian 7.11). **Uji isi panjang** mengisi teks sampai batas karakter dan gambar dengan rasio 3:1/1:3. **Ubah tandaan ini** membuka editor Tandai dengan argumen `focusKey`.
+
+### Langkah 6: Kirim
+
+```
+POST /uploads/{id}/submit {agreedAssetRights}  → cek info lengkap, ≥ 3 isian → status checking
+  PublishRunner (thread cek-template-):
+    aturan file (TemplateChecker) + tandaan (MarkingValidator) dicek lagi
+    PackageBuilder: salin library CDN → sisipkan atribut → package.zip
+  lolos → published + notifikasi TEMPLATE_PUBLISHED        gagal → kembali ke draft + daftar masalah
+```
+
+### Paket template (`PackageBuilder`)
+
+1. Setiap halaman diberi nomor ulang dengan `TemplateNumbering` (hasilnya sama dengan salinan di HP), lalu atribut disisipkan: `data-section` pada elemen section, `data-edit` (jenis), `data-key`, `data-label` pada elemen isian. Nomor `data-tpl-id` dibuang dari paket.
+2. `<script src>` dan `<link rel="stylesheet">` dari CDN terpercaya diunduh ke `vendor/<paket>@<versi>/<path di CDN>` lalu diganti ke path relatif (halaman di subfolder mendapat `../`). File CSS library ikut membawa font/gambar yang dirujuknya.
+3. Google Fonts dan link lain dibiarkan. Jika unduhan gagal, Kirim gagal dengan `LIBRARY_COPY_FAILED`.
+
+### Galeri
+
+Template `published` milik provider aktif muncul di `GET /api/templates`. Pencarian kini mencari di nama, deskripsi, dan kata kunci. Thumbnail tampil di galeri, Template Anda, dan detail lewat `ThumbnailLoader`.
+
+---
+
+## 29. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -1343,3 +1382,4 @@ Class Java biasa (diuji `MarkingEditorTest`): kunci otomatis dari label (`Judul 
 | WebViewAssetLoader | Cara menyajikan file lokal ke WebView lewat alamat https khusus, lebih aman daripada `file://` |
 | Debounce | Menunda aksi sampai pengguna berhenti mengetik sebentar |
 | `@JavascriptInterface` | Method Java yang bisa dipanggil JavaScript di WebView; harus dibatasi karena semua skrip di halaman bisa memanggilnya |
+| Data URL | Gambar yang ditulis langsung sebagai teks (base64) di atribut `src` |
