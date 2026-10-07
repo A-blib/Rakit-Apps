@@ -47,7 +47,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 24. [Dashboard Pembuat Website di Android](#24-dashboard-pembuat-website-di-android)
 25. [Backend Upload dan mesin pengecekan](#25-backend-upload-dan-mesin-pengecekan)
 26. [Upload di Android (langkah 1–3)](#26-upload-di-android-langkah-13)
-27. [Glosarium](#27-glosarium)
+27. [Editor Tandai bagian](#27-editor-tandai-bagian)
+28. [Glosarium](#28-glosarium)
 
 ---
 
@@ -1239,7 +1240,44 @@ Isian diisi sekali dari server, lalu form menjadi sumber kebenaran. Setiap perub
 
 ---
 
-## 27. Glosarium
+## 27. Editor Tandai bagian
+
+Langkah 4 Upload (rancangan bagian 7). Data tandaan berbentuk JSON (bagian 11): `pages`, `sections`, `fields` (kunci, label, jenis, batas, gaya, elemen), `theme`.
+
+### Nomor elemen (`data-tpl-id`)
+
+Server mem-parse setiap halaman dengan jsoup lalu memberi nomor 1, 2, 3, … pada semua elemen menurut urutan dokumen (`TemplateNumbering`). HP mengunduh salinan bernomor ini (`GET /uploads/{id}/work-package`), bukan ZIP asli. Karena parse jsoup selalu sama, saat Kirim server bisa memberi nomor ulang pada HTML asli dan menemukan elemen yang sama. Elemen yang diketuk tanpa nomor pasti dibuat JavaScript, jadi ditolak dengan pesan.
+
+### Alur ketukan
+
+```
+ketuk elemen di WebView
+  → mark.js (capture, preventDefault): RakitBridge.select(24)      ← hanya angka yang menyeberang ke Java
+  → Java: RakitMark.select(24) + RakitMark.describe(24)            ← Java yang meminta data
+  → MarkElementSheet → MarkingEditor.saveField(...) → setMarks()   ← label ✓ digambar di lapisan terpisah
+```
+
+### Slide
+
+`RakitMark.tops(...)` memberi posisi elemen awal setiap section. Section pertama mulai dari 0, terakhir sampai ujung dokumen, sisanya sampai section berikutnya. `RakitMark.slide(top, bottom)` meredupkan area lain dan membatasi gulir. Tinggi bingkai WebView = tinggi section × skala (lebar WebView ÷ `innerWidth`). Tampilan Desktop memakai `desktop.js` (viewport 1280 px) yang dipasang sebelum halaman dimuat.
+
+### MarkingEditor
+
+Class Java biasa (diuji `MarkingEditorTest`): kunci otomatis dari label (`Judul utama` → `judul_utama`, `_2` jika sudah ada), hubungkan elemen ke isian lain (elemen lama dilepas; isian kosong dihapus), gabung/hapus/pecah section (isian pindah ke section tujuan), saran "Tandai semua", tema global, dan undo/redo berbasis salinan JSON. "Belum disimpan" = data sekarang berbeda dari data yang terakhir tersimpan di server.
+
+### Simpan, cadangan, Coba
+
+- **Simpan** → `PUT /uploads/{id}/marking`; server mengecek label, kunci unik (`^[a-z][a-z0-9_]{0,39}$`), elemen ada di HTML asli, satu elemen hanya untuk satu isian, gaya & tema dari daftar.
+- Setiap perubahan dicadangkan ke SharedPreferences (`MarkingBackupStore`); saat dibuka lagi: "Pulihkan perubahan?".
+- **Coba** aktif setelah minimal 1 isian tersimpan; jika ada perubahan belum disimpan muncul "Simpan & coba".
+
+### Bagian yang sama di beberapa halaman
+
+`PageScanner` membuka halaman lain di WebView tersembunyi, mendeteksi section, dan menghitung sidik jarinya (`RakitMark.fingerprint`: HTML tanpa nomor → hash). Menandai elemen di section yang sidik jarinya sama di halaman lain memunculkan tawaran "Tandai sekali untuk semua halaman"; elemen dipasangkan menurut urutannya di dalam section.
+
+---
+
+## 28. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -1304,3 +1342,4 @@ Isian diisi sekali dari server, lalu form menjadi sumber kebenaran. Setiap perub
 | Fixture | Data contoh untuk test (di sini: ZIP uji per aturan) |
 | WebViewAssetLoader | Cara menyajikan file lokal ke WebView lewat alamat https khusus, lebih aman daripada `file://` |
 | Debounce | Menunda aksi sampai pengguna berhenti mengetik sebentar |
+| `@JavascriptInterface` | Method Java yang bisa dipanggil JavaScript di WebView; harus dibatasi karena semua skrip di halaman bisa memanggilnya |

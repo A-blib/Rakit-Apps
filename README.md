@@ -23,7 +23,8 @@
 | Android Dashboard Pembuat Website: Beranda (Mulai, Lanjutkan project, Template untuk anda, panduan), tab Project (Room: cari, filter, urutan, ganti nama, duplikat, hapus), tombol +, galeri Template, Profil + edit, editor template/custom "Segera hadir" | Sudah (Fase 14) |
 | Backend Upload: ZIP per potongan (bisa dilanjutkan), mesin pengecekan 67 aturan + ZIP uji, draft & kuota, laporan "Ini keliru?", artikel Panduan | Sudah (Fase 15) |
 | Android Upload langkah 1–3: tab Upload (draft, perlu diperbaiki), pilih ZIP + cek kilat, upload dengan progres & lanjut otomatis, daftar tahap pengecekan, cek di WebView HP, "Belum memenuhi standar" + Panduan + laporan keliru, Info template + thumbnail | Sudah (Fase 16), menunggu uji di HP |
-| Upload langkah 4–6 (Tandai, Coba, Kirim), push notification | Sedang dibangun (Fase 17–18); push ditunda |
+| Upload langkah 4: editor Tandai bagian (slide per section, ketuk elemen, gaya, hubungkan isian, saran, koreksi section, undo/redo, cadangan di HP) | Sudah (Fase 17), menunggu uji di HP |
+| Upload langkah 5–6 (Coba, Kirim), push notification | Sedang dibangun (Fase 18); push ditunda |
 | Editor website (template & custom mode), export ZIP | Segera hadir (layar editor sudah ada, isinya menunggu diskusi) |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
