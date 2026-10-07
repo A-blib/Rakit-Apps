@@ -37,6 +37,7 @@ Sumber rancangan: [`docs/rancangan/alur-fitur-upload.md`](../rancangan/alur-fitu
 ## Hasil tes
 - Backend `./mvnw test`: **lulus, 238 test**.
 - Android `testDebugUnitTest`: **lulus, 62 test**. `lint`: **0 masalah**. `assembleDebug`: berhasil.
+- Uji manual di backend dev (database lokal, akun `dummy8`) dengan template sungguhan **Tailwind Toolbox Landing Page**: upload → info → 3 isian (judul, deskripsi, foto) → Kirim → `published` dalam beberapa detik. Isi `package.zip`: `vendor/tailwindcss@2.2.19/dist/tailwind.min.css` (2,9 MB, diunduh dari unpkg), link di `index.html` sudah lokal, Google Fonts tetap dari internet, `data-key` judul/deskripsi/foto tersisip. Template muncul di `GET /api/templates?q=tailwind`. Data uji ini sudah saya hapus lagi dari database dev.
 - Uji di HP: **belum dilakukan** (HP tidak tersambung selama Fase 16–18).
 
 ## Konsep yang dipelajari
