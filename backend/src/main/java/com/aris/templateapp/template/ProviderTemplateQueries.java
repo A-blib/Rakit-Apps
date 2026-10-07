@@ -86,7 +86,10 @@ public class ProviderTemplateQueries {
 
     /** Jumlah dilihat & didownload per template (total sejak awal) + jumlah error pengecekan terakhir. */
     private static final String TEMPLATE_WITH_COUNTS = """
-            SELECT t.id, t.name, t.category, t.thumbnail_url, t.status, t.warning_count, t.updated_at,
+            SELECT t.id,
+                   -- Upload yang belum mengisi Info template memakai nama file ZIP (alur-fitur-upload.md 6.4).
+                   COALESCE(CASE WHEN t.category IS NULL THEN t.source_file_name END, t.name) AS name,
+                   t.category, t.thumbnail_url, t.status, t.warning_count, t.updated_at,
                    COALESCE(ev.views, 0)     AS views,
                    COALESCE(ev.downloads, 0) AS downloads,
                    (SELECT count(*) FROM template_check_issues i

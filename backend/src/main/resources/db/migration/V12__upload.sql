@@ -15,7 +15,7 @@ ALTER TABLE templates
     ADD COLUMN source_file_name    VARCHAR(255),
     ADD COLUMN source_size         BIGINT,
     -- Langkah wizard terakhir (1–6), agar "Lanjutkan draft" membuka tepat di langkah itu.
-    ADD COLUMN wizard_step         SMALLINT     NOT NULL DEFAULT 1,
+    ADD COLUMN wizard_step         INTEGER      NOT NULL DEFAULT 1,
     -- Kapan pemberitahuan "draft akan dihapus" dikirim; dikosongkan lagi saat draft disentuh.
     ADD COLUMN expiry_notified_at  TIMESTAMPTZ,
     ADD CONSTRAINT chk_templates_wizard_step CHECK (wizard_step BETWEEN 1 AND 6);

@@ -48,6 +48,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/templates/*/events").permitAll()
                         // Galeri template boleh dilihat tamu (alur-pembuatan-website.md 6.2).
                         .requestMatchers(HttpMethod.GET, "/api/templates").permitAll()
+                        // Artikel Panduan pengecekan upload (alur-fitur-upload.md 5.11) bisa dibaca siapa saja.
+                        .requestMatchers(HttpMethod.GET, "/api/help/articles/*").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
                 // Filter JWT dipasang sebelum filter login bawaan Spring agar user sudah dikenali lebih dulu.

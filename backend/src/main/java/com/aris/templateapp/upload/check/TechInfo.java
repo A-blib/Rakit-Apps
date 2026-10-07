@@ -17,8 +17,4 @@ public record TechInfo(List<String> pages, List<String> libraries, long totalByt
 
     public record CssVariable(String name, String value) {
     }
-
-    public int pageCount() {
-        return pages.size();
-    }
 }

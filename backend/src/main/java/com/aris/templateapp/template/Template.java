@@ -1,5 +1,6 @@
 package com.aris.templateapp.template;
 
+import com.aris.templateapp.upload.check.TechInfo;
 import com.aris.templateapp.user.WebsitePurpose;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,8 +13,12 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -40,7 +45,7 @@ public class Template {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false)
+    // Null selama Info template (langkah 3 Upload) belum diisi.
     private WebsitePurpose category;
 
     private String thumbnailUrl;
@@ -59,10 +64,41 @@ public class Template {
 
     private Instant publishedAt;
 
+    // ---------- Upload (alur-fitur-upload.md) ----------
+
+    @Column(length = 300)
+    private String description;
+
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(nullable = false, columnDefinition = "text[]")
+    private List<String> keywords = new ArrayList<>();
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private TechInfo techInfo;
+
+    private String sourceFileName;
+
+    private Long sourceSize;
+
+    // Langkah wizard terakhir (1–6), agar draft dilanjutkan tepat di langkah itu.
+    @Column(nullable = false)
+    private int wizardStep = 1;
+
+    private Instant expiryNotifiedAt;
+
     public Template(UUID providerId, String name, WebsitePurpose category) {
         this.providerId = providerId;
         this.name = name;
         this.category = category;
+    }
+
+    /**
+     * Draft disentuh provider: "terakhir diperbarui" maju dan hitungan 30 hari draft dimulai ulang,
+     * sehingga pemberitahuan "akan dihapus" perlu dikirim lagi nanti.
+     */
+    public void touch(Instant now) {
+        updatedAt = now;
+        expiryNotifiedAt = null;
     }
 
     @PrePersist
