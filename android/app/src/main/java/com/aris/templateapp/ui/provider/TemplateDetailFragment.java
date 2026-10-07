@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.remote.dto.TemplateDetailDto;
 import com.aris.templateapp.data.remote.dto.TemplateDetailDto.CheckDto;
@@ -27,6 +28,8 @@ import com.aris.templateapp.ui.upload.ZipPicker;
 import java.util.Collections;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 /**
@@ -35,6 +38,10 @@ import dagger.hilt.android.AndroidEntryPoint;
  */
 @AndroidEntryPoint
 public class TemplateDetailFragment extends Fragment {
+
+    @Inject
+    ThumbnailLoader thumbnailLoader;
+
 
     private FragmentTemplateDetailBinding binding;
     private final ZipPicker picker = new ZipPicker(this, (uri, name, size, templateId) ->
@@ -84,6 +91,8 @@ public class TemplateDetailFragment extends Fragment {
         List<IssueDto> errors = check == null || check.errors == null ? Collections.emptyList() : check.errors;
         List<IssueDto> warnings = check == null || check.warnings == null ? Collections.emptyList() : check.warnings;
 
+        thumbnailLoader.load(detail.thumbnailUrl, binding.thumbnail,
+                () -> binding.thumbnailPlaceholder.setVisibility(View.GONE));
         binding.name.setText(detail.name);
         binding.version.setText(check == null ? null : getString(R.string.detail_version, check.version));
         binding.version.setVisibility(check == null ? View.GONE : View.VISIBLE);

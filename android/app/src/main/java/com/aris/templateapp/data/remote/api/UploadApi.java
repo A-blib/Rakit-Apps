@@ -8,6 +8,7 @@ import com.aris.templateapp.data.remote.dto.DraftStepDto;
 import com.aris.templateapp.data.remote.dto.HelpArticleDto;
 import com.aris.templateapp.data.remote.dto.MarkingDto;
 import com.aris.templateapp.data.remote.dto.ReportIssueDto;
+import com.aris.templateapp.data.remote.dto.SubmitDto;
 import com.aris.templateapp.data.remote.dto.UploadCheckDto;
 import com.aris.templateapp.data.remote.dto.UploadOverviewDto;
 import com.aris.templateapp.data.remote.dto.UploadSessionDto;
@@ -82,6 +83,9 @@ public interface UploadApi {
 
     @PUT("providers/me/uploads/{id}/marking")
     Call<MarkingDto> saveMarking(@Path("id") String templateId, @Body MarkingDto body);
+
+    @POST("providers/me/uploads/{id}/submit")
+    Call<Void> submit(@Path("id") String templateId, @Body SubmitDto body);
 
     @PUT("providers/me/uploads/{id}/device-warnings")
     Call<DraftDto> deviceWarnings(@Path("id") String templateId, @Body DeviceWarningsDto body);

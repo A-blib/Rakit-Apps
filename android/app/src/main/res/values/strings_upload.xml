@@ -143,8 +143,44 @@
     <string name="upload_saved">Tersimpan</string>
     <string name="upload_save_failed">Belum tersimpan. Periksa koneksi.</string>
 
-    <!-- Langkah 5 sementara (dibangun di Fase 18) -->
-    <string name="upload_try_pending">Langkah mencoba template sedang disiapkan.</string>
+    <!-- Langkah 5: Coba sebagai pengguna (bagian 8) -->
+    <string name="try_long_content">Uji isi panjang</string>
+    <string name="try_reset">Isi asli</string>
+    <string name="try_back_mark">Lanjut menandai</string>
+    <string name="try_next_send">Lanjut: Kirim</string>
+    <string name="try_need_fields">Tandai minimal %1$d isian untuk lanjut ke Kirim (sekarang %2$d).</string>
+    <string name="try_change_image">Ganti foto</string>
+    <string name="try_ratio">Rasio %1$s</string>
+    <string name="try_link_hint">Alamat link (https://…)</string>
+    <string name="try_edit_mark">Ubah tandaan ini</string>
+    <string name="try_color_custom">Kode warna, mis. #1E3A8A</string>
+    <string name="try_color_original">Asli</string>
+    <string name="try_contrast">Warna teks dan latar terlalu mirip; teks sulit dibaca.</string>
+    <string name="try_theme_title">Tema</string>
+    <string name="try_all_sections">Semua</string>
+    <string name="try_empty">Belum ada isian tersimpan.</string>
+    <string name="try_size_value">%1$d px</string>
+    <string name="try_long_text">Teks uji panjang untuk melihat apakah tata letak tetap rapi </string>
+    <string name="cd_color">Warna %1$s</string>
+    <string name="cd_try_panel">Form isian percobaan</string>
+
+    <!-- Langkah 6: Kirim (bagian 9) -->
+    <string name="send_card_preview">Pratinjau kartu galeri</string>
+    <string name="send_summary_title">Ringkasan</string>
+    <string name="send_summary">%1$d halaman · %2$d section · %3$d isian · %4$d peringatan</string>
+    <string name="send_rights">Saya berhak memakai semua gambar, font, dan isi dalam template ini.</string>
+    <string name="send_button">Kirim</string>
+    <string name="send_checking">Pengecekan akhir dan menyiapkan paket template…</string>
+    <string name="send_published_title">Template tayang!</string>
+    <string name="send_published_body">“%1$s” sudah tampil di galeri dan bisa dipakai pembuat website.</string>
+    <string name="send_published_warnings">Masih ada %1$d peringatan. Perbaiki agar template makin baik.</string>
+    <string name="send_open_templates">Lihat Template Anda</string>
+    <string name="send_done">Selesai</string>
+    <string name="send_failed_title">Belum bisa tayang</string>
+    <string name="send_failed_body">Perbaiki masalah di bawah, lalu kirim lagi.</string>
+    <string name="send_back_mark">Kembali ke Tandai</string>
+    <string name="send_info_incomplete">Info template belum lengkap.</string>
+    <string name="send_edit_info">Lengkapi info</string>
 
     <!-- Langkah 4: Tandai bagian (bagian 7) -->
     <string name="mark_counter">%1$d isian ditandai (minimal %2$d)</string>

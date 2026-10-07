@@ -21,6 +21,7 @@ import com.aris.templateapp.data.remote.dto.DraftStepDto;
 import com.aris.templateapp.data.remote.dto.HelpArticleDto;
 import com.aris.templateapp.data.remote.dto.MarkingDto;
 import com.aris.templateapp.data.remote.dto.ReportIssueDto;
+import com.aris.templateapp.data.remote.dto.SubmitDto;
 import com.aris.templateapp.data.remote.dto.UploadCheckDto;
 import com.aris.templateapp.data.remote.dto.UploadOverviewDto;
 import com.aris.templateapp.data.remote.dto.UploadSessionDto;
@@ -322,6 +323,12 @@ public class UploadRepository {
         } catch (IOException e) {
             return Resource.error(errorParser.parse(e));
         }
+    }
+
+    /** Kirim template (langkah 6); hasilnya dipantau lewat {@link #check(String)}. */
+    @WorkerThread
+    public Resource<Boolean> submit(String templateId, boolean agreedAssetRights) {
+        return executeEmpty(api.submit(templateId, new SubmitDto(agreedAssetRights)));
     }
 
     /** Salinan situs di HP sudah usang (mis. setelah upload perbaikan lolos). */

@@ -113,6 +113,19 @@ public class ProviderDashboardFragment extends Fragment {
             badge.setNumber(count);
             badge.setVisible(count > 0);
         });
+        // Permintaan dari layar lain, mis. "Lihat Template Anda" setelah template tayang.
+        new ViewModelProvider(requireActivity()).get(ProviderTabRequest.class).getRequest()
+                .observe(getViewLifecycleOwner(), event -> {
+                    ProviderTabRequest.Request request = event.getContentIfNotHandled();
+                    if (request == null) {
+                        return;
+                    }
+                    if (request.templatesStatus != null) {
+                        openTemplates(request.templatesStatus);
+                    } else {
+                        selectTab(request.tab);
+                    }
+                });
         dashboardViewModel.getAccessLost().observe(getViewLifecycleOwner(), event -> {
             String code = event.getContentIfNotHandled();
             if (code != null) {

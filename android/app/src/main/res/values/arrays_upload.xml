@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Pilihan warna cepat di langkah Coba (alur-fitur-upload.md bagian 8). Ini warna untuk website pembuat, bukan warna
+    tampilan app, jadi sengaja berwarna. Pengguna tetap bisa mengetik kode warna sendiri.
+-->
+<resources>
+    <string-array name="try_color_presets">
+        <item>#0A0A0A</item>
+        <item>#FFFFFF</item>
+        <item>#1E3A8A</item>
+        <item>#0E7490</item>
+        <item>#16A34A</item>
+        <item>#D97706</item>
+        <item>#DC2626</item>
+        <item>#DB2777</item>
+        <item>#7C3AED</item>
+        <item>#FEF3C7</item>
+    </string-array>
+</resources>

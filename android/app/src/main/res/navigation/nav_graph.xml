@@ -211,11 +211,24 @@
         <argument
             android:name="templateId"
             app:argType="string" />
+        <argument
+            android:name="focusKey"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
     </fragment>
 
     <fragment
         android:id="@+id/uploadTryFragment"
         android:name="com.aris.templateapp.ui.upload.UploadTryFragment">
+        <argument
+            android:name="templateId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/uploadSendFragment"
+        android:name="com.aris.templateapp.ui.upload.UploadSendFragment">
         <argument
             android:name="templateId"
             app:argType="string" />

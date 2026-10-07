@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.util.Base64;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
@@ -62,6 +63,43 @@ public class ThumbnailImages {
         } catch (IOException | SecurityException e) {
             return null;
         }
+    }
+
+    /**
+     * Gambar pilihan untuk dicoba di langkah Coba: diperkecil (sisi terpanjang {@code maxSide}) lalu dijadikan
+     * data URL JPEG agar bisa langsung dipasang di WebView tanpa diupload.
+     */
+    @Nullable
+    @WorkerThread
+    public String dataUrl(Uri uri, int maxSide) {
+        try {
+            BitmapFactory.Options bounds = new BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            try (InputStream in = resolver.openInputStream(uri)) {
+                BitmapFactory.decodeStream(in, null, bounds);
+            }
+            if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+                return null;
+            }
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 1;
+            while (Math.max(bounds.outWidth, bounds.outHeight) / (options.inSampleSize * 2) >= maxSide) {
+                options.inSampleSize *= 2;
+            }
+            Bitmap bitmap;
+            try (InputStream in = resolver.openInputStream(uri)) {
+                bitmap = BitmapFactory.decodeStream(in, null, options);
+            }
+            return bitmap == null ? null : toDataUrl(bitmap);
+        } catch (IOException | SecurityException e) {
+            return null;
+        }
+    }
+
+    public static String toDataUrl(Bitmap bitmap) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out);
+        return "data:image/jpeg;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
     }
 
     /** Potong persegi di tengah lalu ubah ke {@value #SIZE_PX} px. */

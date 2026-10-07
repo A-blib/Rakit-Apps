@@ -40,12 +40,21 @@
                     android:background="@drawable/bg_thumbnail">
 
                     <ImageView
+                        android:id="@+id/thumbnail_placeholder"
                         android:layout_width="@dimen/space_12"
                         android:layout_height="@dimen/space_12"
                         android:layout_gravity="center"
                         android:importantForAccessibility="no"
                         android:src="@drawable/ic_web"
                         app:tint="@color/color_muted" />
+
+                    <ImageView
+                        android:id="@+id/thumbnail"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/cd_thumbnail"
+                        android:padding="@dimen/border_width"
+                        android:scaleType="centerCrop" />
                 </FrameLayout>
 
                 <LinearLayout

@@ -84,6 +84,7 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
     private Metrics metrics;
     private boolean pageReady;
     private int tourIndex;
+    private boolean focusHandled;
     private final Gson gson = new Gson();
 
     private final OnBackPressedCallback back = new OnBackPressedCallback(true) {
@@ -258,6 +259,15 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
         binding.state.setVisibility(View.GONE);
         updateVisibility();
         refreshSlide();
+        // "Ubah tandaan ini" dari langkah Coba: langsung buka elemen isian itu (sekali saja).
+        String focus = requireArguments().getString(UploadNav.ARG_FOCUS_KEY);
+        if (focus != null && !focusHandled) {
+            focusHandled = true;
+            MarkingDto.Field field = viewModel.editor().field(focus);
+            if (field != null) {
+                jumpTo(field);
+            }
+        }
     }
 
     /** Elemen bertanda di halaman ini terlihat di tampilan sekarang atau tidak (HANYA HP / HANYA DESKTOP). */

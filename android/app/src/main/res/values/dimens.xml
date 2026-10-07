@@ -53,4 +53,7 @@
     <dimen name="text_label">12sp</dimen>
     <!-- Pratinjau thumbnail di langkah Info template (persegi, sama dengan thumbnail kartu galeri). -->
     <dimen name="thumbnail_preview_size">160dp</dimen>
+    <!-- Tinggi form isian di langkah Coba saat tertutup (judul section + tombol lanjut terlihat). -->
+    <dimen name="try_sheet_peek">200dp</dimen>
+    <dimen name="color_swatch_size">32dp</dimen>
 </resources>

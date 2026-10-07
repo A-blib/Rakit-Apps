@@ -22,6 +22,8 @@ public final class UploadNav {
     static final String ARG_FILE_SIZE = "fileSize";
     static final String ARG_TEMPLATE_ID = "templateId";
     static final String ARG_CODE = "code";
+    /** Kunci isian yang langsung dibuka di editor Tandai ("Ubah tandaan ini" dari langkah Coba). */
+    static final String ARG_FOCUS_KEY = "focusKey";
 
     private UploadNav() {
     }
@@ -52,14 +54,21 @@ public final class UploadNav {
     public static void resumeDraft(Fragment from, String templateId, int step) {
         Bundle args = new Bundle();
         args.putString(ARG_TEMPLATE_ID, templateId);
-        int destination = step >= 4 ? R.id.uploadMarkFragment : R.id.uploadInfoFragment;
+        int destination = step >= 6 ? R.id.uploadSendFragment
+                : step == 5 ? R.id.uploadTryFragment
+                : step == 4 ? R.id.uploadMarkFragment : R.id.uploadInfoFragment;
         NavHostFragment.findNavController(from).navigate(destination, args);
     }
 
     /** Pindah ke langkah berikutnya/sebelumnya; layar sekarang diganti agar tombol kembali tidak menumpuk langkah. */
     static void replaceStep(Fragment from, int destination, String templateId) {
+        replaceStep(from, destination, templateId, null);
+    }
+
+    static void replaceStep(Fragment from, int destination, String templateId, @Nullable String focusKey) {
         Bundle args = new Bundle();
         args.putString(ARG_TEMPLATE_ID, templateId);
+        args.putString(ARG_FOCUS_KEY, focusKey);
         NavController nav = NavHostFragment.findNavController(from);
         int current = nav.getCurrentDestination() == null ? 0 : nav.getCurrentDestination().getId();
         nav.navigate(destination, args, new NavOptions.Builder().setPopUpTo(current, true).build());
