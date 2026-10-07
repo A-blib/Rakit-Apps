@@ -13,6 +13,8 @@ public interface TemplateCheckRepository extends JpaRepository<TemplateCheck, UU
     /** Pengecekan terakhir = versi tertinggi. */
     Optional<TemplateCheck> findFirstByTemplateIdOrderByVersionDesc(UUID templateId);
 
+    Optional<TemplateCheck> findByTemplateIdAndVersion(UUID templateId, int version);
+
     /** Mencatat tahap yang sedang berjalan tanpa memuat entity (dipanggil berkali-kali selama pengecekan). */
     @Modifying
     @Query("update TemplateCheck c set c.stage = :stage where c.id = :id")

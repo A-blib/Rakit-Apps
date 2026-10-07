@@ -137,6 +137,23 @@ public class UploadStorage {
         return root.resolve("templates").resolve(templateId.toString()).resolve("work.zip");
     }
 
+    /** Paket template yang tayang (hasil Kirim). */
+    public Path packageZipPath(UUID templateId) {
+        return root.resolve("templates").resolve(templateId.toString()).resolve("package.zip");
+    }
+
+    public void writePackage(UUID templateId, byte[] zip) {
+        try {
+            Path target = packageZipPath(templateId);
+            Files.createDirectories(target.getParent());
+            Path temp = target.resolveSibling("package.zip.tmp");
+            Files.write(temp, zip);
+            Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     public Path sourceZipPath(UUID templateId) {
         return sourceZip(templateId);
     }

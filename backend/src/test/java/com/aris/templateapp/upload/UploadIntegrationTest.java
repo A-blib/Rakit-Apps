@@ -335,6 +335,63 @@ class UploadIntegrationTest {
         send(put(base + "/marking"), marking("Judul Utama", "Judul", 14)).andExpect(status().isBadRequest());
     }
 
+    @Test
+    void submitPublishesTemplateToGalleryWithMarkingAttributes() throws Exception {
+        String templateId = uploadAndWait("toko-kue.zip", FIXTURES.resolve("_DASAR/bersih.zip"), null);
+        String base = "/api/providers/me/uploads/" + templateId;
+
+        // Belum siap: info belum lengkap, isian kurang dari 3, hak pakai belum dicentang.
+        send(post(base + "/submit"), "{\"agreedAssetRights\":true}")
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("Pilih kategori template."));
+        send(patch(base + "/info"), """
+                {"name":"Toko Kue Bu Ani","category":"umkm","description":"Landing page toko kue rumahan dengan katalog.",
+                 "keywords":["kue","kuliner"]}""").andExpect(status().isOk());
+        send(put(base + "/marking"), marking("judul_utama", "Judul utama", 14)).andExpect(status().isOk());
+        send(post(base + "/submit"), "{\"agreedAssetRights\":true}")
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("Tandai minimal 3 isian sebelum mengirim."));
+        send(put(base + "/marking"), threeFields()).andExpect(status().isOk());
+        send(post(base + "/submit"), "{\"agreedAssetRights\":false}").andExpect(status().isBadRequest());
+
+        send(post(base + "/submit"), "{\"agreedAssetRights\":true}").andExpect(status().isAccepted());
+        String result = waitForCheck(templateId);
+        assertThat((String) JsonPath.read(result, "$.status")).isEqualTo("published");
+
+        // Paket berisi atribut penandaan, tanpa nomor data-tpl-id.
+        String index = null;
+        try (java.util.zip.ZipInputStream zip = new java.util.zip.ZipInputStream(
+                Files.newInputStream(Path.of("target/test-uploads/templates", templateId, "package.zip")))) {
+            java.util.zip.ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                if (entry.getName().equals("index.html")) {
+                    index = new String(zip.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                }
+            }
+        }
+        assertThat(index).contains("data-key=\"judul_utama\"").contains("data-section=\"Hero\"")
+                .contains("data-edit=\"image\"").doesNotContain("data-tpl-id");
+
+        // Tayang di galeri dan bisa dicari lewat kata kunci; kartu Upload tidak lagi menampilkannya sebagai draft.
+        mockMvc.perform(get("/api/templates").param("q", "kuliner")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[*].name", hasItem("Toko Kue Bu Ani")));
+        send(get("/api/providers/me/uploads"), null).andExpect(jsonPath("$.drafts", hasSize(0)));
+        send(get("/api/notifications"), null).andExpect(jsonPath("$[*].type", hasItem("TEMPLATE_PUBLISHED")));
+    }
+
+    /** Tiga isian di index.html bersih: h1 (14), p (15), img (16). */
+    private static String threeFields() {
+        return """
+                {"pages":[{"file":"index.html","name":"Beranda"},{"file":"tentang.html","name":"Tentang"}],
+                 "sections":[{"id":"s1","page":"index.html","name":"Hero","tplId":13}],
+                 "fields":[
+                   {"key":"judul_utama","label":"Judul utama","type":"text","required":true,"order":1,"sectionId":"s1",
+                    "elements":[{"page":"index.html","tplId":14,"visibleIn":["mobile","desktop"]}]},
+                   {"key":"deskripsi","label":"Deskripsi","type":"paragraph","required":false,"order":2,"sectionId":"s1",
+                    "elements":[{"page":"index.html","tplId":15,"visibleIn":["mobile","desktop"]}]},
+                   {"key":"foto_hero","label":"Foto hero","type":"image","aspectRatio":"1:1","required":false,"order":3,
+                    "sectionId":"s1","elements":[{"page":"index.html","tplId":16,"visibleIn":["mobile","desktop"]}]}],
+                 "theme":[]}""";
+    }
+
     private static String marking(String key, String label, int tplId) {
         return """
                 {"pages":[{"file":"index.html","name":"Beranda"},{"file":"tentang.html","name":"Tentang"}],
