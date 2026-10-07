@@ -45,7 +45,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 
 23. [Backend galeri Template & profil pembuat website](#23-backend-galeri-template--profil-pembuat-website)
 24. [Dashboard Pembuat Website di Android](#24-dashboard-pembuat-website-di-android)
-25. [Glosarium](#25-glosarium)
+25. [Backend Upload dan mesin pengecekan](#25-backend-upload-dan-mesin-pengecekan)
+26. [Glosarium](#26-glosarium)
 
 ---
 
@@ -1106,7 +1107,87 @@ Saat compile, Room menguji query ke SQLite sungguhan memakai library `sqlite-jdb
 
 ---
 
-## 25. Glosarium
+## 25. Backend Upload dan mesin pengecekan
+
+Rancangan lengkap: [`rancangan/alur-fitur-upload.md`](rancangan/alur-fitur-upload.md). Bab ini menjelaskan langkah 1 (Pilih file) dan langkah 2 (Pengecekan file) di sisi server.
+
+### Alur besar
+
+```
+App                                   Server
+───                                   ──────
+POST /uploads/sessions {nama, ukuran} → upload_sessions (receivedSize = 0) + file kosong uploads/sessions/<id>.part
+PUT  /uploads/sessions/<id>?offset=0  → tulis potongan 1 MB, receivedSize maju
+PUT  ...?offset=1048576               → ...
+POST /uploads/sessions/<id>/complete  → template (status checking) + template_checks (stage uploaded)
+                                         ZIP dipindah ke uploads/templates/<templateId>/source.zip
+                                         event UploadCompletedEvent → thread "cek-template-1"
+GET  /uploads/<templateId>/check      ← stage: opening_zip → structure → html_library → size → done
+                                         status: draft (lolos) atau check_failed (ada Error)
+```
+
+### Upload per potongan (bisa dilanjutkan)
+
+- Setiap potongan dikirim dengan `offset` = jumlah byte yang **sudah** diterima server. Jika berbeda, server membalas `409 UPLOAD_OFFSET_MISMATCH`; app lalu memanggil `GET /uploads/sessions/<id>` dan melanjutkan dari `receivedSize`.
+- Baris sesi dikunci (`SELECT ... FOR UPDATE`) selama potongan ditulis, agar dua request yang sama tidak menulis bersamaan.
+- Jika koneksi putus **di tengah** potongan, `receivedSize` di database belum maju. App cukup mengirim ulang potongan yang sama; isinya menimpa.
+- Sesi yang tidak selesai dalam 24 jam dihapus oleh `UploadMaintenance` tiap malam.
+
+### Mesin pengecekan (`upload/check/`)
+
+`TemplateChecker` adalah class Java biasa (tanpa Spring), sehingga bisa diuji cepat. Urutannya:
+
+| Tahap | Class | Isi |
+|---|---|---|
+| Membuka ZIP | `ZipArchive`, `ZipReader` | Baca daftar isi ZIP sendiri: dikunci password, symlink, path `../` (zip slip), jumlah file, ukuran hasil ekstrak (zip bomb), folder pembungkus. Error **fatal** menghentikan pengecekan di sini |
+| Struktur | `StructureRules` | Kode sumber yang belum di-build, file konfigurasi yang diabaikan, jenis file, jumlah halaman, nama file |
+| HTML & library | `HtmlRules`, `ExternalRules`, `ReferenceRules`, `CssRules`, `ScriptRules` | Bagian 5.6 C, C2, D, E, F |
+| Ukuran | `SizeRules` | Gambar > 1 MB, berat halaman > 5 MB |
+
+Semua aturan ada di enum `CheckRule` (kode, Error/Peringatan, versi, judul). Masalah dikumpulkan di `Findings`: semua aturan tetap dijalankan dan dilaporkan sekaligus, maksimal 10 lokasi per aturan (sisanya diringkas "Dan N lokasi lain").
+
+Beberapa cara kerja yang perlu diketahui:
+
+- **Path**: `Ref.of(fileAsal, url)` mengelompokkan rujukan (lokal, luar, data:, mailto:, #anchor) dan menyelesaikan `./`, `../`, `%20`. URL di CSS dihitung dari folder file CSS-nya, bukan dari halaman HTML. Jika file hanya beda huruf besar/kecil, `CASE_MISMATCH` (Error) dicatat.
+- **Komentar dibuang dulu** (`JsScanner`) sebelum pola berbahaya dicari, agar `// fetch('https://...')` di komentar tidak dihitung. Posisi baris tetap sama.
+- **Library terkenal** di ZIP dikenali dari hash SHA-256 (`app.upload.known-libraries`) dan tidak dipindai ulang.
+- **Library dari CDN**: host harus ada di `trusted-cdn-hosts`, nama paket di `allowed-libraries`, dan versinya tiga angka lengkap (`@3.14.1`).
+- **Redirect JS** hanya ditolak jika berjalan otomatis (tingkat paling luar, `DOMContentLoaded`/`load`/`setTimeout`, atau IIFE). `location.href` di dalam handler klik (tombol WhatsApp) boleh.
+- **File sumber `.scss/.less`** (keputusan Aris): jika dimuat HTML atau tidak ada CSS hasil build → Error `UNBUILT_RESOURCE`; jika hanya ikut terbawa di samping CSS hasil build → Peringatan `SOURCE_FILES_INCLUDED`, supaya provider tahu ada file sumber yang ikut terupload.
+- **Info teknis** (`TechInfo`, kolom jsonb `templates.tech_info`): daftar halaman, library, ukuran, responsif, variabel CSS `:root` (bahan tema global di editor tandai).
+
+### Pengecekan di latar belakang (`TemplateCheckRunner`)
+
+`@TransactionalEventListener` menunggu transaksi `complete` tersimpan, lalu `@Async` menjalankannya di thread pool `cek-template-` (maks 2 sekaligus, karena isi ZIP dibaca ke memori). Setiap pindah tahap ditulis dengan transaksi pendek sendiri, sehingga app yang memantau melihat tahap berjalan. Hasil akhir:
+
+| Hasil | Template | Langkah wizard | Notifikasi |
+|---|---|---|---|
+| Tanpa Error | `draft` | 3 (Info template) | `UPLOAD_CHECK_PASSED`; notifikasi gagal sebelumnya ditandai beres |
+| Ada Error | `check_failed` | tetap 2 | `TEMPLATE_CHECK_FAILED` (muncul di "Perlu tindakan") |
+| Bug server | `check_failed` | tetap 2 | Error `CHECK_INTERNAL_ERROR`: "bukan karena file-mu" |
+
+### Draft dan kuota
+
+- Kuota 5 = draft + upload yang sedang dicek. Penuh → `409 DRAFT_LIMIT_REACHED`.
+- "Upload file perbaikan" (`templateId` diisi) menggantikan ZIP di template yang sama; versi pengecekan naik.
+- Tiap malam pukul 03.00 (`app.timezone`): draft yang tidak disentuh 25 hari mendapat notifikasi `DRAFT_EXPIRING` (sekali), yang tidak disentuh 30 hari dihapus + `DRAFT_DELETED`. `Template.touch()` mengulang hitungan setiap kali draft diubah.
+
+### Laporan keliru & Panduan
+
+- `POST /uploads/issues/<id>/report` hanya untuk Error, satu kali per Error. Laporan disimpan di `check_reports` lengkap dengan kode & versi aturan, lokasi, dan potongan kode. Template **tidak** otomatis lolos.
+- `GET /api/help/articles/<KODE>` (publik) mengembalikan artikel Panduan dari tabel `help_articles`. Aturan tanpa artikel → `404`, app membuka Panduan umum.
+
+### ZIP uji per aturan
+
+`backend/tools/buat-zip-uji.py` membuat `test-fixtures/<KODE>/gagal.zip` dan `lolos.zip` untuk setiap aturan, plus `_DASAR/bersih.zip` (template tanpa masalah sama sekali). `CheckRuleFixturesTest` memastikan setiap aturan punya pasangan ZIP, `gagal.zip` tertangkap, dan `lolos.zip` tidak. Batas ukuran di test diperkecil ±100× agar ZIP uji tetap kecil.
+
+### Uji dengan template sungguhan
+
+Saat dikembangkan, mesin ini dicoba pada template gratis populer (StartBootstrap, HTML5 UP, Tailwind Toolbox). Hasilnya sesuai aturan: Font Awesome Kit (`use.fontawesome.com`) dan script form StartBootstrap ditolak karena bukan CDN terpercaya; `noscript.css` HTML5 UP benar-benar meng-import file yang tidak ada; template Tailwind Toolbox lolos dengan 2 Peringatan.
+
+---
+
+## 26. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -1165,3 +1246,7 @@ Saat compile, Room menguji query ke SQLite sungguhan memakai library `sqlite-jdb
 | androidTest | Test yang berjalan di HP/emulator, bukan di JVM laptop |
 | Source set `debug` | Folder kode/resource yang hanya ikut ke build debug (`src/debug/`) |
 | `requestDisallowInterceptTouchEvent` | Permintaan view anak agar induknya (ScrollView/ViewPager2) tidak mengambil alih geseran yang sedang berlangsung |
+| Zip slip / zip bomb | ZIP berisi path `../` yang menulis ke luar folder / ZIP kecil yang mengembang sangat besar saat diekstrak |
+| Upload per potongan | File dikirim sepotong-sepotong; server mencatat posisi terakhir sehingga upload bisa dilanjutkan |
+| `@Async` | Method dijalankan di thread lain; pemanggil tidak menunggu |
+| Fixture | Data contoh untuk test (di sini: ZIP uji per aturan) |
