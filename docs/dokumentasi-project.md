@@ -46,7 +46,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 23. [Backend galeri Template & profil pembuat website](#23-backend-galeri-template--profil-pembuat-website)
 24. [Dashboard Pembuat Website di Android](#24-dashboard-pembuat-website-di-android)
 25. [Backend Upload dan mesin pengecekan](#25-backend-upload-dan-mesin-pengecekan)
-26. [Glosarium](#26-glosarium)
+26. [Upload di Android (langkah 1–3)](#26-upload-di-android-langkah-13)
+27. [Glosarium](#27-glosarium)
 
 ---
 
@@ -1187,7 +1188,58 @@ Saat dikembangkan, mesin ini dicoba pada template gratis populer (StartBootstrap
 
 ---
 
-## 26. Glosarium
+## 26. Upload di Android (langkah 1–3)
+
+Bab ini melanjutkan bab 25 di sisi app. Semua layar wizard adalah layar penuh di atas Dashboard Provider (`UploadNav`), sehingga bottom navigation tersembunyi.
+
+### Alur layar
+
+```
+Tab Upload (ProviderUploadFragment)
+  Kondisi A: kotak "Pilih file ZIP" + Sebelum upload + Alur upload
+  Kondisi B: Perlu diperbaiki → Sedang dicek → Lanjutkan draft (n dari 5) → Upload template baru
+        │ ZipPicker (pemilih file sistem)
+        ▼
+UploadCheckFragment (langkah 2)
+  cek kilat di HP → [data seluler & > 10 MB? tanya] → upload per potongan → tahap server → tahap C di HP
+        ├─ gagal  → "Belum memenuhi standar" (Pelajari, Laporkan, Upload file perbaikan, Nanti saja)
+        └─ lolos  → Lanjut
+        ▼
+UploadInfoFragment (langkah 3) → UploadMarkFragment (langkah 4, Fase 17)
+```
+
+### Upload yang bisa dilanjutkan
+
+`UploadRepository.upload` membaca file sepotong demi sepotong lewat `ContentResolver` (file dari pemilih berupa *content URI*, bukan path). Jika sebuah potongan gagal karena jaringan, app menunggu 2, 4, 8, 16, lalu 32 detik, menanyakan posisi terakhir ke server, lalu melanjutkan. Jika tetap gagal, layar menampilkan **Coba lagi**, yang melanjutkan sesi yang sama.
+
+### Menampilkan template dengan aman
+
+| Bagian | Cara |
+|---|---|
+| File situs | ZIP diekstrak `LocalSiteStore` ke `files/upload-sites/<templateId>/`; path `../` dan file sampah dilewati |
+| Menyajikan file | `WebViewAssetLoader` + `LocalSitePathHandler` di `https://appassets.androidplatform.net/`; path diawali `/` dibaca dari folder utama |
+| Internet | Hanya host dari `GET /uploads/settings` (CDN terpercaya, Google Fonts, YouTube/Maps); permintaan lain dibalas 403 |
+| Pindah situs | Diblokir (`shouldOverrideUrlLoading`) |
+| WebView mati karena memori | `onRenderProcessGone` melepas WebView itu saja, app tidak ikut tertutup |
+
+### WebView tersembunyi (`OffscreenPage`)
+
+Dipakai untuk tahap C dan thumbnail. Lebarnya ditentukan dalam piksel CSS (390 = HP, 1280 = Desktop) lalu dikali kepadatan layar; tingginya sama dengan lebar agar potretnya persegi. WebView ditaruh di belakang isi layar dan digambar dengan CPU (`LAYER_TYPE_SOFTWARE`), supaya `draw()` ke Bitmap selalu berisi tampilan halaman.
+
+- **Tahap C** (`DeviceChecker`): setiap halaman dimuat di lebar HP; error dari console WebView menjadi `JS_RUNTIME_ERROR`, `scrollWidth > innerWidth` menjadi `HORIZONTAL_OVERFLOW`. Hasilnya dikirim ke `PUT /uploads/{id}/device-warnings` (maks 20, hanya Peringatan).
+- **Thumbnail** (`ThumbnailCapture`): bagian atas index.html (Otomatis), atau section pilihan dari `assets/upload/sections.js` (deteksi berlapis: `data-section` → tag semantik → membaca tampilan → seluruh halaman). Gambar provider dipotong persegi di tengah. Semua menjadi JPEG 720 px < 1 MB.
+
+### Info template
+
+Isian diisi sekali dari server, lalu form menjadi sumber kebenaran. Setiap perubahan dikirim setelah jeda 800 ms, hanya field yang berubah (`PATCH /uploads/{id}/info`); jika gagal, field itu masuk antrean lagi. **Lanjut** aktif setelah nama 3–60 karakter, kategori, deskripsi 20–300 karakter, dan minimal 1 kata kunci. Nama yang sama dengan template lain milik provider memunculkan peringatan di bawah input.
+
+### Daftar masalah yang sama di dua layar
+
+`IssueListBinder` dipakai layar "Belum memenuhi standar" dan Detail template: judul aturan, pesan, letak, saran, tautan **Pelajari cara memperbaikinya** (artikel dari server; jika belum ada, Panduan "Syarat lolos pengecekan"), dan **Ini keliru? Laporkan** untuk setiap Error.
+
+---
+
+## 27. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -1250,3 +1302,5 @@ Saat dikembangkan, mesin ini dicoba pada template gratis populer (StartBootstrap
 | Upload per potongan | File dikirim sepotong-sepotong; server mencatat posisi terakhir sehingga upload bisa dilanjutkan |
 | `@Async` | Method dijalankan di thread lain; pemanggil tidak menunggu |
 | Fixture | Data contoh untuk test (di sini: ZIP uji per aturan) |
+| WebViewAssetLoader | Cara menyajikan file lokal ke WebView lewat alamat https khusus, lebih aman daripada `file://` |
+| Debounce | Menunda aksi sampai pengguna berhenti mengetik sebentar |

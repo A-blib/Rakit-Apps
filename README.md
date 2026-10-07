@@ -22,7 +22,8 @@
 | Backend galeri Template publik (`GET /api/templates`), edit profil pembuat website | Sudah (Fase 13) |
 | Android Dashboard Pembuat Website: Beranda (Mulai, Lanjutkan project, Template untuk anda, panduan), tab Project (Room: cari, filter, urutan, ganti nama, duplikat, hapus), tombol +, galeri Template, Profil + edit, editor template/custom "Segera hadir" | Sudah (Fase 14) |
 | Backend Upload: ZIP per potongan (bisa dilanjutkan), mesin pengecekan 67 aturan + ZIP uji, draft & kuota, laporan "Ini keliru?", artikel Panduan | Sudah (Fase 15) |
-| Upload template di Android (Fase 16–18), push notification | Sedang dibangun (lihat `docs/rancangan/alur-fitur-upload.md`); push ditunda |
+| Android Upload langkah 1–3: tab Upload (draft, perlu diperbaiki), pilih ZIP + cek kilat, upload dengan progres & lanjut otomatis, daftar tahap pengecekan, cek di WebView HP, "Belum memenuhi standar" + Panduan + laporan keliru, Info template + thumbnail | Sudah (Fase 16), menunggu uji di HP |
+| Upload langkah 4–6 (Tandai, Coba, Kirim), push notification | Sedang dibangun (Fase 17–18); push ditunda |
 | Editor website (template & custom mode), export ZIP | Segera hadir (layar editor sudah ada, isinya menunggu diskusi) |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
@@ -130,6 +131,7 @@ Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan 
 | Credentials / Google ID | 1.6.0 / 1.2.1 |
 | Browser (Custom Tabs) | 1.10.0 |
 | Room (database project di HP) | 2.8.5 |
+| androidx.webkit (WebViewAssetLoader untuk Upload) | 1.17.1 |
 | JUnit / arch core-testing | 4.13.2 / 2.2.0 |
 | Font Geist Sans & Geist Mono | 1.7.2 (SIL OFL 1.1, lisensi di `app/src/main/assets/licenses/geist-OFL.txt`) |
 | Ikon | Material Symbols Outlined (Apache 2.0), disalin sebagai vector drawable `ic_*.xml` |
