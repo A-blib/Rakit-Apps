@@ -3,7 +3,10 @@ package com.aris.templateapp.ui.upload;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.text.InputType;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -17,13 +20,13 @@ import com.aris.templateapp.R;
 import com.aris.templateapp.data.remote.dto.MarkingDto;
 import com.aris.templateapp.databinding.ItemTryFieldBinding;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.slider.TickVisibilityMode;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -45,12 +48,15 @@ final class TryForm {
     private static final Pattern HEX = Pattern.compile("^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$");
     // Rasio kontras minimal agar teks masih terbaca (WCAG untuk teks besar).
     private static final double MIN_CONTRAST = 3.0;
+    // Jumlah isian yang dibuat per frame saat membangun form (lihat addFieldsFrom).
+    private static final int FIELDS_PER_FRAME = 3;
 
     private final Context context;
     private final LinearLayout container;
     private final TrySession session;
     private final String templateId;
     private final Listener listener;
+    private int buildGeneration;
 
     TryForm(LinearLayout container, TrySession session, String templateId, Listener listener) {
         this.context = container.getContext();
@@ -67,23 +73,44 @@ final class TryForm {
      */
     void build(MarkingDto marking, @Nullable String sectionId, Map<String, String> originals,
                Map<String, String> originalHrefs) {
+        // Build lama yang belum selesai dibatalkan: sisa potongannya melihat nomor build yang sudah berganti.
+        int build = ++buildGeneration;
         container.removeAllViews();
         if (sectionId == null && marking.theme != null && !marking.theme.isEmpty()) {
             addTheme(marking);
         }
-        int shown = 0;
+        List<MarkingDto.Field> fields = new ArrayList<>();
         for (MarkingDto.Field field : marking.fields) {
-            if (sectionId != null && !sectionId.equals(field.sectionId)) {
-                continue;
+            if (sectionId == null || sectionId.equals(field.sectionId)) {
+                fields.add(field);
             }
-            addField(field, originals.get(field.key), originalHrefs.get(field.key));
-            shown++;
         }
-        if (shown == 0 && container.getChildCount() == 0) {
+        if (fields.isEmpty() && container.getChildCount() == 0) {
             TextView empty = new TextView(context);
             empty.setTextAppearance(R.style.TextAppearance_App_Body);
             empty.setText(R.string.try_empty);
             container.addView(empty);
+            return;
+        }
+        addFieldsFrom(fields, 0, build, originals, originalHrefs);
+    }
+
+    /**
+     * Isian dibuat beberapa per frame. Template besar bisa punya puluhan isian bergaya; membuat semuanya sekaligus
+     * menahan layar lebih dari satu detik (bahkan ANR), sedangkan bertahap membuat form langsung bisa dipakai.
+     */
+    private void addFieldsFrom(List<MarkingDto.Field> fields, int start, int build, Map<String, String> originals,
+                               Map<String, String> originalHrefs) {
+        if (build != buildGeneration) {
+            return;
+        }
+        int end = Math.min(fields.size(), start + FIELDS_PER_FRAME);
+        for (int i = start; i < end; i++) {
+            MarkingDto.Field field = fields.get(i);
+            addField(field, originals.get(field.key), originalHrefs.get(field.key));
+        }
+        if (end < fields.size()) {
+            container.post(() -> addFieldsFrom(fields, end, build, originals, originalHrefs));
         }
     }
 
@@ -282,47 +309,84 @@ final class TryForm {
         void onChanged(@Nullable String color);
     }
 
-    /** Pilihan warna cepat + kode warna sendiri; "Asli" mengembalikan warna bawaan template. */
+    /**
+     * Pilihan warna cepat + kode warna sendiri; "Asli" mengembalikan warna bawaan template.
+     * Contoh warna dibuat dari View biasa, bukan Chip: template besar bisa punya puluhan pemilih warna, dan ratusan
+     * Chip membuat form butuh beberapa detik untuk tampil.
+     */
     private void addColorPicker(LinearLayout parent, @Nullable String current, ColorChanged changed) {
         HorizontalScrollView scroll = new HorizontalScrollView(context);
         scroll.setHorizontalScrollBarEnabled(false);
-        ChipGroup chips = new ChipGroup(context);
-        chips.setSingleLine(true);
-        chips.setSingleSelection(true);
-        scroll.addView(chips);
+        LinearLayout options = new LinearLayout(context);
+        options.setOrientation(LinearLayout.HORIZONTAL);
+        options.setGravity(Gravity.CENTER_VERTICAL);
+        scroll.addView(options);
         parent.addView(scroll);
         EditText hex = addInput(parent, context.getString(R.string.try_color_custom), false, null);
         hex.setText(current);
 
-        Chip original = new Chip(context);
+        List<View> all = new ArrayList<>();
+        TextView original = new TextView(context);
         original.setText(R.string.try_color_original);
-        original.setCheckable(true);
-        original.setChecked(current == null);
+        original.setTextAppearance(R.style.TextAppearance_App_BodySmall);
+        original.setGravity(Gravity.CENTER);
+        original.setMinHeight(px(R.dimen.touch_target_min));
+        original.setPadding(px(R.dimen.space_3), 0, px(R.dimen.space_3), 0);
         original.setOnClickListener(v -> {
+            select(all, original);
             hex.setText(null);
             changed.onChanged(null);
         });
-        chips.addView(original);
+        all.add(original);
+        options.addView(original);
+        View selected = current == null ? original : null;
         for (String color : context.getResources().getStringArray(R.array.try_color_presets)) {
-            Chip chip = new Chip(context);
-            chip.setCheckable(true);
-            chip.setChecked(color.equalsIgnoreCase(current));
-            chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(color)));
-            chip.setChipStrokeWidth(px(R.dimen.border_width));
-            chip.setChipMinHeight(px(R.dimen.color_swatch_size));
-            chip.setContentDescription(context.getString(R.string.cd_color, color));
-            chip.setOnClickListener(v -> {
+            View swatch = new View(context);
+            swatch.setTag(Color.parseColor(color));
+            swatch.setContentDescription(context.getString(R.string.cd_color, color));
+            swatch.setOnClickListener(v -> {
+                select(all, swatch);
                 hex.setText(color);
                 changed.onChanged(color);
             });
-            chips.addView(chip);
+            all.add(swatch);
+            int size = px(R.dimen.touch_target_min);
+            options.addView(swatch, new LinearLayout.LayoutParams(size, size));
+            if (color.equalsIgnoreCase(current)) {
+                selected = swatch;
+            }
         }
+        select(all, selected);
         hex.addTextChangedListener(new UploadInfoFragment.AfterChange(text -> {
             String clean = text.trim();
             if (HEX.matcher(clean).matches()) {
                 changed.onChanged(clean);
             }
         }));
+    }
+
+    /** Menggambar ulang pilihan warna: yang terpilih bergaris tebal warna foreground, sisanya garis tipis. */
+    private void select(List<View> options, @Nullable View selected) {
+        int thin = px(R.dimen.border_width);
+        int border = context.getColor(R.color.color_border);
+        int foreground = context.getColor(R.color.color_foreground);
+        // Area sentuh 48dp, lingkaran warna yang terlihat 32dp di tengahnya.
+        int inset = (px(R.dimen.touch_target_min) - px(R.dimen.color_swatch_size)) / 2;
+        for (View option : options) {
+            boolean on = option == selected;
+            option.setSelected(on);
+            GradientDrawable shape = new GradientDrawable();
+            shape.setStroke(on ? thin * 2 : thin, on ? foreground : border);
+            if (option.getTag() instanceof Integer) {
+                shape.setShape(GradientDrawable.OVAL);
+                shape.setColor((Integer) option.getTag());
+                option.setBackground(new InsetDrawable(shape, inset));
+            } else {
+                shape.setCornerRadius(px(R.dimen.radius_small));
+                shape.setColor(Color.TRANSPARENT);
+                option.setBackground(new InsetDrawable(shape, 0, inset, 0, inset));
+            }
+        }
     }
 
     /** Peringatan kontras jika warna teks dan latar yang dipilih terlalu mirip (bagian 7.11). */

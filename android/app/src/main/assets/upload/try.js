@@ -63,17 +63,19 @@
       return true;
     },
 
-    /* Nilai asli (teks/link/gambar) sebuah elemen, untuk mengisi form saat pertama kali dibuka. */
-    original: function (id) {
-      var el = byId(id);
-      if (!el) { return JSON.stringify(null); }
-      var cs = window.getComputedStyle(el);
-      return JSON.stringify({
-        text: (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim(),
-        href: el.getAttribute('href') || '',
-        fontSize: parseFloat(cs.fontSize) || 0,
-        radius: parseFloat(cs.borderTopLeftRadius) || 0
+    /* Nilai asli (teks/link) beberapa elemen sekaligus, untuk mengisi form saat pertama kali dibuka.
+       Satu panggilan untuk semua isian: puluhan panggilan terpisah membuat app tersendat. */
+    originals: function (ids) {
+      var result = {};
+      ids.forEach(function (id) {
+        var el = byId(id);
+        if (!el) { return; }
+        result[id] = {
+          text: (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim(),
+          href: el.getAttribute('href') || ''
+        };
       });
+      return JSON.stringify(result);
     }
   };
 })();

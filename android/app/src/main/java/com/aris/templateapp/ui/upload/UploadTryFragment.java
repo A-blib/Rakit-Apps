@@ -35,6 +35,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
 
     private static final int IMAGE_MAX_SIDE = 1200;
 
-    /** Teks dan alamat link asli satu elemen (dari {@code RakitTry.original}). */
+    /** Teks dan alamat link asli satu elemen (dari {@code RakitTry.originals}). */
     static class Original {
         String text;
         String href;
@@ -81,6 +82,8 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
     private TryForm form;
     private final Map<String, String> originals = new HashMap<>();
     private final Map<String, String> originalHrefs = new HashMap<>();
+    // Mencegah permintaan ganda saat halaman melapor "selesai dimuat" lebih dari sekali.
+    private boolean loadingOriginals;
     private final Gson gson = new Gson();
     @Nullable
     private String pendingImageKey;
@@ -187,6 +190,8 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
             binding.webFrame.removeView(webView);
             webView.destroy();
         }
+        // Jawaban dari WebView lama tidak akan datang lagi.
+        loadingOriginals = false;
         WebView view = new WebView(requireContext());
         boolean desktop = "desktop".equals(viewModel.view());
         try {
@@ -266,63 +271,61 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
         webView.evaluateJavascript("window.RakitTry && RakitTry.apply(" + gson.toJson(payload) + ")", null);
     }
 
-    /** Teks dan link asli elemen di halaman ini dipakai sebagai isi awal form (sekali per isian). */
+    /**
+     * Teks dan link asli elemen di halaman ini dipakai sebagai isi awal form (sekali per isian). Semua diambil dalam
+     * satu panggilan JavaScript, lalu form dibangun sekali; membangun form berkali-kali membuat layar beku (ANR).
+     */
     private void loadOriginals() {
-        if (webView == null || ready == null) {
+        if (webView == null || ready == null || loadingOriginals) {
             return;
         }
         String page = viewModel.page();
+        Map<Integer, List<String>> keysById = new LinkedHashMap<>();
         for (MarkingDto.Field field : ready.marking.fields) {
-            if (originals.containsKey(field.key) || field.elements.isEmpty()) {
+            if (originals.containsKey(field.key)) {
                 continue;
             }
-            MarkingDto.Element element = null;
             for (MarkingDto.Element e : field.elements) {
                 if (e.page.equals(page)) {
-                    element = e;
-                    break;
-                }
-            }
-            if (element == null) {
-                continue;
-            }
-            String key = field.key;
-            webView.evaluateJavascript("window.RakitTry && RakitTry.original(" + element.tplId + ")", value -> {
-                Original original = parse(value);
-                if (original != null && binding != null) {
-                    originals.put(key, original.text);
-                    originalHrefs.put(key, original.href);
-                    if (originals.size() == countOnPage(page)) {
-                        buildForm();
-                    }
-                }
-            });
-        }
-    }
-
-    private int countOnPage(String page) {
-        int count = 0;
-        for (MarkingDto.Field field : ready.marking.fields) {
-            for (MarkingDto.Element element : field.elements) {
-                if (element.page.equals(page)) {
-                    count++;
+                    keysById.computeIfAbsent(e.tplId, id -> new ArrayList<>()).add(field.key);
                     break;
                 }
             }
         }
-        return count;
+        if (keysById.isEmpty()) {
+            return;
+        }
+        loadingOriginals = true;
+        String ids = gson.toJson(new ArrayList<>(keysById.keySet()));
+        webView.evaluateJavascript("window.RakitTry ? RakitTry.originals(" + ids + ") : null", value -> {
+            loadingOriginals = false;
+            if (binding == null) {
+                return;
+            }
+            Map<String, Original> found = parseOriginals(value);
+            for (Map.Entry<Integer, List<String>> entry : keysById.entrySet()) {
+                Original original = found.get(String.valueOf(entry.getKey()));
+                for (String key : entry.getValue()) {
+                    // Disimpan walau elemennya tidak ditemukan, agar tidak diminta ulang terus.
+                    originals.put(key, original == null ? null : original.text);
+                    originalHrefs.put(key, original == null ? null : original.href);
+                }
+            }
+            buildForm();
+        });
     }
 
-    @Nullable
-    private Original parse(@Nullable String evaluated) {
+    private Map<String, Original> parseOriginals(@Nullable String evaluated) {
         try {
             if (evaluated == null || evaluated.equals("null")) {
-                return null;
+                return Collections.emptyMap();
             }
             JsonElement element = JsonParser.parseString(evaluated);
-            return gson.fromJson(element.getAsString(), Original.class);
+            Map<String, Original> map = gson.fromJson(element.getAsString(),
+                    new TypeToken<Map<String, Original>>() { }.getType());
+            return map == null ? Collections.emptyMap() : map;
         } catch (RuntimeException e) {
-            return null;
+            return Collections.emptyMap();
         }
     }
 
