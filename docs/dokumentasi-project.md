@@ -50,7 +50,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 27. [Editor Tandai bagian](#27-editor-tandai-bagian)
 28. [Coba, Kirim, dan paket template](#28-coba-kirim-dan-paket-template)
 29. [Paket template untuk pembuat website](#29-paket-template-untuk-pembuat-website)
-30. [Glosarium](#30-glosarium)
+30. [Editor template mode di Android](#30-editor-template-mode-di-android)
+31. [Glosarium](#31-glosarium)
 
 ---
 
@@ -1402,7 +1403,59 @@ Aturan tampilnya sama dengan galeri: hanya template `published` milik provider `
 - `PackageManifestBackfill` berjalan setiap backend start: template tayang yang `package_size`-nya masih kosong dilengkapi manifest. Setelah itu tidak disentuh lagi.
 - `DemoPackages` membuat paket contoh dari `resources/seed/template-packages/{slug}/` (`site/` + `marking.json`). Elemen di `marking.json` ditunjuk dengan **selector CSS**, lalu diubah menjadi nomor `data-tpl-id`, kemudian diproses `PackageBuilder` + `ManifestBuilder` yang sama dengan Kirim sungguhan. Gambar contohnya dibuat `tools/buat-gambar-demo.py`.
 
-## 30. Glosarium
+## 30. Editor template mode di Android
+
+Rancangan: [`alur-buat-website-via-template.md`](rancangan/alur-buat-website-via-template.md). Alur besarnya:
+
+```
+Galeri → klik template → Layar Unduh (sekali) → Editor → (Kelengkapan) → Export ZIP → Selesai + Panduan
+```
+
+### Layar Unduh (`ui/template/`)
+
+`TemplateDownloadViewModel` mencatat "Dilihat", lalu memeriksa tabel `template_packages`. Jika paket sudah ada, editor langsung dibuka. Jika belum: detail dimuat, (dialog data seluler untuk paket > 10 MB), lalu `TemplatePackageRepository.download` menulis ZIP ke cache, `PackageExtractor` mengekstraknya ke `files/templates/{id}/.tmp-1/`, dan folder itu diganti nama menjadi `files/templates/{id}/1/`. Entri ZIP dengan path berbahaya membuat paket ditolak.
+
+### Data di HP
+
+| Tempat | Isi |
+|---|---|
+| Room `projects` | metadata project + `source_template_id`, `template_version`, `status`, `missing_count`, `last_exported_at` |
+| Room `template_packages` | paket yang sudah diunduh (folder, ukuran, waktu dipakai); paket tak terpakai > 30 hari dihapus saat app dibuka |
+| Room `pending_events` | event "view"/"download" yang belum terkirim; dikirim `SendEventsWorker` (WorkManager) saat online |
+| `files/projects/{id}/values.json` | nilai isian, gaya, tema (`ProjectValues`) |
+| `files/projects/{id}/images/` | foto pilihan user (WebP) |
+
+Database naik ke versi 2 lewat **AutoMigration** (hanya menambah tabel & kolom yang boleh kosong).
+
+### Editor (`ui/editor/`)
+
+| Class | Tugas |
+|---|---|
+| `TemplateEditorFragment` | Tiga zona (app bar, preview, bottom sheet), chip section ✓/·N, tab Isi/Gaya, pemilih halaman, HP/Desktop, preview layar penuh, mode fokus keyboard, Photo Picker |
+| `TemplateEditorViewModel` | Nilai di memori, undo/redo (50 langkah), autosave 500 ms, project dibuat saat perubahan pertama, export |
+| `EditorPreview` + `assets/editor/editor.js` | WebView aman; skrip `RakitEditor.apply/setField/css/highlight/computed`; ketukan elemen → `RakitBridge.tap(key)` |
+| `EditorForm` | Form per jenis isian & kontrol gaya; dibangun 3 isian per frame |
+| `CompletenessDialog`, `ExportDialog`, `ExportDoneDialog` | Layar penuh di atas editor, memakai ViewModel editor |
+
+Perubahan di form → ViewModel → `Change(key)` → `RakitEditor.setField(...)` (tanpa memuat ulang halaman). Undo/redo/reset → `RakitEditor.apply(...)` untuk semua isian.
+
+### Logika murni (`core/template/`, diuji di laptop)
+
+| Class | Aturan |
+|---|---|
+| `CompletenessChecker` | Perlu dilengkapi: wajib kosong, wajib masih contoh, link tidak valid. Saran: opsional masih contoh. Status: draft/ready, atau exported jika pernah diexport |
+| `CustomCss` | `:root{…}` + `[data-key="k"]{…!important}` (preview) / `.ws-k{…}` (export); hanya hex valid & angka dalam rentang |
+| `LinkRules` | Hanya `https://`, `http://`, `mailto:`, `tel:`, `https://wa.me/…`; nomor WhatsApp → `wa.me/62…` |
+| `ColorContrast` | Rasio kontras WCAG, peringatan di bawah 4,5 |
+| `ImageProcessor` | EXIF, potong tengah sesuai rasio, maks 1920 px, WebP 80 |
+| `ProjectExporter` | jsoup: terapkan nilai, `img/user/`, `custom.css` terakhir di `<head>`, hapus atribut `data-*` app, buang manifest & foto contoh yang diganti |
+| `ExportNames` | "Dapur Mama Rina" → `dapur-mama-rina.zip` |
+
+### Export
+
+ZIP dibuat di `cache/exports/` (thread disk yang sama dengan autosave, jadi isi terakhir pasti tersimpan). **Simpan ke HP** menyalinnya ke lokasi pilihan user (`ACTION_CREATE_DOCUMENT`); **Bagikan** memakai `FileProvider` (`res/xml/file_paths.xml`, hanya folder `exports/`). Setelah itu project menjadi **Diexport**; export pertama project berbasis template memasukkan event `download` ke antrean.
+
+## 31. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|

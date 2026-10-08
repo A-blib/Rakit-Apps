@@ -471,6 +471,13 @@ Hasil yang benar: `BUILD SUCCESS` dan semua test lulus.
 - ZIP uji pengecekan ada di `backend/src/test/resources/test-fixtures/`. Jika kamu menambah/mengubah aturan pengecekan, buat ulang ZIP-nya dengan Python 3 (🪟 `py tools\buat-zip-uji.py`  🐧 `python3 tools/buat-zip-uji.py`, dari folder `backend`). Python **tidak** dibutuhkan hanya untuk menjalankan test.
 - Di Android Studio klik **Sync Now** setelah menarik perubahan ini, karena ada library baru `androidx.webkit`.
 
+**Buat website via template (Fase 19–26).** Tidak ada software baru yang wajib dipasang:
+
+- Di Android Studio klik **Sync Now** setelah menarik perubahan ini, karena ada library baru **WorkManager** dan **jsoup**.
+- Database HP naik ke versi 2 secara otomatis (project lama tetap ada).
+- Agar 3 template demo di galeri bisa dipakai di editor, jalankan backend dengan seeder demo (`--app.seed.demo-templates=true`). Akun demo yang sudah ada otomatis dilengkapi paket contohnya saat backend start; tidak perlu menghapus data.
+- Gambar contoh paket demo dibuat dengan Python 3 (🪟 `py tools\buat-gambar-demo.py`  🐧 `python3 tools/buat-gambar-demo.py`, dari folder `backend`), hanya jika gambarnya ingin diubah. Butuh library Pillow.
+
 ---
 
 ## 7. Login Google: SHA-1 laptopmu
