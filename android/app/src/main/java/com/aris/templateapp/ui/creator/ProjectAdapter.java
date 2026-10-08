@@ -40,6 +40,7 @@ public class ProjectAdapter extends ListAdapter<ProjectEntity, ProjectAdapter.Ho
         ItemProjectBinding b = holder.binding;
         b.name.setText(project.name);
         ProjectUi.bindStatusBadge(b.statusBadge, project.status);
+        ProjectThumbnails.load(b.thumbnail, project.thumbnailPath);
         b.mode.setText(ProjectUi.modeLabel(project.mode));
         b.edited.setText(ProjectUi.timeLine(b.getRoot().getContext(), project));
         ProjectUi.bindInfo(b.info, project);

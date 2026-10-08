@@ -134,6 +134,12 @@ public class CompletenessDialog extends DialogFragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        FullScreenDialogs.apply(this, binding.getRoot());
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;

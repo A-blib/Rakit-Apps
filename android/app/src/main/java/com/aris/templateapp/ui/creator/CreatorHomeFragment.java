@@ -105,6 +105,7 @@ public class CreatorHomeFragment extends Fragment {
         }
         ProjectEntity latest = projects.get(0);
         binding.continueLarge.name.setText(latest.name);
+        ProjectThumbnails.load(binding.continueLarge.thumbnail, latest.thumbnailPath);
         binding.continueLarge.status.setText(ProjectUi.compactStatus(requireContext(), latest));
         ProjectUi.bindInfo(binding.continueLarge.info, latest);
         binding.continueLarge.getRoot().setOnClickListener(v -> EditorNav.openProject(this, latest));

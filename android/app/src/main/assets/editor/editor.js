@@ -150,6 +150,8 @@
           node = node.parentElement;
           bg = window.getComputedStyle(node).backgroundColor;
         }
+        // Sampai <html> tetap transparan: browser menampilkan latar putih.
+        if (bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') { bg = 'rgb(255, 255, 255)'; }
         result[key] = { fontSize: parseFloat(cs.fontSize) || 0, radius: parseFloat(cs.borderTopLeftRadius) || 0,
                         color: cs.color, background: bg };
       });

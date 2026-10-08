@@ -60,6 +60,7 @@
     <string name="editor_whatsapp_button">Pakai nomor WhatsApp</string>
     <string name="editor_whatsapp_title">Nomor WhatsApp</string>
     <string name="editor_whatsapp_number">Nomor, mis. 0812 3456 7890</string>
+    <string name="editor_whatsapp_invalid">Nomor WhatsApp tidak valid. Contoh: 0812 3456 7890</string>
     <string name="editor_use">Pakai</string>
     <string name="editor_change_image">Ganti foto</string>
     <string name="editor_reset_image">Kembalikan foto contoh</string>
@@ -71,8 +72,6 @@
     <string name="editor_warning_sample_link">Masih link contoh</string>
     <string name="editor_theme_title">Tema website</string>
     <string name="editor_section_title">Section %1$s</string>
-    <string name="editor_color">Warna</string>
-    <string name="editor_size">Ukuran</string>
     <string name="editor_color_title">Pilih warna</string>
     <string name="editor_color_invalid">Kode warna harus seperti #1E3A8A</string>
     <string name="editor_reset_style">Kembalikan ke gaya asli</string>

@@ -260,29 +260,38 @@ final class EditorForm {
         layout.setError(invalid ? context.getString(R.string.editor_link_invalid) : null);
     }
 
-    /** Bantuan WhatsApp (bagian 6.4): nomor biasa → https://wa.me/62… */
+    /** Bantuan WhatsApp (bagian 6.4): nomor biasa → https://wa.me/62… Nomor tidak valid diberi pesan, dialog tetap terbuka. */
     private void askWhatsapp(EditText hrefInput) {
         TextInputLayout layout = new TextInputLayout(context, null, com.google.android.material.R.attr.textInputOutlinedStyle);
         layout.setHint(context.getString(R.string.editor_whatsapp_number));
         TextInputEditText number = new TextInputEditText(layout.getContext());
         number.setInputType(InputType.TYPE_CLASS_PHONE);
         number.setText(LinkRules.whatsappNumber(hrefInput.getText().toString()));
+        // Nomor lama (sering nomor contoh) langsung terpilih, jadi mengetik menggantinya, bukan menambah di belakangnya.
+        number.setSelectAllOnFocus(true);
         layout.addView(number);
         FrameLayout frame = new FrameLayout(context);
         int padding = px(R.dimen.screen_padding_horizontal);
         frame.setPadding(padding, px(R.dimen.space_2), padding, 0);
         frame.addView(layout);
-        new MaterialAlertDialogBuilder(context)
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.editor_whatsapp_title)
                 .setView(frame)
                 .setNegativeButton(R.string.action_cancel, null)
-                .setPositiveButton(R.string.editor_use, (d, w) -> {
+                .setPositiveButton(R.string.editor_use, null)
+                .create();
+        dialog.setOnShowListener(d -> dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+                .setOnClickListener(v -> {
                     String link = LinkRules.whatsappLink(String.valueOf(number.getText()));
-                    if (link != null) {
-                        hrefInput.setText(link);
+                    if (link == null) {
+                        layout.setError(context.getString(R.string.editor_whatsapp_invalid));
+                        return;
                     }
-                })
-                .show();
+                    hrefInput.setText(link);
+                    dialog.dismiss();
+                }));
+        dialog.show();
+        number.requestFocus();
     }
 
     private void addImage(ItemEditorFieldBinding row, TemplateManifest.Field field,
@@ -445,42 +454,53 @@ final class EditorForm {
         ItemEditorFieldBinding row = ItemEditorFieldBinding.inflate(LayoutInflater.from(context), container, true);
         row.label.setText(field.label);
         Map<String, String> chosen = values.styles.get(field.key);
+        // Salinan yang ikut berubah saat user memilih, agar peringatan kontras langsung diperbarui tanpa membangun
+        // ulang form (membangun ulang membuat posisi gulir melompat).
+        Map<String, String> live = chosen == null ? new HashMap<>() : new HashMap<>(chosen);
         for (TemplateManifest.Style style : field.styles) {
-            String current = chosen == null ? null : chosen.get(style.prop);
+            String current = live.get(style.prop);
+            ValueChanged changed = value -> {
+                if (value == null) {
+                    live.remove(style.prop);
+                } else {
+                    live.put(style.prop, value);
+                }
+                updateContrast(row, live, computed);
+                listener.onStyle(field.key, style.prop, value);
+            };
             switch (style.prop) {
                 case "color":
                     addColorRow(row.inputs, context.getString(R.string.mark_style_color), current,
-                            computed == null ? null : ColorContrast.toHex(computed.color),
-                            color -> listener.onStyle(field.key, style.prop, color));
+                            computed == null ? null : ColorContrast.toHex(computed.color), changed);
                     break;
                 case "background-color":
                     addColorRow(row.inputs, context.getString(R.string.mark_style_background), current,
-                            computed == null ? null : ColorContrast.toHex(computed.background),
-                            color -> listener.onStyle(field.key, style.prop, color));
+                            computed == null ? null : ColorContrast.toHex(computed.background), changed);
                     break;
                 case "font-size":
                     addSizeRow(row.inputs, context.getString(R.string.mark_style_font),
                             style.min == null ? 12 : style.min, style.max == null ? 48 : style.max, current,
-                            computed == null ? null : Math.round(computed.fontSize),
-                            size -> listener.onStyle(field.key, style.prop, size));
+                            computed == null ? null : Math.round(computed.fontSize), changed);
                     break;
                 case "border-radius":
                     addSizeRow(row.inputs, context.getString(R.string.mark_style_radius),
                             style.min == null ? 0 : style.min, style.max == null ? 32 : style.max, current,
-                            computed == null ? null : Math.round(computed.radius),
-                            size -> listener.onStyle(field.key, style.prop, size));
+                            computed == null ? null : Math.round(computed.radius), changed);
                     break;
                 default:
                     break;
             }
         }
-        String fg = chosen != null && chosen.get("color") != null ? chosen.get("color")
-                : computed == null ? null : computed.color;
-        String bg = chosen != null && chosen.get("background-color") != null ? chosen.get("background-color")
+        updateContrast(row, live, computed);
+    }
+
+    /** Peringatan kontras (bagian 6.5) hanya jika user mengubah warna teks/latar; tidak memblokir. */
+    private void updateContrast(ItemEditorFieldBinding row, Map<String, String> live, @Nullable Computed computed) {
+        String fg = live.get("color") != null ? live.get("color") : computed == null ? null : computed.color;
+        String bg = live.get("background-color") != null ? live.get("background-color")
                 : computed == null ? null : computed.background;
-        boolean styled = chosen != null && (chosen.containsKey("color") || chosen.containsKey("background-color"));
-        boolean low = styled && ColorContrast.isLow(fg, bg);
-        row.warning.setVisibility(low ? View.VISIBLE : View.GONE);
+        boolean styled = live.containsKey("color") || live.containsKey("background-color");
+        row.warning.setVisibility(styled && ColorContrast.isLow(fg, bg) ? View.VISIBLE : View.GONE);
         row.warning.setText(R.string.editor_contrast_low);
     }
 
@@ -495,26 +515,27 @@ final class EditorForm {
         line.setOrientation(LinearLayout.HORIZONTAL);
         line.setGravity(Gravity.CENTER_VERTICAL);
         line.setMinimumHeight(px(R.dimen.touch_target_min));
-        TextView name = new TextView(context);
-        name.setTextAppearance(R.style.TextAppearance_App_BodySmall);
-        name.setText(label == null ? context.getString(R.string.editor_color) : label);
-        line.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        addRowName(line, label);
 
         View swatch = new View(context);
         String shown = current != null ? current : original;
         swatch.setBackground(swatchDrawable(shown));
         swatch.setContentDescription(context.getString(R.string.cd_color, shown == null ? "-" : shown));
-        swatch.setOnClickListener(v -> ColorPickerDialog.show(context, current != null ? current : original,
-                picked -> {
-                    swatch.setBackground(swatchDrawable(picked != null ? picked : original));
-                    changed.onChanged(picked);
-                }));
         int size = px(R.dimen.touch_target_min);
         line.addView(swatch, new LinearLayout.LayoutParams(size, size));
-        addResetButton(line, current != null, () -> {
+        MaterialButton reset = addResetButton(line, current != null, () -> {
             swatch.setBackground(swatchDrawable(original));
+            swatch.setTag(null);
             changed.onChanged(null);
         });
+        swatch.setTag(current);
+        swatch.setOnClickListener(v -> ColorPickerDialog.show(context,
+                swatch.getTag() != null ? (String) swatch.getTag() : original, picked -> {
+                    swatch.setBackground(swatchDrawable(picked != null ? picked : original));
+                    swatch.setTag(picked);
+                    reset.setVisibility(picked != null ? View.VISIBLE : View.INVISIBLE);
+                    changed.onChanged(picked);
+                }));
         parent.addView(line);
     }
 
@@ -526,10 +547,7 @@ final class EditorForm {
         line.setOrientation(LinearLayout.HORIZONTAL);
         line.setGravity(Gravity.CENTER_VERTICAL);
         line.setMinimumHeight(px(R.dimen.touch_target_min));
-        TextView name = new TextView(context);
-        name.setTextAppearance(R.style.TextAppearance_App_BodySmall);
-        name.setText(label == null ? context.getString(R.string.editor_size) : label);
-        line.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+        addRowName(line, label);
         TextView valueText = new TextView(context);
         valueText.setTextAppearance(R.style.TextAppearance_App_Label);
         line.addView(valueText);
@@ -548,22 +566,31 @@ final class EditorForm {
         int clamped = Math.max(min, Math.min(top, start));
         slider.setValue(clamped);
         valueText.setText(context.getString(R.string.try_size_value, clamped));
-        slider.addOnChangeListener((s, v, fromUser) -> {
-            valueText.setText(context.getString(R.string.try_size_value, Math.round(v)));
-            if (fromUser) {
-                changed.onChanged(String.valueOf(Math.round(v)));
-            }
-        });
-        addResetButton(line, current != null, () -> {
+        MaterialButton reset = addResetButton(line, current != null, () -> {
             int back = Math.max(min, Math.min(top, original != null && original > 0 ? original : min));
             slider.setValue(back);
             changed.onChanged(null);
+        });
+        slider.addOnChangeListener((s, v, fromUser) -> {
+            valueText.setText(context.getString(R.string.try_size_value, Math.round(v)));
+            if (fromUser) {
+                reset.setVisibility(View.VISIBLE);
+                changed.onChanged(String.valueOf(Math.round(v)));
+            }
         });
         parent.addView(line);
         parent.addView(slider);
     }
 
-    private void addResetButton(LinearLayout line, boolean visible, Runnable reset) {
+    /** Nama kontrol di kiri baris; baris tema tidak butuh (label isian sudah menjelaskannya). */
+    private void addRowName(LinearLayout line, @Nullable String label) {
+        TextView name = new TextView(context);
+        name.setTextAppearance(R.style.TextAppearance_App_BodySmall);
+        name.setText(label);
+        line.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
+    }
+
+    private MaterialButton addResetButton(LinearLayout line, boolean visible, Runnable reset) {
         MaterialButton button = new MaterialButton(context, null, androidx.appcompat.R.attr.borderlessButtonStyle);
         button.setIconResource(R.drawable.ic_undo);
         button.setIconTint(ColorStateList.valueOf(context.getColor(R.color.color_foreground)));
@@ -575,6 +602,7 @@ final class EditorForm {
         });
         int size = px(R.dimen.touch_target_min);
         line.addView(button, new LinearLayout.LayoutParams(size, size));
+        return button;
     }
 
     private GradientDrawable swatchDrawable(@Nullable String color) {

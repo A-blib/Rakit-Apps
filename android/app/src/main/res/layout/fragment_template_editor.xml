@@ -65,9 +65,12 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/space_2"
+                        android:maxLines="1"
+                        android:singleLine="true"
                         android:textAppearance="@style/TextAppearance.App.BodySmall"
                         android:textColor="@color/color_muted"
-                        tools:text="tersimpan" />
+                        app:drawableTint="@color/color_muted"
+                        tools:text="…" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.appbar.MaterialToolbar>

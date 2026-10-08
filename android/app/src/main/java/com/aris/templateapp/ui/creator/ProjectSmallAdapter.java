@@ -32,6 +32,7 @@ public class ProjectSmallAdapter extends ListAdapter<ProjectEntity, ProjectSmall
     public void onBindViewHolder(@NonNull Holder holder, int position) {
         ProjectEntity project = getItem(position);
         holder.binding.name.setText(project.name);
+        ProjectThumbnails.load(holder.binding.thumbnail, project.thumbnailPath);
         holder.binding.status.setText(ProjectUi.compactStatus(holder.binding.getRoot().getContext(), project));
         holder.binding.getRoot().setOnClickListener(v -> onClick.accept(project));
     }

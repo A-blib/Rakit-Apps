@@ -155,6 +155,19 @@ public class TemplateEditorFragment extends Fragment implements EditorForm.Liste
             }
         });
         form = new EditorForm(binding.form, this, this);
+        BottomSheetBehavior<View> sheet = BottomSheetBehavior.from(binding.sheet);
+        sheet.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                fitFormToSheet();
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                fitFormToSheet();
+            }
+        });
+        binding.sheet.post(this::fitFormToSheet);
 
         viewModel = new ViewModelProvider(this).get(TemplateEditorViewModel.class);
         viewModel.getLoaded().observe(getViewLifecycleOwner(), this::onLoaded);
@@ -222,21 +235,32 @@ public class TemplateEditorFragment extends Fragment implements EditorForm.Liste
         }
         binding.projectName.setText(header.name);
         ProjectUi.bindStatusBadge(binding.statusBadge, header.status);
+        // Penanda ringkas (app bar sempit di HP 360dp); teks lengkapnya untuk pembaca layar.
+        int icon = 0;
+        String text = "";
+        int description;
         switch (header.save) {
             case SAVING:
-                binding.saveState.setText(R.string.editor_saving);
+                text = "…";
+                description = R.string.editor_saving;
                 break;
             case FAILED:
-                binding.saveState.setText(R.string.editor_save_error);
+                icon = R.drawable.ic_warning;
+                description = R.string.editor_save_error;
                 break;
             case SAVED:
-                binding.saveState.setText(R.string.editor_saved);
+                icon = R.drawable.ic_check_small;
+                description = R.string.editor_saved;
                 break;
             case IDLE:
             default:
-                binding.saveState.setText(R.string.editor_unsaved);
+                description = R.string.editor_unsaved;
                 break;
         }
+        binding.saveState.setText(text);
+        binding.saveState.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, 0, 0);
+        binding.saveState.setContentDescription(getString(description));
+        binding.saveState.setVisibility(header.save == TemplateEditorViewModel.SaveState.IDLE ? View.GONE : View.VISIBLE);
         binding.exportNote.setVisibility(header.changedSinceExport && !previewMode ? View.VISIBLE : View.GONE);
         Menu menu = binding.toolbar.getMenu();
         setActionEnabled(menu.findItem(R.id.action_undo), header.canUndo);
@@ -429,6 +453,11 @@ public class TemplateEditorFragment extends Fragment implements EditorForm.Liste
     @Override
     public void onTheme(String variable, @Nullable String value) {
         viewModel.setTheme(variable, value);
+        // Warna tema mengubah warna elemen: nilai "asli" untuk cek kontras diambil ulang (tanpa membangun ulang form).
+        computed.clear();
+        if (binding != null) {
+            binding.webFrame.postDelayed(() -> loadComputed(false), 300);
+        }
     }
 
     /** Isian diketuk/diketik: elemennya disorot di preview (pindah halaman jika elemennya tidak ada di sini). */
@@ -582,7 +611,7 @@ public class TemplateEditorFragment extends Fragment implements EditorForm.Liste
         if (activeKey != null && !previewMode) {
             highlight(activeKey, true);
         }
-        loadComputed();
+        loadComputed(true);
     }
 
     private void loadPage(String file) {
@@ -659,7 +688,8 @@ public class TemplateEditorFragment extends Fragment implements EditorForm.Liste
     }
 
     /** Ukuran huruf, sudut, dan warna yang sedang berlaku, untuk posisi awal slider dan cek kontras di tab Gaya. */
-    private void loadComputed() {
+    /** @param rebuild bangun ulang tab Gaya setelah nilai datang (tidak dipakai saat user sedang memilih warna) */
+    private void loadComputed(boolean rebuild) {
         if (preview == null || data == null) {
             return;
         }
@@ -675,7 +705,7 @@ public class TemplateEditorFragment extends Fragment implements EditorForm.Liste
         preview.run("window.RakitEditor ? RakitEditor.computed(" + gson.toJson(keys) + ") : null", value -> {
             Map<String, EditorForm.Computed> found = parseComputed(value);
             computed.putAll(found);
-            if (tab == EditorForm.Tab.STYLE && !found.isEmpty()) {
+            if (rebuild && tab == EditorForm.Tab.STYLE && !found.isEmpty()) {
                 buildForm();
             }
         });
@@ -796,6 +826,22 @@ public class TemplateEditorFragment extends Fragment implements EditorForm.Liste
         createPreview();
     }
 
+    /**
+     * Sheet setinggi layar lalu digeser ke bawah, jadi bagian bawah form ada di luar layar. Padding bawah form dibuat
+     * sebesar bagian yang tersembunyi itu, agar isian terakhir (mis. "Ganti foto") tetap bisa digulir sampai terlihat.
+     */
+    private void fitFormToSheet() {
+        if (binding == null) {
+            return;
+        }
+        // Sheet setinggi layar, jadi bagian yang tersembunyi di bawah layar sama dengan jarak sheet dari atas.
+        int padding = Math.max(0, binding.sheet.getTop()) + getResources().getDimensionPixelSize(R.dimen.space_8);
+        if (binding.form.getPaddingBottom() != padding) {
+            binding.form.setPadding(binding.form.getPaddingLeft(), binding.form.getPaddingTop(),
+                    binding.form.getPaddingRight(), padding);
+        }
+    }
+
     // ---------- mode fokus keyboard ----------
 
     /**
@@ -825,6 +871,8 @@ public class TemplateEditorFragment extends Fragment implements EditorForm.Liste
             binding.formScroll.post(this::scrollFocusedIntoView);
         } else {
             sheet.setExpandedOffset(getResources().getDimensionPixelSize(R.dimen.editor_sheet_expanded_offset));
+            // Selesai mengetik: form turun lagi agar preview kembali terlihat luas.
+            sheet.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
         }
     }
 
