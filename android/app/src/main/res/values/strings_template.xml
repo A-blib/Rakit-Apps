@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Teks fitur buat website via template (alur-buat-website-via-template.md). -->
+<resources>
+    <!-- Layar Unduh (bagian 5) -->
+    <string name="template_download_title">Template</string>
+    <string name="template_download_creator">oleh %1$s</string>
+    <string name="template_download_pages">%1$d halaman</string>
+    <string name="template_download_preparing">Menyiapkan template</string>
+    <string name="template_download_once">Diunduh sekali, setelah itu bisa dipakai offline.</string>
+    <string name="template_download_progress">%1$s dari %2$s MB</string>
+    <string name="template_download_extracting">Membuka paket…</string>
+    <string name="template_download_offline">Butuh internet untuk mengunduh template pertama kali.</string>
+    <string name="template_download_failed">Unduhan gagal. Periksa koneksi lalu coba lagi.</string>
+    <string name="template_download_invalid">Paket template rusak. Coba unduh lagi; jika tetap gagal, template ini belum bisa dipakai.</string>
+    <string name="template_download_missing">Template ini belum bisa dipakai. Coba template lain.</string>
+    <string name="template_download_not_found">Template ini sudah tidak tersedia.</string>
+    <string name="template_download_mobile_title">Pakai data seluler?</string>
+    <string name="template_download_mobile_body">Template ini %1$s. Kamu sedang memakai data seluler. Lanjutkan?</string>
+    <string name="template_download_mobile_continue">Lanjutkan</string>
+</resources>

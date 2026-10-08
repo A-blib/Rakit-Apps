@@ -35,6 +35,11 @@ public class ProjectEntity {
     @ColumnInfo(name = "source_template_id")
     public String sourceTemplateId;
 
+    /** Versi paket template yang dipakai project ini (null untuk custom). */
+    @Nullable
+    @ColumnInfo(name = "template_version")
+    public Integer templateVersion;
+
     @NonNull
     public ProjectStatus status;
 

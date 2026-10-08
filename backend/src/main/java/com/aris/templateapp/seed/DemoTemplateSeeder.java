@@ -44,6 +44,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -89,7 +90,9 @@ public class DemoTemplateSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (userRepository.findByEmailIgnoreCase(DEMO_EMAIL).isPresent()) {
+        User existing = userRepository.findByEmailIgnoreCase(DEMO_EMAIL).orElse(null);
+        if (existing != null) {
+            attachMissingPackages(existing.getId());
             log.info("Seeder demo provider dilewati: akun demo sudah ada");
             return;
         }
@@ -148,6 +151,23 @@ public class DemoTemplateSeeder implements ApplicationRunner {
         notificationService.create(owner, NotificationType.TEMPLATE_PUBLISHED, kuliner.getId(),
                 "UMKM Kuliner tayang", "Template sudah tampil di galeri.");
         log.info("Seeder demo provider selesai: login {} / password {}", DEMO_EMAIL, DummyDataSeeder.PASSWORD);
+    }
+
+    /**
+     * Akun demo yang dibuat sebelum paket contoh ada: template demo yang tayang dilengkapi paketnya tanpa menghapus
+     * data lain (mis. template hasil uji Upload milik akun demo).
+     */
+    private void attachMissingPackages(UUID owner) {
+        Map<String, String> slugs = Map.of("Profil Sekolah", DemoPackages.SEKOLAH, "UMKM Kuliner", DemoPackages.KULINER,
+                "Portofolio Minimal", DemoPackages.PORTOFOLIO);
+        Instant now = clock.instant();
+        for (Template template : templateRepository.findByProviderId(owner)) {
+            String slug = slugs.get(template.getName());
+            if (slug != null && template.getStatus() == TemplateStatus.PUBLISHED && template.getPackageSize() == null) {
+                demoPackages.attach(template, slug, now);
+                log.info("Paket contoh {} dipasang ke template demo {}", slug, template.getId());
+            }
+        }
     }
 
     private Template template(UUID owner, String name, WebsitePurpose category, TemplateStatus status, int warnings,
