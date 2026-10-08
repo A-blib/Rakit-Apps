@@ -239,12 +239,21 @@ public class TemplateEditorFragment extends Fragment implements EditorForm.Liste
         }
         binding.exportNote.setVisibility(header.changedSinceExport && !previewMode ? View.VISIBLE : View.GONE);
         Menu menu = binding.toolbar.getMenu();
-        menu.findItem(R.id.action_undo).setEnabled(header.canUndo).getIcon().setAlpha(header.canUndo ? 255 : 80);
-        menu.findItem(R.id.action_redo).setEnabled(header.canRedo).getIcon().setAlpha(header.canRedo ? 255 : 80);
+        setActionEnabled(menu.findItem(R.id.action_undo), header.canUndo);
+        setActionEnabled(menu.findItem(R.id.action_redo), header.canRedo);
         menu.findItem(R.id.action_delete).setVisible(viewModel.projectId() != null);
         updateSectionChips(header.completeness);
         if (form != null && data != null) {
             form.updateWarnings(data.manifest, header.completeness);
+        }
+    }
+
+    /** Ikon nonaktif dibuat pudar. mutate(): drawable ikon dipakai bersama, tanpa ini ikon di tempat lain ikut pudar. */
+    private static void setActionEnabled(android.view.MenuItem item, boolean enabled) {
+        item.setEnabled(enabled);
+        if (item.getIcon() != null) {
+            item.setIcon(item.getIcon().mutate());
+            item.getIcon().setAlpha(enabled ? 255 : 80);
         }
     }
 

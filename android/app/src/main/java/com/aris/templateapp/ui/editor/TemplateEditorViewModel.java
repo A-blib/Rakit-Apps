@@ -209,8 +209,13 @@ public class TemplateEditorViewModel extends ViewModel {
     @WorkerThread
     private void loadProject(String id) {
         ProjectEntity project = projects.findSync(id);
-        if (project == null || project.sourceTemplateId == null) {
+        if (project == null) {
             loaded.postValue(Resource.error(ApiError.of(EditorErrors.PROJECT_NOT_FOUND)));
+            return;
+        }
+        if (project.sourceTemplateId == null) {
+            // Mis. project contoh dari menu debug: tidak berasal dari paket template mana pun.
+            loaded.postValue(Resource.error(ApiError.of(EditorErrors.PACKAGE_MISSING)));
             return;
         }
         TemplatePackageEntity pkg = project.templateVersion == null ? packages.installed(project.sourceTemplateId)
