@@ -931,3 +931,18 @@ Keputusan Aris saat memulai:
 - Upload ZIP **bisa dilanjutkan**: dikirim per potongan 1 MB tanpa library tambahan.
 - Dikerjakan dalam 4 fase: **15** backend upload + mesin pengecekan, **16** Android halaman awal Upload + langkah 1–3, **17** editor Tandai, **18** Coba + Kirim. Agent lanjut antar-fase tanpa menunggu, dan melapor di akhir setiap fase.
 - Bagian 13 (keputusan terbuka) dan 14 (yang perlu dibahas) dokumen itu **belum boleh dibangun**. Push FCM tetap ditunda.
+
+---
+
+## 18. Tambahan: buat website via template (Oktober 2026)
+
+Aris meminta fitur ini dieksekusi (8 Oktober 2026) dari rancangan **`docs/rancangan/alur-buat-website-via-template.md`** (salinan dari `Instruksi dan alur/alurFiturBuatWibeSiteviatemplate.md`). Untuk hal yang dibahasnya, dokumen itu **mengesampingkan** bagian 2.2 (editor, preview WebView, export ZIP, penyimpanan project), 4.2 (WorkManager, Photo Picker, `java.util.zip`), bagian 16 (editor template mode "Segera hadir"), dan `alur-pembuatan-website.md` bagian 6.1.
+
+Keputusan Aris saat memulai:
+
+- **jsoup** boleh dipakai di **Android** untuk menerapkan isian ke HTML saat export (keputusan 17 tentang "Android tidak memakai jsoup" diganti).
+- Orientasi foto memakai **`android.media.ExifInterface` bawaan** (tanpa `androidx.exifinterface`).
+- Thumbnail memakai loader yang sudah ada (tanpa Glide).
+- Fase T1–T8 dicatat sebagai **fase 19–26** (T1 = 19, ..., T8 = 26). Agent lanjut antar-fase tanpa menunggu, dan melapor di akhir setiap fase.
+- Dikerjakan di branch `fitur/template-mode` (dibuat dari `fitur/upload`).
+- Editor custom mode, versi template, potong gambar manual, gaya hover/jenis huruf, sinkron cloud, dan publish link **belum boleh dibangun** (bagian 4.2 dokumen itu).
