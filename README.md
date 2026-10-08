@@ -491,7 +491,8 @@ cd backend
 
 Seeder membuat akun **`demo-provider@templateapp.test`** / **`password123`** berisi:
 - 7 template berbagai status (tayang, tayang dengan peringatan, tidak lolos, sedang dicek, draft, dinonaktifkan)
-- hasil pengecekan (error & peringatan) dan 3 notifikasi
+- hasil pengecekan (error & peringatan) dan notifikasi
+- ZIP situs contoh sungguhan untuk 3 template yang masih di wizard Upload, jadi tab **Upload** bisa langsung dicoba: "Landing Event" (tidak lolos, bisa diupload ulang), "Organisasi Pemuda" (dicek otomatis saat backend start, lalu menjadi draft), "Instansi Desa" (draft langkah 3)
 - event dilihat/didownload tersebar di 30 hari terakhir
 
 Seeder ini hanya ada di profile `dev`, mati secara bawaan, dan tidak dibuat ulang kalau akun demo sudah ada. Akun provider lain tetap kosong.
@@ -501,6 +502,8 @@ Untuk menghapusnya lagi (supaya kembali kosong), panggil `DELETE /api/dev/demo-t
 ```bash
 curl -X DELETE http://localhost:8080/api/dev/demo-templates
 ```
+
+Perintah ini juga menghapus file ZIP demo di `backend/uploads/`. Restart backend (dengan flag di atas) untuk membuat data demo yang baru.
 
 ## Contoh SQL status provider
 

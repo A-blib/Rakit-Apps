@@ -1314,6 +1314,22 @@ POST /uploads/{id}/submit {agreedAssetRights}  → cek info lengkap, ≥ 3 isian
 
 Template `published` milik provider aktif muncul di `GET /api/templates`. Pencarian kini mencari di nama, deskripsi, dan kata kunci. Thumbnail tampil di galeri, Template Anda, dan detail lewat `ThumbnailLoader`.
 
+### Data demo untuk mencoba Upload
+
+Seeder demo (`--app.seed.demo-templates=true`) memberi ZIP situs contoh sungguhan (`seed/DemoSite.java`) ke tiga template milik `demo-provider`, agar wizard bisa dicoba tanpa membuat ZIP sendiri:
+
+| Template | Kondisi awal |
+|---|---|
+| Landing Event | Tidak lolos (ZIP memakai `<base href>`), bisa diperbaiki lewat "Upload file perbaikan" |
+| Organisasi Pemuda | Dicek mesin pengecekan sesaat setelah backend start, lalu menjadi draft langkah 3 |
+| Instansi Desa | Draft langkah 3 (Info template) |
+
+Data demo yang sudah ada tidak diisi ulang. Untuk memulai dari awal: `DELETE /api/dev/demo-templates` (ikut menghapus file ZIP di `backend/uploads/`), lalu restart backend.
+
+### Tombol pilihan HP / Desktop
+
+Toggle HP/Desktop memakai `MaterialButtonToggleGroup` dengan style `Widget.App.Button.Toggle`. Tombol terpilih diisi warna foreground (sama seperti chip terpilih), karena style bergaris biasa tidak membedakan tombol terpilih dan tidak terpilih.
+
 ---
 
 ## 29. Glosarium

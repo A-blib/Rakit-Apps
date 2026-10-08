@@ -35,10 +35,36 @@ Sumber rancangan: [`docs/rancangan/alur-fitur-upload.md`](../rancangan/alur-fitu
 6. Tab Template galeri (mode pembuat website) → template muncul dengan thumbnail; cari dengan salah satu kata kunci.
 
 ## Hasil tes
-- Backend `./mvnw test`: **lulus, 238 test**.
+- Backend `./mvnw test`: **lulus, 238 test** (setelah uji HP: tetap lulus, 0 gagal).
 - Android `testDebugUnitTest`: **lulus, 62 test**. `lint`: **0 masalah**. `assembleDebug`: berhasil.
 - Uji manual di backend dev (database lokal, akun `dummy8`) dengan template sungguhan **Tailwind Toolbox Landing Page**: upload → info → 3 isian (judul, deskripsi, foto) → Kirim → `published` dalam beberapa detik. Isi `package.zip`: `vendor/tailwindcss@2.2.19/dist/tailwind.min.css` (2,9 MB, diunduh dari unpkg), link di `index.html` sudah lokal, Google Fonts tetap dari internet, `data-key` judul/deskripsi/foto tersisip. Template muncul di `GET /api/templates?q=tailwind`. Data uji ini sudah saya hapus lagi dari database dev.
-- Uji di HP: **belum dilakukan** (HP tidak tersambung selama Fase 16–18).
+- Uji di HP (8 Oktober 2026, realme RMX3151, akun `demo-provider`): alur Upload lengkap **berhasil**. Rinciannya di bagian "Uji di HP & perbaikan" di bawah.
+
+### Uji di HP & perbaikan (8 Oktober 2026)
+
+Yang dicoba di HP, semuanya berhasil:
+
+1. Tab Upload menampilkan **Perlu diperbaiki → Lanjutkan draft (2 dari 5) → Upload template baru** (rancangan 3.1).
+2. Draft "Instansi Desa" dibuka tepat di langkah 3. Tombol **Lanjut** baru aktif setelah deskripsi dan kata kunci terisi (6.4).
+3. **Tandai**: ketuk link menu → sheet terbuka sebagian (elemen tetap terlihat) → simpan → muncul tawaran "Bagian ini sama di 2 halaman" → pilih *Semua halaman*. Di slide Hero, **Tandai semua** menambah 3 isian. Simpan → "Semua tandaan tersimpan".
+4. **Coba**: mengubah Judul langsung mengubah preview.
+5. **Kirim**: centang hak pakai → "Template tayang!". `package.zip` berisi `data-section`, `data-edit`, `data-key`, `data-label`; isian menu header tersisip di **kedua** halaman. Template muncul di `GET /api/templates?q=desa`.
+6. **Upload file perbaikan** untuk "Landing Event" → lolos → langsung ke Info (tanpa peringatan, layar hasil dilewati). Kartu "tidak lolos" hilang dari Beranda.
+7. ZIP tanpa `index.html` ditolak cek kilat di HP: "File belum bisa diupload".
+8. Keluar wizard (✕) menampilkan "Pekerjaanmu tersimpan sebagai draft…".
+
+Temuan yang diperbaiki:
+
+| Temuan | Perbaikan |
+|---|---|
+| Toggle **HP / Desktop** (Info, Tandai, Coba) tidak menunjukkan pilihan aktif | Style baru `Widget.App.Button.Toggle`: terpilih diisi warna foreground seperti chip terpilih |
+| Isian jenis **Link** di Coba tampil kosong; alamat asli tidak terlihat | `RakitTry.original` sudah mengirim `href`; kini dipakai sebagai isi awal input alamat (Link & Tombol) |
+| Form Coba tertutup memotong tombol "Lanjut menandai" | `try_sheet_peek` 200dp → 252dp |
+| `<p>` pendek ditebak "Teks pendek", padahal pembuat website biasanya mengisinya lebih panjang | `mark.js`: `<p>` dan `<blockquote>` selalu ditebak **Paragraf** |
+| `Slider.setTickVisible` sudah deprecated | Diganti `setTickVisibilityMode(TICK_VISIBILITY_HIDDEN)` |
+| Test seeder demo gagal compile setelah seeder diberi ZIP sungguhan | Test diperbarui dan menunggu pengecekan async "Organisasi Pemuda" selesai, agar hasilnya tidak bergantung waktu |
+
+Perbaikan dari sesi sebelumnya (belum di-commit, ikut diuji di sini): template demo yang masih di wizard diberi ZIP sungguhan (`seed/DemoSite.java`), header wizard memakai teks pendek `5/6`, tombol Kirim/Coba disusun vertikal, hasil cek tanpa peringatan langsung lanjut ke Info, Beranda provider dimuat ulang saat kembali dari wizard.
 
 ## Konsep yang dipelajari
 - **CSS `!important` dan urutan stylesheet**: aturan yang dimuat terakhir dan bertanda `!important` mengalahkan aturan lain.
