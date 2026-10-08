@@ -66,6 +66,23 @@ Temuan yang diperbaiki:
 
 Perbaikan dari sesi sebelumnya (belum di-commit, ikut diuji di sini): template demo yang masih di wizard diberi ZIP sungguhan (`seed/DemoSite.java`), header wizard memakai teks pendek `5/6`, tombol Kirim/Coba disusun vertikal, hasil cek tanpa peringatan langsung lanjut ke Info, Beranda provider dimuat ulang saat kembali dari wizard.
 
+### Uji mandiri putaran kedua (8 Oktober 2026)
+
+Data demo direset, lalu dicoba: detail error + **Pelajari cara memperbaikinya** (Panduan) + **Ini keliru? Laporkan** (tersimpan di `check_reports`), thumbnail HP/Desktop/Dari section, aturan kata kunci (huruf kecil, duplikat ditolak, maks 20), label wajib di Tandai, Urungkan/Ulangi, Daftar section, pindah halaman, Uji isi panjang, Isi asli, Kirim nonaktif sebelum dicentang, hapus draft lewat ⋮, dan mode terang.
+
+| Temuan | Perbaikan |
+|---|---|
+| Error demo "Landing Event" karangan (mis. "index.html tidak ditemukan") tidak cocok dengan ZIP-nya | Seeder menjalankan mesin pengecekan atas ZIP demo; kini muncul `BASE_HREF` yang memang ada di file |
+| Thumbnail **Dari section** tetap memotret bagian atas halaman jika halaman pendek, dan scrollbar ikut terpotret | `OffscreenPage.capture` mengukur posisi gulir yang benar-benar tercapai lalu menggeser sisanya saat menggambar; scrollbar dimatikan |
+| Ganti HP/Desktop setelah memilih section kembali ke bagian atas halaman | Nama section diingat dan dipotret ulang di lebar baru |
+| Preview Coba kadang macet di "Memuat…" | Halaman selesai sebelum jeda 600 ms animasi, lalu animasi muncul belakangan. `state.setVisibility(GONE)` diganti `state.hide()` (juga di Tandai & Pengecekan) |
+| Urutan form Coba mengikuti urutan menandai (Deskripsi sebelum Judul) | Isian diurutkan menurut posisi di halaman, di Android (`MarkingEditor`) dan backend (`MarkingData.inPageOrder`) |
+| Kartu draft di langkah Tandai tanpa progres isian (rancangan 3.1) | Bar progres + "N isian" |
+| Tombol ⋮ di Daftar section hanya 20dp dan tanpa label pembaca layar | Area sentuh 48dp + `contentDescription` |
+| Judul masalah dan penjelasannya terlihat sama tebal | Penjelasan memakai berat reguler; judul memakai style baru `TextAppearance.App.Body.SemiBold` |
+
+Catatan: HP realme Aris memakai pengaturan **ketebalan font** (`font_variation_settings=550`) yang menyamakan ketebalan semua font. Di HP itu, perbedaan regular/semibold memang hampir tidak terlihat.
+
 ## Konsep yang dipelajari
 - **CSS `!important` dan urutan stylesheet**: aturan yang dimuat terakhir dan bertanda `!important` mengalahkan aturan lain.
 - **Data URL**: gambar ditulis langsung sebagai teks base64 di dalam atribut `src`.

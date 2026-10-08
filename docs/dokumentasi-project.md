@@ -1326,6 +1326,14 @@ Seeder demo (`--app.seed.demo-templates=true`) memberi ZIP situs contoh sungguha
 
 Data demo yang sudah ada tidak diisi ulang. Untuk memulai dari awal: `DELETE /api/dev/demo-templates` (ikut menghapus file ZIP di `backend/uploads/`), lalu restart backend.
 
+### Urutan isian
+
+Isian disimpan menurut posisi elemen pertamanya di situs: urutan halaman, lalu nomor `data-tpl-id` (yang mengikuti urutan HTML). Pengurutan dilakukan di HP (`MarkingEditor.sortFields`) dan di server saat Simpan (`MarkingData.inPageOrder`), sehingga form Coba dan paket akhir tersusun dari atas ke bawah seperti halamannya.
+
+### Thumbnail dari section
+
+`OffscreenPage.capture` menggulir ke posisi section. Halaman yang pendek tidak bisa digulir sejauh itu, jadi posisi gulir yang benar-benar tercapai (`window.scrollY`) dibandingkan dengan yang diminta, dan selisihnya digeser saat menggambar ke Bitmap.
+
 ### Tombol pilihan HP / Desktop
 
 Toggle HP/Desktop memakai `MaterialButtonToggleGroup` dengan style `Widget.App.Button.Toggle`. Tombol terpilih diisi warna foreground (sama seperti chip terpilih), karena style bergaris biasa tidak membedakan tombol terpilih dan tidak terpilih.
