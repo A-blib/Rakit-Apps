@@ -494,6 +494,7 @@ Seeder membuat akun **`demo-provider@templateapp.test`** / **`password123`** ber
 - hasil pengecekan (error & peringatan) dan notifikasi
 - ZIP situs contoh sungguhan untuk 3 template yang masih di wizard Upload, jadi tab **Upload** bisa langsung dicoba: "Landing Event" (tidak lolos, bisa diupload ulang), "Organisasi Pemuda" (dicek otomatis saat backend start, lalu menjadi draft), "Instansi Desa" (draft langkah 3)
 - event dilihat/didownload tersebar di 30 hari terakhir
+- **paket template sungguhan** untuk 3 template yang tayang ("Profil Sekolah" 3 halaman, "UMKM Kuliner", "Portofolio Minimal"), sehingga editor pembuat website bisa dicoba dari tab Template
 
 Seeder ini hanya ada di profile `dev`, mati secara bawaan, dan tidak dibuat ulang kalau akun demo sudah ada. Akun provider lain tetap kosong.
 

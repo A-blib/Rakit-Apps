@@ -1,0 +1,25 @@
+{
+  "name": "Portofolio Minimal",
+  "description": "Halaman portofolio satu layar untuk desainer, fotografer, atau freelancer: foto, nama, bio singkat, dan tombol kontak.",
+  "keywords": ["portofolio", "pribadi", "freelance"],
+  "thumbnail": "img/foto.jpg",
+  "pages": [{ "file": "index.html", "name": "Beranda" }],
+  "sections": [{ "id": "s1", "page": "index.html", "name": "Profil", "selector": ".intro" }],
+  "theme": [{ "var": "--primary", "label": "Warna utama", "type": "color" }],
+  "fields": [
+    { "key": "foto", "label": "Foto profil", "type": "image", "aspectRatio": "1:1", "required": true, "sectionId": "s1",
+      "styles": [{ "prop": "border-radius", "min": 0, "max": 64, "unit": "px" }],
+      "elements": [{ "page": "index.html", "selector": ".avatar" }] },
+    { "key": "nama", "label": "Nama", "type": "text", "maxLength": 40, "required": true, "sectionId": "s1",
+      "styles": [{ "prop": "font-size", "min": 28, "max": 48, "unit": "px" }],
+      "elements": [{ "page": "index.html", "selector": "h1" }] },
+    { "key": "profesi", "label": "Profesi", "type": "text", "maxLength": 60, "required": true, "sectionId": "s1",
+      "elements": [{ "page": "index.html", "selector": ".role" }] },
+    { "key": "bio", "label": "Bio singkat", "type": "paragraph", "maxLength": 240, "required": true, "sectionId": "s1",
+      "elements": [{ "page": "index.html", "selector": ".bio" }] },
+    { "key": "email", "label": "Tombol email", "type": "button", "required": true, "sectionId": "s1",
+      "elements": [{ "page": "index.html", "selector": ".mail" }] },
+    { "key": "link_karya", "label": "Link karya", "type": "link", "required": false, "sectionId": "s1",
+      "elements": [{ "page": "index.html", "selector": ".social" }] }
+  ]
+}

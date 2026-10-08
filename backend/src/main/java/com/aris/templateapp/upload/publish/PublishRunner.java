@@ -109,7 +109,9 @@ public class PublishRunner {
             }
             if (result.passed() && markingProblem == null) {
                 TemplateFiles files = TemplateFiles.readZip(zip, settings.limits());
-                packageZip = new PackageBuilder(settings, fetcher).build(files, marking);
+                byte[] built = new PackageBuilder(settings, fetcher).build(files, marking);
+                packageZip = ManifestBuilder.addTo(built,
+                        new ManifestBuilder.Info(templateId, template.getPackageVersion(), template.getTechInfo()), marking);
             }
         } catch (PackageBuilder.LibraryCopyException e) {
             log.warn("Library template {} gagal disalin: {}", templateId, e.getMessage());
@@ -186,6 +188,7 @@ public class PublishRunner {
         template.touch(now);
         if (passed) {
             storage.writePackage(templateId, packageZip);
+            template.setPackageSize((long) packageZip.length);
             template.setStatus(TemplateStatus.PUBLISHED);
             template.setPublishedAt(now);
             notificationRepository.findByTemplateIdAndTypeAndResolvedAtIsNull(templateId, NotificationType.TEMPLATE_CHECK_FAILED)

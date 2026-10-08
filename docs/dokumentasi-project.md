@@ -49,7 +49,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 26. [Upload di Android (langkah 1–3)](#26-upload-di-android-langkah-13)
 27. [Editor Tandai bagian](#27-editor-tandai-bagian)
 28. [Coba, Kirim, dan paket template](#28-coba-kirim-dan-paket-template)
-29. [Glosarium](#29-glosarium)
+29. [Paket template untuk pembuat website](#29-paket-template-untuk-pembuat-website)
+30. [Glosarium](#30-glosarium)
 
 ---
 
@@ -1362,7 +1363,46 @@ Toggle HP/Desktop memakai `MaterialButtonToggleGroup` dengan style `Widget.App.B
 
 ---
 
-## 29. Glosarium
+## 29. Paket template untuk pembuat website
+
+Rancangan: [`alur-buat-website-via-template.md`](rancangan/alur-buat-website-via-template.md). Saat provider menekan **Kirim**, server membuat `package.zip` (bab 28). Sejak Fase 19, paket itu juga berisi **`manifest.json`**: daftar isi yang dibaca HP pembuat website untuk menyusun form editor.
+
+```
+package.zip
+├── manifest.json          ← dibuat ManifestBuilder
+├── index.html, ...        ← HTML asli + data-edit / data-key / data-label / data-section
+├── css/ js/ img/
+└── vendor/                ← library CDN yang sudah disalin
+```
+
+Isi `manifest.json` (ringkas):
+
+| Bagian | Isi |
+|---|---|
+| `templateId`, `version` | ID template dan versi paket (selalu 1 sampai fitur versi template dibahas) |
+| `pages` | `{file, name}` untuk pemilih halaman |
+| `sections` | `{id, page, name}` untuk chip section di editor |
+| `theme` | `{var, label, type, default}`; `default` diambil dari `:root` CSS template |
+| `fields` | `{key, label, type, hint, maxLength, required, order, sectionId, aspectRatio, pages, sample, sampleHref, styles}` |
+
+`sample` adalah isi contoh provider (teks, URL, atau path gambar seperti `img/hero.jpg`). Editor memakainya untuk tanda "Masih teks contoh". Elemen HTML-nya ditemukan lewat `[data-key="..."]`; satu `key` bisa ada di beberapa elemen dan beberapa halaman (isian terhubung, daftar halamannya di `pages`).
+
+### Endpoint (publik, tamu boleh)
+
+| Method & path | Hasil |
+|---|---|
+| `GET /api/templates/{id}` | Detail untuk layar Unduh: nama, kreator, kategori, deskripsi, kata kunci, halaman, library, responsif, `version`, `packageSizeBytes` (null = belum punya paket) |
+| `GET /api/templates/{id}/package` | File ZIP paket, dengan `Content-Length` (untuk progres) dan header `X-Template-Version` |
+| `POST /api/templates/{id}/events` | Event `view` / `download` (sudah ada sejak Fase 11) |
+
+Aturan tampilnya sama dengan galeri: hanya template `published` milik provider `active`; selain itu 404.
+
+### Paket lama dan paket contoh
+
+- `PackageManifestBackfill` berjalan setiap backend start: template tayang yang `package_size`-nya masih kosong dilengkapi manifest. Setelah itu tidak disentuh lagi.
+- `DemoPackages` membuat paket contoh dari `resources/seed/template-packages/{slug}/` (`site/` + `marking.json`). Elemen di `marking.json` ditunjuk dengan **selector CSS**, lalu diubah menjadi nomor `data-tpl-id`, kemudian diproses `PackageBuilder` + `ManifestBuilder` yang sama dengan Kirim sungguhan. Gambar contohnya dibuat `tools/buat-gambar-demo.py`.
+
+## 30. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|

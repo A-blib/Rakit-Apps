@@ -61,6 +61,7 @@ class DemoTemplateSeederTest {
     @Autowired private UploadStorage storage;
     @Autowired private TemplateChecker checker;
     @Autowired private ApplicationEventPublisher events;
+    @Autowired private DemoPackages demoPackages;
     @Autowired private TransactionTemplate transactionTemplate;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private MockMvc mockMvc;
@@ -69,7 +70,7 @@ class DemoTemplateSeederTest {
     void seedsDemoProviderOnceAndCanBeRemoved() throws Exception {
         DemoTemplateSeeder seeder = new DemoTemplateSeeder(userRepository, identityRepository, creatorProfileRepository,
                 providerProfileRepository, templateRepository, checkRepository, issueRepository, queries,
-                notificationService, passwordEncoder, clock, storage, checker, events);
+                notificationService, passwordEncoder, clock, storage, checker, events, demoPackages);
         transactionTemplate.executeWithoutResult(tx -> seeder.run(null));
         transactionTemplate.executeWithoutResult(tx -> seeder.run(null));
 

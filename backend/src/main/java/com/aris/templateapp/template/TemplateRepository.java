@@ -23,4 +23,7 @@ public interface TemplateRepository extends JpaRepository<Template, UUID> {
     boolean existsByProviderIdAndNameIgnoreCaseAndIdNot(UUID providerId, String name, UUID id);
 
     List<Template> findByProviderId(UUID providerId);
+
+    /** Template tayang yang belum tercatat punya paket lengkap (dilengkapi {@code PackageManifestBackfill}). */
+    List<Template> findByStatusAndPackageSizeIsNull(TemplateStatus status);
 }

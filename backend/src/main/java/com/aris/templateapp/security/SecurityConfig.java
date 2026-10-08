@@ -52,6 +52,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/help/articles/*").permitAll()
                         // Thumbnail template tayang tampil di galeri tamu; pemeriksaan pemilik untuk draft ada di controller.
                         .requestMatchers(HttpMethod.GET, "/api/templates/*/thumbnail").permitAll()
+                        // Detail & paket template untuk layar Unduh pembuat website (tamu juga boleh).
+                        .requestMatchers(HttpMethod.GET, "/api/templates/*", "/api/templates/*/package").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
                 // Filter JWT dipasang sebelum filter login bawaan Spring agar user sudah dikenali lebih dulu.

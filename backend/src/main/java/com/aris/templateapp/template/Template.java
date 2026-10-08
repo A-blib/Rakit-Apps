@@ -101,6 +101,14 @@ public class Template {
     @Column(nullable = false)
     private int markingFieldCount;
 
+    // ---------- Paket untuk pembuat website (alur-buat-website-via-template.md) ----------
+
+    @Column(nullable = false)
+    private int packageVersion = 1;
+
+    // Ukuran package.zip; null selama template belum punya paket.
+    private Long packageSize;
+
     public Template(UUID providerId, String name, WebsitePurpose category) {
         this.providerId = providerId;
         this.name = name;
