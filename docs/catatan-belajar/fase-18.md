@@ -96,6 +96,16 @@ Aris mengupload `contoh-landing-page/` dan menandai 31 isian. Langkah **Coba** m
 
 Cara mengukur macetnya UI: `adb logcat | grep "Skipped .* frames"` (dari ±285 frame menjadi ±40), dan stack trace thread utama lewat `jdb` (`adb forward tcp:8700 jdwp:<pid>`, lalu `suspend` + `where`).
 
+### Mode fokus saat mengetik di Coba (8 Oktober 2026)
+
+Masalah dari Aris: keyboard menutupi kolom isian. Saat keyboard muncul, layar menyusut, tapi form tetap di posisi lama dan bagian atasnya (chip section, tombol Kirim) memakan sisa ruang.
+
+Desain baru (`UploadTryFragment.onLayoutChanged`): selama keyboard terbuka, yang tampil hanya **judul wizard → strip preview → isian yang diketik → keyboard**.
+- Pemilih halaman, HP/Desktop, "Uji isi panjang", pegangan sheet, chip section, dan tombol Kirim/Lanjut menandai disembunyikan sementara, lalu kembali saat keyboard ditutup.
+- Preview digulir ke elemen yang sedang diedit (`onFieldFocused`), jadi hasil ketikan langsung terlihat.
+- Kolom yang diketik digulir tepat di atas keyboard; labelnya ikut terlihat jika muat. Area yang dihitung adalah bagian form yang benar-benar terlihat (`getGlobalVisibleRect`), karena sheet setinggi layar lalu digeser ke bawah.
+- Tombol warna "Asli" tidak lagi terpotong (padding teks hilang saat `setBackground`).
+
 ## Konsep yang dipelajari
 - **CSS `!important` dan urutan stylesheet**: aturan yang dimuat terakhir dan bertanda `!important` mengalahkan aturan lain.
 - **Data URL**: gambar ditulis langsung sebagai teks base64 di dalam atribut `src`.

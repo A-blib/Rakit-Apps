@@ -1348,6 +1348,10 @@ Teks, Paragraf, dan Tombol mengganti **seluruh isi** elemen, sedangkan Gambar da
 
 Teks asli semua isian diambil dengan satu panggilan `RakitTry.originals(ids)`, lalu form dibangun sekali dan bertahap (3 isian per frame, `TryForm.addFieldsFrom`). Contoh warna memakai View ringan, bukan Chip.
 
+### Mode fokus saat mengetik di Coba
+
+Keadaan keyboard dibaca dari `WindowInsetsCompat` setiap kali layout berubah. Saat keyboard terbuka, kontrol selain isian disembunyikan, form dinaikkan hingga menyisakan strip preview (`try_sheet_typing_preview`), preview digulir ke elemen yang diedit, dan kolom aktif digulir tepat di atas keyboard.
+
 ### Tombol pilihan HP / Desktop
 
 Toggle HP/Desktop memakai `MaterialButtonToggleGroup` dengan style `Widget.App.Button.Toggle`. Tombol terpilih diisi warna foreground (sama seperti chip terpilih), karena style bergaris biasa tidak membedakan tombol terpilih dan tidak terpilih.

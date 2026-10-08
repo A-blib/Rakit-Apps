@@ -4,10 +4,12 @@ import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
@@ -18,6 +20,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.webkit.WebViewCompat;
@@ -30,6 +34,7 @@ import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.remote.dto.MarkingDto;
 import com.aris.templateapp.databinding.FragmentUploadTryBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
@@ -84,6 +89,12 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
     private final Map<String, String> originalHrefs = new HashMap<>();
     // Mencegah permintaan ganda saat halaman melapor "selesai dimuat" lebih dari sekali.
     private boolean loadingOriginals;
+    // Jarak (piksel CSS) di atas elemen yang diedit saat preview digulir: kira-kira tinggi header situs yang menempel.
+    private static final int PREVIEW_TOP_GAP_CSS = 88;
+    // true selama keyboard terbuka: form dinaikkan dan tombol yang tidak dipakai saat mengetik disembunyikan.
+    private boolean typing;
+    private int formHeight;
+    private final ViewTreeObserver.OnGlobalLayoutListener keyboardListener = this::onLayoutChanged;
     private final Gson gson = new Gson();
     @Nullable
     private String pendingImageKey;
@@ -123,6 +134,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         WizardHeader.bind(binding.header, 5, R.string.upload_step_try, this::close);
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), back);
+        binding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
         viewModel = new ViewModelProvider(this).get(TryViewModel.class);
         viewModel.getReady().observe(getViewLifecycleOwner(), this::onReady);
 
@@ -374,6 +386,101 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
         imagePicker.launch("image/*");
     }
 
+    /** Preview digulir ke elemen isian yang sedang diketik, agar perubahannya langsung terlihat. */
+    @Override
+    public void onFieldFocused(String key) {
+        if (binding != null && typing) {
+            // Pindah kolom saat keyboard terbuka (mis. tombol "berikutnya"): label kolom baru ikut terlihat.
+            binding.formScroll.post(this::scrollFocusedIntoView);
+        }
+        if (webView == null || ready == null) {
+            return;
+        }
+        for (MarkingDto.Field field : ready.marking.fields) {
+            if (!field.key.equals(key)) {
+                continue;
+            }
+            for (MarkingDto.Element element : field.elements) {
+                if (element.page.equals(viewModel.page())) {
+                    // Elemen diletakkan sedikit di bawah tepi atas, agar tidak tertutup header situs yang menempel.
+                    webView.evaluateJavascript("(function(){var e=document.querySelector('[data-tpl-id=\"" + element.tplId
+                            + "\"]');if(e){window.scrollTo({top:e.getBoundingClientRect().top+window.scrollY-"
+                            + PREVIEW_TOP_GAP_CSS + ",behavior:'smooth'});}})()", null);
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Mode fokus saat keyboard terbuka: hanya judul wizard, strip preview (digulir ke elemen yang diedit), dan isian
+     * yang sedang diketik yang tampil. Pemilih halaman, chip section, pegangan sheet, "Uji isi panjang", dan tombol
+     * Kirim/Lanjut menandai disembunyikan sementara. Tanpa ini, form tetap di posisi semula dan kolomnya tertutup
+     * keyboard.
+     */
+    private void onLayoutChanged() {
+        if (binding == null) {
+            return;
+        }
+        WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(binding.getRoot());
+        boolean keyboard = insets != null && insets.isVisible(WindowInsetsCompat.Type.ime());
+        if (keyboard == typing) {
+            // Form masih bergerak naik setelah keyboard muncul: gulir ulang begitu ukurannya berubah.
+            Rect shown = new Rect();
+            int height = binding.formScroll.getGlobalVisibleRect(shown) ? shown.height() : 0;
+            if (typing && height != formHeight) {
+                formHeight = height;
+                binding.formScroll.post(this::scrollFocusedIntoView);
+            }
+            return;
+        }
+        typing = keyboard;
+        formHeight = 0;
+        int hidden = keyboard ? View.GONE : View.VISIBLE;
+        for (View view : new View[] {binding.controlsRow, binding.toolsRow, binding.dragHandle, binding.sectionScroll,
+                binding.sheetActions}) {
+            view.setVisibility(hidden);
+        }
+        // Preview memanjang sampai ke balik form agar tidak ada celah kosong di antara keduanya.
+        binding.content.setPadding(0, 0, 0, keyboard ? 0 : getResources().getDimensionPixelSize(R.dimen.try_sheet_peek));
+        BottomSheetBehavior<View> sheet = BottomSheetBehavior.from(binding.sheet);
+        if (keyboard) {
+            sheet.setExpandedOffset(binding.header.getRoot().getBottom()
+                    + getResources().getDimensionPixelSize(R.dimen.try_sheet_typing_preview));
+            sheet.setState(BottomSheetBehavior.STATE_EXPANDED);
+            binding.formScroll.post(this::scrollFocusedIntoView);
+        } else {
+            sheet.setExpandedOffset(getResources().getDimensionPixelSize(R.dimen.try_sheet_expanded_offset));
+        }
+    }
+
+    /**
+     * Kolom yang sedang diketik digulir ke atas form, tepat di atas keyboard. Label isian ikut terlihat jika muat;
+     * jika tidak (mis. kolom kode warna jauh di bawah label), kolom itu sendiri yang diutamakan.
+     */
+    private void scrollFocusedIntoView() {
+        if (binding == null) {
+            return;
+        }
+        View focused = binding.formScroll.findFocus();
+        View row = focused;
+        while (row != null && row.getParent() != binding.form) {
+            row = row.getParent() instanceof View ? (View) row.getParent() : null;
+        }
+        if (focused == null || row == null) {
+            return;
+        }
+        Rect rect = new Rect();
+        focused.getDrawingRect(rect);
+        binding.formScroll.offsetDescendantRectToMyCoords(focused, rect);
+        // Sheet setinggi layar lalu digeser ke bawah, jadi sebagian form ada di luar layar: pakai bagian yang terlihat.
+        Rect shown = new Rect();
+        int visible = binding.formScroll.getGlobalVisibleRect(shown) ? shown.height() : binding.formScroll.getHeight();
+        int target = rect.bottom - row.getTop() <= visible ? row.getTop()
+                : rect.top - getResources().getDimensionPixelSize(R.dimen.space_8);
+        binding.formScroll.smoothScrollTo(0, Math.max(0, target));
+    }
+
     /** "Ubah tandaan ini" (bagian 7.12): kembali ke Tandai, langsung di elemen isian itu. */
     @Override
     public void onEditMark(String key) {
@@ -453,6 +560,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        binding.getRoot().getViewTreeObserver().removeOnGlobalLayoutListener(keyboardListener);
         if (webView != null) {
             webView.destroy();
             webView = null;

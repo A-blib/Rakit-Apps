@@ -9,6 +9,7 @@
     android:layout_height="match_parent">
 
     <LinearLayout
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -19,6 +20,7 @@
             layout="@layout/view_wizard_header" />
 
         <LinearLayout
+            android:id="@+id/controls_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -76,6 +78,7 @@
         </FrameLayout>
 
         <LinearLayout
+            android:id="@+id/tools_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -113,10 +116,12 @@
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:id="@+id/drag_handle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <HorizontalScrollView
+            android:id="@+id/section_scroll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none">
@@ -132,6 +137,7 @@
         </HorizontalScrollView>
 
         <LinearLayout
+            android:id="@+id/sheet_actions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -170,6 +176,7 @@
             android:layout_height="wrap_content" />
 
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/form_scroll"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 

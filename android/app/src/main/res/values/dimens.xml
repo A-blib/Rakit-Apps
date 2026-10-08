@@ -59,6 +59,8 @@
     <dimen name="color_swatch_size">32dp</dimen>
     <!-- Form Coba saat ditarik penuh tetap menyisakan preview setinggi ini di atasnya (rancangan bagian 8). -->
     <dimen name="try_sheet_expanded_offset">300dp</dimen>
+    <!-- Saat mengetik di form Coba, preview yang tetap terlihat di atas form setinggi ini. -->
+    <dimen name="try_sheet_typing_preview">170dp</dimen>
     <!-- Bottom sheet Tandai elemen tidak menutupi slide sepenuhnya (rancangan bagian 7.3). -->
     <dimen name="mark_sheet_peek">440dp</dimen>
 </resources>

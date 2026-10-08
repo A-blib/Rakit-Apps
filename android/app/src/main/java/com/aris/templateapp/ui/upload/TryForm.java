@@ -43,6 +43,9 @@ final class TryForm {
         void onPickImage(String key);
 
         void onEditMark(String key);
+
+        /** Kolom isian mulai diketik: preview digulir ke elemennya. */
+        void onFieldFocused(String key);
     }
 
     private static final Pattern HEX = Pattern.compile("^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$");
@@ -174,11 +177,11 @@ final class TryForm {
                 break;
             }
             case "link":
-                addHref(row, value, originalHref);
+                addHref(row, field, value, originalHref);
                 break;
             case "button":
                 addText(row, field, value, original, false);
-                addHref(row, value, originalHref);
+                addHref(row, field, value, originalHref);
                 break;
             case "paragraph":
                 addText(row, field, value, original, true);
@@ -200,21 +203,32 @@ final class TryForm {
         TextInputLayout layout = (TextInputLayout) input.getParent().getParent();
         layout.setPlaceholderText(original);
         input.setText(value.text != null ? value.text : original);
+        notifyFocus(input, field.key);
         input.addTextChangedListener(new UploadInfoFragment.AfterChange(text -> {
             value.text = text;
             listener.onChanged();
         }));
     }
 
-    private void addHref(ItemTryFieldBinding row, TrySession.Value value, @Nullable String original) {
+    private void addHref(ItemTryFieldBinding row, MarkingDto.Field field, TrySession.Value value,
+                         @Nullable String original) {
         EditText input = addInput(row.inputs, context.getString(R.string.try_link_hint), false, null);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         // Sama seperti teks: alamat asli ditampilkan agar pengguna tahu link sekarang mengarah ke mana.
         input.setText(value.href != null ? value.href : original);
+        notifyFocus(input, field.key);
         input.addTextChangedListener(new UploadInfoFragment.AfterChange(text -> {
             value.href = text.trim().isEmpty() ? null : text.trim();
             listener.onChanged();
         }));
+    }
+
+    private void notifyFocus(EditText input, String key) {
+        input.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                listener.onFieldFocused(key);
+            }
+        });
     }
 
     private EditText addInput(LinearLayout parent, @Nullable String hint, boolean multiline, @Nullable Integer maxLength) {
@@ -384,7 +398,11 @@ final class TryForm {
             } else {
                 shape.setCornerRadius(px(R.dimen.radius_small));
                 shape.setColor(Color.TRANSPARENT);
+                // setBackground memakai padding drawable; padding teks "Asli" dipasang ulang agar tidak terpotong.
+                int start = option.getPaddingStart();
+                int end = option.getPaddingEnd();
                 option.setBackground(new InsetDrawable(shape, 0, inset, 0, inset));
+                option.setPaddingRelative(start, 0, end, 0);
             }
         }
     }
