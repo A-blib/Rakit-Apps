@@ -2,6 +2,7 @@ package com.aris.templateapp.ui.creator;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import androidx.viewbinding.ViewBinding;
 import com.aris.templateapp.R;
 import com.aris.templateapp.data.remote.dto.GalleryPageDto.GalleryTemplateDto;
 import com.aris.templateapp.databinding.ItemGalleryCardBinding;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.databinding.ItemGalleryTemplateBinding;
 import com.aris.templateapp.ui.provider.TemplateUi;
 
@@ -26,20 +28,22 @@ import java.util.function.Consumer;
 public class GalleryAdapter extends ListAdapter<GalleryTemplateDto, GalleryAdapter.Holder> {
 
     private final boolean compact;
+    private final ThumbnailLoader thumbnails;
     private final Consumer<GalleryTemplateDto> onClick;
 
-    private GalleryAdapter(boolean compact, Consumer<GalleryTemplateDto> onClick) {
+    private GalleryAdapter(boolean compact, ThumbnailLoader thumbnails, Consumer<GalleryTemplateDto> onClick) {
         super(DIFF);
         this.compact = compact;
+        this.thumbnails = thumbnails;
         this.onClick = onClick;
     }
 
-    public static GalleryAdapter list(Consumer<GalleryTemplateDto> onClick) {
-        return new GalleryAdapter(false, onClick);
+    public static GalleryAdapter list(ThumbnailLoader thumbnails, Consumer<GalleryTemplateDto> onClick) {
+        return new GalleryAdapter(false, thumbnails, onClick);
     }
 
-    public static GalleryAdapter cards(Consumer<GalleryTemplateDto> onClick) {
-        return new GalleryAdapter(true, onClick);
+    public static GalleryAdapter cards(ThumbnailLoader thumbnails, Consumer<GalleryTemplateDto> onClick) {
+        return new GalleryAdapter(true, thumbnails, onClick);
     }
 
     @NonNull
@@ -65,6 +69,8 @@ public class GalleryAdapter extends ListAdapter<GalleryTemplateDto, GalleryAdapt
             b.category.setText(category);
         } else {
             ItemGalleryTemplateBinding b = (ItemGalleryTemplateBinding) holder.binding;
+            b.thumbnailPlaceholder.setVisibility(View.VISIBLE);
+            thumbnails.load(item.thumbnailUrl, b.thumbnail, () -> b.thumbnailPlaceholder.setVisibility(View.GONE));
             b.name.setText(item.name);
             b.creator.setText(creator);
             b.category.setText(categoryAndDownloads);

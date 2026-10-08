@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Langkah 2 Upload (alur-fitur-upload.md bagian 4, 5.4, 5.8): cek kilat di HP → upload per potongan → daftar tahap
+    pengecekan yang dicentang satu per satu → hasil ("Belum memenuhi standar" atau lolos). host_frame menampung
+    WebView tersembunyi untuk tahap C (dijalankan di HP), di belakang isi layar.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/host_frame"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="UselessParent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/color_background"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/header"
+            layout="@layout/view_wizard_header" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                    android:paddingVertical="@dimen/space_6">
+
+                    <TextView
+                        android:id="@+id/file_meta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/geist_mono_regular"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall"
+                        android:textColor="@color/color_muted" />
+
+                    <!-- Tahap upload + pengecekan -->
+                    <LinearLayout
+                        android:id="@+id/stages"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_4"
+                        android:orientation="vertical" />
+
+                    <LinearLayout
+                        android:id="@+id/progress_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/progress_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="1000"
+                            app:indicatorColor="@color/color_foreground"
+                            app:indicatorTrackGapSize="0dp"
+                            app:trackColor="@color/color_border"
+                            app:trackCornerRadius="@dimen/radius_small"
+                            app:trackStopIndicatorSize="0dp" />
+
+                        <TextView
+                            android:id="@+id/progress_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_2"
+                            android:fontFamily="@font/geist_mono_regular"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall"
+                            android:textColor="@color/color_muted" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="@string/upload_check_hint"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall"
+                        android:textColor="@color/color_muted" />
+
+                    <!-- Hasil: judul + ringkasan + daftar error & peringatan -->
+                    <LinearLayout
+                        android:id="@+id/result_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/result_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.App.Headline" />
+
+                        <TextView
+                            android:id="@+id/result_body"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_2"
+                            android:textAppearance="@style/TextAppearance.App.Body"
+                            android:textColor="@color/color_muted" />
+
+                        <TextView
+                            android:id="@+id/errors_title"
+                            style="@style/Widget.App.SectionTitle"
+                            android:layout_marginTop="@dimen/space_6"
+                            android:textColor="@color/color_error" />
+
+                        <LinearLayout
+                            android:id="@+id/errors_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_2"
+                            android:orientation="vertical" />
+
+                        <TextView
+                            android:id="@+id/warnings_title"
+                            style="@style/Widget.App.SectionTitle"
+                            android:layout_marginTop="@dimen/space_6"
+                            android:textColor="@color/color_warning" />
+
+                        <LinearLayout
+                            android:id="@+id/warnings_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_2"
+                            android:orientation="vertical" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+
+            <com.aris.templateapp.ui.common.StateView
+                android:id="@+id/state"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <!-- Zona bawah: tombol aksi sesuai keadaan -->
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/actions_divider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingVertical="@dimen/space_3"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/primary_button"
+                style="@style/Widget.App.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/secondary_button"
+                style="@style/Widget.App.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

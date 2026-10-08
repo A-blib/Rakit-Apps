@@ -464,6 +464,13 @@ Docker Desktop (Windows) atau Docker (Linux) harus jalan.
 
 Hasil yang benar: `BUILD SUCCESS` dan semua test lulus.
 
+**Fitur Upload (Fase 15–18).** Tidak ada software baru yang wajib dipasang:
+
+- ZIP yang diupload, salinan bernomor, thumbnail, dan paket template tersimpan di folder `backend/uploads/` (otomatis dibuat, tidak di-commit). Folder lain bisa dipilih dengan `UPLOAD_STORAGE_DIR` di `.env`.
+- Saat template dikirim, backend mengunduh library dari CDN (jsDelivr, cdnjs, unpkg). Laptop yang menjalankan backend butuh internet saat itu.
+- ZIP uji pengecekan ada di `backend/src/test/resources/test-fixtures/`. Jika kamu menambah/mengubah aturan pengecekan, buat ulang ZIP-nya dengan Python 3 (🪟 `py tools\buat-zip-uji.py`  🐧 `python3 tools/buat-zip-uji.py`, dari folder `backend`). Python **tidak** dibutuhkan hanya untuk menjalankan test.
+- Di Android Studio klik **Sync Now** setelah menarik perubahan ini, karena ada library baru `androidx.webkit`.
+
 ---
 
 ## 7. Login Google: SHA-1 laptopmu

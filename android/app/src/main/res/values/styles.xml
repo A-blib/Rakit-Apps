@@ -152,6 +152,15 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Button.Small</item>
     </style>
 
+    <!-- Tombol di dalam MaterialButtonToggleGroup (HP/Desktop): terpilih diisi foreground seperti chip terpilih,
+         agar pilihan aktif terlihat jelas. -->
+    <style name="Widget.App.Button.Toggle" parent="Widget.App.Button.Outlined.Compact">
+        <item name="backgroundTint">@color/selector_chip_background</item>
+        <item name="android:textColor">@color/selector_chip_text</item>
+        <item name="iconTint">@color/selector_chip_text</item>
+        <item name="strokeColor">@color/selector_chip_stroke</item>
+    </style>
+
     <!-- Tombol kecil bergaris untuk dropdown filter (Kategori, Urutkan): ikon panah di kanan teks. -->
     <style name="Widget.App.Button.Dropdown" parent="Widget.App.Button.Outlined">
         <item name="android:minHeight">@dimen/touch_target_min</item>
@@ -170,6 +179,37 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
+    </style>
+
+    <!-- Tombol ikon toolbar editor Tandai: area sentuh 48dp, tanpa latar. -->
+    <style name="Widget.App.ToolbarIcon" parent="">
+        <item name="android:layout_width">@dimen/touch_target_min</item>
+        <item name="android:layout_height">@dimen/touch_target_min</item>
+        <item name="android:layout_marginHorizontal">@dimen/space_1</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+    </style>
+
+    <!-- Baris checklist "Sebelum upload": ikon ✓ di kiri, teks biasa. -->
+    <style name="Widget.App.ChecklistItem" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_2</item>
+        <item name="android:drawableStart">@drawable/ic_check_small</item>
+        <item name="android:drawablePadding">@dimen/space_2</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Body</item>
+    </style>
+
+    <!-- Contoh kode di artikel Panduan: huruf mono di kotak abu-abu bergaris tipis, bisa digulir ke samping. -->
+    <style name="Widget.App.CodeBlock" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/space_2</item>
+        <item name="android:background">@drawable/bg_thumbnail</item>
+        <item name="android:padding">@dimen/space_3</item>
+        <item name="android:fontFamily">@font/geist_mono_regular</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.BodySmall</item>
+        <item name="android:textIsSelectable">true</item>
     </style>
 
     <style name="Widget.App.Divider" parent="Widget.Material3.MaterialDivider">

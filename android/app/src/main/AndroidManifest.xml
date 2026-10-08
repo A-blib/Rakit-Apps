@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Mengecek apakah HP memakai data seluler sebelum upload file besar (alur-fitur-upload.md 5.7b). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!--
         allowBackup="false": token login dienkripsi dengan kunci Android Keystore yang tidak ikut di-backup.

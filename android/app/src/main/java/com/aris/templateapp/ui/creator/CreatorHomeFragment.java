@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.data.local.ProjectEntity;
 import com.aris.templateapp.data.repository.GalleryRepository;
 import com.aris.templateapp.databinding.FragmentCreatorHomeBinding;
@@ -33,6 +34,10 @@ import dagger.hilt.android.AndroidEntryPoint;
  */
 @AndroidEntryPoint
 public class CreatorHomeFragment extends Fragment {
+
+    @Inject
+    ThumbnailLoader thumbnailLoader;
+
 
     @Inject
     GuideStore guideStore;
@@ -72,7 +77,7 @@ public class CreatorHomeFragment extends Fragment {
 
         smallAdapter = new ProjectSmallAdapter(project -> EditorNav.openProject(this, project));
         binding.continueList.setAdapter(smallAdapter);
-        recommendAdapter = GalleryAdapter.cards(template -> TemplateOpener.open(this, galleryRepository, template));
+        recommendAdapter = GalleryAdapter.cards(thumbnailLoader, template -> TemplateOpener.open(this, galleryRepository, template));
         binding.recommendList.setAdapter(recommendAdapter);
 
         viewModel.getRecent().observe(getViewLifecycleOwner(), this::bindRecent);

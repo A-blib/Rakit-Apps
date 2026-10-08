@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Satu masalah hasil pengecekan: ikon (✕ error / ! peringatan), pesan, letak (file + baris), saran perbaikan. -->
+<!--
+    Satu masalah hasil pengecekan: ikon (✕ error / ! peringatan), judul aturan, pesan, letak (file + baris), saran,
+    lalu tautan "Pelajari cara memperbaikinya" dan "Ini keliru? Laporkan" (alur-fitur-upload.md 5.9 & 5.11).
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -20,10 +23,17 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.Body.SemiBold"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/geist_medium"
+            android:layout_marginTop="@dimen/space_1"
             android:textAppearance="@style/TextAppearance.App.Body" />
 
         <TextView
@@ -40,5 +50,23 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_1"
             android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+        <Button
+            android:id="@+id/learn_button"
+            style="@style/Widget.App.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="0dp"
+            android:text="@string/issue_learn"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/report_button"
+            style="@style/Widget.App.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="0dp"
+            android:text="@string/issue_report"
+            android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

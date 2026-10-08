@@ -87,7 +87,10 @@ public class GalleryQueries {
 
     private static String filters(WebsitePurpose category, String search) {
         return (category == null ? "" : " AND t.category = :category")
-                + (search == null ? "" : " AND lower(t.name) LIKE :search ESCAPE '\\'");
+                // Pencarian di nama, deskripsi, dan kata kunci (alur-fitur-upload.md bagian 6.4).
+                + (search == null ? "" : " AND (lower(t.name) LIKE :search ESCAPE '\\'"
+                        + " OR lower(coalesce(t.description, '')) LIKE :search ESCAPE '\\'"
+                        + " OR EXISTS (SELECT 1 FROM unnest(t.keywords) k WHERE k LIKE :search ESCAPE '\\'))");
     }
 
     private static JdbcClient.StatementSpec params(JdbcClient.StatementSpec spec, WebsitePurpose category,

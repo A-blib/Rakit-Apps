@@ -24,6 +24,16 @@ public enum ErrorCode {
     MODE_NOT_ALLOWED(HttpStatus.FORBIDDEN, "Mode ini tidak tersedia untuk akunmu."),
     PROVIDER_REQUIRED(HttpStatus.FORBIDDEN, "Fitur ini khusus penyedia template."),
     PROVIDER_SUSPENDED(HttpStatus.FORBIDDEN, "Mode provider dinonaktifkan. Hubungi admin untuk informasi lebih lanjut."),
+    // Fitur Upload (alur-fitur-upload.md)
+    FILE_NOT_ZIP(HttpStatus.BAD_REQUEST, "Upload template dalam format ZIP."),
+    RAR_NOT_SUPPORTED(HttpStatus.BAD_REQUEST, "Format RAR belum didukung. Simpan ulang template sebagai ZIP."),
+    UPLOAD_TOO_LARGE(HttpStatus.CONTENT_TOO_LARGE, "Ukuran ZIP melebihi batas."),
+    DRAFT_LIMIT_REACHED(HttpStatus.CONFLICT, "Selesaikan atau hapus draft dulu (maks 5)."),
+    UPLOAD_OFFSET_MISMATCH(HttpStatus.CONFLICT, "Posisi potongan upload tidak cocok. Tanyakan posisi terakhir lalu lanjutkan."),
+    UPLOAD_INCOMPLETE(HttpStatus.CONFLICT, "Upload belum selesai."),
+    TEMPLATE_NOT_EDITABLE(HttpStatus.CONFLICT, "Template ini tidak bisa diubah pada status sekarang."),
+    IMAGE_INVALID(HttpStatus.BAD_REQUEST, "Gambar harus JPG, PNG, atau WebP, maksimal 1 MB."),
+    ALREADY_REPORTED(HttpStatus.CONFLICT, "Masalah ini sudah dilaporkan."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Silakan masuk terlebih dahulu."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Data tidak ditemukan."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan di server.");

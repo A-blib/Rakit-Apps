@@ -2,6 +2,7 @@ package com.aris.templateapp.ui.provider;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.aris.templateapp.R;
 import com.aris.templateapp.data.remote.dto.TemplateListDto.TemplateSummaryDto;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.databinding.ItemTemplateBinding;
 
 import java.util.Objects;
@@ -23,10 +25,12 @@ import java.util.function.Consumer;
  */
 public class TemplateAdapter extends ListAdapter<TemplateSummaryDto, TemplateAdapter.Holder> {
 
+    private final ThumbnailLoader thumbnails;
     private final Consumer<TemplateSummaryDto> onClick;
 
-    public TemplateAdapter(Consumer<TemplateSummaryDto> onClick) {
+    public TemplateAdapter(ThumbnailLoader thumbnails, Consumer<TemplateSummaryDto> onClick) {
         super(DIFF);
+        this.thumbnails = thumbnails;
         this.onClick = onClick;
     }
 
@@ -41,6 +45,8 @@ public class TemplateAdapter extends ListAdapter<TemplateSummaryDto, TemplateAda
         TemplateSummaryDto item = getItem(position);
         ItemTemplateBinding b = holder.binding;
         Context context = b.getRoot().getContext();
+        b.thumbnailPlaceholder.setVisibility(View.VISIBLE);
+        thumbnails.load(item.thumbnailUrl, b.thumbnail, () -> b.thumbnailPlaceholder.setVisibility(View.GONE));
         b.name.setText(item.name);
         b.status.setText(TemplateUi.statusLine(context, item.status, item.errorCount, item.warningCount));
         b.status.setTextColor(ContextCompat.getColor(context, statusColor(item)));

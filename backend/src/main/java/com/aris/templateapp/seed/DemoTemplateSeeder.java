@@ -17,6 +17,11 @@ import com.aris.templateapp.template.TemplateCheckRepository;
 import com.aris.templateapp.template.TemplateEventType;
 import com.aris.templateapp.template.TemplateRepository;
 import com.aris.templateapp.template.TemplateStatus;
+import com.aris.templateapp.upload.UploadCompletedEvent;
+import com.aris.templateapp.upload.UploadStorage;
+import com.aris.templateapp.upload.check.CheckStage;
+import com.aris.templateapp.upload.check.Finding;
+import com.aris.templateapp.upload.check.TemplateChecker;
 import com.aris.templateapp.user.ActiveMode;
 import com.aris.templateapp.user.CreatorProfile;
 import com.aris.templateapp.user.CreatorProfileRepository;
@@ -28,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -74,6 +80,9 @@ public class DemoTemplateSeeder implements ApplicationRunner {
     private final NotificationService notificationService;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
+    private final UploadStorage storage;
+    private final TemplateChecker checker;
+    private final ApplicationEventPublisher events;
 
     @Override
     @Transactional
@@ -102,7 +111,7 @@ public class DemoTemplateSeeder implements ApplicationRunner {
         Template portofolio = template(owner, "Portofolio Minimal", WebsitePurpose.PRIBADI, TemplateStatus.PUBLISHED, 0, now, 15, 9);
         Template event = template(owner, "Landing Event", WebsitePurpose.LAINNYA, TemplateStatus.CHECK_FAILED, 1, now, 10, 7);
         Template organisasi = template(owner, "Organisasi Pemuda", WebsitePurpose.ORGANISASI, TemplateStatus.CHECKING, 0, now, 1, 0);
-        template(owner, "Instansi Desa", WebsitePurpose.INSTANSI, TemplateStatus.DRAFT, 0, now, 3, 3);
+        Template instansi = template(owner, "Instansi Desa", WebsitePurpose.INSTANSI, TemplateStatus.DRAFT, 0, now, 3, 3);
         template(owner, "Undangan Lama", WebsitePurpose.LAINNYA, TemplateStatus.DISABLED, 0, now, 60, 30);
 
         TemplateCheck sekolahCheck = checkRepository.save(new TemplateCheck(sekolah.getId(), 2, CheckStatus.PASSED, now.minus(Duration.ofDays(2))));
@@ -115,13 +124,8 @@ public class DemoTemplateSeeder implements ApplicationRunner {
         checkRepository.save(new TemplateCheck(kuliner.getId(), 1, CheckStatus.PASSED, now.minus(Duration.ofDays(5))));
         checkRepository.save(new TemplateCheck(portofolio.getId(), 1, CheckStatus.PASSED, now.minus(Duration.ofDays(9))));
         TemplateCheck eventCheck = checkRepository.save(new TemplateCheck(event.getId(), 1, CheckStatus.FAILED, now.minus(Duration.ofDays(7))));
-        issue(eventCheck, IssueSeverity.ERROR, "MISSING_INDEX", "index.html tidak ditemukan", null, null,
-                "Letakkan index.html di folder paling atas ZIP, bukan di dalam subfolder.");
-        issue(eventCheck, IssueSeverity.ERROR, "EXTERNAL_SCRIPT", "Script dari domain luar", "assets/main.js", 12,
-                "Simpan script di dalam template, jangan memuat https://contoh.com/x.js.");
-        issue(eventCheck, IssueSeverity.WARNING, "IMAGE_MISSING_ALT", "Gambar tanpa teks alternatif", "index.html", 22,
-                "Tambahkan atribut alt yang menjelaskan isi gambar.");
-        checkRepository.save(new TemplateCheck(organisasi.getId(), 1, CheckStatus.RUNNING, null));
+        TemplateCheck organisasiCheck = checkRepository.save(new TemplateCheck(organisasi.getId(), 1, CheckStatus.RUNNING, null));
+        attachDemoZips(event, eventCheck, organisasi, organisasiCheck, instansi);
 
         // Event ditulis lewat SQL langsung (bukan JPA), jadi template yang masih tertahan di memori Hibernate
         // harus ditulis ke database dulu; tanpa flush, foreign key template_id belum dikenal database.
@@ -151,6 +155,42 @@ public class DemoTemplateSeeder implements ApplicationRunner {
             template.setPublishedAt(template.getCreatedAt());
         }
         return templateRepository.save(template);
+    }
+
+    /**
+     * Template demo yang masih di wizard Upload diberi ZIP sungguhan, agar bisa dibuka seperti upload asli:
+     * draft siap di langkah 3, upload gagal bisa diperbaiki, dan upload "sedang dicek" benar-benar dicek
+     * mesin pengecekan setelah seeder selesai.
+     */
+    private void attachDemoZips(Template failed, TemplateCheck failedCheck, Template checking, TemplateCheck checkingCheck,
+                                Template draft) {
+        byte[] failedZip = DemoSite.zip(failed.getName(), true);
+        storage.writeSource(failed.getId(), failedZip);
+        failed.setSourceFileName("landing-event.zip");
+        failed.setSourceSize((long) failedZip.length);
+        failed.setWizardStep(2);
+        // Daftar masalah diambil dari mesin pengecekan sungguhan, agar sama dengan isi ZIP yang bisa diperiksa provider.
+        TemplateChecker.Result result = checker.check(failedZip, "landing-event.zip", stage -> { });
+        for (Finding f : result.findings()) {
+            issueRepository.save(new TemplateCheckIssue(failedCheck.getId(), f.rule().severity(), f.rule().name(),
+                    f.rule().version(), f.message(), f.file(), f.line(), f.suggestion(), f.snippet()));
+        }
+        failed.setWarningCount((int) result.warningCount());
+
+        byte[] checkingZip = DemoSite.zip(checking.getName(), false);
+        storage.writeSource(checking.getId(), checkingZip);
+        checking.setSourceFileName("organisasi-pemuda.zip");
+        checking.setSourceSize((long) checkingZip.length);
+        checking.setWizardStep(2);
+        checkingCheck.setStage(CheckStage.UPLOADED);
+        events.publishEvent(new UploadCompletedEvent(checking.getId(), checkingCheck.getId()));
+
+        byte[] draftZip = DemoSite.zip(draft.getName(), false);
+        storage.writeSource(draft.getId(), draftZip);
+        draft.setSourceFileName("instansi-desa.zip");
+        draft.setSourceSize((long) draftZip.length);
+        draft.setWizardStep(3);
+        draft.setTechInfo(checker.check(draftZip, "instansi-desa.zip", stage -> { }).techInfo());
     }
 
     private void issue(TemplateCheck check, IssueSeverity severity, String code, String message, String file,

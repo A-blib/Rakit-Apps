@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.data.repository.GalleryRepository;
 import com.aris.templateapp.databinding.FragmentGalleryBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
@@ -36,6 +37,10 @@ import dagger.hilt.android.AndroidEntryPoint;
 /** Tab Template: galeri versi awal (alur-pembuatan-website.md bagian 6.2). Butuh internet. */
 @AndroidEntryPoint
 public class GalleryFragment extends Fragment {
+
+    @Inject
+    ThumbnailLoader thumbnailLoader;
+
 
     private static final long SEARCH_DELAY_MS = 400;
     private static final int LOAD_MORE_THRESHOLD = 5;
@@ -73,7 +78,7 @@ public class GalleryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         viewModel = new ViewModelProvider(requireActivity()).get(GalleryViewModel.class);
 
-        adapter = GalleryAdapter.list(template -> TemplateOpener.open(this, galleryRepository, template));
+        adapter = GalleryAdapter.list(thumbnailLoader, template -> TemplateOpener.open(this, galleryRepository, template));
         footer = new LoadingFooterAdapter();
         binding.list.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.list.setAdapter(new ConcatAdapter(adapter, footer));

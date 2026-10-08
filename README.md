@@ -21,7 +21,11 @@
 | Android Dashboard Provider: bottom navigation, Beranda (perlu tindakan + badge, checklist provider baru, ringkasan 7/30 hari, grafik area, populer, panduan), Template Anda (cari, filter, urutan, paginasi), detail + hasil pengecekan, Profil + Edit profil | Sudah (Fase 12) |
 | Backend galeri Template publik (`GET /api/templates`), edit profil pembuat website | Sudah (Fase 13) |
 | Android Dashboard Pembuat Website: Beranda (Mulai, Lanjutkan project, Template untuk anda, panduan), tab Project (Room: cari, filter, urutan, ganti nama, duplikat, hapus), tombol +, galeri Template, Profil + edit, editor template/custom "Segera hadir" | Sudah (Fase 14) |
-| Upload template, push notification | Segera hadir (lihat `docs/rancangan/alur-provider.md`) |
+| Backend Upload: ZIP per potongan (bisa dilanjutkan), mesin pengecekan 67 aturan + ZIP uji, draft & kuota, laporan "Ini keliru?", artikel Panduan | Sudah (Fase 15) |
+| Android Upload langkah 1–3: tab Upload (draft, perlu diperbaiki), pilih ZIP + cek kilat, upload dengan progres & lanjut otomatis, daftar tahap pengecekan, cek di WebView HP, "Belum memenuhi standar" + Panduan + laporan keliru, Info template + thumbnail | Sudah (Fase 16), menunggu uji di HP |
+| Upload langkah 4: editor Tandai bagian (slide per section, ketuk elemen, gaya, hubungkan isian, saran, koreksi section, undo/redo, cadangan di HP) | Sudah (Fase 17), menunggu uji di HP |
+| Upload langkah 5–6: Coba sebagai pengguna (preview langsung, gaya, tema, uji isi panjang) dan Kirim (pengecekan akhir, salin library CDN, sisipkan atribut penandaan, tayang di galeri) | Sudah (Fase 18), menunggu uji di HP |
+| Push notification (FCM), versi template, penandaan tingkat section | Segera hadir (menunggu diskusi, rancangan Upload bagian 13–14) |
 | Editor website (template & custom mode), export ZIP | Segera hadir (layar editor sudah ada, isinya menunggu diskusi) |
 | Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
 
@@ -105,6 +109,7 @@ Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan 
 | Google API Client | 2.9.1 | Maven Central |
 | springdoc-openapi (Swagger UI) | 3.1.1 | Maven Central |
 | Datafaker | 2.7.0 | Maven Central |
+| jsoup (membaca HTML template upload) | 1.23.2 | Maven Central |
 | Lombok | dikelola Spring Boot | – |
 
 ### Versi tools & library Android
@@ -128,6 +133,7 @@ Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan 
 | Credentials / Google ID | 1.6.0 / 1.2.1 |
 | Browser (Custom Tabs) | 1.10.0 |
 | Room (database project di HP) | 2.8.5 |
+| androidx.webkit (WebViewAssetLoader untuk Upload) | 1.17.1 |
 | JUnit / arch core-testing | 4.13.2 / 2.2.0 |
 | Font Geist Sans & Geist Mono | 1.7.2 (SIL OFL 1.1, lisensi di `app/src/main/assets/licenses/geist-OFL.txt`) |
 | Ikon | Material Symbols Outlined (Apache 2.0), disalin sebagai vector drawable `ic_*.xml` |
@@ -339,6 +345,15 @@ Access token berlaku 15 menit (`JWT_ACCESS_TTL_MINUTES`). Untuk mencoba token ke
 
 Test pertama kali agak lama karena Docker mengunduh image `postgres:18`.
 
+**ZIP uji pengecekan upload.** Setiap aturan pengecekan punya `gagal.zip` dan `lolos.zip` di `src/test/resources/test-fixtures/<KODE>/`. Jika aturan ditambah/diubah, perbarui `tools/buat-zip-uji.py` lalu buat ulang ZIP-nya (butuh Python 3):
+
+```bash
+python3 tools/buat-zip-uji.py
+./mvnw test -Dtest=CheckRuleFixturesTest   # cepat, tanpa Docker
+```
+
+**Folder upload.** ZIP yang diupload provider, salinan bernomor (`work.zip`), thumbnail, dan paket template tayang (`package.zip`) disimpan di `backend/uploads/` (sudah di `.gitignore`). Ganti lokasinya dengan `UPLOAD_STORAGE_DIR` di `.env` jika perlu. Batas ukuran, daftar CDN, dan library yang diizinkan ada di `application.yml` bagian `app.upload`.
+
 ### Profile
 
 | Profile | Dipakai untuk | Isi khusus |
@@ -476,7 +491,8 @@ cd backend
 
 Seeder membuat akun **`demo-provider@templateapp.test`** / **`password123`** berisi:
 - 7 template berbagai status (tayang, tayang dengan peringatan, tidak lolos, sedang dicek, draft, dinonaktifkan)
-- hasil pengecekan (error & peringatan) dan 3 notifikasi
+- hasil pengecekan (error & peringatan) dan notifikasi
+- ZIP situs contoh sungguhan untuk 3 template yang masih di wizard Upload, jadi tab **Upload** bisa langsung dicoba: "Landing Event" (tidak lolos, bisa diupload ulang), "Organisasi Pemuda" (dicek otomatis saat backend start, lalu menjadi draft), "Instansi Desa" (draft langkah 3)
 - event dilihat/didownload tersebar di 30 hari terakhir
 
 Seeder ini hanya ada di profile `dev`, mati secara bawaan, dan tidak dibuat ulang kalau akun demo sudah ada. Akun provider lain tetap kosong.
@@ -486,6 +502,8 @@ Untuk menghapusnya lagi (supaya kembali kosong), panggil `DELETE /api/dev/demo-t
 ```bash
 curl -X DELETE http://localhost:8080/api/dev/demo-templates
 ```
+
+Perintah ini juga menghapus file ZIP demo di `backend/uploads/`. Restart backend (dengan flag di atas) untuk membuat data demo yang baru.
 
 ## Contoh SQL status provider
 
@@ -510,6 +528,21 @@ WHERE user_id = (SELECT id FROM users WHERE email = 'dummy9@templateapp.test');
 ```
 
 Nilai status selain `active` dan `suspended` ditolak oleh database (CHECK constraint).
+
+### Laporan "Ini keliru?" dari provider
+
+Belum ada panel admin, jadi laporan pengecekan keliru dibaca langsung dari database:
+
+```sql
+-- Aturan yang paling sering dilaporkan
+SELECT rule_code, count(*) FROM check_reports WHERE status = 'baru' GROUP BY rule_code ORDER BY 2 DESC;
+
+-- Detail laporan
+SELECT created_at, rule_code, rule_version, location, snippet, reason FROM check_reports ORDER BY created_at DESC;
+
+-- Tandai sudah dibaca / aturan sudah diperbaiki / tidak berubah
+UPDATE check_reports SET status = 'dibaca' WHERE id = '<id>';
+```
 
 ## Troubleshooting
 

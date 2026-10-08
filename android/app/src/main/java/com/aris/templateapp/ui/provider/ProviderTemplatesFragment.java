@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.ui.guide.Guide;
 import com.aris.templateapp.data.remote.dto.TemplateListDto.StatusCountsDto;
 import com.aris.templateapp.databinding.FragmentProviderTemplatesBinding;
@@ -34,8 +35,17 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
 /** Tab "Template Anda" (alur-provider.md bagian 6). Filter disimpan di ViewModel milik Activity. */
+@AndroidEntryPoint
 public class ProviderTemplatesFragment extends Fragment {
+
+    @Inject
+    ThumbnailLoader thumbnailLoader;
+
 
     /** Jeda setelah berhenti mengetik sebelum mencari, agar tidak mengirim request setiap huruf. */
     private static final long SEARCH_DELAY_MS = 400;
@@ -72,7 +82,7 @@ public class ProviderTemplatesFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         viewModel = new ViewModelProvider(requireActivity()).get(ProviderTemplatesViewModel.class);
 
-        adapter = new TemplateAdapter(item -> ProviderNav.openTemplate(this, item.id));
+        adapter = new TemplateAdapter(thumbnailLoader, item -> ProviderNav.openTemplate(this, item.id));
         footer = new LoadingFooterAdapter();
         binding.list.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.list.setAdapter(new ConcatAdapter(adapter, footer));

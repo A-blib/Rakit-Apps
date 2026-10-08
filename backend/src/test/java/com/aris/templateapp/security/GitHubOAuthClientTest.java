@@ -38,7 +38,7 @@ class GitHubOAuthClientTest {
                 new AppProperties.Google(null),
                 new AppProperties.GitHub("client-id", "client-secret", "http://localhost:8080/api/auth/github/callback"),
                 "templateapp://auth/callback",
-                "Asia/Jakarta");
+                "Asia/Jakarta", null);
         client = new GitHubOAuthClient(properties, builder);
     }
 

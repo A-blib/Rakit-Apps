@@ -49,8 +49,6 @@ public class ProviderHomeFragment extends Fragment {
 
     private FragmentProviderHomeBinding binding;
     private ProviderDashboardViewModel viewModel;
-    /** false sampai onResume pertama: muat pertama sudah dilakukan ViewModel, jadi tidak perlu diulang. */
-    private boolean resumedBefore;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -86,10 +84,8 @@ public class ProviderHomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (resumedBefore) {
-            viewModel.load(true);
-        }
-        resumedBefore = true;
+        // Termasuk saat kembali dari wizard Upload: angka Aktif & Perlu tindakan bisa sudah berubah.
+        viewModel.refreshIfStale();
     }
 
     private ProviderDashboardFragment shell() {
@@ -169,7 +165,14 @@ public class ProviderHomeFragment extends Fragment {
             }
             anyTemplate = true;
             String templateId = item.templateId;
-            row.getRoot().setOnClickListener(v -> ProviderNav.openTemplate(this, templateId));
+            // Draft dilanjutkan di wizard Upload; template lain membuka detail + hasil pengecekan.
+            row.getRoot().setOnClickListener(v -> {
+                if (ActionItemDto.DRAFT.equals(item.kind)) {
+                    shell().selectTab(R.id.tab_upload);
+                } else {
+                    ProviderNav.openTemplate(this, templateId);
+                }
+            });
         }
         binding.seeAllButton.setVisibility(anyTemplate ? View.VISIBLE : View.GONE);
     }
@@ -188,8 +191,6 @@ public class ProviderHomeFragment extends Fragment {
         ItemRowBinding guide = addChecklistStep(R.string.checklist_guide, guideRead);
         guide.getRoot().setOnClickListener(v -> ProviderNav.openGuide(this, Guide.PREPARE_TEMPLATE));
         ItemRowBinding upload = addChecklistStep(R.string.checklist_upload, false);
-        // Label "Segera hadir" di baris keterangan (bukan pil di samping) agar judul tidak terlipat di layar sempit.
-        setTexts(upload, getString(R.string.checklist_upload), getString(R.string.badge_coming_soon));
         upload.getRoot().setOnClickListener(v -> shell().selectTab(R.id.tab_upload));
     }
 
