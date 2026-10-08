@@ -79,6 +79,11 @@ class DemoTemplateSeederTest {
             UUID id = jdbc.queryForObject("SELECT id FROM templates WHERE name = ?", UUID.class, name);
             assertThat(storage.readSource(id)).isNotEmpty();
         }
+        // Masalah "Landing Event" berasal dari mesin pengecekan atas ZIP demo-nya, bukan data karangan.
+        assertThat(jdbc.queryForList("""
+                SELECT i.code FROM template_check_issues i JOIN template_checks c ON c.id = i.check_id
+                JOIN templates t ON t.id = c.template_id WHERE t.name = 'Landing Event'""", String.class))
+                .containsExactly("BASE_HREF");
         // "Organisasi Pemuda" dicek mesin pengecekan di thread lain setelah seeder selesai; tunggu agar hasilnya pasti.
         // ZIP-nya lolos, jadi ia menjadi draft kedua dan menambah notifikasi "File lolos pengecekan".
         awaitCheckFinished("Organisasi Pemuda");

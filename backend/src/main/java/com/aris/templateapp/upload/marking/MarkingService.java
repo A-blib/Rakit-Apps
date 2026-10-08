@@ -123,10 +123,11 @@ public class MarkingService {
         }
         MarkingValidator.validate(data, idsByPage, variables);
 
-        template.setMarking(data);
-        template.setMarkingFieldCount(data.fields() == null ? 0 : data.fields().size());
+        MarkingData ordered = data.inPageOrder();
+        template.setMarking(ordered);
+        template.setMarkingFieldCount(ordered.fields() == null ? 0 : ordered.fields().size());
         template.touch(clock.instant());
-        return data;
+        return ordered;
     }
 
     private byte[] readSource(UUID templateId) {

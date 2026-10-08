@@ -1,5 +1,7 @@
 package com.aris.templateapp.upload.marking;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -11,6 +13,40 @@ import java.util.List;
  * @param theme    variabel CSS yang dijadikan pengaturan tema global (bagian 7.11)
  */
 public record MarkingData(List<Page> pages, List<Section> sections, List<Field> fields, List<ThemeVar> theme) {
+
+    /**
+     * Isian diurutkan menurut posisi elemen pertamanya di situs (urutan halaman, lalu data-tpl-id yang mengikuti urutan
+     * HTML), dan {@code order} dinomori ulang. Form pembuat website jadi tersusun dari atas ke bawah seperti halamannya,
+     * apa pun urutan provider menandai.
+     */
+    public MarkingData inPageOrder() {
+        if (fields == null || fields.isEmpty()) {
+            return this;
+        }
+        List<String> pageOrder = new ArrayList<>();
+        if (pages != null) {
+            pages.forEach(p -> pageOrder.add(p.file()));
+        }
+        Comparator<Field> byPosition = Comparator
+                .comparingInt((Field f) -> f.elements() == null || f.elements().isEmpty() ? Integer.MAX_VALUE
+                        : pageIndex(pageOrder, f.elements().get(0).page()))
+                .thenComparingInt(f -> f.elements() == null || f.elements().isEmpty() ? Integer.MAX_VALUE
+                        : f.elements().get(0).tplId());
+        List<Field> sorted = new ArrayList<>(fields);
+        sorted.sort(byPosition);
+        List<Field> numbered = new ArrayList<>();
+        for (int i = 0; i < sorted.size(); i++) {
+            Field f = sorted.get(i);
+            numbered.add(new Field(f.key(), f.label(), f.type(), f.hint(), f.maxLength(), f.required(), i + 1,
+                    f.aspectRatio(), f.styles(), f.sectionId(), f.elements()));
+        }
+        return new MarkingData(pages, sections, numbered, theme);
+    }
+
+    private static int pageIndex(List<String> pageOrder, String page) {
+        int index = pageOrder.indexOf(page);
+        return index < 0 ? Integer.MAX_VALUE : index;
+    }
 
     public record Page(String file, String name) {
     }

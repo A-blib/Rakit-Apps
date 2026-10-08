@@ -20,6 +20,7 @@ import com.aris.templateapp.template.TemplateStatus;
 import com.aris.templateapp.upload.UploadCompletedEvent;
 import com.aris.templateapp.upload.UploadStorage;
 import com.aris.templateapp.upload.check.CheckStage;
+import com.aris.templateapp.upload.check.Finding;
 import com.aris.templateapp.upload.check.TemplateChecker;
 import com.aris.templateapp.user.ActiveMode;
 import com.aris.templateapp.user.CreatorProfile;
@@ -123,14 +124,8 @@ public class DemoTemplateSeeder implements ApplicationRunner {
         checkRepository.save(new TemplateCheck(kuliner.getId(), 1, CheckStatus.PASSED, now.minus(Duration.ofDays(5))));
         checkRepository.save(new TemplateCheck(portofolio.getId(), 1, CheckStatus.PASSED, now.minus(Duration.ofDays(9))));
         TemplateCheck eventCheck = checkRepository.save(new TemplateCheck(event.getId(), 1, CheckStatus.FAILED, now.minus(Duration.ofDays(7))));
-        issue(eventCheck, IssueSeverity.ERROR, "MISSING_INDEX", "index.html tidak ditemukan", null, null,
-                "Letakkan index.html di folder paling atas ZIP, bukan di dalam subfolder.");
-        issue(eventCheck, IssueSeverity.ERROR, "EXTERNAL_SCRIPT", "Script dari domain luar", "assets/main.js", 12,
-                "Simpan script di dalam template, jangan memuat https://contoh.com/x.js.");
-        issue(eventCheck, IssueSeverity.WARNING, "IMAGE_MISSING_ALT", "Gambar tanpa teks alternatif", "index.html", 22,
-                "Tambahkan atribut alt yang menjelaskan isi gambar.");
         TemplateCheck organisasiCheck = checkRepository.save(new TemplateCheck(organisasi.getId(), 1, CheckStatus.RUNNING, null));
-        attachDemoZips(event, organisasi, organisasiCheck, instansi);
+        attachDemoZips(event, eventCheck, organisasi, organisasiCheck, instansi);
 
         // Event ditulis lewat SQL langsung (bukan JPA), jadi template yang masih tertahan di memori Hibernate
         // harus ditulis ke database dulu; tanpa flush, foreign key template_id belum dikenal database.
@@ -167,12 +162,20 @@ public class DemoTemplateSeeder implements ApplicationRunner {
      * draft siap di langkah 3, upload gagal bisa diperbaiki, dan upload "sedang dicek" benar-benar dicek
      * mesin pengecekan setelah seeder selesai.
      */
-    private void attachDemoZips(Template failed, Template checking, TemplateCheck checkingCheck, Template draft) {
+    private void attachDemoZips(Template failed, TemplateCheck failedCheck, Template checking, TemplateCheck checkingCheck,
+                                Template draft) {
         byte[] failedZip = DemoSite.zip(failed.getName(), true);
         storage.writeSource(failed.getId(), failedZip);
         failed.setSourceFileName("landing-event.zip");
         failed.setSourceSize((long) failedZip.length);
         failed.setWizardStep(2);
+        // Daftar masalah diambil dari mesin pengecekan sungguhan, agar sama dengan isi ZIP yang bisa diperiksa provider.
+        TemplateChecker.Result result = checker.check(failedZip, "landing-event.zip", stage -> { });
+        for (Finding f : result.findings()) {
+            issueRepository.save(new TemplateCheckIssue(failedCheck.getId(), f.rule().severity(), f.rule().name(),
+                    f.rule().version(), f.message(), f.file(), f.line(), f.suggestion(), f.snippet()));
+        }
+        failed.setWarningCount((int) result.warningCount());
 
         byte[] checkingZip = DemoSite.zip(checking.getName(), false);
         storage.writeSource(checking.getId(), checkingZip);
