@@ -214,6 +214,7 @@
     <string name="mark_mark_all">Tandai semua</string>
     <string name="mark_suggest_added">%1$d isian ditambahkan</string>
     <string name="mark_similar">“%1$s” mirip isian yang sudah ditandai tapi belum dihubungkan.</string>
+    <string name="mark_same_unlinked">“%1$s” juga ada di halaman ini tapi belum dihubungkan.</string>
     <string name="mark_link_now">Hubungkan</string>
     <string name="cd_undo">Urungkan</string>
     <string name="cd_redo">Ulangi</string>

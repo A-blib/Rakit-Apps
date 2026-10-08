@@ -48,6 +48,14 @@ final class TryForm {
         void onFieldFocused(String key);
     }
 
+    /** Nilai asli satu elemen dari {@code RakitTry.originals} (piksel CSS untuk ukuran). */
+    static class Original {
+        String text;
+        String href;
+        float fontSize;
+        float radius;
+    }
+
     private static final Pattern HEX = Pattern.compile("^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$");
     // Rasio kontras minimal agar teks masih terbaca (WCAG untuk teks besar).
     private static final double MIN_CONTRAST = 3.0;
@@ -71,11 +79,9 @@ final class TryForm {
 
     /**
      * @param sectionId     hanya isian di section ini; null = semua
-     * @param originals     teks asli per kunci isian (dari halaman), dipakai sebagai contoh di input
-     * @param originalHrefs alamat link asli per kunci isian (untuk jenis Link dan Tombol)
+     * @param originals nilai asli per kunci isian (dari halaman): isi awal input dan posisi awal slider
      */
-    void build(MarkingDto marking, @Nullable String sectionId, Map<String, String> originals,
-               Map<String, String> originalHrefs) {
+    void build(MarkingDto marking, @Nullable String sectionId, Map<String, Original> originals) {
         // Build lama yang belum selesai dibatalkan: sisa potongannya melihat nomor build yang sudah berganti.
         int build = ++buildGeneration;
         container.removeAllViews();
@@ -95,25 +101,24 @@ final class TryForm {
             container.addView(empty);
             return;
         }
-        addFieldsFrom(fields, 0, build, originals, originalHrefs);
+        addFieldsFrom(fields, 0, build, originals);
     }
 
     /**
      * Isian dibuat beberapa per frame. Template besar bisa punya puluhan isian bergaya; membuat semuanya sekaligus
      * menahan layar lebih dari satu detik (bahkan ANR), sedangkan bertahap membuat form langsung bisa dipakai.
      */
-    private void addFieldsFrom(List<MarkingDto.Field> fields, int start, int build, Map<String, String> originals,
-                               Map<String, String> originalHrefs) {
+    private void addFieldsFrom(List<MarkingDto.Field> fields, int start, int build, Map<String, Original> originals) {
         if (build != buildGeneration) {
             return;
         }
         int end = Math.min(fields.size(), start + FIELDS_PER_FRAME);
         for (int i = start; i < end; i++) {
             MarkingDto.Field field = fields.get(i);
-            addField(field, originals.get(field.key), originalHrefs.get(field.key));
+            addField(field, originals.get(field.key));
         }
         if (end < fields.size()) {
-            container.post(() -> addFieldsFrom(fields, end, build, originals, originalHrefs));
+            container.post(() -> addFieldsFrom(fields, end, build, originals));
         }
     }
 
@@ -153,7 +158,9 @@ final class TryForm {
         }
     }
 
-    private void addField(MarkingDto.Field field, @Nullable String original, @Nullable String originalHref) {
+    private void addField(MarkingDto.Field field, @Nullable Original original) {
+        String originalText = original == null ? null : original.text;
+        String originalHref = original == null ? null : original.href;
         ItemTryFieldBinding row = ItemTryFieldBinding.inflate(LayoutInflater.from(context), container, true);
         TrySession.Value value = session.value(templateId, field.key);
         row.label.setText(field.label);
@@ -180,19 +187,19 @@ final class TryForm {
                 addHref(row, field, value, originalHref);
                 break;
             case "button":
-                addText(row, field, value, original, false);
+                addText(row, field, value, originalText, false);
                 addHref(row, field, value, originalHref);
                 break;
             case "paragraph":
-                addText(row, field, value, original, true);
+                addText(row, field, value, originalText, true);
                 break;
             case "text":
             default:
-                addText(row, field, value, original, false);
+                addText(row, field, value, originalText, false);
                 break;
         }
         for (MarkingDto.Style style : field.styles) {
-            addStyle(row, style, value);
+            addStyle(row, style, value, original);
         }
         updateContrast(row, value);
     }
@@ -257,7 +264,8 @@ final class TryForm {
 
     // ---------- gaya (bagian 7.11) ----------
 
-    private void addStyle(ItemTryFieldBinding row, MarkingDto.Style style, TrySession.Value value) {
+    private void addStyle(ItemTryFieldBinding row, MarkingDto.Style style, TrySession.Value value,
+                          @Nullable Original original) {
         TextView label = new TextView(context);
         label.setTextAppearance(R.style.TextAppearance_App_Label);
         label.setPadding(0, px(R.dimen.space_3), 0, 0);
@@ -279,13 +287,15 @@ final class TryForm {
             case "font-size":
                 label.setText(R.string.mark_style_font);
                 addSlider(row.inputs, style.min == null ? 12 : style.min, style.max == null ? 48 : style.max,
-                        value.styles.get(style.prop), v -> value.styles.put(style.prop, v + "px"));
+                        value.styles.get(style.prop), original == null ? null : Math.round(original.fontSize),
+                        v -> value.styles.put(style.prop, v + "px"));
                 break;
             case "border-radius":
             default:
                 label.setText(R.string.mark_style_radius);
                 addSlider(row.inputs, style.min == null ? 0 : style.min, style.max == null ? 32 : style.max,
-                        value.styles.get(style.prop), v -> value.styles.put(style.prop, v + "px"));
+                        value.styles.get(style.prop), original == null ? null : Math.round(original.radius),
+                        v -> value.styles.put(style.prop, v + "px"));
                 break;
         }
     }
@@ -294,13 +304,20 @@ final class TryForm {
         void onChanged(int value);
     }
 
-    private void addSlider(LinearLayout parent, int min, int max, @Nullable String current, IntChanged changed) {
+    /** @param initial nilai asli elemen (mis. ukuran huruf sekarang), posisi awal slider jika belum diubah */
+    private void addSlider(LinearLayout parent, int min, int max, @Nullable String current, @Nullable Integer initial,
+                           IntChanged changed) {
         Slider slider = new Slider(context);
+        // Warna dari token tema: warna bawaan Slider hampir tak terlihat di mode gelap.
+        int foreground = context.getColor(R.color.color_foreground);
+        slider.setTrackActiveTintList(ColorStateList.valueOf(foreground));
+        slider.setTrackInactiveTintList(ColorStateList.valueOf(context.getColor(R.color.color_border)));
+        slider.setThumbTintList(ColorStateList.valueOf(foreground));
         slider.setValueFrom(min);
         slider.setValueTo(Math.max(min + 1, max));
         slider.setStepSize(1);
         slider.setTickVisibilityMode(TickVisibilityMode.TICK_VISIBILITY_HIDDEN);
-        int start = min;
+        int start = initial != null && initial > 0 ? initial : min;
         if (current != null) {
             try {
                 start = Integer.parseInt(current.replace("px", "").trim());

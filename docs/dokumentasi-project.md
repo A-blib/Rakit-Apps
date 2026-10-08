@@ -1352,6 +1352,10 @@ Teks asli semua isian diambil dengan satu panggilan `RakitTry.originals(ids)`, l
 
 Keadaan keyboard dibaca dari `WindowInsetsCompat` setiap kali layout berubah. Saat keyboard terbuka, kontrol selain isian disembunyikan, form dinaikkan hingga menyisakan strip preview (`try_sheet_typing_preview`), preview digulir ke elemen yang diedit, dan kolom aktif digulir tepat di atas keyboard.
 
+### Saran menghubungkan lintas halaman
+
+Tawaran "Bagian ini sama di N halaman" hanya muncul saat menandai. Jika provider memilih "Halaman ini saja", bar saran di halaman lain kemudian menampilkan "“…” juga ada di halaman ini tapi belum dihubungkan" (`UploadMarkFragment.offerCrossPageLink`). Kembaran elemen dicari dengan `PageScanner.sameElementElsewhere` (section dengan struktur dan isi sama).
+
 ### Tombol pilihan HP / Desktop
 
 Toggle HP/Desktop memakai `MaterialButtonToggleGroup` dengan style `Widget.App.Button.Toggle`. Tombol terpilih diisi warna foreground (sama seperti chip terpilih), karena style bergaris biasa tidak membedakan tombol terpilih dan tidak terpilih.

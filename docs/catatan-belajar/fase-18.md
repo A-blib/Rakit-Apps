@@ -106,6 +106,21 @@ Desain baru (`UploadTryFragment.onLayoutChanged`): selama keyboard terbuka, yang
 - Kolom yang diketik digulir tepat di atas keyboard; labelnya ikut terlihat jika muat. Area yang dihitung adalah bagian form yang benar-benar terlihat (`getGlobalVisibleRect`), karena sheet setinggi layar lalu digeser ke bawah.
 - Tombol warna "Asli" tidak lagi terpotong (padding teks hilang saat `setBackground`).
 
+### Uji mandiri lanjutan: Coba → Kirim template kopi (8 Oktober 2026)
+
+Yang dicoba dan berhasil:
+- Pindah halaman di Coba
+- HP/Desktop (isian tetap tersimpan saat tampilan diganti)
+- "Uji isi panjang" dan "Isi asli"
+- "Ubah tandaan ini" (langsung membuka H1 di Tandai)
+- Kirim sampai tayang: `package.zip` berisi 31 `data-key` di Beranda dan 3 di Menu
+- Template tampil di Template Anda dan di galeri pembuat website dengan thumbnail
+
+| Temuan | Perbaikan |
+|---|---|
+| Slider Ukuran huruf/Sudut hampir tak terlihat di mode gelap dan selalu mulai dari nilai minimum | Warna slider dari token tema; posisi awal = ukuran asli elemen (`RakitTry.originals` kini juga mengirim `fontSize` dan `radius`) |
+| Nama toko, tombol menu, dan copyright di halaman Menu tidak ikut berubah karena hanya ditandai di Beranda; tidak ada saran untuk menghubungkannya | Bar saran di Tandai menampilkan "“…” juga ada di halaman ini tapi belum dihubungkan" + **Hubungkan**, memakai kembaran yang dideteksi `PageScanner` |
+
 ## Konsep yang dipelajari
 - **CSS `!important` dan urutan stylesheet**: aturan yang dimuat terakhir dan bertanda `!important` mengalahkan aturan lain.
 - **Data URL**: gambar ditulis langsung sebagai teks base64 di dalam atribut `src`.

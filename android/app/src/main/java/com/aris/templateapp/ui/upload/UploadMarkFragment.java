@@ -418,6 +418,9 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
         }
         int[] range = ranges.get(viewModel.sectionIndex());
         List<Integer> marked = markedIds();
+        if (offerCrossPageLink()) {
+            return;
+        }
         current.call("similarUnlinked", value -> {
             List<Similar> similar = parse(value, SIMILAR);
             if (similar != null && !similar.isEmpty()) {
@@ -435,6 +438,45 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
                         () -> markAll(suggestions));
             }, range[0], range[1], marked);
         }, range[0], range[1], marked);
+    }
+
+    /**
+     * Isian di halaman lain yang kembarannya (struktur & isi sama, mis. nama toko di header) ada di halaman ini tapi
+     * belum dihubungkan (bagian 7.5–7.6). Tawaran "sama di N halaman" hanya muncul saat menandai, jadi isian yang dulu
+     * ditandai "halaman ini saja" diingatkan lagi di sini.
+     *
+     * @return true jika bar saran dipakai untuk tawaran ini
+     */
+    private boolean offerCrossPageLink() {
+        Map<String, List<PageScanner.ScannedSection>> scanned = viewModel.scanned();
+        if (scanned == null) {
+            return false;
+        }
+        String page = viewModel.page();
+        MarkingEditor editor = viewModel.editor();
+        for (MarkingDto.Field field : editor.fields()) {
+            for (MarkingDto.Element element : field.elements) {
+                if (element.page.equals(page)) {
+                    continue;
+                }
+                Integer twin = PageScanner.sameElementElsewhere(scanned, element.page, element.tplId).get(page);
+                if (twin == null || editor.fieldOf(page, twin) != null) {
+                    continue;
+                }
+                showHint(getString(R.string.mark_same_unlinked, field.label), R.string.mark_link_now, () -> {
+                    List<MarkingDto.Element> added = new ArrayList<>();
+                    added.add(new MarkingDto.Element(page, twin, new ArrayList<>(element.visibleIn)));
+                    editor.linkElements(field.key, added);
+                    viewModel.changed();
+                    Snackbar.make(binding.getRoot(), getString(R.string.mark_linked, field.label),
+                            Snackbar.LENGTH_SHORT).show();
+                    setMarks();
+                    updateHintBar();
+                });
+                return true;
+            }
+        }
+        return false;
     }
 
     private void showHint(String text, int action, Runnable onAction) {

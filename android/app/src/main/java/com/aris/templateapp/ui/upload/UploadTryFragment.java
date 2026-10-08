@@ -64,12 +64,6 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
 
     private static final int IMAGE_MAX_SIDE = 1200;
 
-    /** Teks dan alamat link asli satu elemen (dari {@code RakitTry.originals}). */
-    static class Original {
-        String text;
-        String href;
-    }
-
     @Inject
     TrySession session;
     @Inject
@@ -85,8 +79,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
     private WebView webView;
     @Nullable
     private TryForm form;
-    private final Map<String, String> originals = new HashMap<>();
-    private final Map<String, String> originalHrefs = new HashMap<>();
+    private final Map<String, TryForm.Original> originals = new HashMap<>();
     // Mencegah permintaan ganda saat halaman melapor "selesai dimuat" lebih dari sekali.
     private boolean loadingOriginals;
     // Jarak (piksel CSS) di atas elemen yang diedit saat preview digulir: kira-kira tinggi header situs yang menempel.
@@ -314,27 +307,26 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
             if (binding == null) {
                 return;
             }
-            Map<String, Original> found = parseOriginals(value);
+            Map<String, TryForm.Original> found = parseOriginals(value);
             for (Map.Entry<Integer, List<String>> entry : keysById.entrySet()) {
-                Original original = found.get(String.valueOf(entry.getKey()));
+                TryForm.Original original = found.get(String.valueOf(entry.getKey()));
                 for (String key : entry.getValue()) {
                     // Disimpan walau elemennya tidak ditemukan, agar tidak diminta ulang terus.
-                    originals.put(key, original == null ? null : original.text);
-                    originalHrefs.put(key, original == null ? null : original.href);
+                    originals.put(key, original);
                 }
             }
             buildForm();
         });
     }
 
-    private Map<String, Original> parseOriginals(@Nullable String evaluated) {
+    private Map<String, TryForm.Original> parseOriginals(@Nullable String evaluated) {
         try {
             if (evaluated == null || evaluated.equals("null")) {
                 return Collections.emptyMap();
             }
             JsonElement element = JsonParser.parseString(evaluated);
-            Map<String, Original> map = gson.fromJson(element.getAsString(),
-                    new TypeToken<Map<String, Original>>() { }.getType());
+            Map<String, TryForm.Original> map = gson.fromJson(element.getAsString(),
+                    new TypeToken<Map<String, TryForm.Original>>() { }.getType());
             return map == null ? Collections.emptyMap() : map;
         } catch (RuntimeException e) {
             return Collections.emptyMap();
@@ -371,7 +363,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
 
     private void buildForm() {
         if (form != null && ready != null) {
-            form.build(ready.marking, viewModel.sectionId(), originals, originalHrefs);
+            form.build(ready.marking, viewModel.sectionId(), originals);
         }
     }
 
