@@ -21,4 +21,6 @@ public interface TemplateRepository extends JpaRepository<Template, UUID> {
     List<Template> findByStatusAndUpdatedAtBefore(TemplateStatus status, Instant before);
 
     boolean existsByProviderIdAndNameIgnoreCaseAndIdNot(UUID providerId, String name, UUID id);
+
+    List<Template> findByProviderId(UUID providerId);
 }

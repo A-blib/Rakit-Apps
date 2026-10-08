@@ -71,6 +71,17 @@ public class UploadStorage {
         }
     }
 
+    /** Menyimpan ZIP template langsung (dipakai seeder demo; upload sungguhan lewat {@link #promote}). */
+    public void writeSource(UUID templateId, byte[] zip) {
+        try {
+            Path target = sourceZip(templateId);
+            Files.createDirectories(target.getParent());
+            Files.write(target, zip);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     /** Memindahkan ZIP yang sudah lengkap menjadi ZIP template (menggantikan ZIP lama jika ada). */
     public void promote(UUID sessionId, UUID templateId) {
         try {
