@@ -59,6 +59,8 @@ public class MarkEditorViewModel extends ViewModel {
     private final MutableLiveData<Event<String>> restoreOffer = new MutableLiveData<>();
     private final MutableLiveData<Boolean> saving = new MutableLiveData<>(false);
     private final MutableLiveData<Event<Integer>> message = new MutableLiveData<>();
+    // Alasan server menolak tandaan (mis. tandaan bersarang): ditampilkan apa adanya agar provider tahu yang diperbaiki.
+    private final MutableLiveData<Event<String>> rejected = new MutableLiveData<>();
     private final MutableLiveData<Event<Runnable>> afterSave = new MutableLiveData<>();
 
     private String templateId;
@@ -89,6 +91,10 @@ public class MarkEditorViewModel extends ViewModel {
 
     LiveData<Boolean> getSaving() {
         return saving;
+    }
+
+    LiveData<Event<String>> getRejected() {
+        return rejected;
     }
 
     LiveData<Event<Integer>> getMessage() {
@@ -268,6 +274,9 @@ public class MarkEditorViewModel extends ViewModel {
                     if (then != null) {
                         afterSave.setValue(new Event<>(then));
                     }
+                } else if (result.getError() != null && "VALIDATION_ERROR".equals(result.getError().getCode())
+                        && result.getError().getMessage() != null) {
+                    rejected.setValue(new Event<>(result.getError().getMessage()));
                 } else {
                     message.setValue(new Event<>(result.getError() != null && result.getError().isNetworkError()
                             ? R.string.error_no_connection : R.string.mark_save_failed));

@@ -1334,6 +1334,20 @@ Isian disimpan menurut posisi elemen pertamanya di situs: urutan halaman, lalu n
 
 `OffscreenPage.capture` menggulir ke posisi section. Halaman yang pendek tidak bisa digulir sejauh itu, jadi posisi gulir yang benar-benar tercapai (`window.scrollY`) dibandingkan dengan yang diminta, dan selisihnya digeser saat menggambar ke Bitmap.
 
+### Tandaan bersarang
+
+Teks, Paragraf, dan Tombol mengganti **seluruh isi** elemen, sedangkan Gambar dan Link hanya mengubah `src`/`href`. Karena itu elemen berjenis Teks/Paragraf/Tombol tidak boleh membungkus elemen bertanda lain (keputusan Aris, 8 Oktober 2026). Pengecekan ada di tiga tempat:
+
+| Tempat | Cara |
+|---|---|
+| Sheet Tandai elemen | `describe` di `mark.js` mengirim `markedAncestors`/`markedDescendants`; `MarkElementSheet.nestingProblem` menampilkan peringatan dan menonaktifkan Simpan. "Hubungkan ke isian lain" ikut dicek |
+| Saran "Tandai semua" | `suggest` melewati elemen yang membungkus/berada di dalam elemen bertanda |
+| Server (Simpan & Kirim) | `TemplateNumbering.parents` memetakan induk tiap elemen; `MarkingValidator.validateNesting` menolak dengan pesan yang tampil di dialog app |
+
+### Form Coba untuk template besar
+
+Teks asli semua isian diambil dengan satu panggilan `RakitTry.originals(ids)`, lalu form dibangun sekali dan bertahap (3 isian per frame, `TryForm.addFieldsFrom`). Contoh warna memakai View ringan, bukan Chip.
+
 ### Tombol pilihan HP / Desktop
 
 Toggle HP/Desktop memakai `MaterialButtonToggleGroup` dengan style `Widget.App.Button.Toggle`. Tombol terpilih diisi warna foreground (sama seperti chip terpilih), karena style bergaris biasa tidak membedakan tombol terpilih dan tidak terpilih.

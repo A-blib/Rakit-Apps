@@ -99,6 +99,19 @@
             <com.google.android.material.chip.Chip android:id="@+id/type_button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/mark_type_button" />
         </com.google.android.material.chip.ChipGroup>
 
+        <!-- Tandaan bersarang ditolak: isian teks yang membungkus isian lain akan menimpanya. -->
+        <TextView
+            android:id="@+id/nesting_warning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            android:drawablePadding="@dimen/space_2"
+            android:textAppearance="@style/TextAppearance.App.BodySmall"
+            android:textColor="@color/color_error"
+            android:visibility="gone"
+            app:drawableStartCompat="@drawable/ic_error"
+            app:drawableTint="@color/color_error" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/label_layout"
             android:layout_width="match_parent"

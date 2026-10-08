@@ -14,8 +14,11 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Bottom sheet "Tandai elemen" (alur-fitur-upload.md bagian 7.3). Hanya mengisi form dan membaca hasilnya;
@@ -42,6 +45,8 @@ final class MarkElementSheet {
     private static final int[] TYPE_CHIPS = {R.id.type_text, R.id.type_paragraph, R.id.type_image, R.id.type_link,
             R.id.type_button};
     private static final String[] TYPES = {"text", "paragraph", "image", "link", "button"};
+    // Jenis isian yang mengganti seluruh isi elemen (bukan hanya src/href).
+    static final Set<String> REPLACES_CONTENT = new HashSet<>(Arrays.asList("text", "paragraph", "button"));
     // Rasio umum; rasio gambar asli yang mendekati salah satunya dibulatkan agar mudah dipahami pembuat website.
     private static final int[][] COMMON_RATIOS = {{16, 9}, {4, 3}, {3, 2}, {1, 1}, {2, 3}, {3, 4}, {9, 16}, {21, 9}};
     // Ukuran huruf boleh diubah ±20% dari ukuran asli (bagian 7.11).
@@ -50,8 +55,13 @@ final class MarkElementSheet {
     private MarkElementSheet() {
     }
 
+    /**
+     * @param wrappers isian bertanda yang membungkus elemen ini
+     * @param inner    isian bertanda di dalam elemen ini
+     */
     static BottomSheetDialog show(Fragment fragment, ElementInfo info, @Nullable MarkingDto.Field existing,
-                                  List<MarkingDto.Field> others, Callbacks callbacks) {
+                                  List<MarkingDto.Field> others, List<MarkingDto.Field> wrappers,
+                                  List<MarkingDto.Field> inner, Callbacks callbacks) {
         BottomSheetDialog sheet = new BottomSheetDialog(fragment.requireContext());
         SheetMarkElementBinding b = SheetMarkElementBinding.inflate(fragment.getLayoutInflater());
         sheet.setContentView(b.getRoot());
@@ -95,6 +105,10 @@ final class MarkElementSheet {
 
         Runnable applyType = () -> {
             String selected = typeOf(b.typeGroup.getCheckedChipId());
+            String nested = nestingProblem(fragment, selected, wrappers, inner);
+            b.nestingWarning.setText(nested);
+            b.nestingWarning.setVisibility(nested == null ? View.GONE : View.VISIBLE);
+            b.saveButton.setEnabled(nested == null);
             boolean image = "image".equals(selected);
             b.limitsRow.setVisibility(image ? View.GONE : View.VISIBLE);
             b.ratioText.setVisibility(image ? View.VISIBLE : View.GONE);
@@ -122,9 +136,19 @@ final class MarkElementSheet {
             new MaterialAlertDialogBuilder(fragment.requireContext())
                     .setTitle(R.string.mark_link_pick_title)
                     .setItems(labels, (d, which) -> {
+                        MarkingDto.Field target = linkable.get(which);
+                        String nested = nestingProblem(fragment, target.type, wrappers, inner);
+                        if (nested != null) {
+                            new MaterialAlertDialogBuilder(fragment.requireContext())
+                                    .setTitle(R.string.mark_nested_link_title)
+                                    .setMessage(nested)
+                                    .setPositiveButton(R.string.action_ok, null)
+                                    .show();
+                            return;
+                        }
                         handled[0] = true;
                         sheet.dismiss();
-                        callbacks.onLinkTo(linkable.get(which).key);
+                        callbacks.onLinkTo(target.key);
                     })
                     .setNegativeButton(R.string.action_cancel, null)
                     .show();
@@ -171,6 +195,30 @@ final class MarkElementSheet {
         sheet.getBehavior().setState(BottomSheetBehavior.STATE_COLLAPSED);
         sheet.show();
         return sheet;
+    }
+
+    /**
+     * Teks, Paragraf, dan Tombol mengganti seluruh isi elemen. Jadi elemen jenis itu tidak boleh membungkus isian lain,
+     * dan elemen apa pun tidak boleh berada di dalam isian jenis itu (keputusan Aris, 8 Oktober 2026).
+     *
+     * @return pesan masalah, atau null jika aman
+     */
+    @Nullable
+    static String nestingProblem(Fragment fragment, String type, List<MarkingDto.Field> wrappers,
+                                 List<MarkingDto.Field> inner) {
+        for (MarkingDto.Field wrapper : wrappers) {
+            if (REPLACES_CONTENT.contains(wrapper.type)) {
+                return fragment.getString(R.string.mark_nested_inside, wrapper.label);
+            }
+        }
+        if (REPLACES_CONTENT.contains(type) && !inner.isEmpty()) {
+            List<String> labels = new ArrayList<>();
+            for (MarkingDto.Field field : inner) {
+                labels.add("“" + field.label + "”");
+            }
+            return fragment.getString(R.string.mark_nested_contains, String.join(", ", labels));
+        }
+        return null;
     }
 
     /** Isi form → isian baru. Null jika ada isian yang belum valid (pesannya tampil di form). */

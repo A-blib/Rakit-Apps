@@ -116,6 +116,16 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
                 Snackbar.make(binding.getRoot(), text, Snackbar.LENGTH_SHORT).show();
             }
         });
+        viewModel.getRejected().observe(getViewLifecycleOwner(), event -> {
+            String reason = event.getContentIfNotHandled();
+            if (reason != null) {
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(R.string.mark_save_rejected_title)
+                        .setMessage(reason)
+                        .setPositiveButton(R.string.action_ok, null)
+                        .show();
+            }
+        });
         viewModel.getAfterSave().observe(getViewLifecycleOwner(), event -> {
             Runnable then = event.getContentIfNotHandled();
             if (then != null) {
@@ -480,11 +490,27 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
         Snackbar.make(binding.getRoot(), R.string.mark_generated, Snackbar.LENGTH_LONG).show();
     }
 
+    /** Isian pemilik elemen-elemen bertanda (tanpa duplikat), untuk pengecekan tandaan bersarang. */
+    private List<MarkingDto.Field> fieldsOf(String page, @Nullable List<Integer> ids) {
+        List<MarkingDto.Field> fields = new ArrayList<>();
+        if (ids == null) {
+            return fields;
+        }
+        for (Integer id : ids) {
+            MarkingDto.Field field = viewModel.editor().fieldOf(page, id);
+            if (field != null && !fields.contains(field)) {
+                fields.add(field);
+            }
+        }
+        return fields;
+    }
+
     private void openSheet(ElementInfo info) {
         MarkingEditor editor = viewModel.editor();
         String page = viewModel.page();
         MarkingDto.Field existing = editor.fieldOf(page, info.id);
-        MarkElementSheet.show(this, info, existing, editor.fields(), new MarkElementSheet.Callbacks() {
+        MarkElementSheet.show(this, info, existing, editor.fields(), fieldsOf(page, info.markedAncestors),
+                fieldsOf(page, info.markedDescendants), new MarkElementSheet.Callbacks() {
             @Override
             public void onSave(@Nullable String existingKey, MarkingDto.Field edited) {
                 MarkingDto.Section section = currentSection();

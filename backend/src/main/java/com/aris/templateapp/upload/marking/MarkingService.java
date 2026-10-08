@@ -110,10 +110,13 @@ public class MarkingService {
             throw new ApiException(ErrorCode.TEMPLATE_NOT_EDITABLE, "File template tidak bisa dibaca. Upload ulang ZIP-nya.");
         }
         Map<String, Set<Integer>> idsByPage = new HashMap<>();
+        Map<String, Map<Integer, Integer>> parentsByPage = new HashMap<>();
         for (String page : files.pages()) {
             byte[] html = files.content(page);
             if (html != null) {
-                idsByPage.put(page, TemplateNumbering.ids(new String(html, StandardCharsets.UTF_8)));
+                Map<Integer, Integer> parents = TemplateNumbering.parents(new String(html, StandardCharsets.UTF_8));
+                parentsByPage.put(page, parents);
+                idsByPage.put(page, parents.keySet());
             }
         }
         Set<String> variables = new HashSet<>();
@@ -122,6 +125,7 @@ public class MarkingService {
             tech.cssVariables().forEach(v -> variables.add(v.name()));
         }
         MarkingValidator.validate(data, idsByPage, variables);
+        MarkingValidator.validateNesting(data, parentsByPage);
 
         MarkingData ordered = data.inPageOrder();
         template.setMarking(ordered);

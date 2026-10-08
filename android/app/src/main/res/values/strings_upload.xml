@@ -194,6 +194,7 @@
     <string name="mark_save">Simpan</string>
     <string name="mark_try">Coba</string>
     <string name="mark_saved">Tandaan tersimpan</string>
+    <string name="mark_save_rejected_title">Tandaan belum bisa disimpan</string>
     <string name="mark_save_failed">Tandaan gagal disimpan. Periksa isian lalu coba lagi.</string>
     <string name="mark_error_label">Ada isian tanpa label. Beri label dulu.</string>
     <string name="mark_error_key">Ada kunci isian ganda.</string>
@@ -249,6 +250,9 @@
     <string name="mark_font_min">Min (px)</string>
     <string name="mark_font_max">Maks (px)</string>
     <string name="mark_font_range_invalid">Rentang tidak valid</string>
+    <string name="mark_nested_contains">Elemen ini berisi isian lain (%1$s). Teks, Paragraf, atau Tombol di sini akan menimpa semuanya. Pilih elemen yang lebih kecil dengan tombol Anak, atau pilih jenis Gambar/Link.</string>
+    <string name="mark_nested_inside">Elemen ini ada di dalam isian “%1$s” yang akan menimpa seluruh isinya. Ubah jenis atau hapus tandaan “%1$s” dulu.</string>
+    <string name="mark_nested_link_title">Tidak bisa dihubungkan</string>
     <string name="mark_link_existing">Hubungkan ke isian lain</string>
     <string name="mark_link_pick_title">Elemen ini ikut diubah oleh isian…</string>
     <string name="mark_linked">Dihubungkan ke “%1$s”</string>

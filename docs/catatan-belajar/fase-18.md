@@ -83,6 +83,19 @@ Data demo direset, lalu dicoba: detail error + **Pelajari cara memperbaikinya** 
 
 Catatan: HP realme Aris memakai pengaturan **ketebalan font** (`font_variation_settings=550`) yang menyamakan ketebalan semua font. Di HP itu, perbedaan regular/semibold memang hampir tidak terlihat.
 
+### Uji dengan template Kedai Kopi Senja (8 Oktober 2026)
+
+Aris mengupload `contoh-landing-page/` dan menandai 31 isian. Langkah **Coba** membuat app tidak merespons (ANR).
+
+| Temuan | Penyebab | Perbaikan |
+|---|---|---|
+| App beku lalu ditutup sistem saat membuka Coba | Teks asli diambil dengan 31 panggilan JavaScript terpisah, dan setiap jawaban yang datang setelah semuanya terkumpul membangun ulang seluruh form | `RakitTry.originals(ids)` mengambil semua sekaligus; form dibangun sekali |
+| Form 31 isian masih menahan layar ±3 detik | Setiap pemilih warna membuat 11 `Chip` (±550 Chip) | Contoh warna memakai `View` bulat ringan; form dibangun 3 isian per frame |
+| Isian Paragraf menunjuk 3 `<article>` card yang judul dan deskripsinya juga ditandai | Belum ada aturan tandaan bersarang | **Keputusan Aris: tolak saat menyimpan.** Teks/Paragraf/Tombol tidak boleh membungkus isian lain, dan elemen di dalam isian jenis itu tidak bisa ditandai. Gambar dan Link boleh membungkus. Dicek di sheet Tandai (peringatan merah, Simpan nonaktif), saran "Tandai semua", dan server (`MarkingValidator.validateNesting`, saat Simpan dan Kirim) |
+| Alasan server menolak Simpan tidak terlihat | Snackbar umum "Tandaan gagal disimpan" | Pesan `VALIDATION_ERROR` dari server tampil di dialog |
+
+Cara mengukur macetnya UI: `adb logcat | grep "Skipped .* frames"` (dari ±285 frame menjadi ±40), dan stack trace thread utama lewat `jdb` (`adb forward tcp:8700 jdwp:<pid>`, lalu `suspend` + `where`).
+
 ## Konsep yang dipelajari
 - **CSS `!important` dan urutan stylesheet**: aturan yang dimuat terakhir dan bertanda `!important` mengalahkan aturan lain.
 - **Data URL**: gambar ditulis langsung sebagai teks base64 di dalam atribut `src`.

@@ -161,7 +161,12 @@
         ratioH: img ? img.naturalHeight : Math.round(r.height),
         visible: visible(el),
         hasParent: !!(el.parentElement && idOf(el.parentElement) !== null && el.parentElement !== document.body),
-        hasChild: !!el.querySelector('[' + ATTR + ']')
+        hasChild: !!el.querySelector('[' + ATTR + ']'),
+        // Isian bertanda yang membungkus / dibungkus elemen ini, untuk mencegah tandaan bersarang.
+        markedAncestors: marks.filter(function (m) { var o = byId(m.id); return m.id !== id && o && o.contains(el); })
+          .map(function (m) { return m.id; }),
+        markedDescendants: marks.filter(function (m) { var o = byId(m.id); return m.id !== id && o && el.contains(o); })
+          .map(function (m) { return m.id; })
       });
     },
 
@@ -247,6 +252,8 @@
       (markedIds || []).forEach(function (id) { marked[id] = true; });
       var out = [];
       var counts = { title: 0, text: 0, image: 0, button: 0 };
+      // Elemen yang sudah ditandai atau disarankan: saran baru tidak boleh membungkus/berada di dalamnya (bersarang).
+      var taken = (markedIds || []).map(byId).filter(function (e) { return e; });
       var all = document.body.querySelectorAll('h1,h2,h3,p,img,a,button');
       for (var i = 0; i < all.length && out.length < 8; i++) {
         var el = all[i];
@@ -258,6 +265,8 @@
         var kind = kindOf(el);
         if (tag === 'a' && kind === 'link') { continue; }
         if (tag !== 'img' && !textOf(el)) { continue; }
+        if (taken.some(function (t) { return t.contains(el) || el.contains(t); })) { continue; }
+        taken.push(el);
         var label;
         if (/^h[1-3]$/.test(tag)) { label = counts.title++ === 0 ? 'Judul' : 'Judul ' + counts.title; }
         else if (kind === 'image') { label = 'Gambar ' + (++counts.image); }

@@ -25,9 +25,12 @@ class TemplateNumberingTest {
     }
 
     @Test
-    void idsCoverAllNumberedElements() {
+    void parentsCoverAllNumberedElements() {
         int count = TemplateNumbering.number(HTML).getAllElements().size() - 1;
-        assertThat(TemplateNumbering.ids(HTML)).hasSize(count).contains(1, count).doesNotContain(0, count + 1);
+        var parents = TemplateNumbering.parents(HTML);
+        assertThat(parents.keySet()).hasSize(count).contains(1, count).doesNotContain(0, count + 1);
+        assertThat(parents.get(1)).isNull(); // <html> paling luar
+        assertThat(parents.get(6)).isEqualTo(5); // <h1> di dalam <header>
     }
 
     @Test

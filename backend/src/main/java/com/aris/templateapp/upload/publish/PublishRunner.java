@@ -138,10 +138,13 @@ public class PublishRunner {
             return "File template tidak bisa dibaca.";
         }
         Map<String, Set<Integer>> idsByPage = new HashMap<>();
+        Map<String, Map<Integer, Integer>> parentsByPage = new HashMap<>();
         for (String page : files.pages()) {
             byte[] html = files.content(page);
             if (html != null) {
-                idsByPage.put(page, TemplateNumbering.ids(new String(html, StandardCharsets.UTF_8)));
+                Map<Integer, Integer> parents = TemplateNumbering.parents(new String(html, StandardCharsets.UTF_8));
+                parentsByPage.put(page, parents);
+                idsByPage.put(page, parents.keySet());
             }
         }
         Set<String> variables = new HashSet<>();
@@ -150,6 +153,7 @@ public class PublishRunner {
         }
         try {
             MarkingValidator.validate(marking, idsByPage, variables);
+            MarkingValidator.validateNesting(marking, parentsByPage);
             return null;
         } catch (ApiException e) {
             return e.getMessage();

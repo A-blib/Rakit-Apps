@@ -3,6 +3,7 @@ package com.aris.templateapp.upload.marking;
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,8 @@ public final class MarkingValidator {
     public static final Set<String> TYPES = Set.of("text", "paragraph", "image", "link", "button");
     public static final Set<String> STYLE_PROPS = Set.of("color", "background-color", "font-size", "border-radius");
     private static final Set<String> VIEWS = Set.of("mobile", "desktop");
+    // Jenis isian yang mengganti seluruh isi elemen (bukan hanya src/href).
+    private static final Set<String> REPLACES_CONTENT = Set.of("text", "paragraph", "button");
     private static final Set<String> THEME_TYPES = Set.of("color", "size");
     private static final Pattern KEY = Pattern.compile("^[a-z][a-z0-9_]{0,39}$");
     private static final Pattern RATIO = Pattern.compile("^\\d{1,2}:\\d{1,2}$");
@@ -85,6 +88,36 @@ public final class MarkingValidator {
                     "Variabel tema tidak dikenal atau ganda: " + theme.var());
             require(notBlank(theme.label(), 40), "Label tema wajib diisi (maks 40 karakter).");
             require(THEME_TYPES.contains(theme.type()), "Jenis tema tidak dikenal: " + theme.type());
+        }
+    }
+
+    /**
+     * Teks, Paragraf, dan Tombol mengganti seluruh isi elemen, jadi elemen jenis itu tidak boleh membungkus elemen
+     * bertanda lain (keputusan Aris, 8 Oktober 2026). Gambar dan Link hanya mengubah src/href, jadi boleh membungkus.
+     *
+     * @param parentsByPage per halaman: nomor elemen → nomor induknya (lihat {@link TemplateNumbering#parents})
+     */
+    public static void validateNesting(MarkingData data, Map<String, Map<Integer, Integer>> parentsByPage) {
+        Map<String, MarkingData.Field> owner = new HashMap<>();
+        for (MarkingData.Field field : nullSafe(data.fields())) {
+            for (MarkingData.Element element : nullSafe(field.elements())) {
+                owner.put(element.page() + "#" + element.tplId(), field);
+            }
+        }
+        for (MarkingData.Field field : nullSafe(data.fields())) {
+            for (MarkingData.Element element : nullSafe(field.elements())) {
+                Map<Integer, Integer> parents = parentsByPage.getOrDefault(element.page(), Map.of());
+                Integer ancestor = parents.get(element.tplId());
+                while (ancestor != null) {
+                    MarkingData.Field wrapper = owner.get(element.page() + "#" + ancestor);
+                    if (wrapper != null && REPLACES_CONTENT.contains(wrapper.type())) {
+                        throw new ApiException(ErrorCode.VALIDATION_ERROR, "Isian “" + wrapper.label()
+                                + "” membungkus isian lain (“" + field.label() + "”) dan akan menimpanya. "
+                                + "Hapus salah satu tandaan, atau ubah jenisnya menjadi Gambar/Link.");
+                    }
+                    ancestor = parents.get(ancestor);
+                }
+            }
         }
     }
 
