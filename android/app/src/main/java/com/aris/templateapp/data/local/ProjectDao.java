@@ -61,4 +61,18 @@ public interface ProjectDao {
 
     @Query("DELETE FROM projects WHERE is_sample = 1")
     int deleteSamples();
+
+    /** Nama yang sudah dipakai: nama dasar dan "nama (n)", untuk memberi nomor project baru (bagian 3). */
+    @Query("SELECT name FROM projects WHERE name = :base OR name LIKE :numbered ESCAPE '\\'")
+    List<String> namesLike(String base, String numbered);
+
+    /** Hasil autosave editor: status & jumlah isian belum lengkap dihitung ulang setiap simpan (bagian 7.1). */
+    @Query("UPDATE projects SET status = :status, missing_count = :missingCount, updated_at = :updatedAt WHERE id = :id")
+    void updateContent(String id, ProjectStatus status, int missingCount, long updatedAt);
+
+    @Query("UPDATE projects SET thumbnail_path = :path WHERE id = :id")
+    void updateThumbnail(String id, String path);
+
+    @Query("UPDATE projects SET status = 'exported', last_exported_at = :exportedAt WHERE id = :id")
+    void markExported(String id, long exportedAt);
 }

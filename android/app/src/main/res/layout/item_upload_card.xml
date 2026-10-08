@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Kartu di halaman awal Upload (bagian 3.1), dipakai tiga jenis kartu:
+    perlu diperbaiki (ikon ✕ + jumlah masalah + tombol perbaikan), sedang dicek (spinner), dan draft (thumbnail +
+    langkah terakhir + waktu edit + peringatan akan dihapus). Menu ⋮ berisi Hapus.
+-->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_2"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/space_3">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:id="@+id/thumbnail_frame"
+                android:layout_width="@dimen/thumbnail_size"
+                android:layout_height="@dimen/thumbnail_size"
+                android:layout_marginEnd="@dimen/space_3"
+                android:background="@drawable/bg_thumbnail"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/thumbnail_placeholder"
+                    android:layout_width="@dimen/icon_size"
+                    android:layout_height="@dimen/icon_size"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_web"
+                    app:tint="@color/color_muted" />
+
+                <ImageView
+                    android:id="@+id/thumbnail"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    android:padding="@dimen/border_width"
+                    android:scaleType="centerCrop" />
+            </FrameLayout>
+
+            <ImageView
+                android:id="@+id/leading_icon"
+                android:layout_width="@dimen/icon_size_small"
+                android:layout_height="@dimen/icon_size_small"
+                android:layout_marginEnd="@dimen/space_2"
+                android:importantForAccessibility="no"
+                android:visibility="gone" />
+
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/spinner"
+                style="@style/Widget.App.ProgressIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/space_2"
+                android:indeterminate="true"
+                android:visibility="gone"
+                app:indicatorSize="@dimen/icon_size_small" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="middle"
+                    android:fontFamily="@font/geist_medium"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.App.Body" />
+
+                <TextView
+                    android:id="@+id/line1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:textAppearance="@style/TextAppearance.App.Label" />
+
+                <!-- Progres isian draft di langkah Tandai ke atas (rancangan 3.1): bar + "5 isian". -->
+                <LinearLayout
+                    android:id="@+id/fields_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/fields_bar"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:importantForAccessibility="no"
+                        app:indicatorColor="@color/color_foreground"
+                        app:trackColor="@color/color_border"
+                        app:trackCornerRadius="@dimen/radius_small"
+                        app:indicatorTrackGapSize="0dp"
+                        app:trackStopIndicatorSize="0dp" />
+
+                    <TextView
+                        android:id="@+id/fields_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_2"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/line2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted" />
+
+                <TextView
+                    android:id="@+id/warning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:drawablePadding="@dimen/space_1"
+                    android:gravity="center_vertical"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_warning"
+                    android:visibility="gone"
+                    app:drawableStartCompat="@drawable/ic_warning"
+                    app:drawableTint="@color/color_warning" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/more_button"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_upload_menu"
+                android:src="@drawable/ic_more_vert"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/action_button"
+            style="@style/Widget.App.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_3"
+            android:visibility="gone" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -30,6 +30,7 @@ public class ProviderTemplatesViewModel extends ViewModel {
 
     public static final String ALL = "all";
     public static final String STATUS_NEEDS_FIX = "needs_fix";
+    public static final String STATUS_PUBLISHED = "published";
     public static final String SORT_UPDATED = "updated";
 
     private final ProviderRepository repository;

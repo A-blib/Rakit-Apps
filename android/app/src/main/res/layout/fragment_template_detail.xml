@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Detail template sederhana (alur-provider.md bagian 4.5 & 6.2): thumbnail besar, nama, kategori, status,
-    angka Dilihat/Didownload, lalu daftar error & peringatan dari pengecekan terakhir. Belum ada tombol aksi.
+    angka Dilihat/Didownload, tombol aksi Upload, lalu daftar error & peringatan dari pengecekan terakhir.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -40,12 +40,21 @@
                     android:background="@drawable/bg_thumbnail">
 
                     <ImageView
+                        android:id="@+id/thumbnail_placeholder"
                         android:layout_width="@dimen/space_12"
                         android:layout_height="@dimen/space_12"
                         android:layout_gravity="center"
                         android:importantForAccessibility="no"
                         android:src="@drawable/ic_web"
                         app:tint="@color/color_muted" />
+
+                    <ImageView
+                        android:id="@+id/thumbnail"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/cd_thumbnail"
+                        android:padding="@dimen/border_width"
+                        android:scaleType="centerCrop" />
                 </FrameLayout>
 
                 <LinearLayout
@@ -104,6 +113,15 @@
                         android:id="@+id/stat_downloads"
                         layout="@layout/item_stat_box" />
                 </LinearLayout>
+
+                <!-- Aksi Upload: "Upload file perbaikan" (tidak lolos) atau "Lanjutkan draft" (draft). -->
+                <Button
+                    android:id="@+id/upload_action_button"
+                    style="@style/Widget.App.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/check_message"

@@ -1,5 +1,7 @@
-# --- Salinan lokal AGENTS.md untuk Claude Code (yang di-commit hanya AGENTS.md) ---
+# --- File lokal untuk agent AI (tidak di-commit) ---
+# CLAUDE.md: salinan AGENTS.md untuk Claude Code; PROGRESS.md: catatan posisi terakhir pengembangan di laptop Aris.
 CLAUDE.md
+PROGRESS.md
 
 # --- Rahasia: jangan pernah di-commit ---
 .env

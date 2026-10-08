@@ -103,6 +103,9 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.androidx.browser)
     implementation(libs.lottie)
+    implementation(libs.androidx.webkit)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.jsoup)
     implementation(libs.androidx.room.runtime)
     annotationProcessor(libs.androidx.room.compiler)
     // Hanya di laptop yang path-nya mengandung kata "musl" (README → Troubleshooting): properti ini ditulis di

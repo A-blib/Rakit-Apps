@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Checklist "Sebelum upload" yang tampil setelah tombol Upload template baru ditekan, sebelum pemilih file (bagian 3.1). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/screen_padding_horizontal"
+    android:paddingTop="@dimen/space_4"
+    android:paddingBottom="@dimen/space_6">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/space_4"
+        android:text="@string/upload_new_title"
+        android:textAppearance="@style/TextAppearance.App.Title" />
+
+    <include
+        android:id="@+id/before_upload"
+        layout="@layout/view_before_upload" />
+
+    <Button
+        android:id="@+id/pick_button"
+        style="@style/Widget.App.Button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_6"
+        android:text="@string/upload_pick_zip" />
+</LinearLayout>

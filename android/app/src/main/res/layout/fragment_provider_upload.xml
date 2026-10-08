@@ -1,54 +1,183 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tab Upload versi awal: layar "Segera hadir" (alur-provider.md bagian 5.0). -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    Halaman awal tab Upload (alur-fitur-upload.md bagian 3.1). Kondisi A (empty_group): belum ada draft/upload gagal.
+    Kondisi B (list_group): Perlu diperbaiki → Sedang dicek → Lanjutkan draft → tombol Upload template baru.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/screen_padding_horizontal"
-        android:paddingVertical="@dimen/space_8">
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
-        <TextView
-            style="@style/Widget.App.Badge"
-            android:text="@string/badge_coming_soon" />
-
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_4"
-            android:text="@string/upload_title"
-            android:textAppearance="@style/TextAppearance.App.Display" />
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingVertical="@dimen/space_6">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_3"
-            android:text="@string/upload_body"
-            android:textAppearance="@style/TextAppearance.App.Body"
-            android:textColor="@color/color_muted" />
+            <!-- Kondisi A -->
+            <LinearLayout
+                android:id="@+id/empty_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/illustration"
-            android:layout_width="@dimen/illustration_size"
-            android:layout_height="@dimen/illustration_size"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/space_8"
-            android:importantForAccessibility="no"
-            app:lottie_autoPlay="true"
-            app:lottie_loop="true"
-            app:lottie_rawRes="@raw/coming_soon" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/upload_new_title"
+                    android:textAppearance="@style/TextAppearance.App.Headline" />
 
-        <Button
-            android:id="@+id/open_guide_button"
-            style="@style/Widget.App.Button.Outlined"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_8"
-            android:text="@string/action_open_guide" />
-    </LinearLayout>
-</ScrollView>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:text="@string/upload_new_body"
+                    android:textAppearance="@style/TextAppearance.App.Body"
+                    android:textColor="@color/color_muted" />
+
+                <LinearLayout
+                    android:id="@+id/drop_zone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:background="@drawable/bg_dashed_drop"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingVertical="@dimen/space_8">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size"
+                        android:layout_height="@dimen/icon_size"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_folder" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2"
+                        android:fontFamily="@font/geist_semibold"
+                        android:text="@string/upload_pick_zip"
+                        android:textAppearance="@style/TextAppearance.App.Body" />
+
+                    <TextView
+                        android:id="@+id/drop_limit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_1"
+                        android:fontFamily="@font/geist_mono_regular"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall"
+                        android:textColor="@color/color_muted" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:text="@string/upload_zip_help"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted" />
+
+                <include
+                    android:id="@+id/before_upload"
+                    layout="@layout/view_before_upload"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6" />
+            </LinearLayout>
+
+            <!-- Kondisi B -->
+            <LinearLayout
+                android:id="@+id/list_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/needs_fix_title"
+                    style="@style/Widget.App.SectionTitle"
+                    android:layout_marginBottom="@dimen/space_2"
+                    android:textColor="@color/color_error" />
+
+                <LinearLayout
+                    android:id="@+id/needs_fix_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/checking_title"
+                    style="@style/Widget.App.SectionTitle"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:layout_marginBottom="@dimen/space_2"
+                    android:text="@string/upload_checking_title" />
+
+                <LinearLayout
+                    android:id="@+id/checking_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <LinearLayout
+                    android:id="@+id/drafts_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:layout_marginBottom="@dimen/space_2"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/Widget.App.SectionTitle"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:text="@string/upload_drafts_title" />
+
+                    <TextView
+                        android:id="@+id/draft_quota"
+                        style="@style/Widget.App.SectionTitle" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/drafts_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <Button
+                    android:id="@+id/new_upload_button"
+                    style="@style/Widget.App.Button.Outlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:text="@string/upload_new_title"
+                    app:icon="@drawable/ic_add"
+                    app:iconGravity="textStart" />
+
+                <TextView
+                    android:id="@+id/quota_full"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:gravity="center_horizontal"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.aris.templateapp.ui.common.StateView
+        android:id="@+id/state"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</FrameLayout>

@@ -45,14 +45,28 @@ public class TemplateCheckIssue {
     @Column(length = 300)
     private String suggestion;
 
+    // Versi aturan saat dicek (bagian 5.7) dan potongan kode yang tertangkap, untuk laporan "Ini keliru?".
+    @Column(nullable = false)
+    private int ruleVersion = 1;
+
+    @Column(length = 300)
+    private String snippet;
+
     public TemplateCheckIssue(UUID checkId, IssueSeverity severity, String code, String message, String file,
                               Integer line, String suggestion) {
+        this(checkId, severity, code, 1, message, file, line, suggestion, null);
+    }
+
+    public TemplateCheckIssue(UUID checkId, IssueSeverity severity, String code, int ruleVersion, String message,
+                              String file, Integer line, String suggestion, String snippet) {
         this.checkId = checkId;
         this.severity = severity;
         this.code = code;
+        this.ruleVersion = ruleVersion;
         this.message = message;
         this.file = file;
         this.line = line;
         this.suggestion = suggestion;
+        this.snippet = snippet;
     }
 }

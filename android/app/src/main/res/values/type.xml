@@ -37,6 +37,13 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
+    <!-- Body tebal untuk judul baris (mis. judul masalah pengecekan). Font diatur di style, karena
+         android:fontFamily di layout bisa tertimpa font dari textAppearance. -->
+    <style name="TextAppearance.App.Body.SemiBold">
+        <item name="fontFamily">@font/geist_semibold</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
+    </style>
+
     <style name="TextAppearance.App.BodySmall" parent="TextAppearance.Material3.BodyMedium">
         <item name="android:textSize">@dimen/text_body_small</item>
         <item name="fontFamily">@font/geist_regular</item>

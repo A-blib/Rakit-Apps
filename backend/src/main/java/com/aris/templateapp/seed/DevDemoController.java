@@ -1,5 +1,7 @@
 package com.aris.templateapp.seed;
 
+import com.aris.templateapp.template.TemplateRepository;
+import com.aris.templateapp.upload.UploadStorage;
 import com.aris.templateapp.user.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class DevDemoController {
 
     private final UserRepository userRepository;
+    private final TemplateRepository templateRepository;
+    private final UploadStorage storage;
 
     @Operation(summary = "Hapus akun demo provider beserta semua template, event, dan notifikasinya")
     @DeleteMapping("/demo-templates")
@@ -31,6 +35,10 @@ public class DevDemoController {
     @Transactional
     public void deleteDemoTemplates() {
         // ON DELETE CASCADE di migrasi ikut menghapus identitas, profil, template, pengecekan, event, dan notifikasi.
-        userRepository.findByEmailIgnoreCase(DemoTemplateSeeder.DEMO_EMAIL).ifPresent(userRepository::delete);
+        // File ZIP/paket di folder uploads tidak ikut terhapus database, jadi dihapus di sini.
+        userRepository.findByEmailIgnoreCase(DemoTemplateSeeder.DEMO_EMAIL).ifPresent(user -> {
+            templateRepository.findByProviderId(user.getId()).forEach(t -> storage.deleteTemplate(t.getId()));
+            userRepository.delete(user);
+        });
     }
 }

@@ -8,7 +8,11 @@ public interface PersistableEnum {
 
     String value();
 
+    /** Nilai null menghasilkan null (mis. kategori template yang belum diisi saat upload). */
     static <E extends Enum<E> & PersistableEnum> E fromValue(Class<E> type, String value) {
+        if (value == null) {
+            return null;
+        }
         for (E constant : type.getEnumConstants()) {
             if (constant.value().equals(value)) {
                 return constant;

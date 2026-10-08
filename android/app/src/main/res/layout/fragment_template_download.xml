@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layar Unduh paket template (alur-buat-website-via-template.md bagian 5): detail singkat template + kotak progres
+    "Menyiapkan template". Unduhan mulai otomatis; setelah selesai editor langsung terbuka.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/template_download_title" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                android:paddingVertical="@dimen/space_4">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/thumbnail_height_large"
+                    android:background="@drawable/bg_thumbnail">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size"
+                        android:layout_height="@dimen/icon_size"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_web"
+                        app:tint="@color/color_muted" />
+
+                    <ImageView
+                        android:id="@+id/thumbnail"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:importantForAccessibility="no"
+                        android:padding="@dimen/border_width"
+                        android:scaleType="centerCrop" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:textAppearance="@style/TextAppearance.App.Headline"
+                    tools:text="Toko Kue Modern" />
+
+                <TextView
+                    android:id="@+id/creator"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted"
+                    tools:text="oleh Rina Studio" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/badges"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_3"
+                    app:chipSpacingHorizontal="@dimen/space_2"
+                    app:chipSpacingVertical="@dimen/space_2">
+
+                    <TextView
+                        android:id="@+id/category"
+                        style="@style/Widget.App.Badge"
+                        tools:text="UMKM" />
+
+                    <TextView
+                        android:id="@+id/pages"
+                        style="@style/Widget.App.Badge"
+                        tools:text="3 HALAMAN" />
+
+                    <TextView
+                        android:id="@+id/size"
+                        style="@style/Widget.App.Badge"
+                        tools:text="4,2 MB" />
+                </com.google.android.material.chip.ChipGroup>
+
+                <TextView
+                    android:id="@+id/description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:textAppearance="@style/TextAppearance.App.Body"
+                    tools:text="Landing page satu halaman untuk toko kue rumahan." />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_4">
+
+                        <TextView
+                            android:id="@+id/progress_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/template_download_preparing"
+                            android:textAppearance="@style/TextAppearance.App.Title" />
+
+                        <TextView
+                            android:id="@+id/progress_body"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_1"
+                            android:text="@string/template_download_once"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall"
+                            android:textColor="@color/color_muted" />
+
+                        <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/progress"
+                            style="@style/Widget.App.ProgressIndicator"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_4"
+                            android:indeterminate="true" />
+
+                        <TextView
+                            android:id="@+id/progress_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_2"
+                            android:textAppearance="@style/TextAppearance.App.Label"
+                            android:textColor="@color/color_muted"
+                            tools:text="2,6 DARI 4,2 MB" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/retry"
+                            style="@style/Widget.App.Button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_4"
+                            android:text="@string/action_retry"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/cancel"
+                    style="@style/Widget.App.Button.Outlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:text="@string/action_cancel" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <com.aris.templateapp.ui.common.StateView
+            android:id="@+id/state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+</LinearLayout>

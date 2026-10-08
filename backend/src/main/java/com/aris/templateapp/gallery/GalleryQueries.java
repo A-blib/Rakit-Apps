@@ -79,6 +79,14 @@ public class GalleryQueries {
                 .list();
     }
 
+    /** Total download satu template, angka yang sama dengan kartu galeri. */
+    public long downloads(UUID templateId) {
+        return jdbc.sql("SELECT count(*) FROM template_events WHERE template_id = :id AND type = 'download'")
+                .param("id", templateId)
+                .query(Long.class)
+                .single();
+    }
+
     public long count(WebsitePurpose category, String search) {
         return params(jdbc.sql("SELECT count(*) " + VISIBLE + filters(category, search)), category, search)
                 .query(Long.class)
@@ -87,7 +95,10 @@ public class GalleryQueries {
 
     private static String filters(WebsitePurpose category, String search) {
         return (category == null ? "" : " AND t.category = :category")
-                + (search == null ? "" : " AND lower(t.name) LIKE :search ESCAPE '\\'");
+                // Pencarian di nama, deskripsi, dan kata kunci (alur-fitur-upload.md bagian 6.4).
+                + (search == null ? "" : " AND (lower(t.name) LIKE :search ESCAPE '\\'"
+                        + " OR lower(coalesce(t.description, '')) LIKE :search ESCAPE '\\'"
+                        + " OR EXISTS (SELECT 1 FROM unnest(t.keywords) k WHERE k LIKE :search ESCAPE '\\'))");
     }
 
     private static JdbcClient.StatementSpec params(JdbcClient.StatementSpec spec, WebsitePurpose category,

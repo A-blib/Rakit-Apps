@@ -5,7 +5,6 @@ import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.common.persistence.PersistableEnum;
 import com.aris.templateapp.provider.ProviderAccess;
 import com.aris.templateapp.template.dto.CheckResponse;
-import com.aris.templateapp.template.dto.IssueResponse;
 import com.aris.templateapp.template.dto.StatusCountsResponse;
 import com.aris.templateapp.template.dto.TemplateDetailResponse;
 import com.aris.templateapp.template.dto.TemplateListResponse;
@@ -28,8 +27,7 @@ public class ProviderTemplateService {
     private final ProviderAccess providerAccess;
     private final ProviderTemplateQueries queries;
     private final TemplateRepository templateRepository;
-    private final TemplateCheckRepository checkRepository;
-    private final TemplateCheckIssueRepository issueRepository;
+    private final CheckResponses checkResponses;
 
     /**
      * @param status   all · published · needs_fix · checking · draft · disabled (bawaan all)
@@ -100,19 +98,6 @@ public class ProviderTemplateService {
     }
 
     private CheckResponse latestCheckOf(UUID templateId) {
-        return checkRepository.findFirstByTemplateIdOrderByVersionDesc(templateId)
-                .map(check -> {
-                    List<TemplateCheckIssue> issues = issueRepository.findByCheckId(check.getId());
-                    return new CheckResponse(check.getVersion(), check.getStatus(), check.getFinishedAt(),
-                            issuesOf(issues, IssueSeverity.ERROR), issuesOf(issues, IssueSeverity.WARNING));
-                })
-                .orElse(null);
-    }
-
-    private static List<IssueResponse> issuesOf(List<TemplateCheckIssue> issues, IssueSeverity severity) {
-        return issues.stream()
-                .filter(i -> i.getSeverity() == severity)
-                .map(i -> new IssueResponse(i.getCode(), i.getMessage(), i.getFile(), i.getLine(), i.getSuggestion()))
-                .toList();
+        return checkResponses.latest(templateId);
     }
 }

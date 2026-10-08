@@ -67,15 +67,43 @@
     </fragment>
 
     <!-- Shell Dashboard Provider: 4 tab (Beranda, Upload, Template Anda, Profil) adalah Fragment anak di dalamnya. -->
-    <!-- Halaman editor (alur-pembuatan-website.md 6.1). Versi awal "Segera hadir"; argumen title = nama project/template. -->
+    <!-- Layar Unduh paket template (alur-buat-website-via-template.md bagian 5). -->
+    <fragment
+        android:id="@+id/templateDownloadFragment"
+        android:name="com.aris.templateapp.ui.template.TemplateDownloadFragment">
+        <argument
+            android:name="templateId"
+            app:argType="string" />
+        <argument
+            android:name="name"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+    <!-- Editor template mode: projectId (project tersimpan) ATAU templateId + templateVersion (project baru). -->
     <fragment
         android:id="@+id/templateEditorFragment"
-        android:name="com.aris.templateapp.ui.editor.ComingSoonEditorFragment$TemplateEditor">
+        android:name="com.aris.templateapp.ui.editor.TemplateEditorFragment">
         <argument
             android:name="title"
             android:defaultValue="@null"
             app:argType="string"
             app:nullable="true" />
+        <argument
+            android:name="projectId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="templateId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="templateVersion"
+            android:defaultValue="0"
+            app:argType="integer" />
     </fragment>
 
     <fragment
@@ -170,4 +198,76 @@
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
     </fragment>
+
+    <!-- Wizard Upload provider (docs/rancangan/alur-fitur-upload.md): layar penuh di atas Dashboard Provider. -->
+    <fragment
+        android:id="@+id/uploadCheckFragment"
+        android:name="com.aris.templateapp.ui.upload.UploadCheckFragment">
+        <!-- uri + fileName + fileSize: file baru dipilih. Hanya templateId: membuka hasil/progres pengecekan. -->
+        <argument
+            android:name="uri"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="fileName"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="fileSize"
+            android:defaultValue="0L"
+            app:argType="long" />
+        <argument
+            android:name="templateId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/uploadInfoFragment"
+        android:name="com.aris.templateapp.ui.upload.UploadInfoFragment">
+        <argument
+            android:name="templateId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/uploadMarkFragment"
+        android:name="com.aris.templateapp.ui.upload.UploadMarkFragment">
+        <argument
+            android:name="templateId"
+            app:argType="string" />
+        <argument
+            android:name="focusKey"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/uploadTryFragment"
+        android:name="com.aris.templateapp.ui.upload.UploadTryFragment">
+        <argument
+            android:name="templateId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/uploadSendFragment"
+        android:name="com.aris.templateapp.ui.upload.UploadSendFragment">
+        <argument
+            android:name="templateId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/helpArticleFragment"
+        android:name="com.aris.templateapp.ui.upload.HelpArticleFragment">
+        <argument
+            android:name="code"
+            app:argType="string" />
+    </fragment>
+
 </navigation>

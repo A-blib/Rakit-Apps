@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import com.aris.templateapp.upload.check.CheckStage;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -37,6 +38,9 @@ public class TemplateCheck {
     private CheckStatus status;
 
     private Instant finishedAt;
+
+    // Tahap yang sedang berjalan (bagian 5.8); null untuk data lama sebelum fitur Upload.
+    private CheckStage stage;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

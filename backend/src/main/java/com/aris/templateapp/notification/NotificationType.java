@@ -8,5 +8,9 @@ public enum NotificationType {
     TEMPLATE_CHECK_FAILED,
     TEMPLATE_CHECK_WARNING,
     TEMPLATE_PUBLISHED,
-    TEMPLATE_DISABLED
+    TEMPLATE_DISABLED,
+    // Fitur Upload: file lolos pengecekan, dan pengingat/penghapusan draft (alur-provider.md bagian 5.4).
+    UPLOAD_CHECK_PASSED,
+    DRAFT_EXPIRING,
+    DRAFT_DELETED
 }

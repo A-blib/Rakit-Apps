@@ -1,0 +1,51 @@
+{
+  "name": "UMKM Kuliner",
+  "description": "Landing page satu halaman untuk toko kue atau usaha kuliner rumahan, ada menu produk dan tombol pesan via WhatsApp.",
+  "keywords": ["kue", "kuliner", "umkm", "toko"],
+  "thumbnail": "img/hero.jpg",
+  "pages": [{ "file": "index.html", "name": "Beranda" }],
+  "sections": [
+    { "id": "s1", "page": "index.html", "name": "Header", "selector": "header" },
+    { "id": "s2", "page": "index.html", "name": "Hero", "selector": "#beranda" },
+    { "id": "s3", "page": "index.html", "name": "Menu", "selector": "#menu" },
+    { "id": "s4", "page": "index.html", "name": "Tentang", "selector": "#tentang" },
+    { "id": "s5", "page": "index.html", "name": "Kontak", "selector": "#kontak" }
+  ],
+  "theme": [
+    { "var": "--primary", "label": "Warna utama", "type": "color" },
+    { "var": "--radius", "label": "Sudut", "type": "size" }
+  ],
+  "fields": [
+    { "key": "nama_toko", "label": "Nama toko", "type": "text", "hint": "Tulis nama usahamu", "maxLength": 30, "required": true, "sectionId": "s1",
+      "styles": [{ "prop": "color" }],
+      "elements": [{ "page": "index.html", "selector": "header .brand" }, { "page": "index.html", "selector": "footer p" }] },
+    { "key": "judul_hero", "label": "Judul utama", "type": "text", "hint": "Satu kalimat tentang usahamu", "maxLength": 60, "required": true, "sectionId": "s2",
+      "styles": [{ "prop": "color" }, { "prop": "font-size", "min": 28, "max": 48, "unit": "px" }],
+      "elements": [{ "page": "index.html", "selector": ".hero h1" }] },
+    { "key": "deskripsi_hero", "label": "Deskripsi", "type": "paragraph", "hint": "Jelaskan produk dan cara pesan", "maxLength": 200, "required": true, "sectionId": "s2",
+      "elements": [{ "page": "index.html", "selector": ".hero-text p" }] },
+    { "key": "tombol_pesan", "label": "Tombol pesan", "type": "button", "required": true, "sectionId": "s2",
+      "styles": [{ "prop": "background-color" }, { "prop": "border-radius", "min": 0, "max": 24, "unit": "px" }],
+      "elements": [{ "page": "index.html", "selector": ".hero .btn" }] },
+    { "key": "foto_hero", "label": "Foto utama", "type": "image", "aspectRatio": "16:9", "required": true, "sectionId": "s2",
+      "elements": [{ "page": "index.html", "selector": ".hero-img" }] },
+    { "key": "produk_1_nama", "label": "Nama produk 1", "type": "text", "maxLength": 30, "required": true, "sectionId": "s3",
+      "elements": [{ "page": "index.html", "selector": ".card:nth-of-type(1) h3" }] },
+    { "key": "produk_1_harga", "label": "Harga produk 1", "type": "text", "maxLength": 20, "required": true, "sectionId": "s3",
+      "elements": [{ "page": "index.html", "selector": ".card:nth-of-type(1) .price" }] },
+    { "key": "produk_1_foto", "label": "Foto produk 1", "type": "image", "aspectRatio": "1:1", "required": false, "sectionId": "s3",
+      "elements": [{ "page": "index.html", "selector": ".card:nth-of-type(1) img" }] },
+    { "key": "produk_2_nama", "label": "Nama produk 2", "type": "text", "maxLength": 30, "required": false, "sectionId": "s3",
+      "elements": [{ "page": "index.html", "selector": ".card:nth-of-type(2) h3" }] },
+    { "key": "produk_2_harga", "label": "Harga produk 2", "type": "text", "maxLength": 20, "required": false, "sectionId": "s3",
+      "elements": [{ "page": "index.html", "selector": ".card:nth-of-type(2) .price" }] },
+    { "key": "produk_2_foto", "label": "Foto produk 2", "type": "image", "aspectRatio": "1:1", "required": false, "sectionId": "s3",
+      "elements": [{ "page": "index.html", "selector": ".card:nth-of-type(2) img" }] },
+    { "key": "tentang", "label": "Cerita usaha", "type": "paragraph", "maxLength": 300, "required": false, "sectionId": "s4",
+      "elements": [{ "page": "index.html", "selector": "#tentang p" }] },
+    { "key": "alamat", "label": "Alamat & jam buka", "type": "paragraph", "maxLength": 150, "required": true, "sectionId": "s5",
+      "elements": [{ "page": "index.html", "selector": "#kontak p" }] },
+    { "key": "link_instagram", "label": "Link Instagram", "type": "link", "required": false, "sectionId": "s5",
+      "elements": [{ "page": "index.html", "selector": "#kontak .link" }] }
+  ]
+}

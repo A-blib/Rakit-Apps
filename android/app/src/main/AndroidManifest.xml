@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Mengecek apakah HP memakai data seluler sebelum upload file besar (alur-fitur-upload.md 5.7b). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!--
         allowBackup="false": token login dienkripsi dengan kunci Android Keystore yang tidak ikut di-backup.
@@ -48,6 +50,17 @@
                     android:scheme="templateapp" />
             </intent-filter>
         </activity>
+
+        <!-- Membagikan ZIP export (WhatsApp, Drive, email) tanpa membuka akses ke file lain milik app. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

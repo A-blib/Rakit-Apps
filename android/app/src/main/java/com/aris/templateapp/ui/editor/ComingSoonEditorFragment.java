@@ -17,8 +17,8 @@ import com.aris.templateapp.databinding.FragmentEditorComingSoonBinding;
 import com.aris.templateapp.ui.common.LottieTint;
 
 /**
- * Halaman editor versi awal: "Segera hadir" (alur-pembuatan-website.md bagian 6.1). Dua editor memakai layout yang
- * sama dengan teks berbeda. Membuka halaman ini TIDAK membuat project dan tidak mengubah project yang ada.
+ * Halaman editor "Segera hadir" (alur-pembuatan-website.md bagian 6.1). Kini hanya dipakai editor custom mode;
+ * editor template mode sudah sungguhan ({@link TemplateEditorFragment}). Membuka halaman ini TIDAK membuat project.
  */
 public abstract class ComingSoonEditorFragment extends Fragment {
 
@@ -69,34 +69,6 @@ public abstract class ComingSoonEditorFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-    }
-
-    /** Editor template mode: dibuka dari template yang diklik atau project bermode template. */
-    public static class TemplateEditor extends ComingSoonEditorFragment {
-        @Override
-        protected int modeLabel() {
-            return R.string.editor_label_template;
-        }
-
-        @Override
-        protected int titleText() {
-            return R.string.editor_title_template;
-        }
-
-        @Override
-        protected int bodyText() {
-            return R.string.editor_body_template;
-        }
-
-        @Override
-        protected int animation() {
-            return R.raw.intro_customize;
-        }
-
-        @Override
-        protected int fallbackTitle() {
-            return R.string.editor_label_template;
-        }
     }
 
     /** Editor custom mode: dibuka dari pilihan "Custom" atau project bermode custom. */

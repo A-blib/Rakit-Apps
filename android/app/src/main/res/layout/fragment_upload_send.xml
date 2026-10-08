@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Langkah 6 Upload: Kirim (alur-fitur-upload.md bagian 9): pratinjau kartu galeri, ringkasan, peringatan yang tersisa,
+    konfirmasi hak pakai aset, lalu status pengecekan akhir sampai template tayang.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/header"
+        layout="@layout/view_wizard_header" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                android:paddingVertical="@dimen/space_6">
+
+                <!-- Hasil (tayang / belum bisa tayang / sedang dicek) -->
+                <LinearLayout
+                    android:id="@+id/status_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/space_6"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
+                        android:id="@+id/progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/space_3"
+                        android:indeterminate="true"
+                        app:indicatorColor="@color/color_foreground"
+                        app:trackColor="@color/color_border" />
+
+                    <TextView
+                        android:id="@+id/status_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.App.Headline" />
+
+                    <TextView
+                        android:id="@+id/status_body"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2"
+                        android:textAppearance="@style/TextAppearance.App.Body"
+                        android:textColor="@color/color_muted" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Widget.App.SectionTitle"
+                    android:text="@string/send_card_preview" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:baselineAligned="false"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/space_3">
+
+                        <FrameLayout
+                            android:layout_width="@dimen/thumbnail_size"
+                            android:layout_height="@dimen/thumbnail_size"
+                            android:background="@drawable/bg_thumbnail">
+
+                            <ImageView
+                                android:id="@+id/thumbnail_placeholder"
+                                android:layout_width="@dimen/icon_size"
+                                android:layout_height="@dimen/icon_size"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_web"
+                                app:tint="@color/color_muted" />
+
+                            <ImageView
+                                android:id="@+id/thumbnail"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="@string/cd_thumbnail"
+                                android:padding="@dimen/border_width"
+                                android:scaleType="centerCrop" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_3"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/card_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/geist_medium"
+                                android:textAppearance="@style/TextAppearance.App.Body" />
+
+                            <TextView
+                                android:id="@+id/card_category"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/space_1"
+                                android:textAppearance="@style/TextAppearance.App.Label" />
+
+                            <TextView
+                                android:id="@+id/card_description"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/space_1"
+                                android:ellipsize="end"
+                                android:maxLines="2"
+                                android:textAppearance="@style/TextAppearance.App.BodySmall"
+                                android:textColor="@color/color_muted" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    style="@style/Widget.App.SectionTitle"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:text="@string/send_summary_title" />
+
+                <TextView
+                    android:id="@+id/summary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:fontFamily="@font/geist_mono_regular"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+                <TextView
+                    android:id="@+id/info_problem"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_2"
+                    android:text="@string/send_info_incomplete"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_error"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/edit_info_button"
+                    style="@style/Widget.App.Button.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="0dp"
+                    android:text="@string/send_edit_info"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/errors_title"
+                    style="@style/Widget.App.SectionTitle"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:textColor="@color/color_error" />
+
+                <LinearLayout
+                    android:id="@+id/errors_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/warnings_title"
+                    style="@style/Widget.App.SectionTitle"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:textColor="@color/color_warning" />
+
+                <LinearLayout
+                    android:id="@+id/warnings_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <CheckBox
+                    android:id="@+id/rights_check"
+                    style="@style/Widget.App.CheckBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:text="@string/send_rights" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <com.aris.templateapp.ui.common.StateView
+            android:id="@+id/state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:paddingVertical="@dimen/space_3">
+
+        <Button
+            android:id="@+id/primary_button"
+            style="@style/Widget.App.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/secondary_button"
+            style="@style/Widget.App.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2" />
+    </LinearLayout>
+</LinearLayout>

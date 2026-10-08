@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layar Kelengkapan (alur-buat-website-via-template.md bagian 7.2): jumlah isian lengkap, daftar "Perlu dilengkapi"
+    dan "Saran", lalu tombol Lengkapi sekarang / Export tetap sebagai draft (atau Export jika semua lengkap).
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/completeness_title" />
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingVertical="@dimen/space_6">
+
+            <TextView
+                android:id="@+id/summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.App.Headline"
+                tools:text="9/12 isian lengkap" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_3"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progress"
+                    style="@style/Widget.App.ProgressIndicator"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/status_badge"
+                    style="@style/Widget.App.Badge"
+                    android:layout_marginStart="@dimen/space_3"
+                    tools:text="DRAFT" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/all_done"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                android:drawablePadding="@dimen/space_2"
+                android:gravity="center_vertical"
+                android:text="@string/completeness_all_done"
+                android:textAppearance="@style/TextAppearance.App.Body"
+                android:textColor="@color/color_success"
+                android:visibility="gone"
+                app:drawableStartCompat="@drawable/ic_check_circle"
+                app:drawableTint="@color/color_success" />
+
+            <TextView
+                android:id="@+id/missing_title"
+                style="@style/Widget.App.SectionTitle"
+                android:layout_marginTop="@dimen/space_6"
+                android:text="@string/completeness_missing" />
+
+            <LinearLayout
+                android:id="@+id/missing_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/suggestion_title"
+                style="@style/Widget.App.SectionTitle"
+                android:layout_marginTop="@dimen/space_6"
+                android:text="@string/completeness_suggestions" />
+
+            <LinearLayout
+                android:id="@+id/suggestion_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2"
+                android:orientation="vertical" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:paddingVertical="@dimen/space_4">
+
+        <Button
+            android:id="@+id/primary_button"
+            style="@style/Widget.App.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="@string/completeness_fill_now" />
+
+        <Button
+            android:id="@+id/export_draft_button"
+            style="@style/Widget.App.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            android:text="@string/completeness_export_draft" />
+    </LinearLayout>
+</LinearLayout>

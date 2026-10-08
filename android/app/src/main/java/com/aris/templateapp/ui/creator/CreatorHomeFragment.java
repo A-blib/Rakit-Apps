@@ -11,8 +11,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.data.local.ProjectEntity;
-import com.aris.templateapp.data.repository.GalleryRepository;
 import com.aris.templateapp.databinding.FragmentCreatorHomeBinding;
 import com.aris.templateapp.databinding.ItemRowBinding;
 import com.aris.templateapp.ui.common.StatusBannerView;
@@ -35,10 +35,11 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class CreatorHomeFragment extends Fragment {
 
     @Inject
-    GuideStore guideStore;
+    ThumbnailLoader thumbnailLoader;
+
 
     @Inject
-    GalleryRepository galleryRepository;
+    GuideStore guideStore;
 
     private FragmentCreatorHomeBinding binding;
     private CreatorHomeViewModel viewModel;
@@ -72,7 +73,7 @@ public class CreatorHomeFragment extends Fragment {
 
         smallAdapter = new ProjectSmallAdapter(project -> EditorNav.openProject(this, project));
         binding.continueList.setAdapter(smallAdapter);
-        recommendAdapter = GalleryAdapter.cards(template -> TemplateOpener.open(this, galleryRepository, template));
+        recommendAdapter = GalleryAdapter.cards(thumbnailLoader, template -> TemplateOpener.open(this, template));
         binding.recommendList.setAdapter(recommendAdapter);
 
         viewModel.getRecent().observe(getViewLifecycleOwner(), this::bindRecent);
@@ -104,6 +105,7 @@ public class CreatorHomeFragment extends Fragment {
         }
         ProjectEntity latest = projects.get(0);
         binding.continueLarge.name.setText(latest.name);
+        ProjectThumbnails.load(binding.continueLarge.thumbnail, latest.thumbnailPath);
         binding.continueLarge.status.setText(ProjectUi.compactStatus(requireContext(), latest));
         ProjectUi.bindInfo(binding.continueLarge.info, latest);
         binding.continueLarge.getRoot().setOnClickListener(v -> EditorNav.openProject(this, latest));

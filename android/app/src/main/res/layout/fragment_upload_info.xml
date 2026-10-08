@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Langkah 3 Upload: Info template (alur-fitur-upload.md bagian 6). Semua isian tersimpan otomatis.
+    host_frame menampung WebView tersembunyi untuk memotret thumbnail, di belakang isi layar.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/host_frame"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="UselessParent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/color_background"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/header"
+            layout="@layout/view_wizard_header" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                    android:paddingVertical="@dimen/space_6">
+
+                    <!-- Thumbnail (bagian 6.2) -->
+                    <TextView
+                        style="@style/Widget.App.SectionTitle"
+                        android:text="@string/upload_thumbnail" />
+
+                    <FrameLayout
+                        android:layout_width="@dimen/thumbnail_preview_size"
+                        android:layout_height="@dimen/thumbnail_preview_size"
+                        android:layout_marginTop="@dimen/space_2"
+                        android:background="@drawable/bg_thumbnail">
+
+                        <ImageView
+                            android:id="@+id/thumbnail_placeholder"
+                            android:layout_width="@dimen/space_12"
+                            android:layout_height="@dimen/space_12"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_web"
+                            app:tint="@color/color_muted" />
+
+                        <ImageView
+                            android:id="@+id/thumbnail"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="@string/cd_thumbnail"
+                            android:padding="@dimen/border_width"
+                            android:scaleType="centerCrop" />
+
+                        <TextView
+                            android:id="@+id/thumbnail_status"
+                            style="@style/Widget.App.Badge"
+                            android:layout_gravity="bottom|start"
+                            android:layout_margin="@dimen/space_2"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/view_toggle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_3"
+                        app:selectionRequired="true"
+                        app:singleSelection="true">
+
+                        <Button
+                            android:id="@+id/view_mobile"
+                            style="@style/Widget.App.Button.Toggle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/upload_view_mobile" />
+
+                        <Button
+                            android:id="@+id/view_desktop"
+                            style="@style/Widget.App.Button.Toggle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/upload_view_desktop" />
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2">
+
+                        <Button
+                            android:id="@+id/thumbnail_auto"
+                            style="@style/Widget.App.Button.Outlined.Compact"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/upload_thumbnail_auto" />
+
+                        <Button
+                            android:id="@+id/thumbnail_section"
+                            style="@style/Widget.App.Button.Outlined.Compact"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/upload_thumbnail_section" />
+
+                        <Button
+                            android:id="@+id/thumbnail_custom"
+                            style="@style/Widget.App.Button.Outlined.Compact"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/upload_thumbnail_custom" />
+                    </com.google.android.material.chip.ChipGroup>
+
+                    <!-- Nama -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/name_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:hint="@string/upload_name"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="60"
+                        app:helperText="@string/upload_name_helper">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/name_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:importantForAutofill="no"
+                            android:inputType="textCapWords"
+                            android:maxLength="60"
+                            android:maxLines="1" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Kategori: pilih satu, nilainya sama dengan tujuan website di onboarding -->
+                    <TextView
+                        style="@style/Widget.App.SectionTitle"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="@string/upload_category" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/purpose_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.chip.Chip android:id="@+id/purpose_sekolah" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_sekolah" />
+                        <com.google.android.material.chip.Chip android:id="@+id/purpose_organisasi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_organisasi" />
+                        <com.google.android.material.chip.Chip android:id="@+id/purpose_umkm" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_umkm" />
+                        <com.google.android.material.chip.Chip android:id="@+id/purpose_instansi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_instansi" />
+                        <com.google.android.material.chip.Chip android:id="@+id/purpose_pribadi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_pribadi" />
+                        <com.google.android.material.chip.Chip android:id="@+id/purpose_lainnya" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_lainnya" />
+                    </com.google.android.material.chip.ChipGroup>
+
+                    <!-- Deskripsi -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/description_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:hint="@string/upload_description"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="300"
+                        app:placeholderText="@string/upload_description_hint">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/description_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="top"
+                            android:importantForAutofill="no"
+                            android:inputType="textCapSentences|textMultiLine"
+                            android:maxLength="300"
+                            android:minLines="3" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Kata kunci -->
+                    <TextView
+                        style="@style/Widget.App.SectionTitle"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="@string/upload_keywords" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/keywords_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/keyword_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2"
+                        android:hint="@string/upload_keyword_hint"
+                        app:endIconContentDescription="@string/upload_keyword_add"
+                        app:endIconDrawable="@drawable/ic_add"
+                        app:endIconMode="custom">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/keyword_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:imeOptions="actionDone"
+                            android:importantForAutofill="no"
+                            android:inputType="text"
+                            android:maxLength="20"
+                            android:maxLines="1" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Info teknis otomatis -->
+                    <TextView
+                        style="@style/Widget.App.SectionTitle"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="@string/upload_tech_title" />
+
+                    <TextView
+                        android:id="@+id/tech_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2"
+                        android:fontFamily="@font/geist_mono_regular"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+                    <TextView
+                        android:id="@+id/save_status"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:fontFamily="@font/geist_mono_regular"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall"
+                        android:textColor="@color/color_muted" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+
+            <com.aris.templateapp.ui.common.StateView
+                android:id="@+id/state"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/actions_divider"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:id="@+id/actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingVertical="@dimen/space_3">
+
+            <Button
+                android:id="@+id/back_button"
+                style="@style/Widget.App.Button.Outlined"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/upload_back" />
+
+            <Button
+                android:id="@+id/next_button"
+                style="@style/Widget.App.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_3"
+                android:layout_weight="1"
+                android:text="@string/upload_next" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

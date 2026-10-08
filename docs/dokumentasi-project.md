@@ -45,7 +45,13 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 
 23. [Backend galeri Template & profil pembuat website](#23-backend-galeri-template--profil-pembuat-website)
 24. [Dashboard Pembuat Website di Android](#24-dashboard-pembuat-website-di-android)
-25. [Glosarium](#25-glosarium)
+25. [Backend Upload dan mesin pengecekan](#25-backend-upload-dan-mesin-pengecekan)
+26. [Upload di Android (langkah 1–3)](#26-upload-di-android-langkah-13)
+27. [Editor Tandai bagian](#27-editor-tandai-bagian)
+28. [Coba, Kirim, dan paket template](#28-coba-kirim-dan-paket-template)
+29. [Paket template untuk pembuat website](#29-paket-template-untuk-pembuat-website)
+30. [Editor template mode di Android](#30-editor-template-mode-di-android)
+31. [Glosarium](#31-glosarium)
 
 ---
 
@@ -1106,7 +1112,350 @@ Saat compile, Room menguji query ke SQLite sungguhan memakai library `sqlite-jdb
 
 ---
 
-## 25. Glosarium
+## 25. Backend Upload dan mesin pengecekan
+
+Rancangan lengkap: [`rancangan/alur-fitur-upload.md`](rancangan/alur-fitur-upload.md). Bab ini menjelaskan langkah 1 (Pilih file) dan langkah 2 (Pengecekan file) di sisi server.
+
+### Alur besar
+
+```
+App                                   Server
+───                                   ──────
+POST /uploads/sessions {nama, ukuran} → upload_sessions (receivedSize = 0) + file kosong uploads/sessions/<id>.part
+PUT  /uploads/sessions/<id>?offset=0  → tulis potongan 1 MB, receivedSize maju
+PUT  ...?offset=1048576               → ...
+POST /uploads/sessions/<id>/complete  → template (status checking) + template_checks (stage uploaded)
+                                         ZIP dipindah ke uploads/templates/<templateId>/source.zip
+                                         event UploadCompletedEvent → thread "cek-template-1"
+GET  /uploads/<templateId>/check      ← stage: opening_zip → structure → html_library → size → done
+                                         status: draft (lolos) atau check_failed (ada Error)
+```
+
+### Upload per potongan (bisa dilanjutkan)
+
+- Setiap potongan dikirim dengan `offset` = jumlah byte yang **sudah** diterima server. Jika berbeda, server membalas `409 UPLOAD_OFFSET_MISMATCH`; app lalu memanggil `GET /uploads/sessions/<id>` dan melanjutkan dari `receivedSize`.
+- Baris sesi dikunci (`SELECT ... FOR UPDATE`) selama potongan ditulis, agar dua request yang sama tidak menulis bersamaan.
+- Jika koneksi putus **di tengah** potongan, `receivedSize` di database belum maju. App cukup mengirim ulang potongan yang sama; isinya menimpa.
+- Sesi yang tidak selesai dalam 24 jam dihapus oleh `UploadMaintenance` tiap malam.
+
+### Mesin pengecekan (`upload/check/`)
+
+`TemplateChecker` adalah class Java biasa (tanpa Spring), sehingga bisa diuji cepat. Urutannya:
+
+| Tahap | Class | Isi |
+|---|---|---|
+| Membuka ZIP | `ZipArchive`, `ZipReader` | Baca daftar isi ZIP sendiri: dikunci password, symlink, path `../` (zip slip), jumlah file, ukuran hasil ekstrak (zip bomb), folder pembungkus. Error **fatal** menghentikan pengecekan di sini |
+| Struktur | `StructureRules` | Kode sumber yang belum di-build, file konfigurasi yang diabaikan, jenis file, jumlah halaman, nama file |
+| HTML & library | `HtmlRules`, `ExternalRules`, `ReferenceRules`, `CssRules`, `ScriptRules` | Bagian 5.6 C, C2, D, E, F |
+| Ukuran | `SizeRules` | Gambar > 1 MB, berat halaman > 5 MB |
+
+Semua aturan ada di enum `CheckRule` (kode, Error/Peringatan, versi, judul). Masalah dikumpulkan di `Findings`: semua aturan tetap dijalankan dan dilaporkan sekaligus, maksimal 10 lokasi per aturan (sisanya diringkas "Dan N lokasi lain").
+
+Beberapa cara kerja yang perlu diketahui:
+
+- **Path**: `Ref.of(fileAsal, url)` mengelompokkan rujukan (lokal, luar, data:, mailto:, #anchor) dan menyelesaikan `./`, `../`, `%20`. URL di CSS dihitung dari folder file CSS-nya, bukan dari halaman HTML. Jika file hanya beda huruf besar/kecil, `CASE_MISMATCH` (Error) dicatat.
+- **Komentar dibuang dulu** (`JsScanner`) sebelum pola berbahaya dicari, agar `// fetch('https://...')` di komentar tidak dihitung. Posisi baris tetap sama.
+- **Library terkenal** di ZIP dikenali dari hash SHA-256 (`app.upload.known-libraries`) dan tidak dipindai ulang.
+- **Library dari CDN**: host harus ada di `trusted-cdn-hosts`, nama paket di `allowed-libraries`, dan versinya tiga angka lengkap (`@3.14.1`).
+- **Redirect JS** hanya ditolak jika berjalan otomatis (tingkat paling luar, `DOMContentLoaded`/`load`/`setTimeout`, atau IIFE). `location.href` di dalam handler klik (tombol WhatsApp) boleh.
+- **File sumber `.scss/.less`** (keputusan Aris): jika dimuat HTML atau tidak ada CSS hasil build → Error `UNBUILT_RESOURCE`; jika hanya ikut terbawa di samping CSS hasil build → Peringatan `SOURCE_FILES_INCLUDED`, supaya provider tahu ada file sumber yang ikut terupload.
+- **Info teknis** (`TechInfo`, kolom jsonb `templates.tech_info`): daftar halaman, library, ukuran, responsif, variabel CSS `:root` (bahan tema global di editor tandai).
+
+### Pengecekan di latar belakang (`TemplateCheckRunner`)
+
+`@TransactionalEventListener` menunggu transaksi `complete` tersimpan, lalu `@Async` menjalankannya di thread pool `cek-template-` (maks 2 sekaligus, karena isi ZIP dibaca ke memori). Setiap pindah tahap ditulis dengan transaksi pendek sendiri, sehingga app yang memantau melihat tahap berjalan. Hasil akhir:
+
+| Hasil | Template | Langkah wizard | Notifikasi |
+|---|---|---|---|
+| Tanpa Error | `draft` | 3 (Info template) | `UPLOAD_CHECK_PASSED`; notifikasi gagal sebelumnya ditandai beres |
+| Ada Error | `check_failed` | tetap 2 | `TEMPLATE_CHECK_FAILED` (muncul di "Perlu tindakan") |
+| Bug server | `check_failed` | tetap 2 | Error `CHECK_INTERNAL_ERROR`: "bukan karena file-mu" |
+
+### Draft dan kuota
+
+- Kuota 5 = draft + upload yang sedang dicek. Penuh → `409 DRAFT_LIMIT_REACHED`.
+- "Upload file perbaikan" (`templateId` diisi) menggantikan ZIP di template yang sama; versi pengecekan naik.
+- Tiap malam pukul 03.00 (`app.timezone`): draft yang tidak disentuh 25 hari mendapat notifikasi `DRAFT_EXPIRING` (sekali), yang tidak disentuh 30 hari dihapus + `DRAFT_DELETED`. `Template.touch()` mengulang hitungan setiap kali draft diubah.
+
+### Laporan keliru & Panduan
+
+- `POST /uploads/issues/<id>/report` hanya untuk Error, satu kali per Error. Laporan disimpan di `check_reports` lengkap dengan kode & versi aturan, lokasi, dan potongan kode. Template **tidak** otomatis lolos.
+- `GET /api/help/articles/<KODE>` (publik) mengembalikan artikel Panduan dari tabel `help_articles`. Aturan tanpa artikel → `404`, app membuka Panduan umum.
+
+### ZIP uji per aturan
+
+`backend/tools/buat-zip-uji.py` membuat `test-fixtures/<KODE>/gagal.zip` dan `lolos.zip` untuk setiap aturan, plus `_DASAR/bersih.zip` (template tanpa masalah sama sekali). `CheckRuleFixturesTest` memastikan setiap aturan punya pasangan ZIP, `gagal.zip` tertangkap, dan `lolos.zip` tidak. Batas ukuran di test diperkecil ±100× agar ZIP uji tetap kecil.
+
+### Uji dengan template sungguhan
+
+Saat dikembangkan, mesin ini dicoba pada template gratis populer (StartBootstrap, HTML5 UP, Tailwind Toolbox). Hasilnya sesuai aturan: Font Awesome Kit (`use.fontawesome.com`) dan script form StartBootstrap ditolak karena bukan CDN terpercaya; `noscript.css` HTML5 UP benar-benar meng-import file yang tidak ada; template Tailwind Toolbox lolos dengan 2 Peringatan.
+
+---
+
+## 26. Upload di Android (langkah 1–3)
+
+Bab ini melanjutkan bab 25 di sisi app. Semua layar wizard adalah layar penuh di atas Dashboard Provider (`UploadNav`), sehingga bottom navigation tersembunyi.
+
+### Alur layar
+
+```
+Tab Upload (ProviderUploadFragment)
+  Kondisi A: kotak "Pilih file ZIP" + Sebelum upload + Alur upload
+  Kondisi B: Perlu diperbaiki → Sedang dicek → Lanjutkan draft (n dari 5) → Upload template baru
+        │ ZipPicker (pemilih file sistem)
+        ▼
+UploadCheckFragment (langkah 2)
+  cek kilat di HP → [data seluler & > 10 MB? tanya] → upload per potongan → tahap server → tahap C di HP
+        ├─ gagal  → "Belum memenuhi standar" (Pelajari, Laporkan, Upload file perbaikan, Nanti saja)
+        └─ lolos  → Lanjut
+        ▼
+UploadInfoFragment (langkah 3) → UploadMarkFragment (langkah 4, Fase 17)
+```
+
+### Upload yang bisa dilanjutkan
+
+`UploadRepository.upload` membaca file sepotong demi sepotong lewat `ContentResolver` (file dari pemilih berupa *content URI*, bukan path). Jika sebuah potongan gagal karena jaringan, app menunggu 2, 4, 8, 16, lalu 32 detik, menanyakan posisi terakhir ke server, lalu melanjutkan. Jika tetap gagal, layar menampilkan **Coba lagi**, yang melanjutkan sesi yang sama.
+
+### Menampilkan template dengan aman
+
+| Bagian | Cara |
+|---|---|
+| File situs | ZIP diekstrak `LocalSiteStore` ke `files/upload-sites/<templateId>/`; path `../` dan file sampah dilewati |
+| Menyajikan file | `WebViewAssetLoader` + `LocalSitePathHandler` di `https://appassets.androidplatform.net/`; path diawali `/` dibaca dari folder utama |
+| Internet | Hanya host dari `GET /uploads/settings` (CDN terpercaya, Google Fonts, YouTube/Maps); permintaan lain dibalas 403 |
+| Pindah situs | Diblokir (`shouldOverrideUrlLoading`) |
+| WebView mati karena memori | `onRenderProcessGone` melepas WebView itu saja, app tidak ikut tertutup |
+
+### WebView tersembunyi (`OffscreenPage`)
+
+Dipakai untuk tahap C dan thumbnail. Lebarnya ditentukan dalam piksel CSS (390 = HP, 1280 = Desktop) lalu dikali kepadatan layar; tingginya sama dengan lebar agar potretnya persegi. WebView ditaruh di belakang isi layar dan digambar dengan CPU (`LAYER_TYPE_SOFTWARE`), supaya `draw()` ke Bitmap selalu berisi tampilan halaman.
+
+- **Tahap C** (`DeviceChecker`): setiap halaman dimuat di lebar HP; error dari console WebView menjadi `JS_RUNTIME_ERROR`, `scrollWidth > innerWidth` menjadi `HORIZONTAL_OVERFLOW`. Hasilnya dikirim ke `PUT /uploads/{id}/device-warnings` (maks 20, hanya Peringatan).
+- **Thumbnail** (`ThumbnailCapture`): bagian atas index.html (Otomatis), atau section pilihan dari `assets/upload/sections.js` (deteksi berlapis: `data-section` → tag semantik → membaca tampilan → seluruh halaman). Gambar provider dipotong persegi di tengah. Semua menjadi JPEG 720 px < 1 MB.
+
+### Info template
+
+Isian diisi sekali dari server, lalu form menjadi sumber kebenaran. Setiap perubahan dikirim setelah jeda 800 ms, hanya field yang berubah (`PATCH /uploads/{id}/info`); jika gagal, field itu masuk antrean lagi. **Lanjut** aktif setelah nama 3–60 karakter, kategori, deskripsi 20–300 karakter, dan minimal 1 kata kunci. Nama yang sama dengan template lain milik provider memunculkan peringatan di bawah input.
+
+### Daftar masalah yang sama di dua layar
+
+`IssueListBinder` dipakai layar "Belum memenuhi standar" dan Detail template: judul aturan, pesan, letak, saran, tautan **Pelajari cara memperbaikinya** (artikel dari server; jika belum ada, Panduan "Syarat lolos pengecekan"), dan **Ini keliru? Laporkan** untuk setiap Error.
+
+---
+
+## 27. Editor Tandai bagian
+
+Langkah 4 Upload (rancangan bagian 7). Data tandaan berbentuk JSON (bagian 11): `pages`, `sections`, `fields` (kunci, label, jenis, batas, gaya, elemen), `theme`.
+
+### Nomor elemen (`data-tpl-id`)
+
+Server mem-parse setiap halaman dengan jsoup lalu memberi nomor 1, 2, 3, … pada semua elemen menurut urutan dokumen (`TemplateNumbering`). HP mengunduh salinan bernomor ini (`GET /uploads/{id}/work-package`), bukan ZIP asli. Karena parse jsoup selalu sama, saat Kirim server bisa memberi nomor ulang pada HTML asli dan menemukan elemen yang sama. Elemen yang diketuk tanpa nomor pasti dibuat JavaScript, jadi ditolak dengan pesan.
+
+### Alur ketukan
+
+```
+ketuk elemen di WebView
+  → mark.js (capture, preventDefault): RakitBridge.select(24)      ← hanya angka yang menyeberang ke Java
+  → Java: RakitMark.select(24) + RakitMark.describe(24)            ← Java yang meminta data
+  → MarkElementSheet → MarkingEditor.saveField(...) → setMarks()   ← label ✓ digambar di lapisan terpisah
+```
+
+### Slide
+
+`RakitMark.tops(...)` memberi posisi elemen awal setiap section. Section pertama mulai dari 0, terakhir sampai ujung dokumen, sisanya sampai section berikutnya. `RakitMark.slide(top, bottom)` meredupkan area lain dan membatasi gulir. Tinggi bingkai WebView = tinggi section × skala (lebar WebView ÷ `innerWidth`). Tampilan Desktop memakai `desktop.js` (viewport 1280 px) yang dipasang sebelum halaman dimuat.
+
+### MarkingEditor
+
+Class Java biasa (diuji `MarkingEditorTest`): kunci otomatis dari label (`Judul utama` → `judul_utama`, `_2` jika sudah ada), hubungkan elemen ke isian lain (elemen lama dilepas; isian kosong dihapus), gabung/hapus/pecah section (isian pindah ke section tujuan), saran "Tandai semua", tema global, dan undo/redo berbasis salinan JSON. "Belum disimpan" = data sekarang berbeda dari data yang terakhir tersimpan di server.
+
+### Simpan, cadangan, Coba
+
+- **Simpan** → `PUT /uploads/{id}/marking`; server mengecek label, kunci unik (`^[a-z][a-z0-9_]{0,39}$`), elemen ada di HTML asli, satu elemen hanya untuk satu isian, gaya & tema dari daftar.
+- Setiap perubahan dicadangkan ke SharedPreferences (`MarkingBackupStore`); saat dibuka lagi: "Pulihkan perubahan?".
+- **Coba** aktif setelah minimal 1 isian tersimpan; jika ada perubahan belum disimpan muncul "Simpan & coba".
+
+### Bagian yang sama di beberapa halaman
+
+`PageScanner` membuka halaman lain di WebView tersembunyi, mendeteksi section, dan menghitung sidik jarinya (`RakitMark.fingerprint`: HTML tanpa nomor → hash). Menandai elemen di section yang sidik jarinya sama di halaman lain memunculkan tawaran "Tandai sekali untuk semua halaman"; elemen dipasangkan menurut urutannya di dalam section.
+
+---
+
+## 28. Coba, Kirim, dan paket template
+
+### Langkah 5: Coba sebagai pengguna
+
+Preview memakai salinan bernomor yang sama dengan editor Tandai, ditambah `assets/upload/try.js`. Setiap perubahan di form disimpan ke `TrySession` (memori, tidak dikirim ke server), lalu `RakitTry.apply({fields, theme})` dijalankan:
+
+| Isian | Diterapkan sebagai |
+|---|---|
+| Teks / paragraf / teks tombol | `textContent` elemen (ikon di dalam tombol dipertahankan) |
+| Link / link tombol | atribut `href` |
+| Gambar | `src` (atau `background-image`), dari gambar pilihan sebagai data URL |
+| Gaya | satu `<style id="rakit-custom">` di akhir `<head>`: `[data-tpl-id="24"]{color:#1e3a8a !important}` |
+| Tema | `:root{--primary:#16a34a}` di style yang sama |
+
+Di template sungguhan pembuat website, selector-nya `[data-key="…"]` dan file-nya `custom.css` (bagian 7.11). **Uji isi panjang** mengisi teks sampai batas karakter dan gambar dengan rasio 3:1/1:3. **Ubah tandaan ini** membuka editor Tandai dengan argumen `focusKey`.
+
+### Langkah 6: Kirim
+
+```
+POST /uploads/{id}/submit {agreedAssetRights}  → cek info lengkap, ≥ 3 isian → status checking
+  PublishRunner (thread cek-template-):
+    aturan file (TemplateChecker) + tandaan (MarkingValidator) dicek lagi
+    PackageBuilder: salin library CDN → sisipkan atribut → package.zip
+  lolos → published + notifikasi TEMPLATE_PUBLISHED        gagal → kembali ke draft + daftar masalah
+```
+
+### Paket template (`PackageBuilder`)
+
+1. Setiap halaman diberi nomor ulang dengan `TemplateNumbering` (hasilnya sama dengan salinan di HP), lalu atribut disisipkan: `data-section` pada elemen section, `data-edit` (jenis), `data-key`, `data-label` pada elemen isian. Nomor `data-tpl-id` dibuang dari paket.
+2. `<script src>` dan `<link rel="stylesheet">` dari CDN terpercaya diunduh ke `vendor/<paket>@<versi>/<path di CDN>` lalu diganti ke path relatif (halaman di subfolder mendapat `../`). File CSS library ikut membawa font/gambar yang dirujuknya.
+3. Google Fonts dan link lain dibiarkan. Jika unduhan gagal, Kirim gagal dengan `LIBRARY_COPY_FAILED`.
+
+### Galeri
+
+Template `published` milik provider aktif muncul di `GET /api/templates`. Pencarian kini mencari di nama, deskripsi, dan kata kunci. Thumbnail tampil di galeri, Template Anda, dan detail lewat `ThumbnailLoader`.
+
+### Data demo untuk mencoba Upload
+
+Seeder demo (`--app.seed.demo-templates=true`) memberi ZIP situs contoh sungguhan (`seed/DemoSite.java`) ke tiga template milik `demo-provider`, agar wizard bisa dicoba tanpa membuat ZIP sendiri:
+
+| Template | Kondisi awal |
+|---|---|
+| Landing Event | Tidak lolos (ZIP memakai `<base href>`), bisa diperbaiki lewat "Upload file perbaikan" |
+| Organisasi Pemuda | Dicek mesin pengecekan sesaat setelah backend start, lalu menjadi draft langkah 3 |
+| Instansi Desa | Draft langkah 3 (Info template) |
+
+Data demo yang sudah ada tidak diisi ulang. Untuk memulai dari awal: `DELETE /api/dev/demo-templates` (ikut menghapus file ZIP di `backend/uploads/`), lalu restart backend.
+
+### Urutan isian
+
+Isian disimpan menurut posisi elemen pertamanya di situs: urutan halaman, lalu nomor `data-tpl-id` (yang mengikuti urutan HTML). Pengurutan dilakukan di HP (`MarkingEditor.sortFields`) dan di server saat Simpan (`MarkingData.inPageOrder`), sehingga form Coba dan paket akhir tersusun dari atas ke bawah seperti halamannya.
+
+### Thumbnail dari section
+
+`OffscreenPage.capture` menggulir ke posisi section. Halaman yang pendek tidak bisa digulir sejauh itu, jadi posisi gulir yang benar-benar tercapai (`window.scrollY`) dibandingkan dengan yang diminta, dan selisihnya digeser saat menggambar ke Bitmap.
+
+### Tandaan bersarang
+
+Teks, Paragraf, dan Tombol mengganti **seluruh isi** elemen, sedangkan Gambar dan Link hanya mengubah `src`/`href`. Karena itu elemen berjenis Teks/Paragraf/Tombol tidak boleh membungkus elemen bertanda lain (keputusan Aris, 8 Oktober 2026). Pengecekan ada di tiga tempat:
+
+| Tempat | Cara |
+|---|---|
+| Sheet Tandai elemen | `describe` di `mark.js` mengirim `markedAncestors`/`markedDescendants`; `MarkElementSheet.nestingProblem` menampilkan peringatan dan menonaktifkan Simpan. "Hubungkan ke isian lain" ikut dicek |
+| Saran "Tandai semua" | `suggest` melewati elemen yang membungkus/berada di dalam elemen bertanda |
+| Server (Simpan & Kirim) | `TemplateNumbering.parents` memetakan induk tiap elemen; `MarkingValidator.validateNesting` menolak dengan pesan yang tampil di dialog app |
+
+### Form Coba untuk template besar
+
+Teks asli semua isian diambil dengan satu panggilan `RakitTry.originals(ids)`, lalu form dibangun sekali dan bertahap (3 isian per frame, `TryForm.addFieldsFrom`). Contoh warna memakai View ringan, bukan Chip.
+
+### Mode fokus saat mengetik di Coba
+
+Keadaan keyboard dibaca dari `WindowInsetsCompat` setiap kali layout berubah. Saat keyboard terbuka, kontrol selain isian disembunyikan, form dinaikkan hingga menyisakan strip preview (`try_sheet_typing_preview`), preview digulir ke elemen yang diedit, dan kolom aktif digulir tepat di atas keyboard.
+
+### Saran menghubungkan lintas halaman
+
+Tawaran "Bagian ini sama di N halaman" hanya muncul saat menandai. Jika provider memilih "Halaman ini saja", bar saran di halaman lain kemudian menampilkan "“…” juga ada di halaman ini tapi belum dihubungkan" (`UploadMarkFragment.offerCrossPageLink`). Kembaran elemen dicari dengan `PageScanner.sameElementElsewhere` (section dengan struktur dan isi sama).
+
+### Tombol pilihan HP / Desktop
+
+Toggle HP/Desktop memakai `MaterialButtonToggleGroup` dengan style `Widget.App.Button.Toggle`. Tombol terpilih diisi warna foreground (sama seperti chip terpilih), karena style bergaris biasa tidak membedakan tombol terpilih dan tidak terpilih.
+
+---
+
+## 29. Paket template untuk pembuat website
+
+Rancangan: [`alur-buat-website-via-template.md`](rancangan/alur-buat-website-via-template.md). Saat provider menekan **Kirim**, server membuat `package.zip` (bab 28). Sejak Fase 19, paket itu juga berisi **`manifest.json`**: daftar isi yang dibaca HP pembuat website untuk menyusun form editor.
+
+```
+package.zip
+├── manifest.json          ← dibuat ManifestBuilder
+├── index.html, ...        ← HTML asli + data-edit / data-key / data-label / data-section
+├── css/ js/ img/
+└── vendor/                ← library CDN yang sudah disalin
+```
+
+Isi `manifest.json` (ringkas):
+
+| Bagian | Isi |
+|---|---|
+| `templateId`, `version` | ID template dan versi paket (selalu 1 sampai fitur versi template dibahas) |
+| `pages` | `{file, name}` untuk pemilih halaman |
+| `sections` | `{id, page, name}` untuk chip section di editor |
+| `theme` | `{var, label, type, default}`; `default` diambil dari `:root` CSS template |
+| `fields` | `{key, label, type, hint, maxLength, required, order, sectionId, aspectRatio, pages, sample, sampleHref, styles}` |
+
+`sample` adalah isi contoh provider (teks, URL, atau path gambar seperti `img/hero.jpg`). Editor memakainya untuk tanda "Masih teks contoh". Elemen HTML-nya ditemukan lewat `[data-key="..."]`; satu `key` bisa ada di beberapa elemen dan beberapa halaman (isian terhubung, daftar halamannya di `pages`).
+
+### Endpoint (publik, tamu boleh)
+
+| Method & path | Hasil |
+|---|---|
+| `GET /api/templates/{id}` | Detail untuk layar Unduh: nama, kreator, kategori, deskripsi, kata kunci, halaman, library, responsif, `version`, `packageSizeBytes` (null = belum punya paket) |
+| `GET /api/templates/{id}/package` | File ZIP paket, dengan `Content-Length` (untuk progres) dan header `X-Template-Version` |
+| `POST /api/templates/{id}/events` | Event `view` / `download` (sudah ada sejak Fase 11) |
+
+Aturan tampilnya sama dengan galeri: hanya template `published` milik provider `active`; selain itu 404.
+
+### Paket lama dan paket contoh
+
+- `PackageManifestBackfill` berjalan setiap backend start: template tayang yang `package_size`-nya masih kosong dilengkapi manifest. Setelah itu tidak disentuh lagi.
+- `DemoPackages` membuat paket contoh dari `resources/seed/template-packages/{slug}/` (`site/` + `marking.json`). Elemen di `marking.json` ditunjuk dengan **selector CSS**, lalu diubah menjadi nomor `data-tpl-id`, kemudian diproses `PackageBuilder` + `ManifestBuilder` yang sama dengan Kirim sungguhan. Gambar contohnya dibuat `tools/buat-gambar-demo.py`.
+
+## 30. Editor template mode di Android
+
+Rancangan: [`alur-buat-website-via-template.md`](rancangan/alur-buat-website-via-template.md). Alur besarnya:
+
+```
+Galeri → klik template → Layar Unduh (sekali) → Editor → (Kelengkapan) → Export ZIP → Selesai + Panduan
+```
+
+### Layar Unduh (`ui/template/`)
+
+`TemplateDownloadViewModel` mencatat "Dilihat", lalu memeriksa tabel `template_packages`. Jika paket sudah ada, editor langsung dibuka. Jika belum: detail dimuat, (dialog data seluler untuk paket > 10 MB), lalu `TemplatePackageRepository.download` menulis ZIP ke cache, `PackageExtractor` mengekstraknya ke `files/templates/{id}/.tmp-1/`, dan folder itu diganti nama menjadi `files/templates/{id}/1/`. Entri ZIP dengan path berbahaya membuat paket ditolak.
+
+### Data di HP
+
+| Tempat | Isi |
+|---|---|
+| Room `projects` | metadata project + `source_template_id`, `template_version`, `status`, `missing_count`, `last_exported_at` |
+| Room `template_packages` | paket yang sudah diunduh (folder, ukuran, waktu dipakai); paket tak terpakai > 30 hari dihapus saat app dibuka |
+| Room `pending_events` | event "view"/"download" yang belum terkirim; dikirim `SendEventsWorker` (WorkManager) saat online |
+| `files/projects/{id}/values.json` | nilai isian, gaya, tema (`ProjectValues`) |
+| `files/projects/{id}/images/` | foto pilihan user (WebP) |
+
+Database naik ke versi 2 lewat **AutoMigration** (hanya menambah tabel & kolom yang boleh kosong).
+
+### Editor (`ui/editor/`)
+
+| Class | Tugas |
+|---|---|
+| `TemplateEditorFragment` | Tiga zona (app bar, preview, bottom sheet), chip section ✓/·N, tab Isi/Gaya, pemilih halaman, HP/Desktop, preview layar penuh, mode fokus keyboard, Photo Picker |
+| `TemplateEditorViewModel` | Nilai di memori, undo/redo (50 langkah), autosave 500 ms, project dibuat saat perubahan pertama, export |
+| `EditorPreview` + `assets/editor/editor.js` | WebView aman; skrip `RakitEditor.apply/setField/css/highlight/computed`; ketukan elemen → `RakitBridge.tap(key)` |
+| `EditorForm` | Form per jenis isian & kontrol gaya; dibangun 3 isian per frame |
+| `CompletenessDialog`, `ExportDialog`, `ExportDoneDialog` | Layar penuh di atas editor, memakai ViewModel editor |
+
+Perubahan di form → ViewModel → `Change(key)` → `RakitEditor.setField(...)` (tanpa memuat ulang halaman). Undo/redo/reset → `RakitEditor.apply(...)` untuk semua isian.
+
+### Logika murni (`core/template/`, diuji di laptop)
+
+| Class | Aturan |
+|---|---|
+| `CompletenessChecker` | Perlu dilengkapi: wajib kosong, wajib masih contoh, link tidak valid. Saran: opsional masih contoh. Status: draft/ready, atau exported jika pernah diexport |
+| `CustomCss` | `:root{…}` + `[data-key="k"]{…!important}` (preview) / `.ws-k{…}` (export); hanya hex valid & angka dalam rentang |
+| `LinkRules` | Hanya `https://`, `http://`, `mailto:`, `tel:`, `https://wa.me/…`; nomor WhatsApp → `wa.me/62…` |
+| `ColorContrast` | Rasio kontras WCAG, peringatan di bawah 4,5 |
+| `ImageProcessor` | EXIF, potong tengah sesuai rasio, maks 1920 px, WebP 80 |
+| `ProjectExporter` | jsoup: terapkan nilai, `img/user/`, `custom.css` terakhir di `<head>`, hapus atribut `data-*` app, buang manifest & foto contoh yang diganti |
+| `ExportNames` | "Dapur Mama Rina" → `dapur-mama-rina.zip` |
+
+### Export
+
+ZIP dibuat di `cache/exports/` (thread disk yang sama dengan autosave, jadi isi terakhir pasti tersimpan). **Simpan ke HP** menyalinnya ke lokasi pilihan user (`ACTION_CREATE_DOCUMENT`); **Bagikan** memakai `FileProvider` (`res/xml/file_paths.xml`, hanya folder `exports/`). Setelah itu project menjadi **Diexport**; export pertama project berbasis template memasukkan event `download` ke antrean.
+
+## 31. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
@@ -1165,3 +1514,11 @@ Saat compile, Room menguji query ke SQLite sungguhan memakai library `sqlite-jdb
 | androidTest | Test yang berjalan di HP/emulator, bukan di JVM laptop |
 | Source set `debug` | Folder kode/resource yang hanya ikut ke build debug (`src/debug/`) |
 | `requestDisallowInterceptTouchEvent` | Permintaan view anak agar induknya (ScrollView/ViewPager2) tidak mengambil alih geseran yang sedang berlangsung |
+| Zip slip / zip bomb | ZIP berisi path `../` yang menulis ke luar folder / ZIP kecil yang mengembang sangat besar saat diekstrak |
+| Upload per potongan | File dikirim sepotong-sepotong; server mencatat posisi terakhir sehingga upload bisa dilanjutkan |
+| `@Async` | Method dijalankan di thread lain; pemanggil tidak menunggu |
+| Fixture | Data contoh untuk test (di sini: ZIP uji per aturan) |
+| WebViewAssetLoader | Cara menyajikan file lokal ke WebView lewat alamat https khusus, lebih aman daripada `file://` |
+| Debounce | Menunda aksi sampai pengguna berhenti mengetik sebentar |
+| `@JavascriptInterface` | Method Java yang bisa dipanggil JavaScript di WebView; harus dibatasi karena semua skrip di halaman bisa memanggilnya |
+| Data URL | Gambar yang ditulis langsung sebagai teks (base64) di atribut `src` |

@@ -1,0 +1,60 @@
+{
+  "name": "Profil Sekolah",
+  "description": "Website profil sekolah tiga halaman: beranda dengan foto gedung, visi misi dan kepala sekolah, serta halaman kontak.",
+  "keywords": ["sekolah", "profil", "pendidikan"],
+  "thumbnail": "img/gedung.jpg",
+  "pages": [
+    { "file": "index.html", "name": "Beranda" },
+    { "file": "tentang.html", "name": "Tentang" },
+    { "file": "kontak.html", "name": "Kontak" }
+  ],
+  "sections": [
+    { "id": "s1", "page": "index.html", "name": "Header", "selector": "header" },
+    { "id": "s2", "page": "index.html", "name": "Hero", "selector": ".hero" },
+    { "id": "s3", "page": "index.html", "name": "Footer", "selector": "footer" },
+    { "id": "s4", "page": "tentang.html", "name": "Visi & misi", "selector": ".two-col" },
+    { "id": "s5", "page": "kontak.html", "name": "Kontak", "selector": ".contact" }
+  ],
+  "theme": [
+    { "var": "--primary", "label": "Warna utama", "type": "color" },
+    { "var": "--accent", "label": "Warna aksen", "type": "color" },
+    { "var": "--radius", "label": "Sudut", "type": "size" }
+  ],
+  "fields": [
+    { "key": "nama_sekolah", "label": "Nama sekolah", "type": "text", "hint": "Nama resmi sekolahmu", "maxLength": 40, "required": true, "sectionId": "s1",
+      "elements": [
+        { "page": "index.html", "selector": "header .logo" }, { "page": "tentang.html", "selector": "header .logo" }, { "page": "kontak.html", "selector": "header .logo" },
+        { "page": "index.html", "selector": ".foot-name" }, { "page": "tentang.html", "selector": ".foot-name" }, { "page": "kontak.html", "selector": ".foot-name" }
+      ] },
+    { "key": "judul", "label": "Judul utama", "type": "text", "maxLength": 60, "required": true, "sectionId": "s2",
+      "styles": [{ "prop": "color" }, { "prop": "font-size", "min": 28, "max": 48, "unit": "px" }],
+      "elements": [{ "page": "index.html", "selector": ".hero h1" }] },
+    { "key": "sambutan", "label": "Kalimat sambutan", "type": "paragraph", "maxLength": 200, "required": true, "sectionId": "s2",
+      "elements": [{ "page": "index.html", "selector": ".hero .lead" }] },
+    { "key": "tombol_daftar", "label": "Tombol pendaftaran", "type": "button", "required": false, "sectionId": "s2",
+      "styles": [{ "prop": "background-color" }],
+      "elements": [{ "page": "index.html", "selector": ".hero .btn" }] },
+    { "key": "foto_gedung", "label": "Foto sekolah", "type": "image", "aspectRatio": "16:9", "required": true, "sectionId": "s2",
+      "elements": [{ "page": "index.html", "selector": ".hero-img" }] },
+    { "key": "slogan", "label": "Slogan", "type": "text", "maxLength": 60, "required": false, "sectionId": "s3",
+      "elements": [
+        { "page": "index.html", "selector": "footer p:nth-of-type(2)" }, { "page": "tentang.html", "selector": "footer p:nth-of-type(2)" }, { "page": "kontak.html", "selector": "footer p:nth-of-type(2)" }
+      ] },
+    { "key": "visi", "label": "Visi", "type": "paragraph", "maxLength": 300, "required": true, "sectionId": "s4",
+      "elements": [{ "page": "tentang.html", "selector": ".visi" }] },
+    { "key": "misi", "label": "Misi", "type": "paragraph", "maxLength": 400, "required": true, "sectionId": "s4",
+      "elements": [{ "page": "tentang.html", "selector": ".misi" }] },
+    { "key": "foto_kepala", "label": "Foto kepala sekolah", "type": "image", "aspectRatio": "1:1", "required": false, "sectionId": "s4",
+      "elements": [{ "page": "tentang.html", "selector": ".principal img" }] },
+    { "key": "nama_kepala", "label": "Nama kepala sekolah", "type": "text", "maxLength": 60, "required": true, "sectionId": "s4",
+      "elements": [{ "page": "tentang.html", "selector": ".principal figcaption" }] },
+    { "key": "alamat", "label": "Alamat", "type": "paragraph", "maxLength": 200, "required": true, "sectionId": "s5",
+      "elements": [{ "page": "kontak.html", "selector": ".address" }] },
+    { "key": "telepon", "label": "Telepon", "type": "button", "required": false, "sectionId": "s5",
+      "elements": [{ "page": "kontak.html", "selector": ".phone" }] },
+    { "key": "email", "label": "Email", "type": "button", "required": false, "sectionId": "s5",
+      "elements": [{ "page": "kontak.html", "selector": ".email" }] },
+    { "key": "whatsapp", "label": "Tombol WhatsApp", "type": "button", "required": true, "sectionId": "s5",
+      "elements": [{ "page": "kontak.html", "selector": ".contact .btn" }] }
+  ]
+}

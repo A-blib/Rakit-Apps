@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Satu isian di form Coba (bagian 8): label, petunjuk, input sesuai jenis, kontrol gaya, dan tautan "Ubah tandaan ini".
+    Input & kontrol gaya ditambahkan dari kode sesuai jenis isian.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/space_4">
+
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/geist_semibold"
+        android:textAppearance="@style/TextAppearance.App.Body" />
+
+    <TextView
+        android:id="@+id/hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.App.BodySmall"
+        android:textColor="@color/color_muted" />
+
+    <LinearLayout
+        android:id="@+id/inputs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <TextView
+        android:id="@+id/contrast_warning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_1"
+        android:textAppearance="@style/TextAppearance.App.BodySmall"
+        android:textColor="@color/color_warning"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/edit_mark_button"
+        style="@style/Widget.App.Button.Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="0dp"
+        android:text="@string/try_edit_mark" />
+</LinearLayout>

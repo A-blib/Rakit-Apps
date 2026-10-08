@@ -24,6 +24,13 @@
                 android:importantForAccessibility="no"
                 android:src="@drawable/ic_web"
                 app:tint="@color/color_muted" />
+            <ImageView
+                android:id="@+id/thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no"
+                android:padding="@dimen/border_width"
+                android:scaleType="centerCrop" />
         </FrameLayout>
 
         <com.google.android.material.divider.MaterialDivider
