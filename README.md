@@ -2,6 +2,8 @@
 
 **Rakit** adalah app Android untuk merakit website tanpa coding. Satu akun punya dua mode: **pembuat website** (memilih template, mengedit teks/warna/foto, lalu export ke HTML/CSS/JS) dan **penyedia template** (mengunggah template untuk dipakai orang lain). User bisa langsung mencoba sebagai tamu; login hanya diminta saat butuh fitur online.
 
+> 🪟 **Setup di Windows dengan bantuan agent AI:** arahkan agent ke [`SETUP-WINDOWS.md`](SETUP-WINDOWS.md) (langkah berurutan + perintah cek). Panduan manusia Windows & Linux: [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md).
+
 ### Status fitur
 
 | Fitur | Status |
