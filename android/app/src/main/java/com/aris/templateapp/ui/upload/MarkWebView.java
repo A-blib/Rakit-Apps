@@ -146,7 +146,7 @@ public class MarkWebView {
         webView.destroy();
     }
 
-    static String readAsset(Context context, String path) throws IOException {
+    public static String readAsset(Context context, String path) throws IOException {
         try (InputStream in = context.getAssets().open(path)) {
             byte[] bytes = new byte[in.available()];
             int total = 0;

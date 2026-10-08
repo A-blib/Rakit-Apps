@@ -63,4 +63,11 @@
     <dimen name="try_sheet_typing_preview">170dp</dimen>
     <!-- Bottom sheet Tandai elemen tidak menutupi slide sepenuhnya (rancangan bagian 7.3). -->
     <dimen name="mark_sheet_peek">440dp</dimen>
+    <!-- Editor template mode (alur-buat-website-via-template.md bagian 6) -->
+    <dimen name="editor_sheet_peek">260dp</dimen>
+    <dimen name="editor_sheet_expanded_offset">220dp</dimen>
+    <dimen name="editor_sheet_typing_preview">150dp</dimen>
+    <dimen name="editor_title_max_width">168dp</dimen>
+    <dimen name="editor_image_preview_width">160dp</dimen>
+    <dimen name="editor_image_preview_height">96dp</dimen>
 </resources>

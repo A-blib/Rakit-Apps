@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Editor template mode (alur-buat-website-via-template.md bagian 6.1): tiga zona.
+    Atas = app bar (nama project, status, ↶ ↷ 👁 ⋮) + pemilih halaman & HP/Desktop; tengah = preview WebView;
+    bawah = bottom sheet berisi chip section, tab Isi/Gaya, dan form.
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/editor_sheet_peek">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/app_bar_height"
+            app:contentInsetStartWithNavigation="0dp"
+            app:menu="@menu/menu_template_editor"
+            app:navigationContentDescription="@string/cd_back"
+            app:navigationIcon="@drawable/ic_arrow_back">
+
+            <LinearLayout
+                android:id="@+id/title_area"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackground"
+                android:contentDescription="@string/editor_rename"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/space_1">
+
+                <TextView
+                    android:id="@+id/project_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="@dimen/space_1"
+                    android:ellipsize="end"
+                    android:maxWidth="@dimen/editor_title_max_width"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.App.Title"
+                    app:drawableEndCompat="@drawable/ic_edit_small"
+                    app:drawableTint="@color/color_muted"
+                    tools:text="Toko Kue Modern" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/status_badge"
+                        style="@style/Widget.App.Badge"
+                        tools:text="DRAFT" />
+
+                    <TextView
+                        android:id="@+id/save_state"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_2"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall"
+                        android:textColor="@color/color_muted"
+                        tools:text="tersimpan" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.appbar.MaterialToolbar>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/export_note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/color_warning_tint"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingVertical="@dimen/space_2"
+            android:text="@string/editor_changed_since_export"
+            android:textAppearance="@style/TextAppearance.App.BodySmall"
+            android:textColor="@color/color_warning"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/controls_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingVertical="@dimen/space_2">
+
+            <Button
+                android:id="@+id/page_button"
+                style="@style/Widget.App.Button.Dropdown"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/cd_page_select"
+                android:ellipsize="end"
+                android:maxLines="1" />
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/view_toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_2"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <Button
+                    android:id="@+id/view_mobile"
+                    style="@style/Widget.App.Button.Toggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/upload_view_mobile" />
+
+                <Button
+                    android:id="@+id/view_desktop"
+                    style="@style/Widget.App.Button.Toggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/upload_view_desktop" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/web_frame"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_thumbnail"
+            android:padding="@dimen/border_width">
+
+            <com.aris.templateapp.ui.common.StateView
+                android:id="@+id/state"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/color_background" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/close_preview"
+                style="@style/Widget.App.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="@dimen/space_6"
+                android:text="@string/editor_preview_close"
+                android:visibility="gone"
+                app:icon="@drawable/ic_close" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Form isian: bottom sheet yang bisa ditarik naik/turun -->
+    <LinearLayout
+        android:id="@+id/sheet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_sheet_top"
+        android:contentDescription="@string/cd_editor_panel"
+        android:orientation="vertical"
+        app:behavior_expandedOffset="@dimen/editor_sheet_expanded_offset"
+        app:behavior_fitToContents="false"
+        app:behavior_peekHeight="@dimen/editor_sheet_peek"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:id="@+id/drag_handle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <HorizontalScrollView
+            android:id="@+id/section_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/section_chips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true" />
+        </HorizontalScrollView>
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/tab_toggle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/screen_padding_horizontal"
+            android:layout_marginVertical="@dimen/space_2"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <Button
+                android:id="@+id/tab_content"
+                style="@style/Widget.App.Button.Toggle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/editor_tab_content" />
+
+            <Button
+                android:id="@+id/tab_style"
+                style="@style/Widget.App.Button.Toggle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/editor_tab_style" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/form_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/form"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                android:paddingBottom="@dimen/space_12" />
+        </androidx.core.widget.NestedScrollView>
+    </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

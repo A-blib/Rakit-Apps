@@ -1,0 +1,2 @@
+:root { --primary: #b45309; }
+.brand { color: var(--primary); }

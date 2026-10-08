@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App bar editor template mode (alur-buat-website-via-template.md bagian 6.2): ↶ ↷ 👁 dan menu ⋮. -->
+<!-- Tiga ikon selalu tampil karena dipakai terus saat mengedit; nama project diberi lebar maksimum agar tetap muat. -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="AlwaysShowAction">
+    <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/ic_undo"
+        android:title="@string/editor_undo"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_redo"
+        android:icon="@drawable/ic_redo"
+        android:title="@string/editor_redo"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_preview"
+        android:icon="@drawable/ic_visibility"
+        android:title="@string/editor_preview"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_completeness"
+        android:title="@string/editor_menu_completeness"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_export"
+        android:title="@string/editor_menu_export"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_reset"
+        android:title="@string/editor_menu_reset"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_delete"
+        android:title="@string/editor_menu_delete"
+        app:showAsAction="never" />
+</menu>

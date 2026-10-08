@@ -21,7 +21,7 @@ import java.util.Map;
  * Dibuat sendiri (bukan InternalStoragePathHandler) agar jenis file selalu benar, mis. {@code .mjs} sebagai JavaScript:
  * browser menolak menjalankan modul JS dengan jenis file yang salah.
  */
-class LocalSitePathHandler implements WebViewAssetLoader.PathHandler {
+public class LocalSitePathHandler implements WebViewAssetLoader.PathHandler {
 
     private static final Map<String, String> MIME = new HashMap<>();
 
@@ -50,7 +50,7 @@ class LocalSitePathHandler implements WebViewAssetLoader.PathHandler {
     private final File root;
     private final String canonicalRoot;
 
-    LocalSitePathHandler(File root) throws IOException {
+    public LocalSitePathHandler(File root) throws IOException {
         this.root = root;
         this.canonicalRoot = root.getCanonicalPath() + File.separator;
     }
@@ -73,7 +73,7 @@ class LocalSitePathHandler implements WebViewAssetLoader.PathHandler {
         }
     }
 
-    static String mimeOf(String name) {
+    public static String mimeOf(String name) {
         int dot = name.lastIndexOf('.');
         String ext = dot < 0 ? "" : name.substring(dot + 1).toLowerCase(Locale.ROOT);
         String mime = MIME.get(ext);

@@ -1,0 +1,20 @@
+{
+  "templateId": "11111111-2222-3333-4444-555555555555",
+  "version": 1,
+  "pages": [{ "file": "index.html", "name": "Beranda" }, { "file": "blog/a.html", "name": "Blog" }],
+  "sections": [{ "id": "s1", "page": "index.html", "name": "Header" }, { "id": "s2", "page": "index.html", "name": "Hero" }],
+  "theme": [{ "var": "--primary", "label": "Warna utama", "type": "color", "default": "#b45309" }],
+  "fields": [
+    { "key": "nama_toko", "label": "Nama toko", "type": "text", "maxLength": 30, "required": true, "order": 1,
+      "sectionId": "s1", "pages": ["index.html", "blog/a.html"], "sample": "Toko Kue Bu Ani",
+      "styles": [{ "prop": "color" }, { "prop": "font-size", "min": 20, "max": 48, "unit": "px" }] },
+    { "key": "deskripsi", "label": "Deskripsi", "type": "paragraph", "required": true, "order": 2, "sectionId": "s2",
+      "pages": ["index.html"], "sample": "Kue rumahan setiap pagi." },
+    { "key": "foto_hero", "label": "Foto hero", "type": "image", "aspectRatio": "16:9", "required": true, "order": 3,
+      "sectionId": "s2", "pages": ["index.html"], "sample": "img/hero.jpg" },
+    { "key": "tombol_pesan", "label": "Tombol pesan", "type": "button", "required": true, "order": 4, "sectionId": "s2",
+      "pages": ["index.html"], "sample": "Pesan", "sampleHref": "https://wa.me/6281234567890" },
+    { "key": "link_ig", "label": "Instagram", "type": "link", "required": false, "order": 5, "sectionId": "s2",
+      "pages": ["index.html"], "sample": "https://instagram.com/contoh" }
+  ]
+}

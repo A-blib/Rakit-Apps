@@ -84,7 +84,7 @@
     <!-- Editor template mode: projectId (project tersimpan) ATAU templateId + templateVersion (project baru). -->
     <fragment
         android:id="@+id/templateEditorFragment"
-        android:name="com.aris.templateapp.ui.editor.ComingSoonEditorFragment$TemplateEditor">
+        android:name="com.aris.templateapp.ui.editor.TemplateEditorFragment">
         <argument
             android:name="title"
             android:defaultValue="@null"
