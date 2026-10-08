@@ -423,7 +423,7 @@ public class MarkingEditor {
     }
 
     /** Saran tandai otomatis: "Tandai semua" (bagian 7.10 A4). Elemen yang sudah ditandai dilewati. */
-    public int addSuggestions(String page, String sectionId, List<Suggestion> suggestions, String view) {
+    public int addSuggestions(String page, String sectionId, List<Suggestion> suggestions) {
         List<Suggestion> fresh = new ArrayList<>();
         for (Suggestion s : suggestions) {
             if (fieldOf(page, s.id) == null) {
@@ -442,8 +442,10 @@ public class MarkingEditor {
             field.order = data.fields.size() + 1;
             field.sectionId = sectionId;
             field.required = false;
+            // Saran berasal dari elemen yang terlihat; dianggap tampil di kedua tampilan sampai terbukti sebaliknya.
             List<String> visible = new ArrayList<>();
-            visible.add(view);
+            visible.add("mobile");
+            visible.add("desktop");
             field.elements.add(new MarkingDto.Element(page, s.id, visible));
             data.fields.add(field);
         }

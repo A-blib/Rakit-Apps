@@ -40,6 +40,8 @@
     if (tag === 'img' || tag === 'picture' || (tag !== 'body' && bgImage(el) && !textOf(el))) { return 'image'; }
     if (tag === 'button' || (tag === 'a' && /btn|button|tombol|cta/.test(cls))) { return 'button'; }
     if (tag === 'a') { return 'link'; }
+    // <p> hampir selalu diisi pembuat website dengan teks lebih panjang dari contohnya, walau contohnya pendek.
+    if (tag === 'p' || tag === 'blockquote') { return 'paragraph'; }
     return textOf(el).length > 80 ? 'paragraph' : 'text';
   }
 

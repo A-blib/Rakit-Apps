@@ -253,7 +253,7 @@ public class UploadCheckFragment extends Fragment {
         CheckDto check = result.check;
         List<IssueDto> errors = check == null || check.errors == null ? Collections.emptyList() : check.errors;
         List<IssueDto> warnings = check == null || check.warnings == null ? Collections.emptyList() : check.warnings;
-        showResult(getString(R.string.upload_failed_title), result.fileName, errors, warnings);
+        showResult(getString(R.string.upload_failed_title), getString(R.string.upload_failed_body), errors, warnings);
         showActions(R.string.upload_fix_button, () -> picker.launch(result.templateId), R.string.upload_later,
                 () -> UploadNav.exit(this));
     }
@@ -263,6 +263,10 @@ public class UploadCheckFragment extends Fragment {
                 ? Collections.emptyList() : result.check.warnings;
         String body = warnings.isEmpty() ? getString(R.string.upload_passed_body)
                 : getString(R.string.upload_passed_warnings, warnings.size());
+        if (warnings.isEmpty() && viewModel.consumeAutoContinue()) {
+            UploadNav.replaceStep(this, R.id.uploadInfoFragment, result.templateId);
+            return;
+        }
         showResult(getString(R.string.upload_passed_title), body, Collections.emptyList(), warnings);
         showActions(R.string.upload_next, () -> UploadNav.replaceStep(this, R.id.uploadInfoFragment, result.templateId),
                 0, null);

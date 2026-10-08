@@ -449,7 +449,7 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
     private void markAll(List<MarkingEditor.Suggestion> suggestions) {
         MarkingDto.Section section = currentSection();
         int added = viewModel.editor().addSuggestions(viewModel.page(), section == null ? null : section.id,
-                suggestions, viewModel.view());
+                suggestions);
         viewModel.changed();
         Snackbar.make(binding.getRoot(), getString(R.string.mark_suggest_added, added), Snackbar.LENGTH_SHORT).show();
         setMarks();
@@ -545,7 +545,10 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
     private MarkingDto.Element element(int tplId, boolean visibleNow) {
         List<String> views = new ArrayList<>();
         if (visibleNow) {
-            views.add(viewModel.view());
+            // Kebanyakan elemen tampil di kedua tampilan; label HANYA HP/DESKTOP muncul setelah tampilan lain
+            // dibuka dan elemen ternyata tersembunyi di sana (updateVisibility).
+            views.add("mobile");
+            views.add("desktop");
         } else {
             // Elemen tersembunyi di tampilan ini (mis. menu HP saat Desktop): dianggap tampil di tampilan lain.
             views.add("desktop".equals(viewModel.view()) ? "mobile" : "desktop");

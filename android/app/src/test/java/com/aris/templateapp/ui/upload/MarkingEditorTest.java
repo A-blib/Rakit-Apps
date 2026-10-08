@@ -117,7 +117,7 @@ public class MarkingEditorTest {
         editor.saveField(null, field("Judul"), element(14));
         MarkingEditor.Suggestion marked = suggestion(14, "text", "Judul");
         MarkingEditor.Suggestion image = suggestion(16, "image", "Gambar 1");
-        assertEquals(1, editor.addSuggestions("index.html", null, Arrays.asList(marked, image), "mobile"));
+        assertEquals(1, editor.addSuggestions("index.html", null, Arrays.asList(marked, image)));
         assertEquals("image", editor.fieldOf("index.html", 16).type);
     }
 

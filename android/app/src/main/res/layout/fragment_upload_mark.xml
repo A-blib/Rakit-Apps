@@ -51,14 +51,14 @@
 
                 <Button
                     android:id="@+id/view_mobile"
-                    style="@style/Widget.App.Button.Outlined.Compact"
+                    style="@style/Widget.App.Button.Toggle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/upload_view_mobile" />
 
                 <Button
                     android:id="@+id/view_desktop"
-                    style="@style/Widget.App.Button.Outlined.Compact"
+                    style="@style/Widget.App.Button.Toggle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/upload_view_desktop" />

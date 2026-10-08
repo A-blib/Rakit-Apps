@@ -7,6 +7,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 
 import androidx.activity.OnBackPressedCallback;
@@ -25,6 +26,7 @@ import com.aris.templateapp.data.remote.dto.DraftDto;
 import com.aris.templateapp.data.remote.dto.TechInfoDto;
 import com.aris.templateapp.databinding.FragmentUploadInfoBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
+import com.aris.templateapp.ui.common.KeyboardAwareBottomBar;
 import com.aris.templateapp.ui.onboarding.OnboardingUi;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -60,6 +62,7 @@ public class UploadInfoFragment extends Fragment {
     private UploadInfoViewModel.SiteReady site;
     private final List<String> keywords = new ArrayList<>();
     private boolean filled;
+    private KeyboardAwareBottomBar keyboardAware;
     private String thumbnailSource;
 
     private final ActivityResultLauncher<String> imagePicker = registerForActivityResult(
@@ -88,6 +91,7 @@ public class UploadInfoFragment extends Fragment {
         WizardHeader.bind(binding.header, 3, R.string.upload_step_info, this::close);
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), back);
         capture = new ThumbnailCapture(new OffscreenPage(binding.hostFrame));
+        keyboardAware = KeyboardAwareBottomBar.attach(binding.getRoot(), binding.actions, binding.actionsDivider);
 
         viewModel = new ViewModelProvider(this).get(UploadInfoViewModel.class);
         viewModel.getDraft().observe(getViewLifecycleOwner(), this::render);
@@ -157,7 +161,10 @@ public class UploadInfoFragment extends Fragment {
         });
         binding.keywordLayout.setEndIconOnClickListener(v -> addKeyword());
         binding.keywordInput.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
+            // Tombol ✓ keyboard layar memberi IME_ACTION_DONE; Enter keyboard fisik memberi KeyEvent ENTER.
+            boolean enterKey = event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER
+                    && event.getAction() == KeyEvent.ACTION_DOWN;
+            if (actionId == EditorInfo.IME_ACTION_DONE || enterKey) {
                 addKeyword();
                 return true;
             }
@@ -393,6 +400,7 @@ public class UploadInfoFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        keyboardAware.detach();
         capture.destroy();
         binding = null;
     }

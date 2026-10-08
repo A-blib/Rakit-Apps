@@ -58,9 +58,10 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
 
     private static final int IMAGE_MAX_SIDE = 1200;
 
-    /** Teks asli satu elemen (dari {@code RakitTry.original}). */
+    /** Teks dan alamat link asli satu elemen (dari {@code RakitTry.original}). */
     static class Original {
         String text;
+        String href;
     }
 
     @Inject
@@ -79,6 +80,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
     @Nullable
     private TryForm form;
     private final Map<String, String> originals = new HashMap<>();
+    private final Map<String, String> originalHrefs = new HashMap<>();
     private final Gson gson = new Gson();
     @Nullable
     private String pendingImageKey;
@@ -264,7 +266,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
         webView.evaluateJavascript("window.RakitTry && RakitTry.apply(" + gson.toJson(payload) + ")", null);
     }
 
-    /** Teks asli elemen di halaman ini dipakai sebagai isi awal form (sekali per isian). */
+    /** Teks dan link asli elemen di halaman ini dipakai sebagai isi awal form (sekali per isian). */
     private void loadOriginals() {
         if (webView == null || ready == null) {
             return;
@@ -289,6 +291,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
                 Original original = parse(value);
                 if (original != null && binding != null) {
                     originals.put(key, original.text);
+                    originalHrefs.put(key, original.href);
                     if (originals.size() == countOnPage(page)) {
                         buildForm();
                     }
@@ -353,7 +356,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
 
     private void buildForm() {
         if (form != null && ready != null) {
-            form.build(ready.marking, viewModel.sectionId(), originals);
+            form.build(ready.marking, viewModel.sectionId(), originals, originalHrefs);
         }
     }
 

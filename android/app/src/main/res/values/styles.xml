@@ -152,6 +152,15 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Button.Small</item>
     </style>
 
+    <!-- Tombol di dalam MaterialButtonToggleGroup (HP/Desktop): terpilih diisi foreground seperti chip terpilih,
+         agar pilihan aktif terlihat jelas. -->
+    <style name="Widget.App.Button.Toggle" parent="Widget.App.Button.Outlined.Compact">
+        <item name="backgroundTint">@color/selector_chip_background</item>
+        <item name="android:textColor">@color/selector_chip_text</item>
+        <item name="iconTint">@color/selector_chip_text</item>
+        <item name="strokeColor">@color/selector_chip_stroke</item>
+    </style>
+
     <!-- Tombol kecil bergaris untuk dropdown filter (Kategori, Urutkan): ikon panah di kanan teks. -->
     <style name="Widget.App.Button.Dropdown" parent="Widget.App.Button.Outlined">
         <item name="android:minHeight">@dimen/touch_target_min</item>

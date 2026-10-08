@@ -49,8 +49,6 @@ public class ProviderHomeFragment extends Fragment {
 
     private FragmentProviderHomeBinding binding;
     private ProviderDashboardViewModel viewModel;
-    /** false sampai onResume pertama: muat pertama sudah dilakukan ViewModel, jadi tidak perlu diulang. */
-    private boolean resumedBefore;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -86,10 +84,8 @@ public class ProviderHomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (resumedBefore) {
-            viewModel.load(true);
-        }
-        resumedBefore = true;
+        // Termasuk saat kembali dari wizard Upload: angka Aktif & Perlu tindakan bisa sudah berubah.
+        viewModel.refreshIfStale();
     }
 
     private ProviderDashboardFragment shell() {

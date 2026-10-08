@@ -20,6 +20,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.slider.Slider;
+import com.google.android.material.slider.TickVisibilityMode;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -62,8 +63,10 @@ final class TryForm {
     /**
      * @param sectionId     hanya isian di section ini; null = semua
      * @param originals     teks asli per kunci isian (dari halaman), dipakai sebagai contoh di input
+     * @param originalHrefs alamat link asli per kunci isian (untuk jenis Link dan Tombol)
      */
-    void build(MarkingDto marking, @Nullable String sectionId, Map<String, String> originals) {
+    void build(MarkingDto marking, @Nullable String sectionId, Map<String, String> originals,
+               Map<String, String> originalHrefs) {
         container.removeAllViews();
         if (sectionId == null && marking.theme != null && !marking.theme.isEmpty()) {
             addTheme(marking);
@@ -73,7 +76,7 @@ final class TryForm {
             if (sectionId != null && !sectionId.equals(field.sectionId)) {
                 continue;
             }
-            addField(field, originals.get(field.key));
+            addField(field, originals.get(field.key), originalHrefs.get(field.key));
             shown++;
         }
         if (shown == 0 && container.getChildCount() == 0) {
@@ -120,7 +123,7 @@ final class TryForm {
         }
     }
 
-    private void addField(MarkingDto.Field field, @Nullable String original) {
+    private void addField(MarkingDto.Field field, @Nullable String original, @Nullable String originalHref) {
         ItemTryFieldBinding row = ItemTryFieldBinding.inflate(LayoutInflater.from(context), container, true);
         TrySession.Value value = session.value(templateId, field.key);
         row.label.setText(field.label);
@@ -144,11 +147,11 @@ final class TryForm {
                 break;
             }
             case "link":
-                addHref(row, value);
+                addHref(row, value, originalHref);
                 break;
             case "button":
                 addText(row, field, value, original, false);
-                addHref(row, value);
+                addHref(row, value, originalHref);
                 break;
             case "paragraph":
                 addText(row, field, value, original, true);
@@ -176,10 +179,11 @@ final class TryForm {
         }));
     }
 
-    private void addHref(ItemTryFieldBinding row, TrySession.Value value) {
+    private void addHref(ItemTryFieldBinding row, TrySession.Value value, @Nullable String original) {
         EditText input = addInput(row.inputs, context.getString(R.string.try_link_hint), false, null);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
-        input.setText(value.href);
+        // Sama seperti teks: alamat asli ditampilkan agar pengguna tahu link sekarang mengarah ke mana.
+        input.setText(value.href != null ? value.href : original);
         input.addTextChangedListener(new UploadInfoFragment.AfterChange(text -> {
             value.href = text.trim().isEmpty() ? null : text.trim();
             listener.onChanged();
@@ -197,7 +201,9 @@ final class TryForm {
         input.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
                 | (multiline ? InputType.TYPE_TEXT_FLAG_MULTI_LINE : 0));
-        if (!multiline) {
+        if (multiline) {
+            input.setMinLines(2);
+        } else {
             input.setMaxLines(1);
         }
         layout.addView(input);
@@ -252,6 +258,7 @@ final class TryForm {
         slider.setValueFrom(min);
         slider.setValueTo(Math.max(min + 1, max));
         slider.setStepSize(1);
+        slider.setTickVisibilityMode(TickVisibilityMode.TICK_VISIBILITY_HIDDEN);
         int start = min;
         if (current != null) {
             try {

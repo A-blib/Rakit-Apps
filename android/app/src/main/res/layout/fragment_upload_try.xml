@@ -46,14 +46,14 @@
 
                 <Button
                     android:id="@+id/view_mobile"
-                    style="@style/Widget.App.Button.Outlined.Compact"
+                    style="@style/Widget.App.Button.Toggle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/upload_view_mobile" />
 
                 <Button
                     android:id="@+id/view_desktop"
-                    style="@style/Widget.App.Button.Outlined.Compact"
+                    style="@style/Widget.App.Button.Toggle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/upload_view_desktop" />
@@ -107,8 +107,8 @@
         android:background="@drawable/bg_sheet_top"
         android:contentDescription="@string/cd_try_panel"
         android:orientation="vertical"
+        app:behavior_expandedOffset="@dimen/try_sheet_expanded_offset"
         app:behavior_fitToContents="false"
-        app:behavior_halfExpandedRatio="0.55"
         app:behavior_peekHeight="@dimen/try_sheet_peek"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
@@ -146,31 +146,23 @@
                 android:textColor="@color/color_warning"
                 android:visibility="gone" />
 
-            <LinearLayout
+            <Button
+                android:id="@+id/next_button"
+                style="@style/Widget.App.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:text="@string/try_next_send"
+                app:icon="@drawable/ic_arrow_forward"
+                app:iconGravity="textEnd" />
 
-                <Button
-                    android:id="@+id/back_mark_button"
-                    style="@style/Widget.App.Button.Outlined"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/try_back_mark"
-                    app:icon="@drawable/ic_arrow_back" />
-
-                <Button
-                    android:id="@+id/next_button"
-                    style="@style/Widget.App.Button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/space_3"
-                    android:layout_weight="1"
-                    android:text="@string/try_next_send"
-                    app:icon="@drawable/ic_arrow_forward"
-                    app:iconGravity="textEnd" />
-            </LinearLayout>
+            <Button
+                android:id="@+id/back_mark_button"
+                style="@style/Widget.App.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2"
+                android:text="@string/try_back_mark"
+                app:icon="@drawable/ic_arrow_back" />
         </LinearLayout>
 
         <com.google.android.material.divider.MaterialDivider

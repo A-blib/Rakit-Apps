@@ -18,7 +18,7 @@
     <string name="upload_before_dist">Pakai Vite? Upload dist/</string>
     <string name="upload_see_guide">Lihat panduan lengkap</string>
     <string name="upload_flow_title">Alur upload</string>
-    <string name="upload_flow_steps">1 Pilih → 2 Cek → 3 Info → 4 Tandai → 5 Coba → 6 Kirim</string>
+    <string name="upload_flow_steps">1\u00A0Pilih → 2\u00A0Cek → 3\u00A0Info → 4\u00A0Tandai → 5\u00A0Coba → 6\u00A0Kirim</string>
     <string name="upload_needs_fix_title">Perlu diperbaiki (%1$d)</string>
     <string name="upload_issue_counts">%1$d error · %2$d peringatan</string>
     <string name="upload_fix_button">Upload file perbaikan</string>
@@ -46,6 +46,7 @@
     <string name="upload_step_try">Coba sebagai pengguna</string>
     <string name="upload_step_send">Kirim</string>
     <string name="upload_step_of">Langkah %1$d dari 6</string>
+    <string name="upload_step_short">%1$d/6</string>
 
     <!-- Keluar wizard (bagian 3.2) -->
     <string name="upload_exit_title">Keluar dari upload?</string>
@@ -79,6 +80,7 @@
     <string name="upload_see_how">Lihat caranya</string>
     <string name="upload_pick_other">Pilih file lain</string>
     <string name="upload_failed_title">Belum memenuhi standar</string>
+    <string name="upload_failed_body">Perbaiki masalah di bawah di laptopmu, lalu upload file perbaikan.</string>
     <string name="upload_errors_title">Error (%1$d)</string>
     <string name="upload_warnings_title">Peringatan (%1$d)</string>
     <string name="upload_later">Nanti saja</string>
@@ -160,7 +162,7 @@
     <string name="try_all_sections">Semua</string>
     <string name="try_empty">Belum ada isian tersimpan.</string>
     <string name="try_size_value">%1$d px</string>
-    <string name="try_long_text">Teks uji panjang untuk melihat apakah tata letak tetap rapi </string>
+    <string name="try_long_text">"Teks uji panjang untuk melihat apakah tata letak tetap rapi. "</string>
     <string name="cd_color">Warna %1$s</string>
     <string name="cd_try_panel">Form isian percobaan</string>
 
@@ -183,8 +185,8 @@
     <string name="send_edit_info">Lengkapi info</string>
 
     <!-- Langkah 4: Tandai bagian (bagian 7) -->
-    <string name="mark_counter">%1$d isian ditandai (minimal %2$d)</string>
-    <string name="mark_counter_ok">✓ %1$d isian ditandai</string>
+    <string name="mark_counter">%1$d/%2$d isian</string>
+    <string name="mark_counter_ok">✓ %1$d isian</string>
     <string name="mark_slide">Slide %1$d/%2$d · %3$s</string>
     <string name="mark_unsaved">● %1$d perubahan belum disimpan</string>
     <string name="mark_all_saved">Semua tandaan tersimpan</string>

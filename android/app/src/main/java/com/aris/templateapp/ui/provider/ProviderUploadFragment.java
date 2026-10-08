@@ -28,6 +28,7 @@ import com.aris.templateapp.databinding.SheetBeforeUploadBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.guide.Guide;
 import com.aris.templateapp.ui.upload.UploadNav;
+import com.aris.templateapp.ui.upload.WizardHeader;
 import com.aris.templateapp.ui.upload.ZipPicker;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -184,7 +185,7 @@ public class ProviderUploadFragment extends Fragment {
                     () -> card.thumbnailPlaceholder.setVisibility(View.GONE));
             card.title.setText(item.name);
             card.line1.setText(getString(R.string.upload_draft_step, item.wizardStep,
-                    getString(stepShortName(item.wizardStep))));
+                    getString(WizardHeader.stepName(item.wizardStep))));
             card.line2.setText(TemplateUi.updatedAgo(requireContext(), item.updatedAt));
             if (item.expiringSoon) {
                 long days = daysUntil(item.deleteAt);
@@ -194,19 +195,6 @@ public class ProviderUploadFragment extends Fragment {
             }
             card.getRoot().setOnClickListener(v -> UploadNav.resumeDraft(this, item.templateId, item.wizardStep));
             bindMenu(card, item.name, item.templateId, R.string.upload_delete_draft);
-        }
-    }
-
-    private static int stepShortName(int step) {
-        switch (step) {
-            case 4:
-                return R.string.upload_step_mark;
-            case 5:
-                return R.string.upload_step_try;
-            case 6:
-                return R.string.upload_step_send;
-            default:
-                return R.string.upload_step_info;
         }
     }
 

@@ -1,5 +1,7 @@
 package com.aris.templateapp.ui.provider;
 
+import android.os.SystemClock;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -34,6 +36,10 @@ public class ProviderDashboardViewModel extends ViewModel {
     private final MutableLiveData<Event<String>> accessLost = new MutableLiveData<>();
     private final MutableLiveData<Event<ApiError>> refreshFailed = new MutableLiveData<>();
     private String period = PERIOD_7_DAYS;
+    // Data yang baru dimuat (mis. muat pertama sesaat sebelum tab tampil) tidak perlu langsung dimuat ulang.
+    private static final long FRESH_MS = 3000;
+    private long loadedAt;
+
     /** Nomor request terakhir: jawaban request lama (mis. periode sudah diganti lagi) diabaikan. */
     private int generation;
 
@@ -63,6 +69,13 @@ public class ProviderDashboardViewModel extends ViewModel {
         return refreshFailed;
     }
 
+    /** Dipanggil saat tab Beranda tampil lagi: muat ulang diam-diam jika data sudah lebih dari beberapa detik. */
+    public void refreshIfStale() {
+        if (SystemClock.elapsedRealtime() - loadedAt > FRESH_MS) {
+            load(true);
+        }
+    }
+
     public String getPeriod() {
         return period;
     }
@@ -84,6 +97,7 @@ public class ProviderDashboardViewModel extends ViewModel {
         ProviderDashboardDto prefetched = providerRepository.takePrefetchedDashboard(period);
         if (prefetched != null) {
             dashboard.setValue(Resource.success(prefetched));
+            loadedAt = SystemClock.elapsedRealtime();
             return;
         }
         Resource<ProviderDashboardDto> current = dashboard.getValue();
@@ -113,6 +127,9 @@ public class ProviderDashboardViewModel extends ViewModel {
                     return;
                 }
                 dashboard.setValue(result);
+                if (result.getStatus() == Resource.Status.SUCCESS) {
+                    loadedAt = SystemClock.elapsedRealtime();
+                }
             });
         });
     }

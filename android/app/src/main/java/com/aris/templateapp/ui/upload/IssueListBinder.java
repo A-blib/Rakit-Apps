@@ -60,6 +60,9 @@ public final class IssueListBinder {
                 row.reportButton.setVisibility(View.VISIBLE);
                 row.reportButton.setEnabled(!issue.reported);
                 row.reportButton.setText(issue.reported ? R.string.issue_reported : R.string.issue_report);
+                if (issue.reported) {
+                    row.reportButton.setTextColor(ContextCompat.getColor(list.getContext(), R.color.color_muted));
+                }
                 row.reportButton.setOnClickListener(v -> actions.onReport(issue));
             }
         }

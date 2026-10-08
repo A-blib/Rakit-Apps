@@ -120,11 +120,17 @@ public class ProviderDashboardFragment extends Fragment {
                     if (request == null) {
                         return;
                     }
-                    if (request.templatesStatus != null) {
-                        openTemplates(request.templatesStatus);
-                    } else {
-                        selectTab(request.tab);
-                    }
+                    // Ditunda sampai ViewPager2 selesai memulihkan halaman lama; jika tidak, pilihan tab tertimpa.
+                    binding.pager.post(() -> {
+                        if (binding == null) {
+                            return;
+                        }
+                        if (request.templatesStatus != null) {
+                            openTemplates(request.templatesStatus);
+                        } else {
+                            selectTab(request.tab);
+                        }
+                    });
                 });
         dashboardViewModel.getAccessLost().observe(getViewLifecycleOwner(), event -> {
             String code = event.getContentIfNotHandled();

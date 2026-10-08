@@ -9,6 +9,7 @@ import com.aris.templateapp.R;
 import com.aris.templateapp.data.remote.dto.MarkingDto;
 import com.aris.templateapp.databinding.SheetMarkElementBinding;
 import com.aris.templateapp.ui.onboarding.OnboardingUi;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -165,6 +166,9 @@ final class MarkElementSheet {
                 callbacks.onClosed();
             }
         });
+        // Terbuka sebagian dulu agar elemen yang sedang diatur tetap terlihat (bagian 7.3); bisa ditarik naik.
+        sheet.getBehavior().setPeekHeight(fragment.getResources().getDimensionPixelSize(R.dimen.mark_sheet_peek));
+        sheet.getBehavior().setState(BottomSheetBehavior.STATE_COLLAPSED);
         sheet.show();
         return sheet;
     }

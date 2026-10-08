@@ -78,6 +78,8 @@ public class UploadCheckViewModel extends ViewModel {
     private String sessionId;
     // Tahap C hanya dijalankan jika pengecekan server selesai saat layar ini terbuka (bukan saat membuka hasil lama).
     private boolean sawChecking;
+    // Pengecekan baru saja lolos di layar ini; tanpa peringatan, layar langsung lanjut ke Info template.
+    private boolean autoContinue;
 
     @Inject
     public UploadCheckViewModel(UploadRepository repository, AppExecutors executors) {
@@ -269,11 +271,19 @@ public class UploadCheckViewModel extends ViewModel {
             repository.deviceWarnings(id, warnings);
             Resource<UploadCheckDto> result = repository.check(id);
             if (result.getStatus() == Resource.Status.SUCCESS) {
+                autoContinue = true;
                 state.postValue(UploadCheckState.result(Phase.PASSED, result.getData()));
             } else {
                 state.postValue(UploadCheckState.error(Phase.LOAD_ERROR, result.getError()));
             }
         });
+    }
+
+    /** true sekali saja setelah pengecekan baru lolos, agar membuka hasil lama tidak langsung berpindah layar. */
+    boolean consumeAutoContinue() {
+        boolean value = autoContinue;
+        autoContinue = false;
+        return value;
     }
 
     void report(String issueId, @Nullable String reason) {

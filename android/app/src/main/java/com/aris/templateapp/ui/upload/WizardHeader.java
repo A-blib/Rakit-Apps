@@ -6,21 +6,24 @@ import com.aris.templateapp.R;
 import com.aris.templateapp.databinding.ViewWizardHeaderBinding;
 
 /** Mengisi zona atas wizard: judul langkah, "Langkah X dari 6", garis kemajuan, dan tombol ✕. */
-final class WizardHeader {
+public final class WizardHeader {
 
     private WizardHeader() {
     }
 
     static void bind(ViewWizardHeaderBinding header, int step, @StringRes int title, Runnable onClose) {
         header.title.setText(title);
-        header.step.setText(header.getRoot().getContext().getString(R.string.upload_step_of, step));
+        // Teks pendek "5/6" (rancangan bagian 3.3) agar judul langkah tidak terpotong; pembaca layar membacakan
+        // kalimat lengkapnya.
+        header.step.setText(header.getRoot().getContext().getString(R.string.upload_step_short, step));
+        header.step.setContentDescription(header.getRoot().getContext().getString(R.string.upload_step_of, step));
         header.stepBar.setProgress(step);
         header.closeButton.setOnClickListener(v -> onClose.run());
     }
 
     /** Nama langkah untuk kartu draft, mis. "Tandai". */
     @StringRes
-    static int stepName(int step) {
+    public static int stepName(int step) {
         switch (step) {
             case 1:
                 return R.string.upload_step_pick;
