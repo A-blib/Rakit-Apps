@@ -55,6 +55,17 @@ public class MarkingEditorTest {
     }
 
     @Test
+    public void fieldsFollowPageOrderNotMarkingOrder() {
+        editor.saveField(null, field("Deskripsi"), element(16));
+        editor.saveField(null, field("Judul"), element(14));
+        MarkingDto.Field footer = editor.saveField(null, field("Footer"), element(40));
+        assertEquals("judul", editor.fields().get(0).key);
+        assertEquals("deskripsi", editor.fields().get(1).key);
+        assertEquals(1, editor.fields().get(0).order);
+        assertEquals(3, footer.order);
+    }
+
+    @Test
     public void editingKeepsKeyAndElements() {
         MarkingDto.Field created = editor.saveField(null, field("Judul"), element(14));
         MarkingDto.Field edited = field("Judul besar");

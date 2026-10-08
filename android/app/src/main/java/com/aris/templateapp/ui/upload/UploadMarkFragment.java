@@ -256,7 +256,7 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
 
     private void afterSectionsKnown() {
         pageReady = true;
-        binding.state.setVisibility(View.GONE);
+        binding.state.hide();
         updateVisibility();
         refreshSlide();
         // "Ubah tandaan ini" dari langkah Coba: langsung buka elemen isian itu (sekali saja).

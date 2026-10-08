@@ -348,6 +348,7 @@ public class MarkingEditor {
             field.elements = new ArrayList<>();
             field.elements.add(element);
             data.fields.add(field);
+            sortFields();
         } else {
             field.label = edited.label;
             field.type = edited.type;
@@ -412,11 +413,28 @@ public class MarkingEditor {
         field.elements.removeIf(e -> e.page.equals(page) && e.tplId == tplId);
         if (field.elements.isEmpty()) {
             data.fields.remove(field);
-            renumber();
+            sortFields();
         }
     }
 
-    private void renumber() {
+    /**
+     * Urutan isian = urutan elemennya di halaman (halaman dulu, lalu nomor data-tpl-id yang mengikuti urutan HTML),
+     * bukan urutan provider menandai. Form pembuat website jadi tersusun dari atas ke bawah seperti halamannya.
+     */
+    private void sortFields() {
+        List<String> pageOrder = new ArrayList<>();
+        for (MarkingDto.Page p : data.pages) {
+            pageOrder.add(p.file);
+        }
+        data.fields.sort((a, b) -> {
+            MarkingDto.Element ea = a.elements.isEmpty() ? null : a.elements.get(0);
+            MarkingDto.Element eb = b.elements.isEmpty() ? null : b.elements.get(0);
+            if (ea == null || eb == null) {
+                return ea == null ? (eb == null ? 0 : 1) : -1;
+            }
+            int byPage = Integer.compare(pageOrder.indexOf(ea.page), pageOrder.indexOf(eb.page));
+            return byPage != 0 ? byPage : Integer.compare(ea.tplId, eb.tplId);
+        });
         for (int i = 0; i < data.fields.size(); i++) {
             data.fields.get(i).order = i + 1;
         }
@@ -449,6 +467,7 @@ public class MarkingEditor {
             field.elements.add(new MarkingDto.Element(page, s.id, visible));
             data.fields.add(field);
         }
+        sortFields();
         changed();
         return fresh.size();
     }

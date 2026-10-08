@@ -116,7 +116,7 @@ public class UploadCheckFragment extends Fragment {
         long fileSize = result != null && result.fileSize != null ? result.fileSize : viewModel.getFileSize();
         binding.fileMeta.setText(fileName == null ? null
                 : getString(R.string.upload_file_meta, fileName, FileSizes.format(fileSize)));
-        binding.state.setVisibility(View.GONE);
+        binding.state.hide();
         binding.content.setVisibility(View.VISIBLE);
 
         boolean running = state.phase == Phase.LOCAL_CHECKING || state.phase == Phase.UPLOADING

@@ -214,7 +214,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
                         if (!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
                             v.evaluateJavascript(tryScript, null);
                         }
-                        binding.state.setVisibility(View.GONE);
+                        binding.state.hide();
                         loadOriginals();
                         applyPreview();
                     }

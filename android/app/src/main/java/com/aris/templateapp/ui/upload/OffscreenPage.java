@@ -3,6 +3,7 @@ package com.aris.templateapp.ui.upload;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
@@ -75,6 +76,9 @@ public class OffscreenPage {
         // Digambar dengan CPU agar draw() ke Bitmap selalu berisi tampilan halaman.
         view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+        // Scrollbar tidak boleh ikut terpotret di thumbnail.
+        view.setVerticalScrollBarEnabled(false);
+        view.setHorizontalScrollBarEnabled(false);
         SiteWebView.configure(view, siteRoot, allowedHosts, cssWidth >= DESKTOP_WIDTH, false, null);
         consoleErrors.clear();
         view.setWebChromeClient(new WebChromeClient() {
@@ -136,16 +140,30 @@ public class OffscreenPage {
             return;
         }
         WebView view = webView;
-        view.evaluateJavascript("window.scrollTo(0, " + scrollTopCss + ");", ignored ->
+        view.evaluateJavascript("window.scrollTo(0, " + scrollTopCss + "); window.scrollY;", scrolled ->
                 handler.postDelayed(() -> {
+                    // Halaman pendek tidak bisa digulir sampai section berada di paling atas. Sisa jaraknya
+                    // digeser saat menggambar, sehingga section tetap di atas thumbnail dan bawahnya kosong.
+                    float shiftPx = Math.max(0, scrollTopCss - parseNumber(scrolled)) * density;
                     Bitmap full = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
-                    view.draw(new Canvas(full));
+                    Canvas canvas = new Canvas(full);
+                    canvas.drawColor(Color.WHITE);
+                    canvas.translate(0, -shiftPx);
+                    view.draw(canvas);
                     Bitmap scaled = Bitmap.createScaledBitmap(full, sizePx, sizePx, true);
                     if (scaled != full) {
                         full.recycle();
                     }
                     callback.onCaptured(scaled);
                 }, 400));
+    }
+
+    private static float parseNumber(@Nullable String value) {
+        try {
+            return value == null ? 0 : Float.parseFloat(value);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     public interface CaptureCallback {

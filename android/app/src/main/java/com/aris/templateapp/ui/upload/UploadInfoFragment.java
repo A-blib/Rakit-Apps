@@ -64,6 +64,9 @@ public class UploadInfoFragment extends Fragment {
     private boolean filled;
     private KeyboardAwareBottomBar keyboardAware;
     private String thumbnailSource;
+    // Nama section thumbnail yang dipilih di layar ini, agar ganti HP/Desktop memotret section yang sama.
+    @Nullable
+    private String thumbnailSectionName;
 
     private final ActivityResultLauncher<String> imagePicker = registerForActivityResult(
             new ActivityResultContracts.GetContent(), uri -> {
@@ -137,7 +140,11 @@ public class UploadInfoFragment extends Fragment {
         binding.viewToggle.addOnButtonCheckedListener((group, id, checked) -> {
             // Ganti HP/Desktop memotret ulang, kecuali thumbnail berupa gambar pilihan sendiri.
             if (checked && filled && site != null && !"custom".equals(thumbnailSource)) {
-                captureAuto();
+                if ("section".equals(thumbnailSource) && thumbnailSectionName != null) {
+                    recaptureSection(thumbnailSectionName);
+                } else {
+                    captureAuto();
+                }
             }
         });
 
@@ -358,10 +365,29 @@ public class UploadInfoFragment extends Fragment {
                     .setTitle(R.string.upload_section_pick_title)
                     .setItems(names, (d, which) -> {
                         viewModel.setThumbnailBusy(true);
+                        thumbnailSectionName = names[which];
                         capture.captureSection(sections.get(which), bitmap -> onCaptured(bitmap, "section", view));
                     })
                     .setNegativeButton(R.string.action_cancel, null)
                     .show();
+        });
+    }
+
+    /** Potret ulang section bernama sama di lebar tampilan sekarang; jika tidak ada di tampilan ini, pakai bagian atas. */
+    private void recaptureSection(String name) {
+        String view = currentView();
+        viewModel.setThumbnailBusy(true);
+        capture.loadSections(site.root, site.allowedHosts, currentWidth(), sections -> {
+            if (binding == null) {
+                return;
+            }
+            for (SectionInfo section : sections) {
+                if (name.equals(section.name)) {
+                    capture.captureSection(section, bitmap -> onCaptured(bitmap, "section", view));
+                    return;
+                }
+            }
+            captureAuto();
         });
     }
 
@@ -375,6 +401,9 @@ public class UploadInfoFragment extends Fragment {
             return;
         }
         thumbnailSource = source;
+        if (!"section".equals(source)) {
+            thumbnailSectionName = null;
+        }
         viewModel.uploadThumbnail(bitmap, source, view);
     }
 

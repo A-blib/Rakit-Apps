@@ -26,6 +26,7 @@
     <string name="upload_drafts_title">Lanjutkan draft</string>
     <string name="upload_draft_quota">%1$d dari %2$d</string>
     <string name="upload_draft_step">Langkah %1$d/6 · %2$s</string>
+    <string name="upload_draft_fields">%1$d isian</string>
     <string name="upload_draft_expiring">Dihapus dalam %1$d hari</string>
     <string name="upload_draft_expiring_today">Dihapus hari ini</string>
     <string name="upload_quota_full">Selesaikan atau hapus draft dulu (maks %1$d)</string>

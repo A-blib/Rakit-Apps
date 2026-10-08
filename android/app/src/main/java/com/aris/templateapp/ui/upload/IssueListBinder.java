@@ -3,12 +3,14 @@ package com.aris.templateapp.ui.upload;
 import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 
 import com.aris.templateapp.R;
 import com.aris.templateapp.data.remote.dto.TemplateDetailDto.IssueDto;
@@ -44,6 +46,11 @@ public final class IssueListBinder {
             row.title.setText(issue.title);
             row.title.setVisibility(issue.title == null ? View.GONE : View.VISIBLE);
             row.message.setText(issue.message);
+            if (issue.title == null) {
+                // Tanpa judul, pesan menjadi baris utama: tebal dan tanpa jarak atas.
+                row.message.setTypeface(ResourcesCompat.getFont(list.getContext(), R.font.geist_medium));
+                ((ViewGroup.MarginLayoutParams) row.message.getLayoutParams()).topMargin = 0;
+            }
             String location = issue.file == null ? null : issue.line == null ? issue.file
                     : list.getContext().getString(R.string.issue_location_line, issue.file, issue.line);
             row.location.setText(location);

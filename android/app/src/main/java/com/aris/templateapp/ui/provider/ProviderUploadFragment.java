@@ -27,6 +27,7 @@ import com.aris.templateapp.databinding.ItemUploadCardBinding;
 import com.aris.templateapp.databinding.SheetBeforeUploadBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.guide.Guide;
+import com.aris.templateapp.ui.upload.MarkingEditor;
 import com.aris.templateapp.ui.upload.UploadNav;
 import com.aris.templateapp.ui.upload.WizardHeader;
 import com.aris.templateapp.ui.upload.ZipPicker;
@@ -49,6 +50,9 @@ import dagger.hilt.android.AndroidEntryPoint;
  */
 @AndroidEntryPoint
 public class ProviderUploadFragment extends Fragment {
+
+    // Langkah Tandai: mulai dari sini kartu draft menampilkan progres isian.
+    private static final int MARK_STEP = 4;
 
     @Inject
     ThumbnailLoader thumbnailLoader;
@@ -187,6 +191,13 @@ public class ProviderUploadFragment extends Fragment {
             card.line1.setText(getString(R.string.upload_draft_step, item.wizardStep,
                     getString(WizardHeader.stepName(item.wizardStep))));
             card.line2.setText(TemplateUi.updatedAgo(requireContext(), item.updatedAt));
+            if (item.wizardStep >= MARK_STEP) {
+                // Bar penuh saat isian sudah cukup untuk dikirim (minimal 3), agar provider tahu sisa pekerjaannya.
+                card.fieldsRow.setVisibility(View.VISIBLE);
+                card.fieldsBar.setMax(MarkingEditor.MIN_FIELDS_TO_SEND);
+                card.fieldsBar.setProgress(Math.min(item.fieldCount, MarkingEditor.MIN_FIELDS_TO_SEND));
+                card.fieldsText.setText(getString(R.string.upload_draft_fields, item.fieldCount));
+            }
             if (item.expiringSoon) {
                 long days = daysUntil(item.deleteAt);
                 card.warning.setVisibility(View.VISIBLE);

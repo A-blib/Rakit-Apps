@@ -1,9 +1,13 @@
 package com.aris.templateapp.ui.upload;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -198,6 +202,7 @@ final class MarkPanels {
             row.detail.setVisibility(View.GONE);
             row.chevron.setImageResource(R.drawable.ic_more_vert);
             row.chevron.setVisibility(View.VISIBLE);
+            makeMenuButton(row.chevron, fragment.getString(R.string.cd_upload_more, section.name));
             row.chevron.setOnClickListener(v -> {
                 PopupMenu menu = new PopupMenu(fragment.requireContext(), v);
                 menu.getMenu().add(0, 1, 0, R.string.mark_section_rename);
@@ -226,6 +231,23 @@ final class MarkPanels {
             });
         }
         sheet.show();
+    }
+
+    /** Ikon panah di baris biasa hanya hiasan; di sini ia menjadi tombol menu, jadi butuh area sentuh 48dp dan label. */
+    private static void makeMenuButton(ImageView icon, String description) {
+        Resources res = icon.getResources();
+        int size = res.getDimensionPixelSize(R.dimen.touch_target_min);
+        int padding = (size - res.getDimensionPixelSize(R.dimen.icon_size_small)) / 2;
+        ViewGroup.LayoutParams params = icon.getLayoutParams();
+        params.width = size;
+        params.height = size;
+        icon.setLayoutParams(params);
+        icon.setPadding(padding, padding, padding, padding);
+        icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+        icon.setContentDescription(description);
+        TypedValue ripple = new TypedValue();
+        icon.getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, ripple, true);
+        icon.setBackgroundResource(ripple.resourceId);
     }
 
     private static void rename(Fragment fragment, MarkingDto.Section section, SectionAction action) {
