@@ -47,9 +47,15 @@ public final class SiteWebView {
         void onPageStarted(String page);
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
     public static void configure(WebView webView, File siteRoot, List<String> allowedHosts, boolean desktop,
                                  boolean allowSiteNavigation, @Nullable PageListener pageListener) throws IOException {
+        configure(webView, new LocalSitePathHandler(siteRoot), allowedHosts, desktop, allowSiteNavigation, pageListener);
+    }
+
+    /** @param files penyaji file situs (mis. editor pembuat website yang juga menyajikan gambar project) */
+    @SuppressLint("SetJavaScriptEnabled")
+    public static void configure(WebView webView, WebViewAssetLoader.PathHandler files, List<String> allowedHosts,
+                                 boolean desktop, boolean allowSiteNavigation, @Nullable PageListener pageListener) {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -64,7 +70,7 @@ public final class SiteWebView {
 
         WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
                 .setDomain(HOST)
-                .addPathHandler("/", new LocalSitePathHandler(siteRoot))
+                .addPathHandler("/", files)
                 .build();
         webView.setWebViewClient(new WebViewClient() {
             @Nullable

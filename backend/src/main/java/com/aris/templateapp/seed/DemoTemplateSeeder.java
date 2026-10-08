@@ -44,13 +44,15 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
 /**
  * Seeder demo Dashboard Provider (alur-provider.md bagian 5.0): satu akun provider demo dengan template
  * berbagai status, hasil pengecekan (error & peringatan), notifikasi, serta event dilihat/didownload
- * tersebar di 30 hari terakhir. Gunanya untuk melihat grafik, template populer, dan daftar di HP
+ * tersebar di 30 hari terakhir. Tiga template yang tayang membawa paket contoh ({@link DemoPackages}) untuk editor
+ * pembuat website. Gunanya untuk melihat grafik, template populer, dan daftar di HP
  * selama fitur Upload belum ada.
  * <p>
  * Hanya profile dev dan MATI secara bawaan: nyalakan dengan {@code --app.seed.demo-templates=true}.
@@ -83,11 +85,14 @@ public class DemoTemplateSeeder implements ApplicationRunner {
     private final UploadStorage storage;
     private final TemplateChecker checker;
     private final ApplicationEventPublisher events;
+    private final DemoPackages demoPackages;
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (userRepository.findByEmailIgnoreCase(DEMO_EMAIL).isPresent()) {
+        User existing = userRepository.findByEmailIgnoreCase(DEMO_EMAIL).orElse(null);
+        if (existing != null) {
+            attachMissingPackages(existing.getId());
             log.info("Seeder demo provider dilewati: akun demo sudah ada");
             return;
         }
@@ -109,6 +114,10 @@ public class DemoTemplateSeeder implements ApplicationRunner {
         Template sekolah = template(owner, "Profil Sekolah", WebsitePurpose.SEKOLAH, TemplateStatus.PUBLISHED, 3, now, 25, 2);
         Template kuliner = template(owner, "UMKM Kuliner", WebsitePurpose.UMKM, TemplateStatus.PUBLISHED, 0, now, 20, 5);
         Template portofolio = template(owner, "Portofolio Minimal", WebsitePurpose.PRIBADI, TemplateStatus.PUBLISHED, 0, now, 15, 9);
+        // Template tayang diberi paket sungguhan agar bisa dipakai di editor pembuat website.
+        demoPackages.attach(sekolah, DemoPackages.SEKOLAH, now);
+        demoPackages.attach(kuliner, DemoPackages.KULINER, now);
+        demoPackages.attach(portofolio, DemoPackages.PORTOFOLIO, now);
         Template event = template(owner, "Landing Event", WebsitePurpose.LAINNYA, TemplateStatus.CHECK_FAILED, 1, now, 10, 7);
         Template organisasi = template(owner, "Organisasi Pemuda", WebsitePurpose.ORGANISASI, TemplateStatus.CHECKING, 0, now, 1, 0);
         Template instansi = template(owner, "Instansi Desa", WebsitePurpose.INSTANSI, TemplateStatus.DRAFT, 0, now, 3, 3);
@@ -142,6 +151,23 @@ public class DemoTemplateSeeder implements ApplicationRunner {
         notificationService.create(owner, NotificationType.TEMPLATE_PUBLISHED, kuliner.getId(),
                 "UMKM Kuliner tayang", "Template sudah tampil di galeri.");
         log.info("Seeder demo provider selesai: login {} / password {}", DEMO_EMAIL, DummyDataSeeder.PASSWORD);
+    }
+
+    /**
+     * Akun demo yang dibuat sebelum paket contoh ada: template demo yang tayang dilengkapi paketnya tanpa menghapus
+     * data lain (mis. template hasil uji Upload milik akun demo).
+     */
+    private void attachMissingPackages(UUID owner) {
+        Map<String, String> slugs = Map.of("Profil Sekolah", DemoPackages.SEKOLAH, "UMKM Kuliner", DemoPackages.KULINER,
+                "Portofolio Minimal", DemoPackages.PORTOFOLIO);
+        Instant now = clock.instant();
+        for (Template template : templateRepository.findByProviderId(owner)) {
+            String slug = slugs.get(template.getName());
+            if (slug != null && template.getStatus() == TemplateStatus.PUBLISHED && template.getPackageSize() == null) {
+                demoPackages.attach(template, slug, now);
+                log.info("Paket contoh {} dipasang ke template demo {}", slug, template.getId());
+            }
+        }
     }
 
     private Template template(UUID owner, String name, WebsitePurpose category, TemplateStatus status, int warnings,

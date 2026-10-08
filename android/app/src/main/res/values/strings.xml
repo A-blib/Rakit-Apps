@@ -117,11 +117,8 @@ Template akan muncul di sini.</string>
     <string name="gallery_filter_empty">Tidak ada template yang cocok.</string>
 
     <!-- Editor "Segera hadir" -->
-    <string name="editor_label_template">Editor template</string>
     <string name="editor_label_custom">Editor custom</string>
-    <string name="editor_title_template">Editor template sedang dirancang</string>
     <string name="editor_title_custom">Editor custom sedang dirancang</string>
-    <string name="editor_body_template">Fitur ini masih dalam tahap perencanaan dan desain. Nantinya kamu bisa mengganti teks, foto, dan warna template di sini.</string>
     <string name="editor_body_custom">Fitur ini masih dalam tahap perencanaan dan desain. Nantinya kamu bisa menyusun website dari kerangka header, hero, footer, dan lainnya di sini.</string>
     <string name="action_back">Kembali</string>
 

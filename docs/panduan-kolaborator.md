@@ -431,6 +431,12 @@ APP_DEEP_LINK=templateapp://auth/callback
 🪟 **Windows (PowerShell)**
 ```powershell
 cd C:\dev\template-app\backend
+# Backend membaca pengaturan dari environment variable, jadi isi .env dimuat dulu ke jendela PowerShell ini
+# (ulangi setiap membuka PowerShell baru; VS Code melakukannya otomatis lewat launch configuration).
+Get-Content .env | Where-Object { $_ -match '^\s*[A-Za-z_][A-Za-z0-9_]*=' } | ForEach-Object {
+    $name, $value = $_ -split '=', 2
+    [Environment]::SetEnvironmentVariable($name.Trim(), $value.Trim(), "Process")
+}
 # Pakai mvnw.cmd (bukan ./mvnw). Tanda kutip wajib di PowerShell karena ada titik di parameter.
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=dev"
 ```
@@ -470,6 +476,13 @@ Hasil yang benar: `BUILD SUCCESS` dan semua test lulus.
 - Saat template dikirim, backend mengunduh library dari CDN (jsDelivr, cdnjs, unpkg). Laptop yang menjalankan backend butuh internet saat itu.
 - ZIP uji pengecekan ada di `backend/src/test/resources/test-fixtures/`. Jika kamu menambah/mengubah aturan pengecekan, buat ulang ZIP-nya dengan Python 3 (🪟 `py tools\buat-zip-uji.py`  🐧 `python3 tools/buat-zip-uji.py`, dari folder `backend`). Python **tidak** dibutuhkan hanya untuk menjalankan test.
 - Di Android Studio klik **Sync Now** setelah menarik perubahan ini, karena ada library baru `androidx.webkit`.
+
+**Buat website via template (Fase 19–26).** Tidak ada software baru yang wajib dipasang:
+
+- Di Android Studio klik **Sync Now** setelah menarik perubahan ini, karena ada library baru **WorkManager** dan **jsoup**.
+- Database HP naik ke versi 2 secara otomatis (project lama tetap ada).
+- Agar 3 template demo di galeri bisa dipakai di editor, jalankan backend dengan seeder demo (`--app.seed.demo-templates=true`). Akun demo yang sudah ada otomatis dilengkapi paket contohnya saat backend start; tidak perlu menghapus data.
+- Gambar contoh paket demo dibuat dengan Python 3 (🪟 `py tools\buat-gambar-demo.py`  🐧 `python3 tools/buat-gambar-demo.py`, dari folder `backend`), hanya jika gambarnya ingin diubah. Butuh library Pillow.
 
 ---
 
@@ -673,6 +686,7 @@ main ───●───────────●─────────
 | App di HP: "Tidak ada koneksi…" padahal internet HP lancar | Pesan ini berarti app tidak bisa menjangkau **backend di laptop** (bukan internet). Jalankan penjaga `tools\keep-adb-reverse.ps1` (bagian 9.4) dan pastikan backend jalan. Jika HP tersambung lewat USB **dan** Wi-Fi sekaligus, `adb reverse` tanpa `-s` ditolak ("more than one device"); penjaga sudah menangani ini. |
 | Login Google: `DEVELOPER_ERROR` / "No credentials available" | SHA-1 laptopmu belum didaftarkan (bagian 7), `GOOGLE_WEB_CLIENT_ID` salah/kosong, atau emailmu belum menjadi Test user (0.4). |
 | GitHub: "redirect_uri is not associated with this application" | Callback/Redirect URL di OAuth App harus persis `http://localhost:8080/api/auth/github/callback` (`http`, ada `:8080`, tanpa `/` di akhir). |
+| Backend gagal start: `Could not resolve placeholder 'DB_URL'` (Windows, dari terminal) | Isi `.env` belum dimuat ke PowerShell. Jalankan perintah `Get-Content .env ...` di bagian 6.1 dulu, atau jalankan lewat VS Code (Run and Debug). |
 | `.env` tidak terbaca / app gagal start `JWT_SECRET minimal 32 karakter` | Pastikan file bernama persis `.env` (bukan `.env.txt`; di File Explorer aktifkan *View → File name extensions*), disimpan UTF-8 tanpa BOM, dan backend dijalankan dari folder `backend`. |
 
 ---

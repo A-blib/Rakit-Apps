@@ -53,9 +53,6 @@ public class GalleryFragment extends Fragment {
     private static final String[] SORTS = {GalleryRepository.SORT_POPULAR, GalleryRepository.SORT_NEWEST};
     private static final int[] SORT_LABELS = {R.string.sort_popular, R.string.sort_newest};
 
-    @Inject
-    GalleryRepository galleryRepository;
-
     private FragmentGalleryBinding binding;
     private GalleryViewModel viewModel;
     private GalleryAdapter adapter;
@@ -78,7 +75,7 @@ public class GalleryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         viewModel = new ViewModelProvider(requireActivity()).get(GalleryViewModel.class);
 
-        adapter = GalleryAdapter.list(thumbnailLoader, template -> TemplateOpener.open(this, galleryRepository, template));
+        adapter = GalleryAdapter.list(thumbnailLoader, template -> TemplateOpener.open(this, template));
         footer = new LoadingFooterAdapter();
         binding.list.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.list.setAdapter(new ConcatAdapter(adapter, footer));

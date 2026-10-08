@@ -1,7 +1,10 @@
 package com.aris.templateapp.data.repository;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 import androidx.lifecycle.LiveData;
+
+import com.aris.templateapp.core.template.ProjectStore;
 
 import com.aris.templateapp.core.util.AppExecutors;
 import com.aris.templateapp.data.local.ProjectCounts;
@@ -10,9 +13,12 @@ import com.aris.templateapp.data.local.ProjectEntity;
 import com.aris.templateapp.data.model.ProjectFilter;
 import com.aris.templateapp.data.model.ProjectStatus;
 
+import java.io.IOException;
 import java.time.Clock;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -28,16 +34,18 @@ public class ProjectRepository {
 
     private final ProjectDao dao;
     private final AppExecutors executors;
+    private final ProjectStore store;
     private final Clock clock;
 
     @Inject
-    public ProjectRepository(ProjectDao dao, AppExecutors executors) {
-        this(dao, executors, Clock.systemUTC());
+    public ProjectRepository(ProjectDao dao, AppExecutors executors, ProjectStore store) {
+        this(dao, executors, store, Clock.systemUTC());
     }
 
-    ProjectRepository(ProjectDao dao, AppExecutors executors, Clock clock) {
+    ProjectRepository(ProjectDao dao, AppExecutors executors, ProjectStore store, Clock clock) {
         this.dao = dao;
         this.executors = executors;
+        this.store = store;
         this.clock = clock;
     }
 
@@ -78,14 +86,81 @@ public class ProjectRepository {
     public void duplicate(String id, String copyName) {
         executors.diskIO().execute(() -> {
             ProjectEntity source = dao.findById(id);
-            if (source != null) {
-                dao.insert(copyOf(source, copyName, UUID.randomUUID().toString(), clock.millis()));
+            if (source == null) {
+                return;
             }
+            ProjectEntity copy = copyOf(source, copyName, UUID.randomUUID().toString(), clock.millis());
+            if (source.contentPath != null) {
+                // Isi website (values.json + gambar) ikut disalin agar salinan bisa diedit terpisah.
+                try {
+                    store.copy(source.id, copy.id);
+                    copy.contentPath = store.dir(copy.id).getAbsolutePath();
+                } catch (IOException e) {
+                    store.delete(copy.id);
+                    return;
+                }
+            }
+            dao.insert(copy);
         });
     }
 
+    /** Menghapus baris project beserta folder isinya (values.json, gambar, thumbnail). */
     public void delete(String id) {
-        executors.diskIO().execute(() -> dao.delete(id));
+        executors.diskIO().execute(() -> {
+            dao.delete(id);
+            store.delete(id);
+        });
+    }
+
+    // ---------- editor template mode (alur-buat-website-via-template.md bagian 6.7) ----------
+
+    @WorkerThread
+    @Nullable
+    public ProjectEntity findSync(String id) {
+        return dao.findById(id);
+    }
+
+    /** "Toko Kue" → "Toko Kue" jika belum dipakai, selain itu "Toko Kue (2)", "Toko Kue (3)", ... */
+    @WorkerThread
+    public String uniqueName(String base) {
+        String trimmed = base.trim();
+        Set<String> used = new HashSet<>(dao.namesLike(trimmed, escapeLike(trimmed) + " (%)"));
+        return nextName(trimmed, used);
+    }
+
+    static String nextName(String base, Set<String> used) {
+        if (!used.contains(base)) {
+            return base;
+        }
+        int n = 2;
+        while (used.contains(base + " (" + n + ")")) {
+            n++;
+        }
+        return base + " (" + n + ")";
+    }
+
+    @WorkerThread
+    public void insertSync(ProjectEntity project) {
+        dao.insert(project);
+    }
+
+    @WorkerThread
+    public void updateContent(String id, ProjectStatus status, int missingCount, long updatedAt) {
+        dao.updateContent(id, status, missingCount, updatedAt);
+    }
+
+    @WorkerThread
+    public void updateThumbnail(String id, String path) {
+        dao.updateThumbnail(id, path);
+    }
+
+    @WorkerThread
+    public void markExported(String id, long exportedAt) {
+        dao.markExported(id, exportedAt);
+    }
+
+    public long now() {
+        return clock.millis();
     }
 
     /** Dipakai tombol debug "Isi project contoh". */
@@ -105,6 +180,7 @@ public class ProjectRepository {
         ProjectStatus status = source.status == ProjectStatus.EXPORTED ? ProjectStatus.READY : source.status;
         ProjectEntity copy = new ProjectEntity(newId, name, source.mode, status, now, now);
         copy.sourceTemplateId = source.sourceTemplateId;
+        copy.templateVersion = source.templateVersion;
         copy.missingCount = source.missingCount;
         copy.sample = source.sample;
         return copy;
@@ -119,8 +195,10 @@ public class ProjectRepository {
         if (query == null || query.trim().isEmpty()) {
             return null;
         }
-        String escaped = query.trim().toLowerCase(Locale.ROOT)
-                .replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
-        return "%" + escaped + "%";
+        return "%" + escapeLike(query.trim().toLowerCase(Locale.ROOT)) + "%";
+    }
+
+    static String escapeLike(String text) {
+        return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }

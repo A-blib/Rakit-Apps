@@ -5,7 +5,9 @@ import android.content.Context;
 import androidx.room.Room;
 
 import com.aris.templateapp.data.local.AppDatabase;
+import com.aris.templateapp.data.local.PendingEventDao;
 import com.aris.templateapp.data.local.ProjectDao;
+import com.aris.templateapp.data.local.TemplatePackageDao;
 
 import javax.inject.Singleton;
 
@@ -32,5 +34,15 @@ public final class DatabaseModule {
     @Provides
     static ProjectDao provideProjectDao(AppDatabase database) {
         return database.projectDao();
+    }
+
+    @Provides
+    static TemplatePackageDao provideTemplatePackageDao(AppDatabase database) {
+        return database.templatePackageDao();
+    }
+
+    @Provides
+    static PendingEventDao providePendingEventDao(AppDatabase database) {
+        return database.pendingEventDao();
     }
 }

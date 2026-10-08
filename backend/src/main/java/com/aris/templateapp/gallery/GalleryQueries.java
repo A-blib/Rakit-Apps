@@ -79,6 +79,14 @@ public class GalleryQueries {
                 .list();
     }
 
+    /** Total download satu template, angka yang sama dengan kartu galeri. */
+    public long downloads(UUID templateId) {
+        return jdbc.sql("SELECT count(*) FROM template_events WHERE template_id = :id AND type = 'download'")
+                .param("id", templateId)
+                .query(Long.class)
+                .single();
+    }
+
     public long count(WebsitePurpose category, String search) {
         return params(jdbc.sql("SELECT count(*) " + VISIBLE + filters(category, search)), category, search)
                 .query(Long.class)

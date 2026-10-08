@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Teks fitur buat website via template (alur-buat-website-via-template.md).
+     Bahasa Indonesia tidak punya bentuk jamak ("1 halaman", "3 halaman"), jadi PluralsCandidate diabaikan. -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Host di luar paket yang boleh dimuat preview editor: library CDN sudah disalin ke paket (vendor/), hanya
+         Google Fonts yang tetap dari internet (alur-fitur-upload.md bagian 10.5). -->
+    <string-array name="editor_allowed_hosts" translatable="false">
+        <item>fonts.googleapis.com</item>
+        <item>fonts.gstatic.com</item>
+    </string-array>
+
+    <!-- Layar Unduh (bagian 5) -->
+    <string name="template_download_title">Template</string>
+    <string name="template_download_creator">oleh %1$s</string>
+    <string name="template_download_pages" tools:ignore="PluralsCandidate">%1$d halaman</string>
+    <string name="template_download_preparing">Menyiapkan template</string>
+    <string name="template_download_once">Diunduh sekali, setelah itu bisa dipakai offline.</string>
+    <string name="template_download_progress">%1$s dari %2$s MB</string>
+    <string name="template_download_extracting">Membuka paket…</string>
+    <string name="template_download_offline">Butuh internet untuk mengunduh template pertama kali.</string>
+    <string name="template_download_failed">Unduhan gagal. Periksa koneksi lalu coba lagi.</string>
+    <string name="template_download_invalid">Paket template rusak. Coba unduh lagi; jika tetap gagal, template ini belum bisa dipakai.</string>
+    <string name="template_download_missing">Template ini belum bisa dipakai. Coba template lain.</string>
+    <string name="template_download_not_found">Template ini sudah tidak tersedia.</string>
+    <string name="template_download_mobile_title">Pakai data seluler?</string>
+    <string name="template_download_mobile_body">Template ini %1$s. Kamu sedang memakai data seluler. Lanjutkan?</string>
+    <string name="template_download_mobile_continue">Lanjutkan</string>
+
+    <!-- Editor template mode (bagian 6) -->
+    <string name="editor_rename">Ganti nama project</string>
+    <string name="editor_rename_hint">Nama project</string>
+    <string name="editor_saved">tersimpan</string>
+    <string name="editor_saving">menyimpan…</string>
+    <string name="editor_unsaved">belum tersimpan</string>
+    <string name="editor_save_error">gagal menyimpan</string>
+    <string name="editor_save_failed">Gagal menyimpan. Coba lagi</string>
+    <string name="editor_changed_since_export">Ada perubahan sejak export terakhir</string>
+    <string name="editor_undo">Urungkan</string>
+    <string name="editor_redo">Ulangi</string>
+    <string name="editor_preview">Preview layar penuh</string>
+    <string name="editor_preview_close">Tutup preview</string>
+    <string name="editor_menu_completeness">Cek kelengkapan</string>
+    <string name="editor_menu_export">Export</string>
+    <string name="editor_menu_reset">Kembalikan ke isi template</string>
+    <string name="editor_menu_delete">Hapus project</string>
+    <string name="editor_reset_title">Kembalikan ke isi template?</string>
+    <string name="editor_reset_body">Semua teks, foto, dan gaya yang kamu ubah kembali seperti template. Kamu masih bisa membatalkannya dengan tombol urungkan.</string>
+    <string name="editor_reset_confirm">Kembalikan</string>
+    <string name="editor_delete_title">Hapus project ini?</string>
+    <string name="editor_delete_body">Project dan foto yang kamu pilih akan dihapus dari HP. Tindakan ini tidak bisa dibatalkan.</string>
+    <string name="editor_delete_confirm">Hapus</string>
+    <string name="editor_tab_content">Isi</string>
+    <string name="editor_tab_style">Gaya</string>
+    <string name="editor_all_sections">Semua</string>
+    <string name="editor_chip_done">%1$s ✓</string>
+    <string name="editor_chip_missing">%1$s · %2$d</string>
+    <string name="editor_required_label">%1$s *</string>
+    <string name="editor_link_hint">Alamat link (https://…)</string>
+    <string name="editor_link_invalid">Link harus diawali https://, http://, mailto:, tel:, atau https://wa.me/</string>
+    <string name="editor_whatsapp_button">Pakai nomor WhatsApp</string>
+    <string name="editor_whatsapp_title">Nomor WhatsApp</string>
+    <string name="editor_whatsapp_number">Nomor, mis. 0812 3456 7890</string>
+    <string name="editor_whatsapp_invalid">Nomor WhatsApp tidak valid. Contoh: 0812 3456 7890</string>
+    <string name="editor_use">Pakai</string>
+    <string name="editor_change_image">Ganti foto</string>
+    <string name="editor_reset_image">Kembalikan foto contoh</string>
+    <string name="editor_ratio">Rasio %1$s</string>
+    <string name="editor_warning_empty">Wajib diisi</string>
+    <string name="editor_warning_link">Link tidak valid</string>
+    <string name="editor_warning_sample_text">Masih teks contoh</string>
+    <string name="editor_warning_sample_image">Masih foto contoh</string>
+    <string name="editor_warning_sample_link">Masih link contoh</string>
+    <string name="editor_theme_title">Tema website</string>
+    <string name="editor_section_title">Section %1$s</string>
+    <string name="editor_color_title">Pilih warna</string>
+    <string name="editor_color_invalid">Kode warna harus seperti #1E3A8A</string>
+    <string name="editor_reset_style">Kembalikan ke gaya asli</string>
+    <string name="editor_contrast_low">Kontras teks rendah: teks bisa sulit dibaca.</string>
+    <string name="editor_empty_content">Tidak ada isian di section ini.</string>
+    <string name="editor_empty_style">Tidak ada gaya yang bisa diubah di sini.</string>
+    <string name="editor_project_missing">Project ini tidak ditemukan.</string>
+    <string name="editor_package_missing">File template untuk project ini tidak ada di HP. Buka template dari tab Template untuk mengunduhnya lagi.</string>
+    <string name="editor_image_failed">Foto tidak bisa dibuka. Coba foto lain.</string>
+    <string name="cd_editor_panel">Form isian website</string>
+    <string name="cd_close">Tutup</string>
+
+    <!-- Kelengkapan (bagian 7) -->
+    <string name="completeness_title">Kelengkapan</string>
+    <string name="completeness_summary" tools:ignore="PluralsCandidate">%1$d/%2$d isian lengkap</string>
+    <string name="completeness_all_done">Semua isian wajib sudah lengkap</string>
+    <string name="completeness_missing">Perlu dilengkapi</string>
+    <string name="completeness_suggestions">Saran (opsional)</string>
+    <string name="completeness_fill_now">Lengkapi sekarang</string>
+    <string name="completeness_export_draft">Export tetap sebagai draft</string>
+    <string name="completeness_export">Export</string>
+    <string name="completeness_item">%1$s · %2$s</string>
+    <string name="completeness_reason_empty">kosong</string>
+    <string name="completeness_reason_sample">masih contoh</string>
+    <string name="completeness_reason_link">link tidak valid</string>
+    <string name="completeness_draft_confirm_title">Export sebagai draft?</string>
+    <string name="completeness_draft_confirm_body" tools:ignore="PluralsCandidate">Masih ada %1$d isian yang belum lengkap. Tetap export?</string>
+    <string name="completeness_draft_confirm">Tetap export</string>
+
+    <!-- Export (bagian 8) & Selesai (bagian 9) -->
+    <string name="export_title">Export website</string>
+    <string name="export_pages">%1$d HLM</string>
+    <string name="export_file_name">Nama file</string>
+    <string name="export_contents">Isi ZIP</string>
+    <string name="export_size_estimate">± %1$s</string>
+    <string name="export_compress">Kompres foto agar ringan</string>
+    <string name="export_save">Simpan ke HP</string>
+    <string name="export_share">Bagikan</string>
+    <string name="export_building">Membuat ZIP… %1$d/%2$d</string>
+    <string name="export_failed">ZIP gagal dibuat. Coba lagi.</string>
+    <string name="export_save_failed">File tidak bisa disimpan di lokasi itu. Coba lokasi lain.</string>
+    <string name="export_share_chooser">Bagikan website</string>
+    <string name="export_done_title">Website siap</string>
+    <string name="export_done_saved">%1$s tersimpan di folder yang kamu pilih.</string>
+    <string name="export_done_shared">%1$s siap dibagikan.</string>
+    <string name="export_done_next">Langkah berikutnya</string>
+    <string name="export_done_publish">Online-kan websitemu, gratis</string>
+    <string name="export_done_guide">Buka panduan</string>
+    <string name="export_done_share">Bagikan ZIP</string>
+    <string name="export_done_back">Kembali ke project</string>
+</resources>

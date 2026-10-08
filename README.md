@@ -2,6 +2,8 @@
 
 **Rakit** adalah app Android untuk merakit website tanpa coding. Satu akun punya dua mode: **pembuat website** (memilih template, mengedit teks/warna/foto, lalu export ke HTML/CSS/JS) dan **penyedia template** (mengunggah template untuk dipakai orang lain). User bisa langsung mencoba sebagai tamu; login hanya diminta saat butuh fitur online.
 
+> 🪟 **Setup di Windows dengan bantuan agent AI:** arahkan agent ke [`SETUP-WINDOWS.md`](SETUP-WINDOWS.md) (langkah berurutan + perintah cek). Panduan manusia Windows & Linux: [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md).
+
 ### Status fitur
 
 | Fitur | Status |
@@ -26,8 +28,10 @@
 | Upload langkah 4: editor Tandai bagian (slide per section, ketuk elemen, gaya, hubungkan isian, saran, koreksi section, undo/redo, cadangan di HP) | Sudah (Fase 17), menunggu uji di HP |
 | Upload langkah 5–6: Coba sebagai pengguna (preview langsung, gaya, tema, uji isi panjang) dan Kirim (pengecekan akhir, salin library CDN, sisipkan atribut penandaan, tayang di galeri) | Sudah (Fase 18), menunggu uji di HP |
 | Push notification (FCM), versi template, penandaan tingkat section | Segera hadir (menunggu diskusi, rancangan Upload bagian 13–14) |
-| Editor website (template & custom mode), export ZIP | Segera hadir (layar editor sudah ada, isinya menunggu diskusi) |
-| Galeri template, editor, export, publish, lupa password | Segera hadir (belum dibangun) |
+| Backend paket template untuk pembuat website: `manifest.json` di paket, `GET /api/templates/{id}` & `/package`, 3 paket contoh di seeder demo | Sudah (Fase 19) |
+| Buat website via template: layar Unduh paket (progres, offline, data seluler), editor template mode (preview HP/Desktop, tab Isi & Gaya, ganti foto, tema, kontras, undo/redo, autosave), Kelengkapan & status, Export ZIP (simpan/bagikan), layar Selesai + panduan, event Dilihat/Didownload dengan antrean offline | Sudah (Fase 20–25), menunggu uji di HP (Fase 26) |
+| Editor custom mode, versi template, potong foto manual, gaya hover & jenis huruf | Segera hadir (rancangan template mode bagian 4.2) |
+| Publish website menjadi link, lupa password | Segera hadir (belum dibangun) |
 
 > 🏷️ **Nama app: Rakit.** Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
 
@@ -133,7 +137,9 @@ Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan 
 | Credentials / Google ID | 1.6.0 / 1.2.1 |
 | Browser (Custom Tabs) | 1.10.0 |
 | Room (database project di HP) | 2.8.5 |
-| androidx.webkit (WebViewAssetLoader untuk Upload) | 1.17.1 |
+| androidx.webkit (WebViewAssetLoader untuk Upload & editor) | 1.17.1 |
+| WorkManager (kirim event statistik yang tertunda) | 2.12.0 |
+| jsoup (menerapkan isian ke HTML saat export ZIP di HP) | 1.23.2 |
 | JUnit / arch core-testing | 4.13.2 / 2.2.0 |
 | Font Geist Sans & Geist Mono | 1.7.2 (SIL OFL 1.1, lisensi di `app/src/main/assets/licenses/geist-OFL.txt`) |
 | Ikon | Material Symbols Outlined (Apache 2.0), disalin sebagai vector drawable `ic_*.xml` |
@@ -494,6 +500,7 @@ Seeder membuat akun **`demo-provider@templateapp.test`** / **`password123`** ber
 - hasil pengecekan (error & peringatan) dan notifikasi
 - ZIP situs contoh sungguhan untuk 3 template yang masih di wizard Upload, jadi tab **Upload** bisa langsung dicoba: "Landing Event" (tidak lolos, bisa diupload ulang), "Organisasi Pemuda" (dicek otomatis saat backend start, lalu menjadi draft), "Instansi Desa" (draft langkah 3)
 - event dilihat/didownload tersebar di 30 hari terakhir
+- **paket template sungguhan** untuk 3 template yang tayang ("Profil Sekolah" 3 halaman, "UMKM Kuliner", "Portofolio Minimal"), sehingga editor pembuat website bisa dicoba dari tab Template
 
 Seeder ini hanya ada di profile `dev`, mati secara bawaan, dan tidak dibuat ulang kalau akun demo sudah ada. Akun provider lain tetap kosong.
 

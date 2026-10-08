@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Folder yang boleh dibagikan ke app lain lewat FileProvider: hanya ZIP hasil export di cache (bagian 8.2). -->
+<paths>
+    <cache-path
+        name="exports"
+        path="exports/" />
+</paths>

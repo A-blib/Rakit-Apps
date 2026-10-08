@@ -74,6 +74,13 @@
 
     <style name="Theme.App" parent="Base.Theme.App" />
 
+    <!-- Dialog layar penuh di atas editor (Kelengkapan, Export): tampil seperti layar biasa. -->
+    <style name="Theme.App.FullScreenDialog" parent="Theme.App">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
+    </style>
+
     <!--
         Tema splash (androidx core-splashscreen): ditampilkan sistem sejak ikon app diketuk sampai layar pertama siap.
         Setelah itu otomatis berganti ke postSplashScreenTheme (Theme.App).

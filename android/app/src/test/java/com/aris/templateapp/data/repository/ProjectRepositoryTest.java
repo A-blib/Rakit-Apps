@@ -50,4 +50,13 @@ public class ProjectRepositoryTest {
         assertEquals(ProjectStatus.DRAFT, copy.status);
         assertEquals(3, copy.missingCount);
     }
+
+    @Test
+    public void nextNameAddsNumberWhenTaken() {
+        assertEquals("Toko Kue", ProjectRepository.nextName("Toko Kue", new java.util.HashSet<>()));
+        assertEquals("Toko Kue (2)", ProjectRepository.nextName("Toko Kue",
+                new java.util.HashSet<>(java.util.Arrays.asList("Toko Kue"))));
+        assertEquals("Toko Kue (3)", ProjectRepository.nextName("Toko Kue",
+                new java.util.HashSet<>(java.util.Arrays.asList("Toko Kue", "Toko Kue (2)"))));
+    }
 }

@@ -1,0 +1,17 @@
+:root {
+  --primary: #111111;
+  --radius: 999px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #111; background: #fafafa; line-height: 1.6; }
+.wrap { max-width: 640px; margin: 0 auto; padding: 64px 24px; }
+.avatar { width: 128px; height: 128px; border-radius: var(--radius); object-fit: cover; }
+h1 { font-size: 40px; letter-spacing: -0.02em; margin: 24px 0 4px; }
+.role { color: #666; margin: 0 0 16px; }
+.links a { display: inline-block; margin-right: 12px; padding: 10px 16px; border: 1px solid var(--primary); border-radius: 6px; color: var(--primary); text-decoration: none; }
+.links .mail { background: var(--primary); color: #fff; }
+footer { text-align: center; color: #999; font-size: 14px; padding: 24px; }
+@media (max-width: 600px) {
+  h1 { font-size: 32px; }
+  .wrap { padding: 40px 16px; }
+}
