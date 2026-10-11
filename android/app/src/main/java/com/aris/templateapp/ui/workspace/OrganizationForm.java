@@ -30,6 +30,8 @@ public final class OrganizationForm {
     public String periodStart;
     public String periodEnd;
     public String position;
+    /** Ruang pribadi tidak punya jenjang, kategori, dan instansi (dipakai form Profil organisasi). */
+    public boolean personal;
 
     /** Kosong jika form valid; isinya id string pesan error per isian. */
     public Map<Field, Integer> validate() {
@@ -42,16 +44,18 @@ public final class OrganizationForm {
         if (length(shortName) > SHORT_NAME_MAX) {
             errors.put(Field.SHORT_NAME, R.string.org_error_short_name_too_long);
         }
-        if (isBlank(level)) {
-            errors.put(Field.LEVEL, R.string.org_error_level_required);
-        }
-        if (isBlank(category)) {
-            errors.put(Field.CATEGORY, R.string.org_error_category_required);
-        }
-        if (isBlank(institution)) {
-            errors.put(Field.INSTITUTION, R.string.org_error_institution_required);
-        } else if (institution.trim().length() > INSTITUTION_MAX) {
-            errors.put(Field.INSTITUTION, R.string.org_error_institution_too_long);
+        if (!personal) {
+            if (isBlank(level)) {
+                errors.put(Field.LEVEL, R.string.org_error_level_required);
+            }
+            if (isBlank(category)) {
+                errors.put(Field.CATEGORY, R.string.org_error_category_required);
+            }
+            if (isBlank(institution)) {
+                errors.put(Field.INSTITUTION, R.string.org_error_institution_required);
+            } else if (institution.trim().length() > INSTITUTION_MAX) {
+                errors.put(Field.INSTITUTION, R.string.org_error_institution_too_long);
+            }
         }
         if (length(city) > CITY_MAX) {
             errors.put(Field.CITY, R.string.org_error_city_too_long);

@@ -11,16 +11,12 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.aris.templateapp.data.model.OrgCategories;
 import com.aris.templateapp.databinding.FragmentOrganizationFormBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.common.HomeNavigator;
 import com.aris.templateapp.ui.onboarding.OnboardingUi;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.textfield.TextInputLayout;
 
-import java.util.List;
 import java.util.Map;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -34,9 +30,7 @@ public class OrganizationFormFragment extends Fragment {
 
     private FragmentOrganizationFormBinding binding;
     private WorkspaceSetupViewModel viewModel;
-    @Nullable private OrgCategories categories;
-    @Nullable private String selectedLevel;
-    @Nullable private String selectedCategory;
+    private CategoryChips chips;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -49,6 +43,14 @@ public class OrganizationFormFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         viewModel = new ViewModelProvider(this).get(WorkspaceSetupViewModel.class);
         binding.toolbar.setNavigationOnClickListener(v -> NavHostFragment.findNavController(this).navigateUp());
+        chips = new CategoryChips(binding.levelGroup, binding.categoryGroup, binding.categoryEmpty, () -> {
+            if (chips.getLevel() != null) {
+                binding.levelError.setVisibility(View.GONE);
+            }
+            if (chips.getCategory() != null) {
+                binding.categoryError.setVisibility(View.GONE);
+            }
+        });
 
         viewModel.getCategories().observe(getViewLifecycleOwner(), resource -> {
             switch (resource.getStatus()) {
@@ -63,21 +65,12 @@ public class OrganizationFormFragment extends Fragment {
                     break;
                 case SUCCESS:
                 default:
-                    binding.stateView.hide(binding.content, () -> bindCategories(resource.getData()));
+                    binding.stateView.hide(binding.content, () -> chips.bind(resource.getData(), null, null));
                     break;
             }
         });
         viewModel.loadCategories();
 
-        binding.levelGroup.setOnCheckedStateChangeListener((group, ids) -> {
-            selectedLevel = checkedValue(group, ids);
-            binding.levelError.setVisibility(View.GONE);
-            showCategories();
-        });
-        binding.categoryGroup.setOnCheckedStateChangeListener((group, ids) -> {
-            selectedCategory = checkedValue(group, ids);
-            binding.categoryError.setVisibility(View.GONE);
-        });
         binding.submitButton.setOnClickListener(v -> viewModel.createOrganization(readForm()));
 
         viewModel.getFormErrors().observe(getViewLifecycleOwner(), this::showErrors);
@@ -105,61 +98,12 @@ public class OrganizationFormFragment extends Fragment {
         });
     }
 
-    private void bindCategories(OrgCategories data) {
-        if (categories != null) {
-            return;
-        }
-        categories = data;
-        binding.levelGroup.removeAllViews();
-        for (OrgCategories.Option level : data.getLevels()) {
-            binding.levelGroup.addView(chip(level));
-        }
-        showCategories();
-    }
-
-    /** Kategori dibangun ulang setiap jenjang berganti; pilihan lama dipertahankan jika masih tersedia. */
-    private void showCategories() {
-        if (categories == null) {
-            return;
-        }
-        List<OrgCategories.Category> options = categories.categoriesFor(selectedLevel);
-        String keep = selectedCategory;
-        selectedCategory = null;
-        binding.categoryGroup.removeAllViews();
-        for (OrgCategories.Category category : options) {
-            Chip chip = chip(category);
-            binding.categoryGroup.addView(chip);
-            if (category.value.equals(keep)) {
-                chip.setChecked(true);
-            }
-        }
-        binding.categoryEmpty.setVisibility(options.isEmpty() ? View.VISIBLE : View.GONE);
-    }
-
-    private Chip chip(OrgCategories.Option option) {
-        Chip chip = new Chip(requireContext());
-        chip.setText(option.label);
-        chip.setTag(option.value);
-        chip.setCheckable(true);
-        chip.setId(View.generateViewId());
-        return chip;
-    }
-
-    @Nullable
-    private String checkedValue(ChipGroup group, List<Integer> ids) {
-        if (ids.isEmpty()) {
-            return null;
-        }
-        View chip = group.findViewById(ids.get(0));
-        return chip == null ? null : (String) chip.getTag();
-    }
-
     private OrganizationForm readForm() {
         OrganizationForm form = new OrganizationForm();
         form.name = OnboardingUi.text(binding.nameInput);
         form.shortName = OnboardingUi.text(binding.shortNameInput);
-        form.level = selectedLevel;
-        form.category = selectedCategory;
+        form.level = chips.getLevel();
+        form.category = chips.getCategory();
         form.institution = OnboardingUi.text(binding.institutionInput);
         form.city = OnboardingUi.text(binding.cityInput);
         form.periodStart = OnboardingUi.text(binding.periodStartInput);
@@ -188,6 +132,5 @@ public class OrganizationFormFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        categories = null;
     }
 }

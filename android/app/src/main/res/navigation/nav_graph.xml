@@ -186,6 +186,47 @@
         android:id="@+id/personalSpaceFragment"
         android:name="com.aris.templateapp.ui.workspace.PersonalSpaceFragment" />
 
+    <!-- Kelola ruang kerja (revisi-fondasi-orgspace.md R4). Semua layar menerima ID ruang kerja yang dikelola. -->
+    <fragment
+        android:id="@+id/organizationFragment"
+        android:name="com.aris.templateapp.ui.organization.OrganizationFragment">
+        <argument
+            android:name="organizationId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/organizationProfileFragment"
+        android:name="com.aris.templateapp.ui.organization.OrganizationProfileFragment">
+        <argument
+            android:name="organizationId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/membersFragment"
+        android:name="com.aris.templateapp.ui.organization.MembersFragment">
+        <argument
+            android:name="organizationId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/activityFragment"
+        android:name="com.aris.templateapp.ui.organization.ActivityFragment">
+        <argument
+            android:name="organizationId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/transferOwnershipFragment"
+        android:name="com.aris.templateapp.ui.organization.TransferOwnershipFragment">
+        <argument
+            android:name="organizationId"
+            app:argType="string" />
+    </fragment>
+
     <!-- Dibuka dari onboarding ATAU dari menu profil "Jadi kreator template". -->
     <fragment
         android:id="@+id/providerFormFragment"

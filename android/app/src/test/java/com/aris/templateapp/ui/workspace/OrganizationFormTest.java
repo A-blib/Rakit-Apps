@@ -57,4 +57,12 @@ public class OrganizationFormTest {
         assertEquals(R.string.org_error_short_name_too_long, (int) errors.get(OrganizationForm.Field.SHORT_NAME));
         assertEquals(R.string.org_error_position_too_long, (int) errors.get(OrganizationForm.Field.POSITION));
     }
+
+    @Test
+    public void personalSpaceNeedsOnlyName() {
+        OrganizationForm form = new OrganizationForm();
+        form.personal = true;
+        form.name = "Ruang Aris";
+        assertTrue(form.validate().isEmpty());
+    }
 }

@@ -57,6 +57,12 @@ public final class ErrorMessages {
                 return context.getString(R.string.error_role_not_allowed);
             case "TOO_MANY_ATTEMPTS":
                 return context.getString(R.string.error_too_many_attempts);
+            case "LOGO_INVALID":
+                return context.getString(R.string.error_logo_invalid);
+            case "CONFIRM_NAME_MISMATCH":
+                return context.getString(R.string.error_confirm_name_mismatch);
+            case "ORG_HAS_ONLINE_SITES":
+                return context.getString(R.string.error_org_has_online_sites);
             case "REFRESH_TOKEN_INVALID":
             case "UNAUTHORIZED":
                 return context.getString(R.string.error_session_expired);

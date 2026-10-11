@@ -28,6 +28,12 @@
         android:layout_marginVertical="@dimen/space_2" />
 
     <TextView
+        android:id="@+id/manage_item"
+        style="@style/Widget.App.ListItem.Text"
+        android:text="@string/workspace_picker_manage"
+        app:drawableStartCompat="@drawable/ic_settings" />
+
+    <TextView
         android:id="@+id/add_item"
         style="@style/Widget.App.ListItem.Text"
         android:text="@string/workspace_picker_add"

@@ -16,6 +16,7 @@ import com.aris.templateapp.data.repository.WorkspaceRepository;
 import com.aris.templateapp.databinding.ItemWorkspaceBinding;
 import com.aris.templateapp.databinding.SheetWorkspacePickerBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
+import com.aris.templateapp.ui.organization.OrganizationArgs;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -51,6 +52,14 @@ public class WorkspacePickerSheet extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         workspaceRepository.getWorkspaces().observe(getViewLifecycleOwner(), this::bind);
+        binding.manageItem.setOnClickListener(v -> {
+            Workspace active = workspaceRepository.getActive().getValue();
+            if (active != null) {
+                dismiss();
+                NavHostFragment.findNavController(requireParentFragment())
+                        .navigate(R.id.organizationFragment, OrganizationArgs.of(active.getId()));
+            }
+        });
         binding.addItem.setOnClickListener(v -> {
             dismiss();
             NavHostFragment.findNavController(requireParentFragment()).navigate(R.id.workspaceChoiceFragment);
