@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Token ukuran (bagian 9.2). Spasi selalu kelipatan 4dp. -->
+<!-- Token ukuran (revisi-fondasi-orgspace.md 7.4). Spasi selalu kelipatan 4dp. -->
 <resources>
     <dimen name="space_1">4dp</dimen>
     <dimen name="space_2">8dp</dimen>
@@ -9,11 +9,18 @@
     <dimen name="space_8">32dp</dimen>
     <dimen name="space_12">48dp</dimen>
 
-    <dimen name="screen_padding_horizontal">24dp</dimen>
+    <dimen name="screen_padding_horizontal">20dp</dimen>
 
-    <dimen name="radius_small">6dp</dimen>
-    <dimen name="radius_medium">8dp</dimen>
-    <dimen name="radius_large">12dp</dimen>
+    <!-- Input & chip -->
+    <dimen name="radius_small">12dp</dimen>
+    <!-- Kartu & banner -->
+    <dimen name="radius_medium">16dp</dimen>
+    <!-- Sudut atas bottom sheet -->
+    <dimen name="radius_large">24dp</dimen>
+    <!-- Tombol berbentuk pil: setengah tinggi tombol. -->
+    <dimen name="radius_button">24dp</dimen>
+    <!-- Bentuk lingkaran/pil penuh untuk komponen berukuran apa pun (dipotong otomatis). -->
+    <dimen name="radius_pill">999dp</dimen>
 
     <dimen name="border_width">1dp</dimen>
     <dimen name="border_width_selected">2dp</dimen>

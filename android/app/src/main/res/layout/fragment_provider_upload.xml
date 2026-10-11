@@ -65,7 +65,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_2"
-                        android:fontFamily="@font/geist_semibold"
+                        android:fontFamily="@font/plus_jakarta_sans_semibold"
                         android:text="@string/upload_pick_zip"
                         android:textAppearance="@style/TextAppearance.App.Body" />
 
@@ -74,7 +74,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_1"
-                        android:fontFamily="@font/geist_mono_regular"
+                        android:fontFamily="@font/plus_jakarta_sans_regular"
                         android:textAppearance="@style/TextAppearance.App.BodySmall"
                         android:textColor="@color/color_muted" />
                 </LinearLayout>

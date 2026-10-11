@@ -147,7 +147,16 @@
 
             <!-- Badge & banner -->
             <TextView style="@style/Catalog.Section" android:text="@string/catalog_section_badges" />
-            <TextView style="@style/Widget.App.Badge" android:text="@string/badge_coming_soon" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView style="@style/Widget.App.Badge" android:text="@string/catalog_badge_role" />
+                <TextView
+                    style="@style/Widget.App.Badge.Accent"
+                    android:layout_marginStart="@dimen/space_2"
+                    android:text="@string/badge_coming_soon" />
+            </LinearLayout>
             <com.aris.templateapp.ui.common.StatusBannerView android:id="@+id/banner_info" style="@style/Catalog.Banner" />
             <com.aris.templateapp.ui.common.StatusBannerView android:id="@+id/banner_warning" style="@style/Catalog.Banner" />
             <com.aris.templateapp.ui.common.StatusBannerView android:id="@+id/banner_success" style="@style/Catalog.Banner" />

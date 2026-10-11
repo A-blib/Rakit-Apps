@@ -1,6 +1,8 @@
-# Rakit
+# OrgSpace
 
-**Rakit** adalah app Android untuk merakit website tanpa coding. Satu akun punya dua mode: **pembuat website** (memilih template, mengedit teks/warna/foto, lalu export ke HTML/CSS/JS) dan **penyedia template** (mengunggah template untuk dipakai orang lain). User bisa langsung mencoba sebagai tamu; login hanya diminta saat butuh fitur online.
+**OrgSpace** adalah app Android untuk organisasi pelajar dan mahasiswa (OSIS, BEM, Pramuka, tim jurnalistik, dan lainnya) membuat dan mengelola website organisasi tanpa coding. Pengurus bekerja bersama di **ruang kerja organisasi** dengan peran Pemilik, Admin, dan Editor, sehingga website tetap milik organisasi dari periode ke periode. Satu akun punya dua mode: **pembuat website** dan **kreator template** (mengunggah template untuk organisasi lain). User bisa langsung mencoba sebagai tamu; login hanya diminta saat butuh fitur online.
+
+> 🔄 **Revisi OrgSpace (Oktober 2026)** sedang dikerjakan di branch `fitur/orgspace` (AGENTS.md bagian 19). Rancangan: [`docs/rancangan/revisi-fondasi-orgspace.md`](docs/rancangan/revisi-fondasi-orgspace.md) dan dokumen fitur yang direvisi di `docs/rancangan/`.
 
 > 🪟 **Setup di Windows dengan bantuan agent AI:** arahkan agent ke [`SETUP-WINDOWS.md`](SETUP-WINDOWS.md) (langkah berurutan + perintah cek). Panduan manusia Windows & Linux: [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md).
 
@@ -32,8 +34,10 @@
 | Buat website via template: layar Unduh paket (progres, offline, data seluler), editor template mode (preview HP/Desktop, tab Isi & Gaya, ganti foto, tema, kontras, undo/redo, autosave), Kelengkapan & status, Export ZIP (simpan/bagikan), layar Selesai + panduan, event Dilihat/Didownload dengan antrean offline | Sudah (Fase 20–25), menunggu uji di HP (Fase 26) |
 | Editor custom mode, versi template, potong foto manual, gaya hover & jenis huruf | Segera hadir (rancangan template mode bagian 4.2) |
 | Publish website menjadi link, lupa password | Segera hadir (belum dibangun) |
+| Revisi OrgSpace R1: backend ruang kerja organisasi (organisasi & ruang pribadi, peran Pemilik/Admin/Editor, kode undangan, serah terima, riwayat aktivitas, logo, kategori organisasi) | Sudah (Fase R1) |
+| Revisi OrgSpace R2: desain Biru Semangat, font Plus Jakarta Sans, sudut membulat & tombol pil, ikon Material Symbols Rounded, Lottie berwarna, teks baru, nama app OrgSpace | Sudah (Fase R2) |
 
-> 🏷️ **Nama app: Rakit.** Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
+> 🏷️ **Nama app: OrgSpace** (sebelumnya "Rakit"). Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
 
 > 👥 **Ikut mengembangkan bersama tim / memakai Windows?** Ikuti [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md): langkah lengkap dari nol untuk **Windows** dan Linux, cara mendaftarkan SHA-1 & Test user Google, berbagi kredensial dengan aman, dan alur kerja Git tim. README ini berisi rangkuman untuk Linux (Ubuntu).
 
@@ -120,7 +124,7 @@ Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan 
 
 | Tools / library | Versi |
 |---|---|
-| Gradle (wrapper) | 9.8.0 |
+| Gradle (wrapper) | 9.8.1 |
 | Android Gradle Plugin | 9.4.1 |
 | compileSdk / targetSdk / minSdk | 37 / 37 / 26 |
 | Java (source/target) | 17 (dibangun dengan JDK 21) |
@@ -141,8 +145,8 @@ Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan 
 | WorkManager (kirim event statistik yang tertunda) | 2.12.0 |
 | jsoup (menerapkan isian ke HTML saat export ZIP di HP) | 1.23.2 |
 | JUnit / arch core-testing | 4.13.2 / 2.2.0 |
-| Font Geist Sans & Geist Mono | 1.7.2 (SIL OFL 1.1, lisensi di `app/src/main/assets/licenses/geist-OFL.txt`) |
-| Ikon | Material Symbols Outlined (Apache 2.0), disalin sebagai vector drawable `ic_*.xml` |
+| Font Plus Jakarta Sans (Tokotype) | 2.7.1 (SIL OFL 1.1, lisensi di `app/src/main/assets/licenses/plus-jakarta-sans-OFL.txt`) |
+| Ikon | Material Symbols Rounded (Apache 2.0), disalin sebagai vector drawable `ic_*.xml` |
 
 ---
 

@@ -20,16 +20,16 @@ public class IntroAdapter extends RecyclerView.Adapter<IntroAdapter.PageHolder> 
     }
 
     static final Page[] PAGES = {
-            new Page(R.string.intro_title_1, R.string.intro_body_1, R.raw.intro_build),
-            new Page(R.string.intro_title_2, R.string.intro_body_2, R.raw.intro_customize),
-            new Page(R.string.intro_title_3, R.string.intro_body_3, R.raw.intro_share),
+            new Page(R.string.intro_title_1, R.string.intro_body_1, R.raw.intro_home),
+            new Page(R.string.intro_title_2, R.string.intro_body_2, R.raw.intro_team),
+            new Page(R.string.intro_title_3, R.string.intro_body_3, R.raw.intro_period),
     };
 
     @NonNull
     @Override
     public PageHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         ItemIntroPageBinding binding = ItemIntroPageBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-        LottieTint.applyForeground(binding.illustration);
+        LottieTint.apply(binding.illustration);
         return new PageHolder(binding);
     }
 

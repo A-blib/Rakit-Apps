@@ -1,4 +1,4 @@
-# Dokumentasi Project: Rakit
+# Dokumentasi Project: OrgSpace (dulu Rakit)
 
 Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, cara bagian itu saling terhubung, dan alasan dibuat seperti itu. Bacalah dari atas ke bawah. Setiap bagian merujuk ke file aslinya supaya bisa langsung dibuka di VS Code atau Android Studio.
 
@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase R1** (revisi OrgSpace: ruang kerja organisasi). Rancangan fitur pembuatan website: [`rancangan/alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
+> Status dokumen: diperbarui sampai **Fase R2** (revisi OrgSpace: desain Biru Semangat & Plus Jakarta Sans). Rancangan fitur pembuatan website: [`rancangan/alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
 
 ---
 
@@ -544,7 +544,7 @@ android/
         │   │   ├── data/mapper/            UserMapper (DTO → model)
         │   │   └── ui/                     layar (Fragment) per fitur + ui/common
         │   ├── res/                        layout, values, font, drawable, navigation, ...
-        │   └── assets/licenses/            lisensi font Geist (OFL)
+        │   └── assets/licenses/            lisensi font Plus Jakarta Sans (OFL)
         ├── debug/                ← hanya ikut di build debug: katalog komponen, izin HTTP localhost
         └── test/                 ← unit test JVM (./gradlew testDebugUnitTest)
 ```
@@ -595,14 +595,16 @@ Semua nilai desain didefinisikan **sekali** di `res/values/` lalu dipakai lewat 
 | `values/styles.xml` | Gaya komponen: `Widget.App.Button` (+ `.Outlined`, `.Text`), `TextInputLayout`, `Card`, `Chip`, `Toolbar`, `Badge`, dll. |
 | `values/themes.xml` | `Theme.App`: memetakan token ke atribut Material 3 dan memasang style komponen sebagai default |
 | `color/selector_*.xml` | Warna yang berubah sesuai keadaan (terpilih, fokus, nonaktif) |
-| `font/` | Geist Sans (4 ketebalan) + Geist Mono (2 ketebalan) |
-| `drawable/ic_*.xml` | Ikon Material Symbols Outlined (warna otomatis mengikuti `?attr/colorOnSurface`) |
+| `font/` | Plus Jakarta Sans (Regular, Medium, SemiBold, Bold, ExtraBold) + keluarga font `plus_jakarta_sans.xml` |
+| `drawable/ic_*.xml` | Ikon Material Symbols Rounded (warna otomatis mengikuti `?attr/colorOnSurface`) |
 
-Cara tema bekerja: `Theme.App` menetapkan, misalnya, `materialButtonStyle = Widget.App.Button`. Akibatnya setiap `<Button>` di layout otomatis menjadi tombol utama monokrom. Untuk varian lain cukup tulis `style="@style/Widget.App.Button.Outlined"`.
+Cara tema bekerja: `Theme.App` menetapkan, misalnya, `materialButtonStyle = Widget.App.Button`. Akibatnya setiap `<Button>` di layout otomatis menjadi tombol utama biru berbentuk pil. Untuk varian lain cukup tulis `style="@style/Widget.App.Button.Outlined"`.
 
 - **Mode gelap:** parent tema `Theme.Material3.DayNight` + warna dari `values-night/`. Warna ikon status bar diatur `EdgeToEdge.enable()`.
 - **Edge-to-edge:** mulai Android 15, konten digambar sampai ke balik status bar. `MainActivity` menambahkan padding seukuran status bar, navigation bar, dan keyboard (`WindowInsetsCompat`).
-- **Font per ketebalan:** setiap `TextAppearance` menunjuk file font langsung (`@font/geist_semibold`), karena memilih ketebalan dari satu keluarga font baru didukung penuh mulai Android 9, sedangkan minSdk kita 8.0.
+- **Font per ketebalan:** setiap `TextAppearance` menunjuk file font langsung (`@font/plus_jakarta_sans_semibold`), karena memilih ketebalan dari satu keluarga font baru didukung penuh mulai Android 9, sedangkan minSdk kita 8.0.
+- **Jangan pasang `android:fontFamily` di tema.** Atribut tema dibaca TextView seolah-olah ditulis di layout, sehingga menimpa font dari `textAppearance` (judul ExtraBold tampil Regular). Tema memakai `android:textAppearance = TextAppearance.App.Default` untuk TextView yang tidak menulis textAppearance sendiri (ditemukan saat revisi R2).
+- **Palet (revisi OrgSpace, R2):** "Biru Semangat": `color_primary` biru `#3B5BFD` untuk tombol & elemen aktif, `color_accent` kuning `#FFC531` untuk sorotan (badge "Segera hadir", avatar, badge jumlah), latar sedikit kebiruan. Mode gelap memakai biru malam (`#0E1230`), bukan hitam.
 - **Katalog komponen** (`src/debug/.../ComponentCatalogActivity`): satu layar berisi semua token dan komponen, ditambah tombol ganti terang/gelap. Pakai katalog ini untuk memeriksa perubahan desain.
 
 ---
@@ -714,9 +716,10 @@ Pindah layar memakai ID aksi di `nav_graph.xml` (`R.id.action_startup_to_intro`)
 
 ### Animasi Lottie
 
-- File `res/raw/*.json` dibuat oleh skrip `android/tools/generate_lottie.py` dari bentuk sederhana (garis, kotak, lingkaran). Gaya garisnya monokrom dan bukan aset milik pihak lain.
+- File `res/raw/*.json` dibuat oleh skrip `android/tools/generate_lottie.py` dari bentuk sederhana (garis, kotak, lingkaran). Gayanya garis biru + isian kuning, dan bukan aset milik pihak lain.
 - Efek "menggambar garis" memakai **trim path**: bagian garis yang terlihat dianimasikan dari 0% sampai 100%.
-- Di JSON garisnya hitam. `LottieTint.applyForeground(view)` mengganti warna semua layer menjadi `color_foreground` lewat *dynamic properties*, jadi animasi ikut tema terang/gelap.
+- Setiap garis/isian di JSON diberi nama `stroke-primary`, `stroke-accent`, `fill-primary`, atau `fill-accent`. `LottieTint.apply(view)` mencari elemen bernama itu (`KeyPath("**", nama)`) dan mewarnainya dengan `color_primary` / `color_accent` lewat *dynamic properties*, jadi animasi ikut tema terang/gelap.
+- Intro 3 halaman (revisi OrgSpace): `intro_home` (rumah + bendera di jendela browser), `intro_team` (tiga pengurus terhubung), `intro_period` (kalender berganti, website tetap).
 - Animasi disembunyikan dari pembaca layar (`importantForAccessibility="no"`) karena hanya berfungsi sebagai hiasan.
 - **Animasi loading** (`loading.json`, dipakai `StateView.showLoading()` di semua layar yang memuat data) berupa **sosok pahlawan berjubah yang sedang terbang** (permintaan Aris; awalnya pesawat kertas). Sosoknya umum, bukan Superman atau tokoh berhak cipta lain: tanpa logo, tanpa kostum khas. Anggota badan digambar sebagai garis tebal berujung bulat, kepala dan kepalan tangan berupa lingkaran penuh, dan jubah berisi abu-abu tipis (`fill(30)`) yang berkibar lewat **path yang dianimasikan** (`animated_line()`: titik-titik jubah berpindah antar-keyframe). Sosok melayang naik-turun sambil sedikit miring, sementara 4 garis angin mengalir ke belakang sambil muncul lalu memudar. Gerakan garis angin ditulis sebagai fungsi waktu lalu "dicuplik" setiap 2 frame (`sampled()` di skrip), dan panjang animasi (120 frame) habis dibagi siklus angin (40 frame) dan kibaran jubah (30 frame), sehingga perulangannya mulus tanpa patahan. Contohnya bisa dilihat terus-menerus di app **Katalog komponen** (bagian paling bawah).
 - **Tiga bagian: pembuka, ulang, penutup** (permintaan Aris). Isi `loading.json`: frame 0–45 lingkaran berputar yang berubah menjadi pahlawan (lingkaran mengecil dan memudar, pahlawan membesar dari 0% ke 120%); frame 45–165 terbang di tempat (diulang); frame 165–195 melaju ke kanan keluar layar disertai garis laju. `HeroLoading` memutar bagian-bagian itu dengan `setMinAndMaxFrame` + `setRepeatCount`. Saat data siap, `StateView.hide(content, bind)` memutar penutup lalu menaikkan isi layar dari bawah (`HeroLoading.slideUpIn`). Kalau pembuka belum selesai, penutup diputar tepat setelahnya agar tidak ada lompatan gambar.
@@ -765,9 +768,9 @@ Tujuan dipilih dengan aturan yang **sama** seperti saat app dibuka (`StartupDeci
 - Di layar Masuk, kedua tombol ada **di atas** form email (bagian 6.2). Di layar Daftar, letaknya **di bawah** sebagai alternatif.
 - Aksi tombolnya dijelaskan di bab 19.
 
-### Snackbar monokrom
+### Snackbar
 
-`Widget.App.Snackbar` membalik warna: latarnya `color_foreground`, teks dan tombol aksinya `color_background`. Dengan begitu snackbar tetap kontras di mode terang maupun gelap, tanpa warna ungu bawaan Material.
+`Widget.App.Snackbar` membalik warna: latarnya `color_foreground` (biru tua), teksnya `color_background`, dan tombol aksinya kuning `color_accent`. Dengan begitu snackbar tetap kontras di mode terang maupun gelap.
 
 ---
 
@@ -989,7 +992,7 @@ Penanda "baru" pada panduan disimpan oleh `GuideStore` (SharedPreferences, per H
 Grafik ini digambar sendiri di `onDraw(Canvas)` (keputusan Aris: tanpa library):
 1. **Skala Y** dihitung `niceMax()`: nilai terbesar dibulatkan ke atas menjadi 1/2/5 × 10ⁿ × 4. Hasilnya, 4 garis grid selalu berlabel bilangan bulat, misalnya 23 → sumbu 0–40.
 2. **Garis** dibuat dengan `Path.lineTo` antar-titik. **Area** memakai path yang sama, ditutup ke dasar grafik, lalu diisi `LinearGradient` warna foreground dari alpha 70 ke 0.
-3. **Label** memakai Geist Mono. Untuk 7 hari ditampilkan nama hari; untuk 30 hari tanggal setiap 5 hari, ditambah hari terakhir (`DownloadTrendChart`).
+3. **Label** memakai huruf kecil Plus Jakarta Sans. Untuk 7 hari ditampilkan nama hari; untuk 30 hari tanggal setiap 5 hari, ditambah hari terakhir (`DownloadTrendChart`).
 4. **Ketuk/geser**: `onTouchEvent` mencari titik terdekat dari posisi jari, lalu menggambar garis vertikal + tooltip "Rab, 30 Sep · 5 download". Hanya geseran yang lebih **mendatar** (melewati *touch slop*) yang memanggil `requestDisallowInterceptTouchEvent(true)`; geseran tegak tetap dibiarkan untuk ScrollView, jadi layar bisa di-scroll walau jari mulai di atas grafik.
 5. Semua warna diambil dari `@color/...`, jadi grafik otomatis ikut mode gelap.
 

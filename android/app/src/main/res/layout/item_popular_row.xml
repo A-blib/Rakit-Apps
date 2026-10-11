@@ -19,7 +19,7 @@
         android:id="@+id/rank"
         android:layout_width="@dimen/space_6"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/geist_mono_medium"
+        android:fontFamily="@font/plus_jakarta_sans_semibold"
         android:textAppearance="@style/TextAppearance.App.Body" />
 
     <FrameLayout
@@ -50,7 +50,7 @@
         android:id="@+id/downloads"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/geist_mono_regular"
+        android:fontFamily="@font/plus_jakarta_sans_regular"
         android:textAppearance="@style/TextAppearance.App.BodySmall" />
 
     <ImageView

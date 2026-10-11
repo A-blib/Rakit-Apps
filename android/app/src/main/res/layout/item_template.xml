@@ -52,7 +52,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textAppearance="@style/TextAppearance.App.Body"
-                android:fontFamily="@font/geist_medium" />
+                android:fontFamily="@font/plus_jakarta_sans_medium" />
 
             <TextView
                 android:id="@+id/status"

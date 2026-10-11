@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Indikator halaman intro: titik kecil abu; halaman aktif menjadi pil lebih panjang berwarna foreground. -->
+<!-- Indikator halaman intro: titik kecil abu; halaman aktif menjadi pil lebih panjang berwarna biru utama. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_selected="true">
         <shape android:shape="rectangle">
-            <corners android:radius="999dp" />
-            <solid android:color="@color/color_foreground" />
+            <corners android:radius="@dimen/radius_pill" />
+            <solid android:color="@color/color_primary" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <corners android:radius="999dp" />
+            <corners android:radius="@dimen/radius_pill" />
             <solid android:color="@color/color_border_strong" />
         </shape>
     </item>

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Gaya komponen (bagian 9.3). Sebagian besar dipasang otomatis lewat tema (themes.xml),
+    Gaya komponen (revisi-fondasi-orgspace.md 7.5). Sebagian besar dipasang otomatis lewat tema (themes.xml),
     jadi layout cukup menulis <Button> / <TextInputLayout> tanpa mengatur warna sendiri.
     Varian lain dipilih dengan style="@style/Widget.App.Button.Outlined", dst.
 -->
 <resources>
 
-    <!-- Tombol utama: isi foreground, teks latar, sudut 6dp, tanpa bayangan. -->
+    <!-- Tombol utama: isi biru utama, teks putih, berbentuk pil, tanpa bayangan. -->
     <style name="Widget.App.Button" parent="Widget.Material3.Button">
         <item name="android:minHeight">@dimen/button_height</item>
         <item name="android:insetTop">0dp</item>
@@ -16,23 +16,24 @@
         <item name="iconTint">@color/selector_button_primary_text</item>
         <item name="strokeColor">@color/selector_button_primary_stroke</item>
         <item name="strokeWidth">@dimen/border_width</item>
-        <item name="cornerRadius">@dimen/radius_small</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
+        <item name="rippleColor">@color/color_primary_ripple</item>
         <item name="android:elevation">0dp</item>
         <item name="android:stateListAnimator">@null</item>
         <item name="android:textAppearance">@style/TextAppearance.App.Button</item>
     </style>
 
-    <!-- Tombol sekunder: bergaris, teks foreground. -->
+    <!-- Tombol sekunder: bergaris, teks biru utama, berbentuk pil. -->
     <style name="Widget.App.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:minHeight">@dimen/button_height</item>
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
         <item name="android:textColor">@color/selector_button_outlined_text</item>
         <item name="iconTint">@color/selector_button_outlined_text</item>
-        <item name="strokeColor">@color/color_border</item>
+        <item name="strokeColor">@color/color_border_strong</item>
         <item name="strokeWidth">@dimen/border_width</item>
-        <item name="cornerRadius">@dimen/radius_small</item>
-        <item name="rippleColor">@color/color_border</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
+        <item name="rippleColor">@color/color_primary_ripple</item>
         <item name="android:textAppearance">@style/TextAppearance.App.Button</item>
     </style>
 
@@ -41,24 +42,25 @@
         <item name="android:minHeight">@dimen/touch_target_min</item>
         <!-- Material 1.14 memberi tombol teks bentuk pil + garis; dihilangkan agar benar-benar tampil sebagai link. -->
         <item name="strokeWidth">0dp</item>
-        <item name="cornerRadius">@dimen/radius_small</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
         <item name="android:textColor">@color/color_link</item>
         <item name="iconTint">@color/color_link</item>
         <item name="rippleColor">@color/color_link_tint</item>
         <item name="android:textAppearance">@style/TextAppearance.App.Button</item>
     </style>
 
-    <!-- Input: kotak bergaris, label di atas, fokus = garis biru. -->
+    <!-- Input: kotak putih bergaris, label di atas, fokus = garis biru utama. -->
     <style name="Widget.App.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
         <item name="boxStrokeColor">@color/selector_input_stroke</item>
         <item name="boxStrokeWidth">@dimen/border_width</item>
         <item name="boxStrokeWidthFocused">@dimen/border_width_selected</item>
-        <item name="boxBackgroundColor">@color/color_surface_subtle</item>
+        <item name="boxBackgroundColor">@color/color_surface</item>
         <item name="boxCornerRadiusTopStart">@dimen/radius_small</item>
         <item name="boxCornerRadiusTopEnd">@dimen/radius_small</item>
         <item name="boxCornerRadiusBottomStart">@dimen/radius_small</item>
         <item name="boxCornerRadiusBottomEnd">@dimen/radius_small</item>
-        <item name="hintTextColor">@color/color_foreground</item>
+        <item name="hintTextColor">@color/color_primary</item>
+        <item name="cursorColor">@color/color_primary</item>
         <item name="android:textColorHint">@color/color_muted</item>
         <item name="endIconTint">@color/color_muted</item>
         <item name="errorTextColor">@color/color_error</item>
@@ -68,7 +70,7 @@
         <item name="helperTextTextAppearance">@style/TextAppearance.App.BodySmall</item>
     </style>
 
-    <!-- Kartu: garis 1dp, tanpa bayangan, sudut 8dp. -->
+    <!-- Kartu: latar surface, garis 1dp, tanpa bayangan, sudut 16dp. Terpilih: garis 2dp biru (di kode). -->
     <style name="Widget.App.Card" parent="Widget.Material3.CardView.Outlined">
         <item name="cardBackgroundColor">@color/color_surface</item>
         <item name="strokeColor">@color/selector_card_stroke</item>
@@ -76,10 +78,10 @@
         <item name="cardElevation">0dp</item>
         <item name="cardCornerRadius">@dimen/radius_medium</item>
         <item name="checkedIcon">@null</item>
-        <item name="rippleColor">@color/color_border</item>
+        <item name="rippleColor">@color/color_primary_ripple</item>
     </style>
 
-    <!-- Chip pilihan: bergaris; terpilih = isi foreground, teks latar, tanpa ikon centang. -->
+    <!-- Chip pilihan: bergaris; terpilih = isi biru muda (primary container), tanpa ikon centang. -->
     <style name="Widget.App.Chip" parent="Widget.Material3.Chip.Filter">
         <item name="chipBackgroundColor">@color/selector_chip_background</item>
         <item name="android:textColor">@color/selector_chip_text</item>
@@ -92,17 +94,17 @@
         <item name="android:textAppearance">@style/TextAppearance.App.BodySmall</item>
     </style>
 
-    <!-- App bar datar: latar layar, garis bawah 1dp, judul berupa teks Geist SemiBold. -->
+    <!-- App bar datar: latar layar, garis bawah 1dp, judul teks Plus Jakarta Sans Bold. -->
     <style name="Widget.App.Toolbar" parent="Widget.Material3.Toolbar">
         <item name="android:background">@drawable/bg_app_bar</item>
         <item name="android:minHeight">@dimen/app_bar_height</item>
-        <item name="titleTextAppearance">@style/TextAppearance.App.Title</item>
+        <item name="titleTextAppearance">@style/TextAppearance.App.AppBarTitle</item>
         <item name="titleTextColor">@color/color_foreground</item>
         <item name="navigationIconTint">@color/color_foreground</item>
         <item name="android:elevation">0dp</item>
     </style>
 
-    <!-- Badge pil: teks Label (mono, kapital). -->
+    <!-- Badge pil: latar biru muda untuk mode/peran. Sorotan ("Baru", "Segera hadir") memakai Widget.App.Badge.Accent. -->
     <style name="Widget.App.Badge" parent="">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -112,9 +114,20 @@
         <item name="android:paddingTop">@dimen/space_1</item>
         <item name="android:paddingBottom">@dimen/space_1</item>
         <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
+        <item name="android:textColor">@color/color_on_primary_container</item>
     </style>
 
-    <!-- Bottom navigation Dashboard Provider: latar layar, tanpa bayangan dan tanpa "pil" warna di tab aktif.
+    <!-- Badge sorotan ("Baru", "Segera hadir"): kuning aksen. -->
+    <style name="Widget.App.Badge.Accent">
+        <item name="android:background">@drawable/bg_badge_accent</item>
+        <item name="android:textColor">@color/color_on_accent</item>
+    </style>
+
+    <style name="Widget.App.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/color_primary_container</item>
+    </style>
+
+    <!-- Bottom navigation: latar layar, tanpa bayangan; tab aktif biru dengan pil biru muda di belakang ikon.
          Garis atas 1dp dipasang di layout (MaterialDivider). -->
     <style name="Widget.App.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
         <item name="backgroundTint">@color/color_background</item>
@@ -122,14 +135,14 @@
         <item name="elevation">0dp</item>
         <item name="itemIconTint">@color/selector_bottom_nav</item>
         <item name="itemTextColor">@color/selector_bottom_nav</item>
-        <item name="itemActiveIndicatorStyle">@null</item>
-        <item name="itemRippleColor">@color/color_border</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.App.BottomNavigation.ActiveIndicator</item>
+        <item name="itemRippleColor">@color/color_primary_ripple</item>
         <item name="itemTextAppearanceActive">@style/TextAppearance.App.NavLabel.Active</item>
         <item name="itemTextAppearanceInactive">@style/TextAppearance.App.NavLabel</item>
         <item name="labelVisibilityMode">labeled</item>
     </style>
 
-    <!-- Tombol + (buat project): kotak isi foreground radius 8dp, hanya ikon, tanpa bayangan. -->
+    <!-- Tombol + (buat website): lingkaran biru utama, hanya ikon, tanpa bayangan. -->
     <style name="Widget.App.Button.Create" parent="Widget.App.Button">
         <item name="android:minWidth">0dp</item>
         <item name="android:minHeight">0dp</item>
@@ -138,7 +151,7 @@
         <item name="iconSize">@dimen/icon_size</item>
         <item name="iconGravity">textStart</item>
         <item name="iconPadding">0dp</item>
-        <item name="cornerRadius">@dimen/radius_medium</item>
+        <item name="cornerRadius">@dimen/radius_pill</item>
     </style>
 
     <!-- Tombol bergaris ringkas berdua dalam satu baris (bagian "Mulai" di Beranda): teks & ikon lebih kecil
@@ -152,7 +165,7 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Button.Small</item>
     </style>
 
-    <!-- Tombol di dalam MaterialButtonToggleGroup (HP/Desktop): terpilih diisi foreground seperti chip terpilih,
+    <!-- Tombol di dalam MaterialButtonToggleGroup (HP/Desktop): terpilih diisi biru muda seperti chip terpilih,
          agar pilihan aktif terlihat jelas. -->
     <style name="Widget.App.Button.Toggle" parent="Widget.App.Button.Outlined.Compact">
         <item name="backgroundTint">@color/selector_chip_background</item>
@@ -174,7 +187,7 @@
         <item name="android:textColor">@color/color_foreground</item>
     </style>
 
-    <!-- Judul bagian Beranda (mis. "RINGKASAN"): Label mono di kiri, padding seragam. -->
+    <!-- Judul bagian Beranda (mis. "Ringkasan"): Label tebal di kiri, padding seragam. -->
     <style name="Widget.App.SectionTitle" parent="">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -200,15 +213,16 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Body</item>
     </style>
 
-    <!-- Contoh kode di artikel Panduan: huruf mono di kotak abu-abu bergaris tipis, bisa digulir ke samping. -->
+    <!-- Contoh kode di artikel Panduan: kotak bergaris tipis, bisa digulir ke samping. Huruf monospace bawaan HP
+         dipakai karena kode lebih mudah dibaca dengan lebar huruf yang sama. -->
     <style name="Widget.App.CodeBlock" parent="">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">@dimen/space_2</item>
         <item name="android:background">@drawable/bg_thumbnail</item>
         <item name="android:padding">@dimen/space_3</item>
-        <item name="android:fontFamily">@font/geist_mono_regular</item>
         <item name="android:textAppearance">@style/TextAppearance.App.BodySmall</item>
+        <item name="android:typeface">monospace</item>
         <item name="android:textIsSelectable">true</item>
     </style>
 
@@ -217,13 +231,13 @@
         <item name="dividerThickness">@dimen/border_width</item>
     </style>
 
-    <!-- Indikator loading: garis tipis berwarna foreground. -->
+    <!-- Indikator loading: garis tipis biru utama. -->
     <style name="Widget.App.ProgressIndicator" parent="Widget.Material3.CircularProgressIndicator.Small">
-        <item name="indicatorColor">@color/color_foreground</item>
+        <item name="indicatorColor">@color/color_primary</item>
         <item name="trackColor">@color/color_border</item>
     </style>
 
-    <!-- Snackbar monokrom terbalik: latar foreground, teks latar, tombol aksi tebal (bukan ungu bawaan Material). -->
+    <!-- Snackbar: latar biru tua (foreground), teks latar, tombol aksi kuning aksen agar menonjol. -->
     <style name="Widget.App.Snackbar" parent="Widget.Material3.Snackbar">
         <item name="backgroundTint">@color/color_foreground</item>
         <item name="shapeAppearance">@style/ShapeAppearance.App.Medium</item>
@@ -235,7 +249,7 @@
     </style>
 
     <style name="Widget.App.Snackbar.Button" parent="Widget.Material3.Button.TextButton.Snackbar">
-        <item name="android:textColor">@color/color_background</item>
+        <item name="android:textColor">@color/color_accent</item>
         <item name="android:textAppearance">@style/TextAppearance.App.Button</item>
     </style>
 
@@ -269,7 +283,7 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Body</item>
     </style>
 
-    <!-- Judul grup daftar (mis. "AKUN") memakai style Label mono (bagian 9.4). -->
+    <!-- Judul grup daftar (mis. "Akun") memakai style Label. -->
     <style name="Widget.App.ListGroupTitle" parent="">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -279,14 +293,14 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
     </style>
 
-    <!-- Checkbox: kotak foreground, bukan warna aksen bawaan. -->
+    <!-- Checkbox: kotak biru utama. -->
     <style name="Widget.App.CheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
-        <item name="buttonTint">@color/color_foreground</item>
+        <item name="buttonTint">@color/color_primary</item>
         <item name="android:textAppearance">@style/TextAppearance.App.Body</item>
         <item name="android:minHeight">@dimen/touch_target_min</item>
     </style>
 
-    <!-- Bottom sheet: latar surface, sudut atas 12dp, tanpa bayangan berwarna. -->
+    <!-- Bottom sheet: latar surface, sudut atas 24dp, tanpa bayangan berwarna. -->
     <style name="ThemeOverlay.App.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/Widget.App.BottomSheet</item>
     </style>

@@ -33,7 +33,7 @@
             android:background="@drawable/bg_avatar"
             android:gravity="center"
             android:importantForAccessibility="no"
-            android:textAppearance="@style/TextAppearance.App.BodySmall"
-            android:textColor="@color/color_foreground" />
+            android:textAppearance="@style/TextAppearance.App.Label"
+            android:textColor="@color/color_on_accent" />
     </FrameLayout>
 </FrameLayout>

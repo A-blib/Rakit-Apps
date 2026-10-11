@@ -1,38 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Tipografi (bagian 9.2). Setiap style menunjuk file font langsung (mis. @font/geist_semibold),
+    Tipografi Plus Jakarta Sans (revisi-fondasi-orgspace.md 7.3). Setiap style menunjuk file font langsung
+    (mis. @font/plus_jakarta_sans_semibold),
     karena memilih ketebalan dari satu keluarga font baru didukung penuh mulai Android 9, sedangkan minSdk kita 8.0.
     letterSpacing memakai satuan "em": -0.02 = dirapatkan 2% dari ukuran huruf.
 -->
 <resources>
     <style name="TextAppearance.App.Display" parent="TextAppearance.Material3.DisplaySmall">
         <item name="android:textSize">@dimen/text_display</item>
-        <item name="fontFamily">@font/geist_bold</item>
-        <item name="android:fontFamily">@font/geist_bold</item>
-        <item name="android:letterSpacing">-0.02</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_extrabold</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_extrabold</item>
+        <item name="android:letterSpacing">-0.01</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <style name="TextAppearance.App.Headline" parent="TextAppearance.Material3.HeadlineSmall">
         <item name="android:textSize">@dimen/text_headline</item>
-        <item name="fontFamily">@font/geist_semibold</item>
-        <item name="android:fontFamily">@font/geist_semibold</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_bold</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
         <item name="android:letterSpacing">-0.01</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <style name="TextAppearance.App.Title" parent="TextAppearance.Material3.TitleMedium">
         <item name="android:textSize">@dimen/text_title</item>
-        <item name="fontFamily">@font/geist_semibold</item>
-        <item name="android:fontFamily">@font/geist_semibold</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_semibold</item>
         <item name="android:letterSpacing">0</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <style name="TextAppearance.App.Body" parent="TextAppearance.Material3.BodyLarge">
         <item name="android:textSize">@dimen/text_body</item>
-        <item name="fontFamily">@font/geist_regular</item>
-        <item name="android:fontFamily">@font/geist_regular</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_regular</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_regular</item>
         <item name="android:letterSpacing">0</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
@@ -40,33 +41,33 @@
     <!-- Body tebal untuk judul baris (mis. judul masalah pengecekan). Font diatur di style, karena
          android:fontFamily di layout bisa tertimpa font dari textAppearance. -->
     <style name="TextAppearance.App.Body.SemiBold">
-        <item name="fontFamily">@font/geist_semibold</item>
-        <item name="android:fontFamily">@font/geist_semibold</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_semibold</item>
     </style>
 
     <style name="TextAppearance.App.BodySmall" parent="TextAppearance.Material3.BodyMedium">
         <item name="android:textSize">@dimen/text_body_small</item>
-        <item name="fontFamily">@font/geist_regular</item>
-        <item name="android:fontFamily">@font/geist_regular</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_regular</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_regular</item>
         <item name="android:letterSpacing">0</item>
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     </style>
 
-    <!-- Label kecil berhuruf kapital dengan font mono: badge, judul grup, metadata. -->
+    <!-- Label kecil tebal (tidak kapital semua): badge, judul grup, metadata. -->
     <style name="TextAppearance.App.Label" parent="TextAppearance.Material3.LabelMedium">
         <item name="android:textSize">@dimen/text_label</item>
-        <item name="fontFamily">@font/geist_mono_medium</item>
-        <item name="android:fontFamily">@font/geist_mono_medium</item>
-        <item name="android:letterSpacing">0.06</item>
-        <item name="android:textAllCaps">true</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="android:textAllCaps">false</item>
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <!-- Teks tombol: sama dengan Body tetapi Medium, tidak kapital semua. -->
     <style name="TextAppearance.App.Button" parent="TextAppearance.Material3.LabelLarge">
         <item name="android:textSize">@dimen/text_body</item>
-        <item name="fontFamily">@font/geist_medium</item>
-        <item name="android:fontFamily">@font/geist_medium</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_semibold</item>
         <item name="android:letterSpacing">0</item>
         <item name="android:textAllCaps">false</item>
     </style>
@@ -79,20 +80,34 @@
     <!-- Label tab bottom navigation. -->
     <style name="TextAppearance.App.NavLabel" parent="TextAppearance.Material3.LabelMedium">
         <item name="android:textSize">@dimen/text_label</item>
-        <item name="fontFamily">@font/geist_regular</item>
-        <item name="android:fontFamily">@font/geist_regular</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_regular</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_regular</item>
     </style>
 
     <style name="TextAppearance.App.NavLabel.Active">
-        <item name="fontFamily">@font/geist_semibold</item>
-        <item name="android:fontFamily">@font/geist_semibold</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_semibold</item>
     </style>
 
-    <!-- Angka besar di kotak ringkasan (Geist Mono agar digit sejajar). -->
+    <!-- Angka besar di kotak ringkasan. "tnum" membuat semua digit sama lebar agar angka sejajar. -->
     <style name="TextAppearance.App.Stat" parent="TextAppearance.Material3.HeadlineSmall">
         <item name="android:textSize">@dimen/text_headline</item>
-        <item name="fontFamily">@font/geist_mono_medium</item>
-        <item name="android:fontFamily">@font/geist_mono_medium</item>
+        <item name="fontFamily">@font/plus_jakarta_sans_bold</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
+        <item name="android:fontFeatureSettings">tnum</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- Judul app bar ("OrgSpace" atau nama ruang kerja): Title tetapi Bold. -->
+    <style name="TextAppearance.App.AppBarTitle" parent="TextAppearance.App.Title">
+        <item name="fontFamily">@font/plus_jakarta_sans_bold</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_bold</item>
+    </style>
+
+    <!-- Dasar untuk TextView yang tidak menulis textAppearance sendiri: hanya mengganti font. Memakai keluarga font
+         (bukan satu file) agar android:textStyle="bold" tetap memilih file Bold yang asli. -->
+    <style name="TextAppearance.App.Default" parent="TextAppearance.AppCompat">
+        <item name="fontFamily">@font/plus_jakarta_sans</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans</item>
     </style>
 </resources>

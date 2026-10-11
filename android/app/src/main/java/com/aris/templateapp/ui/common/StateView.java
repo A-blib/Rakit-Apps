@@ -168,7 +168,7 @@ public class StateView extends FrameLayout {
         binding.animation.setRepeatCount(com.airbnb.lottie.LottieDrawable.INFINITE);
         // Warna dipasang ulang setiap ganti animasi: pengaturan warna Lottie melekat pada animasi yang sedang
         // dimuat, sehingga hilang saat berganti (mis. loading → kosong) dan garis hitam tak terlihat di mode gelap.
-        LottieTint.applyForeground(binding.animation);
+        LottieTint.apply(binding.animation);
         binding.animation.playAnimation();
         binding.message.setText(message);
         binding.retryButton.setText(actionText);

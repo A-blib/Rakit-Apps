@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Semua teks UI ada di sini (Bahasa Indonesia). Kode dan layout tidak boleh menulis teks langsung. -->
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">Rakit</string>
+    <string name="app_name">OrgSpace</string>
 
     <!-- Aksi umum -->
     <string name="action_retry">Coba lagi</string>
@@ -15,13 +15,13 @@
     <string name="badge_coming_soon">Segera hadir</string>
 
     <!-- Error umum (bagian 6.2) -->
-    <string name="error_no_connection">Tidak ada koneksi. Periksa internet lalu coba lagi.</string>
+    <string name="error_no_connection">Koneksi internetmu putus. Sambungkan lagi, lalu ketuk Coba lagi.</string>
     <string name="error_unknown">Terjadi kesalahan. Coba lagi beberapa saat lagi.</string>
     <string name="error_session_expired">Sesi berakhir. Silakan masuk lagi.</string>
-    <string name="error_invalid_credentials">Email atau password salah.</string>
-    <string name="error_email_already_used">Email sudah terdaftar. Silakan masuk.</string>
+    <string name="error_invalid_credentials">Email atau password-nya belum cocok. Cek lagi, ya.</string>
+    <string name="error_email_already_used">Email ini sudah punya akun. Langsung masuk aja.</string>
     <!-- %1$s = nama metode, mis. "Google" -->
-    <string name="error_use_social_login">Akun ini terdaftar dengan %1$s. Silakan masuk dengan %1$s.</string>
+    <string name="error_use_social_login">Akun ini dibuat lewat %1$s. Masuk pakai %1$s, ya.</string>
 
     <!-- Nama metode login untuk disisipkan ke pesan -->
     <string name="method_google">Google</string>
@@ -30,12 +30,12 @@
     <string name="word_or">atau</string>
 
     <!-- Intro (3 halaman, bagian 9.4) -->
-    <string name="intro_title_1">Bikin website. Tanpa coding.</string>
-    <string name="intro_body_1">Susun section, ubah teks, warna, dan foto langsung dari HP.</string>
-    <string name="intro_title_2">Mulai dari template.</string>
-    <string name="intro_body_2">Pilih template yang cocok untuk sekolah, organisasi, atau usahamu, lalu sesuaikan.</string>
-    <string name="intro_title_3">Bagikan karyamu.</string>
-    <string name="intro_body_3">Export jadi HTML, CSS, dan JS, atau jadi penyedia template untuk pengguna lain.</string>
+    <string name="intro_title_1">Saatnya organisasimu punya rumah online</string>
+    <string name="intro_body_1">Satu tempat untuk profil, kegiatan, dan kabar terbaru kalian.</string>
+    <string name="intro_title_2">Kerjakan bareng pengurus lain</string>
+    <string name="intro_body_2">Ajak anggota, bagi tugas, dan kelola website dari HP masing-masing.</string>
+    <string name="intro_title_3">Terus berlanjut dari periode ke periode</string>
+    <string name="intro_body_3">Saat ganti kepengurusan, website dan datanya tetap aman.</string>
     <string name="intro_start">Mulai</string>
     <!-- %1$d = halaman sekarang, %2$d = jumlah halaman (dibacakan pembaca layar).
          Bahasa Indonesia tidak punya bentuk jamak, jadi saran lint "pakai plurals" diabaikan. -->
@@ -50,8 +50,8 @@
     <string name="home_continue_title">Lanjutkan project</string>
     <string name="action_see_all">Lihat semua →</string>
     <string name="home_start_title">Mulai</string>
-    <string name="start_heading">Buat website pertamamu</string>
-    <string name="start_subheading">Mulai dari template jadi, atau susun sendiri dari kerangka.</string>
+    <string name="start_heading">Kerja keras organisasimu layak dilihat banyak orang</string>
+    <string name="start_subheading">Tunjukkan kegiatan dan karya kalian lewat website sendiri.</string>
     <string name="start_template_title">Pakai template</string>
     <string name="start_template_body">Pilih template jadi, lalu ganti teks, foto, dan warnanya.</string>
     <string name="start_custom_title">Custom</string>
@@ -133,11 +133,11 @@ Template akan muncul di sini.</string>
     <string name="profile_guest_body">Masuk untuk menyimpan profil dan membagikan karyamu.</string>
     <string name="profile_guest_local">Project tersimpan di HP ini.</string>
     <string name="profile_creator_edit_subtitle">Info ini dipakai untuk menyarankan template yang cocok untukmu.</string>
-    <string name="provider_suspended_redirect">Mode provider dinonaktifkan. Hubungi admin untuk informasi lebih lanjut.</string>
+    <string name="provider_suspended_redirect">Mode kreator template sedang dinonaktifkan. Hubungi tim OrgSpace untuk info lebih lanjut.</string>
 
     <!-- Dashboard provider (docs/rancangan/alur-provider.md). Bahasa Indonesia tidak punya bentuk jamak,
          jadi saran lint "pakai plurals" untuk teks berangka diabaikan. -->
-    <string name="provider_mode_badge">Mode provider</string>
+    <string name="provider_mode_badge">Mode kreator</string>
     <string name="tab_home">Beranda</string>
     <string name="tab_upload">Upload</string>
     <string name="tab_templates">Template</string>
@@ -170,7 +170,7 @@ Template akan muncul di sini.</string>
     <string name="chart_tooltip" tools:ignore="PluralsCandidate">%1$s · %2$d download</string>
 
     <!-- Checklist provider baru -->
-    <string name="checklist_title">Mulai sebagai provider</string>
+    <string name="checklist_title">Mulai sebagai kreator template</string>
     <!-- %1$d = langkah selesai, %2$d = jumlah langkah -->
     <string name="checklist_progress" tools:ignore="PluralsCandidate">%1$d dari %2$d langkah selesai</string>
     <string name="checklist_profile">Lengkapi profil</string>
@@ -323,7 +323,7 @@ Berapa kali website yang dibuat dari templatemu selesai dan diexport menjadi fil
 TREN DOWNLOAD
 Grafik jumlah Didownload per hari. Hari tanpa download tetap tampil sebagai 0. Ketuk grafik untuk melihat tanggal dan jumlahnya."</string>
 
-    <string name="guide_host_zip_body">"Hasil akhir Rakit adalah file ZIP berisi website (HTML, CSS, JS, dan gambar). Supaya bisa dibuka orang lain lewat internet, file itu perlu diunggah ke layanan hosting. Ada beberapa yang gratis.
+    <string name="guide_host_zip_body">"Hasil akhir OrgSpace adalah file ZIP berisi website (HTML, CSS, JS, dan gambar). Supaya bisa dibuka orang lain lewat internet, file itu perlu diunggah ke layanan hosting. Ada beberapa yang gratis.
 
 CARA PALING MUDAH: NETLIFY DROP
 1. Ekstrak (buka) file ZIP hasil export sampai menjadi satu folder.
@@ -339,11 +339,11 @@ ALTERNATIF: GITHUB PAGES
 4. Beberapa menit kemudian websitemu bisa dibuka di namakamu.github.io/nama-repository.
 
 SAAT WEBSITE DIUBAH
-Export ulang dari Rakit, lalu unggah lagi folder yang baru dengan cara yang sama. Di tab Project, project yang sudah diexport lalu diedit diberi tanda \"Ada perubahan sejak export terakhir\"."</string>
-    <string name="guide_modes_body">"Rakit punya dua cara membuat website. Keduanya menghasilkan file yang sama dan bisa diexport dengan cara yang sama.
+Export ulang dari OrgSpace, lalu unggah lagi folder yang baru dengan cara yang sama. Di tab Project, project yang sudah diexport lalu diedit diberi tanda \"Ada perubahan sejak export terakhir\"."</string>
+    <string name="guide_modes_body">"OrgSpace punya dua cara membuat website. Keduanya menghasilkan file yang sama dan bisa diexport dengan cara yang sama.
 
 TEMPLATE MODE
-Mulai dari template jadi buatan penyedia template. Desainnya sudah lengkap; kamu tinggal mengganti teks, foto, dan warna.
+Mulai dari template jadi buatan kreator template. Desainnya sudah lengkap; kamu tinggal mengganti teks, foto, dan warna.
 Cocok jika: ingin cepat jadi, belum punya bayangan desain, atau sudah menemukan template yang pas di tab Template.
 
 CUSTOM MODE
@@ -409,12 +409,12 @@ Mulai dari template. Template yang mirip dengan kebutuhanmu biasanya jadi lebih 
     <string name="error_identity_in_use">Akun ini sudah tersambung ke pengguna lain.</string>
 
     <!-- Onboarding: pilih peran (bagian 6.6 & 9.4) -->
-    <string name="role_select_title">Kamu mau pakai app ini sebagai apa?</string>
+    <string name="role_select_title">Kamu datang ke OrgSpace untuk apa?</string>
     <string name="role_creator_title">Pembuat website</string>
-    <string name="role_creator_body">Buat website untuk sekolah, organisasi, usaha, atau dirimu sendiri.</string>
-    <string name="role_provider_title">Penyedia template</string>
-    <string name="role_provider_body">Unggah template dan bagikan ke pengguna lain.</string>
-    <string name="role_select_note">Peran bisa ditambah nanti.</string>
+    <string name="role_creator_body">Bikin dan kelola website organisasi</string>
+    <string name="role_provider_title">Kreator template</string>
+    <string name="role_provider_body">Bikin template untuk organisasi lain</string>
+    <string name="role_select_note">Peran lain bisa ditambah nanti.</string>
 
     <!-- Onboarding: form pembuat website -->
     <string name="creator_form_title">Tentang website-mu</string>
@@ -432,8 +432,8 @@ Mulai dari template. Template yang mirip dengan kebutuhanmu biasanya jadi lebih 
     <string name="error_name_too_long">Maksimal 100 karakter</string>
 
     <!-- Onboarding: form provider -->
-    <string name="provider_form_title">Jadi penyedia template</string>
-    <string name="provider_form_subtitle">Isi profil kreatormu. Mode provider langsung aktif setelah kamu mengirim form ini.</string>
+    <string name="provider_form_title">Jadi kreator template</string>
+    <string name="provider_form_subtitle">Isi profil kreatormu. Mode kreator langsung aktif setelah kamu mengirim form ini.</string>
     <string name="field_creator_name">Nama kreator</string>
     <string name="field_bio">Bio (opsional)</string>
     <string name="field_portfolio">Link portofolio atau GitHub (opsional)</string>
@@ -444,17 +444,17 @@ Mulai dari template. Template yang mirip dengan kebutuhanmu biasanya jadi lebih 
     <string name="specialty_portofolio">Portofolio</string>
     <string name="specialty_organisasi">Organisasi</string>
     <string name="specialty_acara">Acara</string>
-    <string name="provider_terms_agree">Saya menyetujui aturan penyedia template.</string>
-    <string name="action_submit_provider">Aktifkan mode provider</string>
+    <string name="provider_terms_agree">Saya menyetujui aturan kreator template.</string>
+    <string name="action_submit_provider">Aktifkan mode kreator</string>
     <string name="error_creator_name_required">Nama kreator wajib diisi</string>
     <string name="error_bio_too_long">Bio maksimal 300 karakter</string>
     <string name="error_url_invalid">Link harus diawali http:// atau https://</string>
-    <string name="error_terms_required">Kamu harus menyetujui aturan penyedia template</string>
+    <string name="error_terms_required">Kamu harus menyetujui aturan kreator template</string>
 
     <!-- Menu profil (bottom sheet) -->
-    <string name="profile_switch_to_provider">Beralih ke mode provider</string>
+    <string name="profile_switch_to_provider">Beralih ke mode kreator</string>
     <string name="profile_switch_to_creator">Beralih ke mode pembuat website</string>
-    <string name="profile_become_provider">Jadi penyedia template</string>
+    <string name="profile_become_provider">Jadi kreator template</string>
     <string name="profile_settings">Pengaturan</string>
     <string name="profile_sign_out">Keluar</string>
     <string name="signed_out">Kamu sudah keluar.</string>

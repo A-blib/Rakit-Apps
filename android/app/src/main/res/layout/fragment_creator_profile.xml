@@ -90,7 +90,8 @@
                     android:background="@drawable/bg_avatar"
                     android:gravity="center"
                     android:importantForAccessibility="no"
-                    android:textAppearance="@style/TextAppearance.App.Title" />
+                    android:textAppearance="@style/TextAppearance.App.Title"
+                    android:textColor="@color/color_on_accent" />
 
                 <TextView
                     android:id="@+id/name"

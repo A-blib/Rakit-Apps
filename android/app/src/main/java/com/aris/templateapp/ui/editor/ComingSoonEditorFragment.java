@@ -56,7 +56,7 @@ public abstract class ComingSoonEditorFragment extends Fragment {
         binding.title.setText(titleText());
         binding.body.setText(bodyText());
         binding.illustration.setAnimation(animation());
-        LottieTint.applyForeground(binding.illustration);
+        LottieTint.apply(binding.illustration);
         binding.backButton.setOnClickListener(v -> close());
     }
 
@@ -90,7 +90,7 @@ public abstract class ComingSoonEditorFragment extends Fragment {
 
         @Override
         protected int animation() {
-            return R.raw.intro_build;
+            return R.raw.intro_home;
         }
 
         @Override
