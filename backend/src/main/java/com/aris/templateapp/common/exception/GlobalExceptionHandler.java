@@ -9,6 +9,8 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
@@ -25,7 +27,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApi(ApiException ex) {
         return ResponseEntity.status(ex.getStatus()).body(new ErrorResponse(
-                ex.getErrorCode().name(), ex.getMessage(), null, ex.getExistingMethods(), ex.getLinkToken()));
+                ex.getErrorCode().name(), ex.getMessage(), ex.getFieldErrors(), ex.getExistingMethods(), ex.getLinkToken()));
     }
 
     /** Gagal validasi {@code @Valid} pada body request: kirim pesan per field agar form bisa menandai input yang salah. */
@@ -43,6 +45,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException ex) {
         return build(ErrorCode.VALIDATION_ERROR, "Format request tidak valid.", null);
+    }
+
+    /** File multipart (mis. logo organisasi) melebihi batas Spring sebelum sempat diperiksa service. */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleTooLarge(MaxUploadSizeExceededException ex) {
+        return build(ErrorCode.UPLOAD_TOO_LARGE, "Ukuran file terlalu besar.", null);
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorResponse> handleMissingPart(MissingServletRequestPartException ex) {
+        return build(ErrorCode.VALIDATION_ERROR, "File belum dipilih.", null);
     }
 
     @ExceptionHandler({NoResourceFoundException.class, HttpRequestMethodNotSupportedException.class})

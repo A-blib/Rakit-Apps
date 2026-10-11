@@ -360,6 +360,8 @@ python3 tools/buat-zip-uji.py
 
 **Folder upload.** ZIP yang diupload provider, salinan bernomor (`work.zip`), thumbnail, dan paket template tayang (`package.zip`) disimpan di `backend/uploads/` (sudah di `.gitignore`). Ganti lokasinya dengan `UPLOAD_STORAGE_DIR` di `.env` jika perlu. Batas ukuran, daftar CDN, dan library yang diizinkan ada di `application.yml` bagian `app.upload`.
 
+**Logo organisasi.** Logo yang diunggah diolah server (dipotong persegi, maks 512 px, PNG) lalu disimpan di `backend/data/org-logos/` (sudah di `.gitignore`). Atur dengan `ORG_LOGO_DIR`, `ORG_LOGO_MAX_KB`, `ORG_MAX_MEMBERS`, dan `ORG_INVITE_TTL_DAYS` di `.env` (lihat `.env.example`).
+
 ### Profile
 
 | Profile | Dipakai untuk | Isi khusus |
@@ -478,6 +480,32 @@ Saat backend start dengan profile `dev` dan tabel `users` masih **kosong**, `Dum
 > Database yang sudah diisi **sebelum Fase 11** memakai data seeder lama: migrasi V7 mengubah status lama `pending`/`approved`/`rejected` menjadi `active`, sehingga `dummy10` ikut aktif. Jadikan `suspended` lagi dengan SQL di bagian "Contoh SQL status provider".
 
 Nama tampilannya nama Indonesia acak dengan seed tetap, jadi hasilnya selalu sama setiap kali database diisi ulang.
+
+### Ruang kerja dummy (OrgSpace)
+
+`OrganizationSeeder` mengisi ruang kerja dari akun dummy di atas saat tabel `organizations` masih kosong (database lama ikut terisi tanpa mengosongkan user):
+
+| Ruang kerja | Jenjang · kategori | Anggota (peran) |
+|---|---|---|
+| OSIS SMA Negeri 1 Bandung ("OSIS Smansa") | SMA · OSIS / MPK | dummy3 (Pemilik), dummy4 (Admin), dummy5 & dummy6 (Editor) |
+| BEM Universitas Nusantara ("BEM UNU") | Perguruan tinggi · BEM | dummy7 (Pemilik), dummy8 (Admin), dummy4 (Editor) |
+| Pramuka SMP Negeri 2 Malang | SMP · Pramuka | dummy9 (Pemilik), dummy5 (Admin), dummy3 (Editor) |
+| Ruang pribadi | – | dummy6, dummy7 |
+
+Kode undangan untuk mencoba "Gabung organisasi" (berlaku 7 hari sejak seeder jalan):
+
+| Kode | Organisasi | Peran |
+|---|---|---|
+| **`OSIS-7K2P`** | OSIS Smansa | Editor |
+| **`BEM4-HMJ8`** | BEM UNU | Admin |
+| `PRAM-KA26` | Pramuka | sudah kedaluwarsa (untuk mencoba pesan "kode tidak berlaku") |
+
+Jika kode sudah kedaluwarsa, isi ulang ruang kerja dummy (hanya database development):
+
+```bash
+sudo -u postgres psql -d templateapp -c "TRUNCATE organizations CASCADE;"   # anggota, undangan, riwayat ikut terhapus
+# lalu jalankan ulang backend dengan profile dev
+```
 
 Untuk mengisi ulang dari awal (hanya database development):
 

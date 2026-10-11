@@ -3,6 +3,7 @@ package com.aris.templateapp.common.exception;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Error yang memang direncanakan (bukan bug). Lempar dari service, lalu
@@ -13,6 +14,7 @@ public class ApiException extends RuntimeException {
     private final ErrorCode errorCode;
     private final List<String> existingMethods;
     private final String linkToken;
+    private final Map<String, String> fieldErrors;
 
     public ApiException(ErrorCode errorCode) {
         this(errorCode, errorCode.defaultMessage());
@@ -27,6 +29,16 @@ public class ApiException extends RuntimeException {
         this.errorCode = errorCode;
         this.existingMethods = existingMethods;
         this.linkToken = linkToken;
+        this.fieldErrors = null;
+    }
+
+    /** Validasi yang hanya bisa dicek service (bergantung pada isian lain): pesan ditempel ke field form-nya. */
+    public ApiException(ErrorCode errorCode, String message, Map<String, String> fieldErrors) {
+        super(message);
+        this.errorCode = errorCode;
+        this.existingMethods = null;
+        this.linkToken = null;
+        this.fieldErrors = fieldErrors;
     }
 
     public ErrorCode getErrorCode() {
@@ -43,5 +55,9 @@ public class ApiException extends RuntimeException {
 
     public String getLinkToken() {
         return linkToken;
+    }
+
+    public Map<String, String> getFieldErrors() {
+        return fieldErrors;
     }
 }

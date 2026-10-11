@@ -14,3 +14,6 @@ app:
     storage-dir: target/test-uploads
     # Potongan kecil agar test bisa mencoba upload yang dilanjutkan dengan ZIP uji berukuran puluhan KB.
     chunk-size-bytes: 65536
+  org:
+    # Logo test ditulis ke folder build, bukan ke backend/data/ milik backend dev.
+    logo-dir: target/test-org-logos

@@ -71,7 +71,7 @@ class JwtServiceTest {
                 new AppProperties.Google(null),
                 new AppProperties.GitHub(null, null, null),
                 "templateapp://auth/callback",
-                "Asia/Jakarta", null);
+                "Asia/Jakarta", null, null);
         return new JwtService(properties, Clock.fixed(now, ZoneOffset.UTC));
     }
 }

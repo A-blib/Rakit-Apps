@@ -14,6 +14,12 @@ spring:
     # Matikan agar query database tidak diam-diam berjalan saat JSON sedang ditulis ke response.
     open-in-view: false
 
+  servlet:
+    multipart:
+      # Sedikit di atas batas logo (ORG_LOGO_MAX_KB); ukuran sebenarnya diperiksa OrgLogoStorage.
+      max-file-size: 2MB
+      max-request-size: 3MB
+
 server:
   port: 8080
 
@@ -30,6 +36,13 @@ app:
     redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/api/auth/github/callback}
   deep-link: ${APP_DEEP_LINK:templateapp://auth/callback}
   timezone: ${APP_TIMEZONE:Asia/Jakarta}
+  # Ruang kerja organisasi (docs/rancangan/revisi-fondasi-orgspace.md bagian 3.2 & 4.1).
+  org:
+    max-members: ${ORG_MAX_MEMBERS:30}
+    invite-ttl-days: ${ORG_INVITE_TTL_DAYS:7}
+    logo-max-kb: ${ORG_LOGO_MAX_KB:1024}
+    # Folder logo hasil olahan (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/org-logos.
+    logo-dir: ${ORG_LOGO_DIR:./data/org-logos}
   seed:
     # Seeder demo template provider (hanya profile dev). Mati secara bawaan; nyalakan dengan
     # --app.seed.demo-templates=true saat menjalankan backend. Lihat README "Data demo provider".

@@ -158,18 +158,20 @@ class GalleryIntegrationTest {
     @Test
     void creatorProfileCanBeEditedWithoutChangingModeOrOnboarding() throws Exception {
         String token = register();
+        mockMvc.perform(post("/api/organizations").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"personal\",\"name\":\"Ruang pribadi\"}"))
+                .andExpect(status().isCreated());
         mockMvc.perform(post("/api/users/me/onboarding/creator").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"displayName\":\"Aris\",\"websitePurpose\":\"sekolah\",\"organizationName\":\"SMK 1\"}"))
+                        .content("{\"displayName\":\"Aris\"}"))
                 .andExpect(status().isOk());
 
         mockMvc.perform(patch("/api/users/me/creator-profile").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"displayName\":\"  Aris Muslim \",\"websitePurpose\":\"umkm\",\"organizationName\":\"  \"}"))
+                        .content("{\"displayName\":\"  Aris Muslim \"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.displayName").value("Aris Muslim"))
-                .andExpect(jsonPath("$.creatorProfile.websitePurpose").value("umkm"))
-                .andExpect(jsonPath("$.creatorProfile.organizationName").doesNotExist())
                 .andExpect(jsonPath("$.onboardingCompleted").value(true))
                 .andExpect(jsonPath("$.activeMode").value("creator"));
     }
@@ -183,7 +185,7 @@ class GalleryIntegrationTest {
         String token = register();
         mockMvc.perform(patch("/api/users/me/creator-profile").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"displayName\":\" \",\"websitePurpose\":\"hewan\"}"))
+                        .content("{\"displayName\":\" \"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }

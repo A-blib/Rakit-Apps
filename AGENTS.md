@@ -946,3 +946,25 @@ Keputusan Aris saat memulai:
 - Fase T1–T8 dicatat sebagai **fase 19–26** (T1 = 19, ..., T8 = 26). Agent lanjut antar-fase tanpa menunggu, dan melapor di akhir setiap fase.
 - Dikerjakan di branch `fitur/template-mode` (dibuat dari `fitur/upload`).
 - Editor custom mode, versi template, potong gambar manual, gaya hover/jenis huruf, sinkron cloud, dan publish link **belum boleh dibangun** (bagian 4.2 dokumen itu).
+
+---
+
+## 19. Tambahan: revisi OrgSpace untuk semua fitur (Oktober 2026)
+
+Aris meminta revisi ini dieksekusi (12 Oktober 2026) dari folder `revisi all of fiture/` (salinan di `docs/rancangan/`). `docs/rancangan/penyempurnaan-system.md` berisi alasan keputusan K1–K24 (bukan instruksi). Dokumen berikut **mengesampingkan** isi AGENTS.md dan bagian 15–18 untuk hal yang dibahasnya:
+
+| Dokumen | Isi | Fase |
+|---|---|---|
+| `revisi-fondasi-orgspace.md` | Nama app **OrgSpace**, ruang kerja organisasi + peran, onboarding baru, desain Biru Semangat + Plus Jakarta Sans, bahasa | R1–R4 |
+| `alur-pembuatan-website.md` (revisi) | Menu bawah Beranda · Website · + · Template · Profil, halaman kelola website, galeri kategori organisasi | W1–W4 |
+| `alur-buat-website-via-template.md` (revisi) | Project di cloud + kunci edit, Room sebagai cache | T1–T8 (dicatat `fase-TX`) |
+| `alur-publish-website.md` | Terbitkan dibangun di server, antrean, rollback penuh, domain | P1–P7 |
+| `alur-fitur-upload.md` bagian 15, `alur-provider.md` | Kategori organisasi, Isi template, hubungkan ke profil organisasi | bersama W4 |
+
+Keputusan Aris saat memulai:
+
+- Kerja Fase P2 lama (Gemini) yang belum di-commit **diarsipkan** di branch `arsip/publish-p2-gemini`; publish dibangun ulang sesuai rancangan baru.
+- Kolom `creator_profiles.website_purpose` dan `organization_name` **boleh dihapus**.
+- Library disetujui: **jsoup** di backend untuk publish, **ZXing core** di Android untuk QR code, **`androidx.exifinterface`**.
+- Agent lanjut antar-fase tanpa menunggu dan melapor di akhir setiap fase; berhenti hanya untuk keputusan produk atau aksi yang butuh Aris (VPS, domain, Cloudflare, perintah sistem).
+- Dikerjakan di branch `fitur/orgspace` (dibuat dari `develop`).

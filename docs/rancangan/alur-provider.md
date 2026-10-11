@@ -3,6 +3,8 @@
 > **Status:** Beranda, Template Anda, dan Profil (versi awal) sudah cukup jelas untuk dijadikan instruksi agent berikutnya. **Upload ditandai "Segera hadir"** karena masih butuh analisa dan diskusi mendalam. Dokumen ini belum untuk dieksekusi agent sampai Aris memintanya.
 >
 > Terakhir diperbarui: 4 Oktober 2026 (Upload segera hadir; data dummy hanya untuk test otomatis dan seeder demo opsional)
+>
+> **Revisi 12 Oktober 2026 (OrgSpace):** di teks UI, "provider" disebut **kreator template** dan Dashboard Provider disebut **Ruang kreator** (`revisiFondasiOrgSpace.md` 8.2); nama di kode tetap `provider`. Kategori template diganti **kategori organisasi**. "Didownload" sekarang dicatat **server** saat website pertama kali **diterbitkan atau diexport**. Desain mengikuti `revisiFondasiOrgSpace.md` bagian 7 (bukan monokrom lagi). Upload dirancang lengkap di `alurFiturUpload.md`.
 
 ---
 
@@ -62,7 +64,7 @@ Bagian yang ditunda ke versi berikutnya:
 
 | Bagian | Isi |
 |---|---|
-| **Kategori yang dibutuhkan** | Kategori website yang paling banyak dipilih pembuat website (dari data tujuan website saat onboarding), ditampilkan dalam bentuk agregat tanpa data pribadi |
+| **Kategori yang dibutuhkan** | Kategori organisasi yang paling banyak dipakai ruang kerja di OrgSpace (dari Profil organisasi), ditampilkan dalam bentuk agregat tanpa data pribadi |
 | **Aktivitas terbaru** | Contoh: "Template X tayang", "Website dari template Y didownload 12 kali minggu ini" |
 | **Pengumuman** | Pengumuman dari pengelola |
 
@@ -89,7 +91,7 @@ Bagian yang ditunda ke versi berikutnya:
 │ │ ✕ Profil Sekolah           → │ │
 │ │   TIDAK LOLOS · 2 ERROR      │ │
 │ ├──────────────────────────────┤ │
-│ │ ! UMKM Kuliner             → │ │
+│ │ ! Aksara OSIS             → │ │
 │ │   TAYANG · 3 PERINGATAN      │ │
 │ └──────────────────────────────┘ │
 │                                  │
@@ -108,7 +110,7 @@ Bagian yang ditunda ke versi berikutnya:
 │                                  │
 │ TEMPLATE POPULER                 │
 │ 1 [▢] Profil Sekolah     30 ↓  → │
-│ 2 [▢] UMKM Kuliner       12 ↓  → │
+│ 2 [▢] Aksara OSIS       12 ↓  → │
 │ 3 [▢] Portofolio Minimal  6 ↓  → │
 │                                  │
 │ PANDUAN                          │
@@ -133,21 +135,20 @@ Angka kecil di tab Beranda adalah jumlah item di "Perlu tindakan". `[▢]` adala
 | Angka | Arti | Kapan bertambah |
 |---|---|---|
 | **Aktif** | Jumlah template milik provider yang sedang tayang di galeri | Kondisi saat ini; tidak terpengaruh pilihan periode. Draft, tidak lolos pengecekan, dan dinonaktifkan tidak dihitung. |
-| **Dilihat** | Berapa kali template milik provider diklik pembuat website (membuka editor template mode) | Saat pembuat website mengklik template di galeri atau "Template untuk anda" (keputusan 4 Okt 2026, lihat `alur-pembuatan-website.md` bagian 7) |
-| **Didownload** | Berapa kali website **jadi** dari template milik provider diexport menjadi file ZIP (HTML, CSS, JS) | Saat pembuat website menekan **Export** pada project yang dibuat dari template provider |
+| **Dilihat** | Berapa kali halaman detail template milik provider dibuka pembuat website | Saat pembuat website membuka detail template di galeri |
+| **Didownload** | Berapa banyak website dari template milik kreator yang **benar-benar jadi**: diterbitkan online atau diexport menjadi ZIP | Saat website dari template kreator pertama kali **diterbitkan** atau **diexport** (mana yang lebih dulu) |
 
 Pilihan periode 7 atau 30 hari hanya mengubah angka Dilihat dan Didownload. Panah perbandingan dengan periode sebelumnya bersifat opsional.
 
-**Alasan memakai "Didownload" (bukan "Dipakai")**: output akhir app adalah file ZIP website jadi. Angka ini menunjukkan berapa banyak website yang benar-benar selesai dibuat dari template provider, sehingga lebih bermakna daripada sekadar template dipilih.
+**Alasan memakai "Didownload" (bukan "Dipakai")**: output akhir app adalah website jadi (terbit online atau file ZIP). Angka ini menunjukkan berapa banyak website yang benar-benar selesai dibuat dari template provider, sehingga lebih bermakna daripada sekadar template dipilih.
 
 ### 3.5 Aturan penghitungan "Didownload" (versi awal)
 
 1. **Hanya project dari template provider yang dihitung.** Project yang dirakit sendiri dari section bawaan, atau dari template bawaan app, tidak menambah angka provider mana pun.
-2. **Satu project dihitung satu kali**, yaitu pada export pertamanya. Export ulang setelah revisi tidak menambah angka.
-3. **Export oleh pemilik template sendiri tidak dihitung.**
-4. **Export terjadi offline**, jadi app menyimpan event di antrean lokal lalu mengirimnya ke server saat online (saat app dibuka berikutnya atau saat koneksi tersedia). Event berisi `template_id`, `project_id`, `install_id`, dan waktu export.
-5. **Tamu tetap dihitung** lewat `install_id`, yaitu ID acak per instalasi app yang tidak terhubung ke identitas siapa pun.
-6. Event yang belum terkirim (misalnya app dihapus sebelum online) tidak tercatat. Untuk versi awal, selisih kecil ini bisa diterima.
+2. **Satu website dihitung satu kali**, yaitu pada terbit **atau** export pertamanya (mana yang lebih dulu). Terbit/export ulang tidak menambah angka.
+3. **Website di ruang kerja yang beranggotakan pemilik template sendiri tidak dihitung.**
+4. **Dicatat langsung oleh server** di tahap Catat proses bangun (`alurFiturPublishWebsite.md` 7.7 dan 7.12), karena terbit dan export sekarang dikerjakan server. App tidak lagi mengirim event `download`.
+5. Event `view` (Dilihat) tetap dikirim app dengan `install_id` dan antrean offline (`alurFiturBuatWibeSiteviatemplate.md` bagian 10); tamu tetap dihitung.
 
 ### 3.6 Gambaran data
 
@@ -175,7 +176,7 @@ Endpoint: `POST /api/templates/{id}/events` dengan body `{ type, projectId?, ins
 | Periode | Mengikuti pilihan periode ringkasan: 7 hari (7 titik) atau 30 hari (30 titik) |
 | Sumbu | X = tanggal (7 hari: nama hari; 30 hari: tanggal), Y = jumlah download, dimulai dari 0 |
 | Interaksi | Ketuk titik untuk melihat tanggal dan jumlah download hari itu |
-| Gaya | Garis warna `color_foreground`, area warna yang sama dengan gradasi memudar ke bawah, grid horizontal tipis `color_border`, label sumbu Geist Mono, tanpa bayangan. Mengikuti mode terang dan gelap. |
+| Gaya | Garis warna `color_primary`, area warna yang sama dengan gradasi memudar ke bawah, grid horizontal tipis `color_border`, label sumbu Plus Jakarta Sans (style Label), tanpa bayangan. Mengikuti mode terang dan gelap. |
 | Kondisi kosong | Jika belum ada download di periode itu, tampilkan garis datar di 0 dengan teks "Belum ada download di periode ini." |
 | Hari tanpa download | Tetap ditampilkan sebagai titik bernilai 0, bukan dilewati, agar bentuk tren jujur |
 
@@ -238,7 +239,7 @@ Pengecekan dijalankan **di background di server**. Saat upload, status template 
 
 | Tingkat | Akibat | Contoh |
 |---|---|---|
-| **Error** | Template **tidak tayang** sampai diperbaiki | `index.html` tidak ada, ukuran melebihi batas, jenis file tidak diizinkan, tidak ada bagian yang bisa diedit, `data-key` ganda, script dari domain luar |
+| **Error** | Template **tidak tayang** sampai diperbaiki | `index.html` tidak ada, ukuran melebihi batas, jenis file tidak diizinkan, tidak ada bagian yang bisa diedit, `data-key` ganda, script dari domain luar yang tidak ada di daftar library yang diizinkan (daftar lengkap: `alurFiturUpload.md` bagian 5.6) |
 | **Peringatan** | Template **tetap tayang**, tetapi disarankan diperbaiki | Gambar terlalu besar, gambar tanpa teks alternatif, tidak ada meta viewport |
 
 Setiap masalah wajib memiliki: **pesan yang jelas**, **letak masalah** (file dan baris jika ada), dan **saran cara memperbaiki**. Daftar syarat lengkap ditetapkan saat membahas segmen Upload.
@@ -437,6 +438,8 @@ Bantuan untuk user yang terbiasa RAR:
 
 ### 5.3 Cara kerja mode tandai (gambaran teknis)
 
+> **Digantikan oleh `alurFiturUpload.md`** (6 Oktober 2026): ZIP kini diupload dan dicek di awal sebelum menandai, tampilan per section seperti slide, dan JavaScript provider dimatikan selama mode tandai. Isi di bawah ini disimpan sebagai riwayat.
+
 ```
 1. Provider memilih file ZIP
 2. App mengekstrak ZIP ke folder sementara di HP
@@ -484,7 +487,7 @@ Daftar semua template milik provider, dengan filter. Fitur pengelolaan (edit inf
 | Nama | Nama template |
 | Badge status | TAYANG / SEDANG DICEK / TIDAK LOLOS / DRAFT / DINONAKTIFKAN (status bagian 4.3) |
 | Badge peringatan | "n PERINGATAN" jika tayang dengan peringatan |
-| Kategori | Misalnya Sekolah, UMKM |
+| Kategori | Kategori organisasi, mis. OSIS / MPK, Pramuka |
 | Angka | Dilihat dan Didownload (total sejak tayang) |
 | Waktu | "Diperbarui 2 hari lalu" |
 
@@ -495,7 +498,7 @@ Ketuk kartu → **detail template sederhana**: thumbnail besar, nama, kategori, 
 | Kontrol | Pilihan |
 |---|---|
 | Filter status (chip, satu pilihan) | Semua · Tayang · Perlu perbaikan (tidak lolos + tayang dengan peringatan) · Sedang dicek · Draft · Dinonaktifkan. Setiap chip menampilkan jumlahnya, misalnya "Tayang (4)". |
-| Filter kategori (dropdown) | Semua kategori · Sekolah · Organisasi · Usaha / UMKM · Instansi · Pribadi / Portofolio · Lainnya |
+| Filter kategori (dropdown) | Semua kategori + kategori organisasi dari `GET /api/meta/categories` |
 | Urutkan | Terbaru diperbarui (bawaan) · Download terbanyak · Dilihat terbanyak · Nama A–Z |
 | Cari | Kolom pencarian berdasarkan nama template |
 
@@ -508,7 +511,7 @@ Filter terakhir yang dipilih diingat selama app terbuka. Kartu "Perlu tindakan" 
 | Belum punya template | Lottie + "Belum ada template. Fitur upload segera hadir." + tombol "Buka panduan" |
 | Filter tidak menemukan apa pun | "Tidak ada template dengan filter ini." + tombol "Hapus filter" |
 | Gagal memuat (offline) | "Tidak ada koneksi. Periksa internet lalu coba lagi." + tombol coba lagi |
-| Memuat | Kartu kerangka (skeleton) sesuai gaya monokrom |
+| Memuat | Kartu kerangka (skeleton) sesuai token desain |
 
 ### 6.5 Gambaran layar
 
@@ -522,14 +525,14 @@ Filter terakhir yang dipilih diingat selama app terbuka. Kartu "Perlu tindakan" 
 │ Kategori [Semua ▾] Urut [Terbaru▾]│
 │                                  │
 │ ┌──────────────────────────────┐ │
-│ │[▢] Profil Sekolah            │ │
+│ │[▢] Pramuka Gemilang          │ │
 │ │    TAYANG · 3 PERINGATAN     │ │
-│ │    Sekolah · 180 dilihat ·   │ │
+│ │    Pramuka · 180 dilihat ·   │ │
 │ │    30 download · 2 hari lalu │ │
 │ ├──────────────────────────────┤ │
-│ │[▢] UMKM Kuliner              │ │
+│ │[▢] Aksara OSIS              │ │
 │ │    TAYANG                    │ │
-│ │    UMKM · 90 dilihat ·       │ │
+│ │    OSIS · 90 dilihat ·       │ │
 │ │    12 download · 5 hari lalu │ │
 │ ├──────────────────────────────┤ │
 │ │[▢] Landing Event             │ │
@@ -578,6 +581,7 @@ Tidak ada untuk saat ini.
 
 > **Belum didiskusikan secara matang.** Jangan membangun apa pun dari daftar di bawah ini. Kerjakan dulu yang sudah jelas di dokumen ini (Beranda, notifikasi, Template Anda versi awal, Profil versi awal, dan layar "Segera hadir" untuk Upload). Bagian ini baru dikerjakan setelah Aris selesai mendiskusikannya.
 
-1. **Upload** (diskusi mendalam): layout dan urutan langkah, mode tandai, daftar syarat pengecekan otomatis (termasuk aturan JavaScript), draft (bagian 5.4), versi template
+1. **Upload**: alur besar, susunan 6 langkah, pengecekan di awal, dan cara menandai sudah dibahas di `alurFiturUpload.md`. Yang belum: daftar lengkap syarat pengecekan, versi template, dan detail layout (lihat `alurFiturUpload.md` bagian 12–13)
 2. **Template Anda lanjutan**: edit info, upload versi perbaikan, menonaktifkan template sendiri, riwayat versi
 3. **Profil lanjutan**: profil publik kreator di galeri dan pengaturan khusus provider
+4. **Kerangka section buatan provider** (rencana ke depan): selain template utuh, provider bisa membuat kerangka section (header, hero, footer, dll.) untuk dipajang siap pakai di custom mode pembuat website. Versi awal kerangka hanya disediakan app. Lihat `alurFiturPembuatanWibesite.md` bagian 1 dan 9.

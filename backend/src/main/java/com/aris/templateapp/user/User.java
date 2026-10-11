@@ -45,6 +45,9 @@ public class User {
     @Column(nullable = false)
     private boolean onboardingCompleted;
 
+    // Ruang kerja yang terakhir dibuka (organisasi atau ruang pribadi); null jika belum punya.
+    private UUID lastOrganizationId;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

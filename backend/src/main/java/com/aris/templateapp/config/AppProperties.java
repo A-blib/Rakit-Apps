@@ -25,7 +25,8 @@ public record AppProperties(
         @NotBlank String deepLink,
         // Zona waktu untuk mengelompokkan statistik per hari (mis. download per tanggal di Indonesia).
         @NotBlank String timezone,
-        @Valid Upload upload) {
+        @Valid Upload upload,
+        @Valid Org org) {
 
     public record Jwt(
             // HS256 butuh kunci minimal 256 bit (32 byte).
@@ -39,6 +40,21 @@ public record AppProperties(
     }
 
     public record GitHub(String clientId, String clientSecret, String redirectUri) {
+    }
+
+    /**
+     * Ruang kerja organisasi (revisi-fondasi-orgspace.md bagian 3.2 & 4.1).
+     *
+     * @param maxMembers    batas anggota per organisasi (F4)
+     * @param inviteTtlDays masa berlaku kode undangan (F2)
+     * @param logoMaxKb     ukuran maksimal file logo yang diunggah
+     * @param logoDir       folder logo hasil olahan server (relatif ke folder kerja backend)
+     */
+    public record Org(
+            @Min(2) int maxMembers,
+            @Min(1) int inviteTtlDays,
+            @Min(16) int logoMaxKb,
+            @NotBlank String logoDir) {
     }
 
     /**
