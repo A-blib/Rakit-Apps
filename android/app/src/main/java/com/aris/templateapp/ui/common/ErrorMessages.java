@@ -41,6 +41,22 @@ public final class ErrorMessages {
                 return context.getString(R.string.error_link_token_invalid);
             case "IDENTITY_IN_USE":
                 return context.getString(R.string.error_identity_in_use);
+            case "INVITATION_INVALID":
+                return context.getString(R.string.error_invitation_invalid);
+            case "ALREADY_MEMBER":
+                return context.getString(R.string.error_already_member);
+            case "ORG_MEMBER_LIMIT":
+                return context.getString(R.string.error_org_member_limit);
+            case "PERSONAL_SPACE_EXISTS":
+                return context.getString(R.string.error_personal_space_exists);
+            case "CATEGORY_LEVEL_MISMATCH":
+                return context.getString(R.string.error_category_level_mismatch);
+            case "LAST_OWNER":
+                return context.getString(R.string.error_last_owner);
+            case "ROLE_NOT_ALLOWED":
+                return context.getString(R.string.error_role_not_allowed);
+            case "TOO_MANY_ATTEMPTS":
+                return context.getString(R.string.error_too_many_attempts);
             case "REFRESH_TOKEN_INVALID":
             case "UNAUTHORIZED":
                 return context.getString(R.string.error_session_expired);

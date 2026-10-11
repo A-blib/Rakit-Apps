@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Satu ruang kerja di pemilih: logo/inisial, nama, peran, tanda ✓ untuk yang aktif. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.App.ListItem">
+
+    <FrameLayout
+        android:layout_width="@dimen/avatar_size_large"
+        android:layout_height="@dimen/avatar_size_large">
+
+        <TextView
+            android:id="@+id/initial"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_workspace_initial"
+            android:gravity="center"
+            android:importantForAccessibility="no"
+            android:textAppearance="@style/TextAppearance.App.Title"
+            android:textColor="@color/color_on_primary_container" />
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/space_4"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.App.Body.SemiBold" />
+
+        <TextView
+            android:id="@+id/role"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.BodySmall" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/check"
+        android:layout_width="@dimen/icon_size"
+        android:layout_height="@dimen/icon_size"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_check"
+        app:tint="@color/color_primary" />
+</LinearLayout>

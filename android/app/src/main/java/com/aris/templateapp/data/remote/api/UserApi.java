@@ -30,7 +30,7 @@ public interface UserApi {
     @POST("users/me/onboarding/provider")
     Call<UserDto> onboardProvider(@Body ProviderOnboardingRequestDto body);
 
-    /** Body-nya sama persis dengan form onboarding pembuat website, jadi DTO-nya dipakai ulang. */
+    /** Body-nya sama dengan onboarding pembuat website (hanya nama tampilan), jadi DTO-nya dipakai ulang. */
     @PATCH("users/me/creator-profile")
     Call<UserDto> updateCreatorProfile(@Body CreatorOnboardingRequestDto body);
 

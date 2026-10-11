@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gabung organisasi lewat kode undangan: kode → Cek kode → pratinjau (logo, nama, peran) + jabatan → Gabung. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingBottom="@dimen/space_8">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/join_title"
+                android:textAppearance="@style/TextAppearance.App.Headline" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2"
+                android:layout_marginBottom="@dimen/space_6"
+                android:text="@string/join_subtitle"
+                android:textAppearance="@style/TextAppearance.App.Body"
+                android:textColor="@color/color_muted" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/code_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/join_field_code"
+                app:helperText="@string/join_field_code_helper"
+                app:startIconContentDescription="@null"
+                app:startIconDrawable="@drawable/ic_key">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/code_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionGo"
+                    android:inputType="textCapCharacters|textNoSuggestions"
+                    android:maxLength="20"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/check_button"
+                style="@style/Widget.App.Button.Outlined"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_4"
+                android:text="@string/join_check" />
+
+            <LinearLayout
+                android:id="@+id/preview_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:baselineAligned="false"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/space_4">
+
+                        <FrameLayout
+                            android:layout_width="@dimen/thumbnail_size"
+                            android:layout_height="@dimen/thumbnail_size"
+                            android:background="@drawable/bg_thumbnail">
+
+                            <ImageView
+                                android:id="@+id/preview_logo_placeholder"
+                                android:layout_width="@dimen/icon_size"
+                                android:layout_height="@dimen/icon_size"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_groups" />
+
+                            <ImageView
+                                android:id="@+id/preview_logo"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:importantForAccessibility="no"
+                                android:scaleType="centerCrop" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_4"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/preview_name"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.App.Title" />
+
+                            <TextView
+                                android:id="@+id/preview_role"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/space_1"
+                                android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/position_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_4"
+                    android:hint="@string/org_field_position"
+                    app:helperText="@string/org_field_position_helper">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/position_input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapWords"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button
+                    android:id="@+id/join_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_6"
+                    android:text="@string/join_submit" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

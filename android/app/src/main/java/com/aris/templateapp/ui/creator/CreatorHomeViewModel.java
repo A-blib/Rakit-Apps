@@ -8,12 +8,10 @@ import com.aris.templateapp.core.util.AppExecutors;
 import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.local.ProjectCounts;
 import com.aris.templateapp.data.local.ProjectEntity;
-import com.aris.templateapp.data.model.User;
 import com.aris.templateapp.data.remote.dto.GalleryPageDto;
 import com.aris.templateapp.data.remote.dto.GalleryPageDto.GalleryTemplateDto;
 import com.aris.templateapp.data.repository.GalleryRepository;
 import com.aris.templateapp.data.repository.ProjectRepository;
-import com.aris.templateapp.data.repository.UserRepository;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +28,6 @@ public class CreatorHomeViewModel extends ViewModel {
     static final int RECENT_LIMIT = 4;
 
     private final GalleryRepository galleryRepository;
-    private final UserRepository userRepository;
     private final AppExecutors executors;
 
     private final LiveData<List<ProjectEntity>> recent;
@@ -41,9 +38,8 @@ public class CreatorHomeViewModel extends ViewModel {
 
     @Inject
     public CreatorHomeViewModel(ProjectRepository projectRepository, GalleryRepository galleryRepository,
-                                UserRepository userRepository, AppExecutors executors) {
+                                AppExecutors executors) {
         this.galleryRepository = galleryRepository;
-        this.userRepository = userRepository;
         this.executors = executors;
         recent = projectRepository.observeRecent(RECENT_LIMIT);
         counts = projectRepository.observeCounts("");
@@ -67,24 +63,13 @@ public class CreatorHomeViewModel extends ViewModel {
     }
 
     /**
-     * Login dengan tujuan website → terpopuler di kategori itu, dilengkapi dari semua kategori jika kurang dari 6.
-     * Tamu / melewati onboarding → terpopuler dari semua kategori. Daftar lama tetap tampil sampai yang baru datang.
+     * Terpopuler dari semua kategori. Rekomendasi per kategori organisasi ruang kerja dipasang bersama galeri
+     * kategori baru (alur-pembuatan-website.md fase W4). Daftar lama tetap tampil sampai yang baru datang.
      */
     public void loadRecommendations() {
         executors.networkIO().execute(() -> {
-            User user = userRepository.getCachedUser();
-            String purpose = user == null ? null : user.getWebsitePurpose();
-            List<GalleryTemplateDto> result;
-            if (purpose == null) {
-                result = fetch(null);
-            } else {
-                result = fetch(purpose);
-                if (result != null && Recommendations.needsFallback(result)) {
-                    List<GalleryTemplateDto> all = fetch(null);
-                    result = Recommendations.merge(result, all);
-                }
-            }
-            recommendedCategory = purpose;
+            List<GalleryTemplateDto> result = fetch(null);
+            recommendedCategory = null;
             recommendations.postValue(result == null ? Collections.emptyList() : result);
         });
     }

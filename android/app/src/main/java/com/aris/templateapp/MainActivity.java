@@ -15,6 +15,7 @@ import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.core.storage.SessionStore;
+import com.aris.templateapp.data.repository.WorkspaceRepository;
 import com.aris.templateapp.databinding.ActivityMainBinding;
 import com.aris.templateapp.ui.auth.AuthDeepLinks;
 import com.google.android.material.snackbar.Snackbar;
@@ -32,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Inject
     SessionStore sessionStore;
+
+    @Inject
+    WorkspaceRepository workspaceRepository;
 
     @Inject
     AuthDeepLinks authDeepLinks;
@@ -68,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         sessionStore.sessionExpiredEvents().observe(this, event -> {
             if (event.getContentIfNotHandled() != null) {
                 // Sesi berakhir (refresh token ditolak): kembali ke Dashboard Pembuat Website sebagai tamu.
+                workspaceRepository.clear();
                 NavHostFragment host = (NavHostFragment) getSupportFragmentManager()
                         .findFragmentById(R.id.nav_host_fragment);
                 if (host != null) {

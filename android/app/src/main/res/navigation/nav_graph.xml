@@ -151,18 +151,42 @@
         android:id="@+id/roleSelectFragment"
         android:name="com.aris.templateapp.ui.onboarding.RoleSelectFragment">
         <action
-            android:id="@+id/action_role_select_to_creator_form"
-            app:destination="@id/creatorFormFragment" />
+            android:id="@+id/action_role_select_to_workspace_choice"
+            app:destination="@id/workspaceChoiceFragment" />
         <action
             android:id="@+id/action_role_select_to_provider_form"
             app:destination="@id/providerFormFragment" />
     </fragment>
 
+    <!-- Ruang kerja (revisi-fondasi-orgspace.md bagian 5). Dibuka dari pilih peran, dari dashboard yang belum punya
+         ruang kerja, dan dari pemilih ruang kerja. -->
     <fragment
-        android:id="@+id/creatorFormFragment"
-        android:name="com.aris.templateapp.ui.onboarding.CreatorFormFragment" />
+        android:id="@+id/workspaceChoiceFragment"
+        android:name="com.aris.templateapp.ui.workspace.WorkspaceChoiceFragment">
+        <action
+            android:id="@+id/action_workspace_choice_to_organization_form"
+            app:destination="@id/organizationFormFragment" />
+        <action
+            android:id="@+id/action_workspace_choice_to_join"
+            app:destination="@id/joinOrganizationFragment" />
+        <action
+            android:id="@+id/action_workspace_choice_to_personal"
+            app:destination="@id/personalSpaceFragment" />
+    </fragment>
 
-    <!-- Dibuka dari onboarding ATAU dari menu profil "Jadi penyedia template". -->
+    <fragment
+        android:id="@+id/organizationFormFragment"
+        android:name="com.aris.templateapp.ui.workspace.OrganizationFormFragment" />
+
+    <fragment
+        android:id="@+id/joinOrganizationFragment"
+        android:name="com.aris.templateapp.ui.workspace.JoinOrganizationFragment" />
+
+    <fragment
+        android:id="@+id/personalSpaceFragment"
+        android:name="com.aris.templateapp.ui.workspace.PersonalSpaceFragment" />
+
+    <!-- Dibuka dari onboarding ATAU dari menu profil "Jadi kreator template". -->
     <fragment
         android:id="@+id/providerFormFragment"
         android:name="com.aris.templateapp.ui.onboarding.ProviderFormFragment" />

@@ -417,11 +417,7 @@ Mulai dari template. Template yang mirip dengan kebutuhanmu biasanya jadi lebih 
     <string name="role_select_note">Peran lain bisa ditambah nanti.</string>
 
     <!-- Onboarding: form pembuat website -->
-    <string name="creator_form_title">Tentang website-mu</string>
-    <string name="creator_form_subtitle">Bantu kami menyiapkan yang cocok untukmu.</string>
     <string name="field_display_name">Nama tampilan</string>
-    <string name="field_website_purpose">Tujuan website</string>
-    <string name="field_organization">Nama organisasi (opsional)</string>
     <string name="purpose_sekolah">Sekolah</string>
     <string name="purpose_organisasi">Organisasi</string>
     <string name="purpose_umkm">Usaha / UMKM</string>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pemilih ruang kerja (revisi-fondasi-orgspace.md 3 & 7.5): daftar ruang kerja + "Buat atau gabung organisasi". -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/space_2"
+    android:paddingBottom="@dimen/space_4">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/space_2"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:text="@string/workspace_picker_title"
+        android:textAppearance="@style/TextAppearance.App.Title" />
+
+    <LinearLayout
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="@dimen/space_2" />
+
+    <TextView
+        android:id="@+id/add_item"
+        style="@style/Widget.App.ListItem.Text"
+        android:text="@string/workspace_picker_add"
+        android:textColor="@color/color_primary"
+        app:drawableStartCompat="@drawable/ic_group_add"
+        app:drawableTint="@color/color_primary" />
+</LinearLayout>

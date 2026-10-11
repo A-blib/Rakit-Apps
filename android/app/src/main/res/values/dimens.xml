@@ -31,7 +31,11 @@
     <dimen name="icon_size">24dp</dimen>
     <dimen name="icon_size_small">20dp</dimen>
     <dimen name="avatar_size">32dp</dimen>
+    <!-- Logo/inisial ruang kerja di pemilih ruang kerja dan daftar anggota. -->
+    <dimen name="avatar_size_large">40dp</dimen>
     <dimen name="app_bar_height">56dp</dimen>
+    <!-- Nama ruang kerja panjang dipotong "…" agar avatar di kanan tetap terlihat di layar 360dp. -->
+    <dimen name="workspace_switcher_max_width">220dp</dimen>
     <dimen name="illustration_size">200dp</dimen>
     <dimen name="state_illustration_size">120dp</dimen>
     <dimen name="list_item_min_height">56dp</dimen>

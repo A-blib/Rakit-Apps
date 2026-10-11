@@ -14,12 +14,11 @@ public class User {
     private final boolean onboardingCompleted;
     private final Set<UserRole> roles;
     private final ProviderStatus providerStatus;
-    private final String websitePurpose;
-    private final String organizationName;
+    private final String lastOrganizationId;
 
     public User(String id, String displayName, String email, String avatarUrl, UserRole activeMode,
                 boolean onboardingCompleted, Set<UserRole> roles, ProviderStatus providerStatus,
-                String websitePurpose, String organizationName) {
+                String lastOrganizationId) {
         this.id = id;
         this.displayName = displayName;
         this.email = email;
@@ -28,8 +27,7 @@ public class User {
         this.onboardingCompleted = onboardingCompleted;
         this.roles = roles == null ? Collections.emptySet() : Collections.unmodifiableSet(roles);
         this.providerStatus = providerStatus;
-        this.websitePurpose = websitePurpose;
-        this.organizationName = organizationName;
+        this.lastOrganizationId = lastOrganizationId;
     }
 
     public String getId() {
@@ -73,11 +71,8 @@ public class User {
         return providerStatus == ProviderStatus.SUSPENDED;
     }
 
-    public String getWebsitePurpose() {
-        return websitePurpose;
-    }
-
-    public String getOrganizationName() {
-        return organizationName;
+    /** Ruang kerja terakhir yang dibuka (tersimpan di server); null jika belum punya. */
+    public String getLastOrganizationId() {
+        return lastOrganizationId;
     }
 }

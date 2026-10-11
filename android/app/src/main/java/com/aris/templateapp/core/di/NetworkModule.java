@@ -5,6 +5,7 @@ import com.aris.templateapp.core.network.AuthInterceptor;
 import com.aris.templateapp.core.network.TokenAuthenticator;
 import com.aris.templateapp.data.remote.api.AuthApi;
 import com.aris.templateapp.data.remote.api.GalleryApi;
+import com.aris.templateapp.data.remote.api.OrganizationApi;
 import com.aris.templateapp.data.remote.api.ProviderApi;
 import com.aris.templateapp.data.remote.api.UploadApi;
 import com.aris.templateapp.data.remote.api.UserApi;
@@ -63,6 +64,12 @@ public final class NetworkModule {
     @Singleton
     static UserApi provideUserApi(Retrofit retrofit) {
         return retrofit.create(UserApi.class);
+    }
+
+    @Provides
+    @Singleton
+    static OrganizationApi provideOrganizationApi(Retrofit retrofit) {
+        return retrofit.create(OrganizationApi.class);
     }
 
     @Provides

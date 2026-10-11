@@ -11,14 +11,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.databinding.FragmentCreatorDashboardBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.KeyboardAwareBottomBar;
+import com.aris.templateapp.ui.workspace.WorkspacePickerSheet;
+import com.aris.templateapp.ui.workspace.WorkspaceViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -39,6 +43,7 @@ public class CreatorDashboardFragment extends Fragment {
 
     private FragmentCreatorDashboardBinding binding;
     private CurrentUserViewModel userViewModel;
+    private WorkspaceViewModel workspaceViewModel;
     private KeyboardAwareBottomBar keyboardAware;
 
     /** Tombol kembali di tab selain Beranda membuka Beranda dulu; di Beranda baru menutup app. */
@@ -77,7 +82,25 @@ public class CreatorDashboardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         userViewModel = new ViewModelProvider(this).get(CurrentUserViewModel.class);
-        userViewModel.getUser().observe(getViewLifecycleOwner(), user -> AppBarAccount.bind(binding.account, user));
+        workspaceViewModel = new ViewModelProvider(this).get(WorkspaceViewModel.class);
+        userViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
+            AppBarAccount.bind(binding.account, user);
+            bindWorkspace(user == null ? null : workspaceViewModel.getActive().getValue());
+        });
+        workspaceViewModel.getActive().observe(getViewLifecycleOwner(), workspace ->
+                bindWorkspace(userViewModel.getUser().getValue() == null ? null : workspace));
+        workspaceViewModel.getNeedsWorkspace().observe(getViewLifecycleOwner(), event -> {
+            if (event.getContentIfNotHandled() != null) {
+                // User lama tanpa ruang kerja: tampilkan layar pilihan yang sama dengan onboarding (bagian 5).
+                NavHostFragment.findNavController(this).navigate(R.id.workspaceChoiceFragment, null,
+                        new NavOptions.Builder().setPopUpTo(R.id.creatorDashboardFragment, true).build());
+            }
+        });
+        binding.workspaceSwitcher.setOnClickListener(v -> {
+            if (getChildFragmentManager().findFragmentByTag(WorkspacePickerSheet.TAG) == null) {
+                new WorkspacePickerSheet().show(getChildFragmentManager(), WorkspacePickerSheet.TAG);
+            }
+        });
         binding.account.signInButton.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login));
         // Avatar membuka tab Profil (menggantikan bottom sheet menu profil, keputusan Aris).
@@ -104,6 +127,9 @@ public class CreatorDashboardFragment extends Fragment {
         super.onStart();
         // Dibaca ulang setiap layar tampil lagi, mis. setelah kembali dari layar Masuk.
         userViewModel.reload();
+        if (userViewModel.isLoggedInNow()) {
+            workspaceViewModel.refresh();
+        }
     }
 
     /** Tombol +, kartu "Mulai", dan tombol "Buat website" di tab Project membuka bottom sheet yang sama. */
@@ -125,6 +151,20 @@ public class CreatorDashboardFragment extends Fragment {
         new ViewModelProvider(requireActivity()).get(GalleryViewModel.class)
                 .setCategory(category == null ? GalleryViewModel.ALL : category);
         selectTab(R.id.tab_creator_gallery);
+    }
+
+    /** Tamu atau belum punya ruang kerja: judul "OrgSpace". Selain itu: nama ruang kerja + panah pemilih. */
+    private void bindWorkspace(@Nullable Workspace workspace) {
+        if (binding == null) {
+            return;
+        }
+        boolean show = workspace != null;
+        binding.workspaceSwitcher.setVisibility(show ? View.VISIBLE : View.GONE);
+        binding.toolbar.setTitle(show ? null : getString(R.string.app_name));
+        if (show) {
+            binding.workspaceSwitcher.setText(workspace.getName());
+            binding.workspaceSwitcher.setContentDescription(getString(R.string.cd_workspace_picker, workspace.getName()));
+        }
     }
 
     private static int indexOf(@IdRes int tab) {

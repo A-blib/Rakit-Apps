@@ -2,6 +2,7 @@
 <!--
     Shell Dashboard Pembuat Website (alur-pembuatan-website.md bagian 2): app bar (nama app + Masuk/avatar),
     ViewPager2 berisi 4 tab (bisa digeser ke samping), dan bottom navigation dengan tombol + di tengah.
+    Untuk user login yang punya ruang kerja, judul app bar diganti nama ruang kerja + panah (pemilih ruang kerja).
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -14,6 +15,22 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/app_bar_height"
         app:title="@string/app_name">
+
+        <TextView
+            android:id="@+id/workspace_switcher"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/touch_target_min"
+            android:layout_marginEnd="@dimen/space_2"
+            android:background="?attr/selectableItemBackground"
+            android:drawablePadding="@dimen/space_1"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:maxWidth="@dimen/workspace_switcher_max_width"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.App.AppBarTitle"
+            android:visibility="gone"
+            app:drawableEndCompat="@drawable/ic_expand_more"
+            app:drawableTint="@color/color_foreground" />
 
         <include
             android:id="@+id/account"

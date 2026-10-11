@@ -69,17 +69,16 @@ public class UserRepository {
         return executeUser(userApi.me());
     }
 
+    /** Langkah terakhir onboarding pembuat website, setelah user membuat/bergabung ruang kerja. */
     @WorkerThread
-    public Resource<User> completeCreatorOnboarding(String displayName, String websitePurpose, String organizationName) {
-        return executeUser(userApi.onboardCreator(
-                new CreatorOnboardingRequestDto(displayName, websitePurpose, organizationName)));
+    public Resource<User> completeCreatorOnboarding(String displayName) {
+        return executeUser(userApi.onboardCreator(new CreatorOnboardingRequestDto(displayName)));
     }
 
-    /** Edit info pembuat website dari tab Profil; salinan user di HP ikut diperbarui. */
+    /** Edit nama tampilan dari tab Profil; salinan user di HP ikut diperbarui. */
     @WorkerThread
-    public Resource<User> updateCreatorProfile(String displayName, String websitePurpose, String organizationName) {
-        return executeUser(userApi.updateCreatorProfile(
-                new CreatorOnboardingRequestDto(displayName, websitePurpose, organizationName)));
+    public Resource<User> updateCreatorProfile(String displayName) {
+        return executeUser(userApi.updateCreatorProfile(new CreatorOnboardingRequestDto(displayName)));
     }
 
     @WorkerThread

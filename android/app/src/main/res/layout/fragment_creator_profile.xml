@@ -131,24 +131,11 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/field_website_purpose"
+                        android:text="@string/profile_workspace"
                         android:textAppearance="@style/TextAppearance.App.BodySmall" />
 
                     <TextView
-                        android:id="@+id/purpose"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.App.Body" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_3"
-                        android:text="@string/field_organization"
-                        android:textAppearance="@style/TextAppearance.App.BodySmall" />
-
-                    <TextView
-                        android:id="@+id/organization"
+                        android:id="@+id/workspace"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textAppearance="@style/TextAppearance.App.Body" />

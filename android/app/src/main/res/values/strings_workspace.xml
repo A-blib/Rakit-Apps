@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Teks ruang kerja organisasi OrgSpace (docs/rancangan/revisi-fondasi-orgspace.md bagian 5 & 8).
+    Sapaan memakai "kamu", kalimat pendek dan hangat, tanpa istilah teknis.
+-->
+<resources>
+    <!-- Kode error ruang kerja -->
+    <string name="error_invitation_invalid">Kode undangan ini sudah tidak berlaku. Minta kode baru ke pengurus, ya.</string>
+    <string name="error_already_member">Kamu sudah jadi anggota organisasi ini.</string>
+    <string name="error_org_member_limit">Anggota organisasi ini sudah penuh. Hubungi pengurusnya, ya.</string>
+    <string name="error_personal_space_exists">Kamu sudah punya ruang pribadi.</string>
+    <string name="error_category_level_mismatch">Kategori ini tidak tersedia untuk jenjang yang dipilih.</string>
+    <string name="error_last_owner">Jadikan anggota lain Pemilik dulu sebelum keluar.</string>
+    <string name="error_role_not_allowed">Peranmu belum bisa melakukan ini.</string>
+    <string name="error_too_many_attempts">Terlalu banyak percobaan. Tunggu sebentar, lalu coba lagi.</string>
+
+    <!-- Layar pilihan ruang kerja (bagian 5) -->
+    <string name="workspace_choice_title">Mulai jejak digital organisasimu dari sini</string>
+    <string name="workspace_choice_subtitle">Pilih cara kamu mulai. Bisa tambah organisasi lain nanti.</string>
+    <string name="workspace_choice_create_title">Buat ruang organisasi</string>
+    <string name="workspace_choice_create_body">Untuk OSIS, BEM, Pramuka, ekskul, atau komunitasmu.</string>
+    <string name="workspace_choice_join_title">Gabung organisasi</string>
+    <string name="workspace_choice_join_body">Punya kode undangan dari pengurus? Masuk ke sini.</string>
+    <string name="workspace_choice_personal_title">Untuk pribadi</string>
+    <string name="workspace_choice_personal_body">Website portofolio atau proyekmu sendiri.</string>
+
+    <!-- Form organisasi (bagian 5.1) -->
+    <string name="org_form_title">Kenalan dulu sama organisasimu</string>
+    <string name="org_form_subtitle">Data ini mengisi website kalian secara otomatis. Bisa diubah kapan saja.</string>
+    <string name="org_field_name">Nama organisasi</string>
+    <string name="org_field_name_helper">Contoh: OSIS SMA Negeri 1 Bandung</string>
+    <string name="org_field_short_name">Nama singkat (opsional)</string>
+    <string name="org_field_short_name_helper">Contoh: OSIS Smansa. Dipakai saat menyapa kalian.</string>
+    <string name="org_field_level">Jenjang</string>
+    <string name="org_field_category">Kategori</string>
+    <string name="org_field_category_empty">Pilih jenjang dulu, ya.</string>
+    <string name="org_field_institution">Nama sekolah atau kampus</string>
+    <string name="org_field_institution_helper">Contoh: SMA Negeri 1 Bandung</string>
+    <string name="org_field_city">Kota / kabupaten (opsional)</string>
+    <string name="org_field_period">Periode kepengurusan (opsional)</string>
+    <string name="org_field_period_start">Tahun mulai</string>
+    <string name="org_field_period_end">Tahun selesai</string>
+    <string name="org_field_position">Jabatan kamu (opsional)</string>
+    <string name="org_field_position_helper">Contoh: Ketua, Sekretaris, Humas</string>
+    <string name="org_form_logo_note">Logo bisa ditambahkan nanti di Profil organisasi.</string>
+    <string name="org_form_submit">Buat ruang organisasi</string>
+    <string name="org_error_name_required">Nama organisasi wajib diisi</string>
+    <string name="org_error_name_too_long">Maksimal 100 karakter</string>
+    <string name="org_error_short_name_too_long">Maksimal 40 karakter</string>
+    <string name="org_error_level_required">Pilih jenjang</string>
+    <string name="org_error_category_required">Pilih kategori</string>
+    <string name="org_error_institution_required">Nama sekolah atau kampus wajib diisi</string>
+    <string name="org_error_institution_too_long">Maksimal 150 karakter</string>
+    <string name="org_error_city_too_long">Maksimal 100 karakter</string>
+    <string name="org_error_year_invalid">Tulis tahun 4 angka, mis. 2026</string>
+    <string name="org_error_period_order">Tahun selesai tidak boleh sebelum tahun mulai</string>
+    <string name="org_error_position_too_long">Maksimal 60 karakter</string>
+
+    <!-- Gabung organisasi -->
+    <string name="join_title">Gabung organisasi</string>
+    <string name="join_subtitle">Masukkan kode undangan dari pengurus organisasimu.</string>
+    <string name="join_field_code">Kode undangan</string>
+    <string name="join_field_code_helper">Contoh: OSIS-7K2P</string>
+    <string name="join_check">Cek kode</string>
+    <string name="join_error_code_required">Masukkan kode undangan</string>
+    <string name="join_preview_role">Kamu akan bergabung sebagai %1$s</string>
+    <string name="join_submit">Gabung sekarang</string>
+
+    <!-- Ruang pribadi -->
+    <string name="personal_title">Ruang pribadi</string>
+    <string name="personal_subtitle">Tempat untuk website pribadimu. Nanti kamu tetap bisa gabung atau membuat organisasi.</string>
+    <string name="personal_submit">Buat ruang pribadi</string>
+
+    <!-- Peran (label tampilan) -->
+    <string name="role_owner">Pemilik</string>
+    <string name="role_admin">Admin</string>
+    <string name="role_editor">Editor</string>
+    <string name="workspace_personal_badge">Pribadi</string>
+
+    <!-- Pemilih ruang kerja di app bar -->
+    <string name="workspace_picker_title">Ruang kerja</string>
+    <string name="workspace_picker_add">Buat atau gabung organisasi</string>
+    <string name="cd_workspace_picker">Ganti ruang kerja, sekarang %1$s</string>
+    <string name="workspace_switched">Sekarang di %1$s</string>
+    <string name="profile_workspace">Ruang kerja aktif</string>
+</resources>

@@ -17,10 +17,11 @@ import com.aris.templateapp.data.model.UserRole;
 import com.aris.templateapp.databinding.FragmentCreatorProfileBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
+import com.aris.templateapp.ui.provider.TemplateUi;
+import com.aris.templateapp.ui.workspace.WorkspaceViewModel;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.common.HomeNavigator;
 import com.aris.templateapp.ui.profile.ProfileViewModel;
-import com.aris.templateapp.ui.provider.TemplateUi;
 import com.google.android.material.snackbar.Snackbar;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -46,6 +47,9 @@ public class CreatorProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         userViewModel = new ViewModelProvider(this).get(CurrentUserViewModel.class);
+        new ViewModelProvider(this).get(WorkspaceViewModel.class).getActive().observe(getViewLifecycleOwner(),
+                workspace -> binding.workspace.setText(workspace == null ? getString(R.string.profile_not_set)
+                        : workspace.getName()));
         accountViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         CreatorProfileViewModel profileViewModel = new ViewModelProvider(this).get(CreatorProfileViewModel.class);
 
@@ -118,12 +122,6 @@ public class CreatorProfileFragment extends Fragment {
         binding.name.setText(user.getDisplayName());
         binding.email.setText(user.getEmail());
         binding.email.setVisibility(user.getEmail() == null ? View.GONE : View.VISIBLE);
-
-        String purpose = user.getWebsitePurpose();
-        binding.purpose.setText(purpose == null ? getString(R.string.profile_not_set)
-                : getString(TemplateUi.categoryLabel(purpose)));
-        String organization = user.getOrganizationName();
-        binding.organization.setText(organization == null ? getString(R.string.profile_not_set) : organization);
 
         // Punya profil provider aktif → beralih mode; belum provider → jadi penyedia template;
         // provider ditangguhkan → keduanya disembunyikan (mode provider terkunci).

@@ -18,7 +18,7 @@ import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
-/** "Edit profil" pembuat website (bagian 5.1 & 5.4): isi awal dari salinan user di HP, simpan lewat PATCH. */
+/** "Edit profil" pembuat website: nama tampilan, isi awal dari salinan user di HP, simpan lewat PATCH. */
 @HiltViewModel
 public class CreatorProfileEditViewModel extends ViewModel {
 
@@ -58,18 +58,15 @@ public class CreatorProfileEditViewModel extends ViewModel {
         return saved;
     }
 
-    /** @param websitePurpose null = tidak dipilih; organizationName kosong = dikosongkan */
-    public void save(String displayName, String websitePurpose, String organizationName) {
+    public void save(String displayName) {
         Map<OnboardingFormValidator.Field, Integer> errors = OnboardingFormValidator.validateCreator(displayName);
         formErrors.setValue(errors);
         if (!errors.isEmpty() || Boolean.TRUE.equals(saving.getValue())) {
             return;
         }
         saving.setValue(true);
-        String organization = organizationName == null || organizationName.trim().isEmpty()
-                ? null : organizationName.trim();
         executors.networkIO().execute(() -> {
-            Resource<User> result = userRepository.updateCreatorProfile(displayName.trim(), websitePurpose, organization);
+            Resource<User> result = userRepository.updateCreatorProfile(displayName.trim());
             saving.postValue(false);
             if (result.getStatus() == Resource.Status.SUCCESS) {
                 saved.postValue(new Event<>(true));

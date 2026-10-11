@@ -11,10 +11,13 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Map;
 
-/** Pembantu kecil yang dipakai kedua form onboarding dan layar "Edit profil" (provider & pembuat website). */
+/** Pembantu kecil untuk form: onboarding, ruang kerja, "Edit profil", dan Info template. */
 public final class OnboardingUi {
 
-    /** Chip tujuan website di fragment_creator_form.xml dan nilai backend-nya, urutan sama. */
+    /**
+     * Chip kategori template di langkah Info template (fragment_upload_info.xml) dan nilai backend-nya, urutan sama.
+     * Masih kategori lama; diganti kategori organisasi bersama galeri di fase W4.
+     */
     private static final int[] PURPOSE_CHIPS = {R.id.purpose_sekolah, R.id.purpose_organisasi, R.id.purpose_umkm,
             R.id.purpose_instansi, R.id.purpose_pribadi, R.id.purpose_lainnya};
     private static final String[] PURPOSE_VALUES = {"sekolah", "organisasi", "umkm", "instansi", "pribadi", "lainnya"};
@@ -22,7 +25,7 @@ public final class OnboardingUi {
     private OnboardingUi() {
     }
 
-    /** Nilai backend untuk chip tujuan website, atau null jika tidak ada yang dipilih (View.NO_ID). */
+    /** Nilai backend untuk chip kategori, atau null jika tidak ada yang dipilih (View.NO_ID). */
     public static String purposeValue(int chipId) {
         for (int i = 0; i < PURPOSE_CHIPS.length; i++) {
             if (PURPOSE_CHIPS[i] == chipId) {
