@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 14** (Dashboard Pembuat Website di Android). Rancangan fitur pembuatan website: [`rancangan/alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
+> Status dokumen: diperbarui sampai **Fase R1** (revisi OrgSpace: ruang kerja organisasi). Rancangan fitur pembuatan website: [`rancangan/alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
 
 ---
 
@@ -51,7 +51,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 28. [Coba, Kirim, dan paket template](#28-coba-kirim-dan-paket-template)
 29. [Paket template untuk pembuat website](#29-paket-template-untuk-pembuat-website)
 30. [Editor template mode di Android](#30-editor-template-mode-di-android)
-31. [Glosarium](#31-glosarium)
+31. [Ruang kerja organisasi (OrgSpace)](#31-ruang-kerja-organisasi-orgspace)
+32. [Glosarium](#32-glosarium)
 
 ---
 
@@ -1455,7 +1456,57 @@ Perubahan di form → ViewModel → `Change(key)` → `RakitEditor.setField(...)
 
 ZIP dibuat di `cache/exports/` (thread disk yang sama dengan autosave, jadi isi terakhir pasti tersimpan). **Simpan ke HP** menyalinnya ke lokasi pilihan user (`ACTION_CREATE_DOCUMENT`); **Bagikan** memakai `FileProvider` (`res/xml/file_paths.xml`, hanya folder `exports/`). Setelah itu project menjadi **Diexport**; export pertama project berbasis template memasukkan event `download` ke antrean.
 
-## 31. Glosarium
+## 31. Ruang kerja organisasi (OrgSpace)
+
+Rancangan: [`revisi-fondasi-orgspace.md`](rancangan/revisi-fondasi-orgspace.md) bagian 3–4. Mulai revisi OrgSpace, setiap pembuat website bekerja di dalam **ruang kerja**: organisasi (banyak anggota) atau ruang pribadi (satu orang). Website nanti dimiliki ruang kerja, bukan user, sehingga tetap utuh saat pengurus berganti.
+
+### Tabel (V17)
+
+```
+users ──< organization_members >── organizations ──< organization_invitations
+  └─ last_organization_id ───────────┘     └──< activity_logs
+```
+
+| Tabel | Isi penting |
+|---|---|
+| `organizations` | `type` (`organization`/`personal`), nama, nama singkat (untuk sapaan `{org}`), kategori + jenjang + instansi (hanya organisasi), periode, logo, kontak & media sosial |
+| `organization_members` | primary key (organisasi, user), `role` (`owner`/`admin`/`editor`), jabatan |
+| `organization_invitations` | **hash** kode undangan, peran, kedaluwarsa, dicabut |
+| `activity_logs` | pelaku, aksi (`member.joined`, `org.ownership_transferred`, …), metadata jsonb |
+
+Index unik parsial `UNIQUE (created_by) WHERE type = 'personal'` menjamin satu ruang pribadi per user.
+
+### Peran di satu tempat
+
+`OrgAction` mendaftar setiap aksi beserta peran minimalnya (mis. `PUBLISH` → Admin, `DELETE_ORGANIZATION` → Pemilik). Setiap service memulai dengan:
+
+```java
+OrganizationAccess.Membership m = access.require(orgId, userId, OrgAction.EDIT_PROFILE);
+// → ORG_NOT_FOUND / NOT_ORG_MEMBER / ROLE_NOT_ALLOWED jika gagal
+```
+
+Aturan anggota yang lebih rinci (Admin tidak boleh menyentuh Pemilik, Pemilik hanya lewat serah terima, Pemilik terakhir tidak boleh keluar) ada di method statis `canChangeRole`, `canRemove`, `canInvite`, `canLeave`, dan dites per baris di `OrganizationAccessTest`. Sebelum aturan "minimal satu Pemilik" dan "batas anggota" dicek, semua baris anggota organisasi itu **dikunci** (`lockAllByOrganizationId`).
+
+### Kode undangan
+
+```
+Admin: POST /organizations/{id}/invitations {role} → { code: "OSIS-7K2P" }  (sekali saja)
+Calon anggota: POST /invitations/preview {code} → nama, logo, peran
+               POST /invitations/accept {code, positionTitle?} → masuk sebagai Editor/Admin
+```
+
+Kode dinormalkan (`osis 7k2p` = `OSIS-7K2P`) lalu di-hash SHA-256 sebelum dicari. Satu kode berlaku 7 hari, boleh dipakai beberapa orang, bisa dicabut. `AttemptLimiter` membatasi 10 percobaan per menit per user.
+
+### Onboarding pembuat website
+
+App memanggil `POST /organizations` (buat organisasi / ruang pribadi) atau `POST /invitations/accept` lebih dulu, baru `POST /users/me/onboarding/creator {displayName}`. Tanpa ruang kerja, endpoint terakhir menolak `ONBOARDING_NEEDS_SPACE`. Ruang kerja yang baru dibuat/dimasuki disimpan di `users.last_organization_id` (juga lewat `PATCH /users/me/last-organization`) dan dikirim di `UserResponse.lastOrganizationId`.
+
+### Kategori & logo
+
+- `GET /api/meta/categories` (publik) menyajikan jenjang dan kategori dari enum `OrgLevel` + `OrgCategory`; kombinasi yang salah ditolak `CATEGORY_LEVEL_MISMATCH`.
+- `OrgLogoStorage` membaca isi file (PNG/JPG), memotong persegi, memperkecil maks 512 px, dan menulis ulang sebagai PNG di `ORG_LOGO_DIR`. URL-nya `/api/organizations/{id}/logo?v=<waktu>` (publik).
+
+## 32. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
