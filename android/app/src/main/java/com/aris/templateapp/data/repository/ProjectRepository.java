@@ -163,19 +163,6 @@ public class ProjectRepository {
         return clock.millis();
     }
 
-    /** Dipakai tombol debug "Isi project contoh". */
-    public void insertAll(List<ProjectEntity> projects) {
-        executors.diskIO().execute(() -> dao.insertAll(projects));
-    }
-
-    /** Tombol debug "Hapus project contoh": hanya project contoh, project buatan user tidak ikut terhapus. */
-    public void deleteSamples(Consumer<Integer> onDeleted) {
-        executors.diskIO().execute(() -> {
-            int count = dao.deleteSamples();
-            executors.mainThread().execute(() -> onDeleted.accept(count));
-        });
-    }
-
     static ProjectEntity copyOf(ProjectEntity source, String name, String newId, long now) {
         ProjectStatus status = source.status == ProjectStatus.EXPORTED ? ProjectStatus.READY : source.status;
         ProjectEntity copy = new ProjectEntity(newId, name, source.mode, status, now, now);

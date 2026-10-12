@@ -8,15 +8,13 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.aris.templateapp.R;
 import com.aris.templateapp.databinding.SheetCreateProjectBinding;
-import com.aris.templateapp.ui.editor.EditorNav;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 /**
- * Bottom sheet tombol + dan kartu "Mulai" (alur-pembuatan-website.md bagian 2 & 6): "Pakai template" membuka tab
- * Template, "Custom" membuka Editor Custom Mode untuk project baru. Selalu ditampilkan oleh shell
- * ({@link CreatorDashboardFragment#showCreateSheet()}), jadi induknya selalu shell.
+ * Bottom sheet tombol + dan kartu "Mulai" (alur-pembuatan-website.md bagian 2.3): "Pakai template" membuka tab
+ * Template, "Rakit sendiri" membuka editor Rakit sendiri ("Segera hadir", belum membuat website). Pilihan diteruskan
+ * ke shell ({@link CreatorDashboardFragment#start}) yang meminta tamu masuk dulu.
  */
 public class CreateProjectSheet extends BottomSheetDialogFragment {
 
@@ -34,16 +32,14 @@ public class CreateProjectSheet extends BottomSheetDialogFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         StartOptions.bind(binding.optionTemplate, binding.optionCustom);
-        binding.optionTemplate.getRoot().setOnClickListener(v -> {
-            CreatorDashboardFragment shell = (CreatorDashboardFragment) requireParentFragment();
-            dismiss();
-            shell.selectTab(R.id.tab_creator_gallery);
-        });
-        binding.optionCustom.getRoot().setOnClickListener(v -> {
-            CreatorDashboardFragment shell = (CreatorDashboardFragment) requireParentFragment();
-            dismiss();
-            EditorNav.openCustomEditor(shell, null);
-        });
+        binding.optionTemplate.getRoot().setOnClickListener(v -> choose(PendingStart.Option.TEMPLATE));
+        binding.optionCustom.getRoot().setOnClickListener(v -> choose(PendingStart.Option.ASSEMBLED));
+    }
+
+    private void choose(PendingStart.Option option) {
+        CreatorDashboardFragment shell = (CreatorDashboardFragment) requireParentFragment();
+        dismiss();
+        shell.start(option);
     }
 
     @Override

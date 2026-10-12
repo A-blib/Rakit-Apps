@@ -33,6 +33,11 @@ public class CurrentUserViewModel extends ViewModel {
         return user;
     }
 
+    /** true jika ada sesi login tersimpan saat ini (cepat, tanpa membaca salinan user). */
+    public boolean isLoggedInNow() {
+        return userRepository.hasSession();
+    }
+
     /** Membaca ulang dari penyimpanan (di thread latar), mis. setiap layar kembali tampil setelah login/keluar. */
     public void reload() {
         executors.diskIO().execute(() -> user.postValue(userRepository.getCachedUser()));

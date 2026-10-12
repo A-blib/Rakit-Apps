@@ -61,7 +61,7 @@ public final class ProjectUi {
             case DRAFT:
             default:
                 badge.setBackgroundResource(R.drawable.bg_badge);
-                badge.setTextColor(ContextCompat.getColor(context, R.color.color_muted));
+                badge.setTextColor(ContextCompat.getColor(context, R.color.color_on_primary_container));
                 break;
         }
     }

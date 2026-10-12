@@ -24,11 +24,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.aris.templateapp.R;
 import com.aris.templateapp.core.network.ThumbnailLoader;
+import com.aris.templateapp.data.model.OrgCategories;
+import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.data.repository.GalleryRepository;
 import com.aris.templateapp.databinding.FragmentGalleryBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.provider.LoadingFooterAdapter;
+import com.aris.templateapp.ui.workspace.WorkspaceViewModel;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -45,17 +51,15 @@ public class GalleryFragment extends Fragment {
     private static final long SEARCH_DELAY_MS = 400;
     private static final int LOAD_MORE_THRESHOLD = 5;
 
-    /** Chip kategori → nilai backend (urutan sama dengan chip di layout). */
-    private static final int[] CATEGORY_CHIPS = {R.id.category_all, R.id.category_sekolah, R.id.category_organisasi,
-            R.id.category_umkm, R.id.category_instansi, R.id.category_pribadi, R.id.category_lainnya};
-    private static final String[] CATEGORY_VALUES = {GalleryViewModel.ALL, "sekolah", "organisasi", "umkm",
-            "instansi", "pribadi", "lainnya"};
     private static final String[] SORTS = {GalleryRepository.SORT_POPULAR, GalleryRepository.SORT_NEWEST};
     private static final int[] SORT_LABELS = {R.string.sort_popular, R.string.sort_newest};
 
     private FragmentGalleryBinding binding;
     private GalleryViewModel viewModel;
     private GalleryAdapter adapter;
+    @Nullable private Workspace workspace;
+    // Chip dipilih dari kode (mis. syncControls) tidak boleh dianggap pilihan user.
+    private boolean bindingChips;
     private LoadingFooterAdapter footer;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable applySearch = () -> {
@@ -116,10 +120,17 @@ public class GalleryFragment extends Fragment {
             return false;
         });
         syncControls();
+        binding.categoryAll.setTag(GalleryViewModel.ALL);
         binding.categoryGroup.setOnCheckedStateChangeListener((group, ids) -> {
-            if (!ids.isEmpty()) {
-                viewModel.setCategory(categoryOf(ids.get(0)));
+            if (!bindingChips && !ids.isEmpty()) {
+                Object value = group.findViewById(ids.get(0)).getTag();
+                viewModel.setCategory(value == null ? GalleryViewModel.ALL : value.toString());
             }
+        });
+        viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> buildCategoryChips());
+        new ViewModelProvider(this).get(WorkspaceViewModel.class).getActive().observe(getViewLifecycleOwner(), active -> {
+            workspace = active;
+            buildCategoryChips();
         });
         binding.sortButton.setOnClickListener(this::showSortMenu);
 
@@ -142,12 +153,47 @@ public class GalleryFragment extends Fragment {
         viewModel.refresh();
     }
 
+    /**
+     * Chip "Semua" + kategori sesuai jenjang ruang kerja aktif (alur-pembuatan-website.md 6): SMA tidak melihat
+     * BEM, kampus tidak melihat OSIS. Tamu dan ruang pribadi melihat semua kategori.
+     */
+    private void buildCategoryChips() {
+        OrgCategories categories = viewModel.getCategories().getValue();
+        if (binding == null || categories == null) {
+            return;
+        }
+        String level = workspace == null || workspace.isPersonal() ? null : workspace.getLevel();
+        List<OrgCategories.Category> shown = level == null ? categories.getCategories()
+                : categories.categoriesFor(level);
+        bindingChips = true;
+        binding.categoryGroup.removeViews(1, binding.categoryGroup.getChildCount() - 1);
+        boolean selectedShown = GalleryViewModel.ALL.equals(viewModel.getCategory());
+        for (OrgCategories.Category category : shown) {
+            Chip chip = new Chip(requireContext());
+            chip.setId(View.generateViewId());
+            chip.setTag(category.value);
+            chip.setText(category.label);
+            chip.setCheckable(true);
+            binding.categoryGroup.addView(chip);
+            selectedShown |= category.value.equals(viewModel.getCategory());
+        }
+        bindingChips = false;
+        // Pindah ke ruang kerja berjenjang lain: kategori terpilih yang tidak ada di jenjang itu dibatalkan.
+        if (!selectedShown) {
+            viewModel.setCategory(GalleryViewModel.ALL);
+        }
+        syncControls();
+    }
+
     private void syncControls() {
-        for (int i = 0; i < CATEGORY_VALUES.length; i++) {
-            if (CATEGORY_VALUES[i].equals(viewModel.getCategory())) {
-                binding.categoryGroup.check(CATEGORY_CHIPS[i]);
+        bindingChips = true;
+        for (int i = 0; i < binding.categoryGroup.getChildCount(); i++) {
+            View chip = binding.categoryGroup.getChildAt(i);
+            if (viewModel.getCategory().equals(chip.getTag())) {
+                binding.categoryGroup.check(chip.getId());
             }
         }
+        bindingChips = false;
         for (int i = 0; i < SORTS.length; i++) {
             if (SORTS[i].equals(viewModel.getSort())) {
                 binding.sortButton.setText(SORT_LABELS[i]);
@@ -202,15 +248,6 @@ public class GalleryFragment extends Fragment {
             return true;
         });
         popup.show();
-    }
-
-    private static String categoryOf(int chipId) {
-        for (int i = 0; i < CATEGORY_CHIPS.length; i++) {
-            if (CATEGORY_CHIPS[i] == chipId) {
-                return CATEGORY_VALUES[i];
-            }
-        }
-        return GalleryViewModel.ALL;
     }
 
     private void hideKeyboard() {

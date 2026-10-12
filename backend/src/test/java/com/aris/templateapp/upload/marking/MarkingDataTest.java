@@ -26,6 +26,6 @@ class MarkingDataTest {
 
     private static MarkingData.Field field(String key, String page, int tplId, int order) {
         return new MarkingData.Field(key, key, "text", null, null, false, order, null, List.of(), null,
-                List.of(new MarkingData.Element(page, tplId, List.of("mobile", "desktop"))));
+                List.of(new MarkingData.Element(page, tplId, List.of("mobile", "desktop"))), null, null);
     }
 }

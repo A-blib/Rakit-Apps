@@ -79,6 +79,12 @@ public class TemplateManifest {
         public boolean hasHref() {
             return TYPE_LINK.equals(type) || TYPE_BUTTON.equals(type);
         }
+        /** Kolom Profil organisasi yang mengisi isian ini saat website dibuat; null = tidak terhubung. */
+        @Nullable
+        public String profileKey;
+        /** true = elemen disembunyikan jika kolom profilnya kosong. */
+        @Nullable
+        public Boolean hideWhenEmpty;
     }
 
     /** prop: color · background-color · font-size · border-radius. */

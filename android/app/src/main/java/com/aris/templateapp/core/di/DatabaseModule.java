@@ -8,6 +8,7 @@ import com.aris.templateapp.data.local.AppDatabase;
 import com.aris.templateapp.data.local.PendingEventDao;
 import com.aris.templateapp.data.local.ProjectDao;
 import com.aris.templateapp.data.local.TemplatePackageDao;
+import com.aris.templateapp.data.local.WebsiteDao;
 
 import javax.inject.Singleton;
 
@@ -44,5 +45,10 @@ public final class DatabaseModule {
     @Provides
     static PendingEventDao providePendingEventDao(AppDatabase database) {
         return database.pendingEventDao();
+    }
+
+    @Provides
+    static WebsiteDao provideWebsiteDao(AppDatabase database) {
+        return database.websiteDao();
     }
 }

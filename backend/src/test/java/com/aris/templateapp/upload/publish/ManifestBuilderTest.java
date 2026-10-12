@@ -61,6 +61,6 @@ class ManifestBuilderTest {
         for (String p : morePages) {
             elements.add(new MarkingData.Element(p, tplId + 10, List.of("mobile", "desktop")));
         }
-        return new MarkingData.Field(key, key, type, null, null, true, 0, null, null, "s1", elements);
+        return new MarkingData.Field(key, key, type, null, null, true, 0, null, null, "s1", elements, null, null);
     }
 }

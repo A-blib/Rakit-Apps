@@ -154,7 +154,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="start"
-            android:fontFamily="@font/geist_mono_regular"
+            android:fontFamily="@font/plus_jakarta_sans_regular"
             android:maxLines="1"
             android:paddingHorizontal="@dimen/screen_padding_horizontal"
             android:paddingTop="@dimen/space_2"
@@ -233,7 +233,7 @@
             android:id="@+id/unsaved"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/geist_mono_regular"
+            android:fontFamily="@font/plus_jakarta_sans_regular"
             android:paddingHorizontal="@dimen/screen_padding_horizontal"
             android:paddingTop="@dimen/space_2"
             android:textAppearance="@style/TextAppearance.App.BodySmall" />

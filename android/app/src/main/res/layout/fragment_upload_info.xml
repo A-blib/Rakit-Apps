@@ -146,26 +146,37 @@
                             android:maxLines="1" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Kategori: pilih satu, nilainya sama dengan tujuan website di onboarding -->
+                    <!-- Kategori organisasi (pilih satu) dan Isi template (pilih minimal satu); chip dibuat dari
+                         GET /api/meta/categories (alur-fitur-upload.md 6.1). -->
                     <TextView
                         style="@style/Widget.App.SectionTitle"
                         android:layout_marginTop="@dimen/space_6"
                         android:text="@string/upload_category" />
 
                     <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/purpose_group"
+                        android:id="@+id/category_group"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_2"
-                        app:singleSelection="true">
+                        app:singleSelection="true" />
 
-                        <com.google.android.material.chip.Chip android:id="@+id/purpose_sekolah" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_sekolah" />
-                        <com.google.android.material.chip.Chip android:id="@+id/purpose_organisasi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_organisasi" />
-                        <com.google.android.material.chip.Chip android:id="@+id/purpose_umkm" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_umkm" />
-                        <com.google.android.material.chip.Chip android:id="@+id/purpose_instansi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_instansi" />
-                        <com.google.android.material.chip.Chip android:id="@+id/purpose_pribadi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_pribadi" />
-                        <com.google.android.material.chip.Chip android:id="@+id/purpose_lainnya" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_lainnya" />
-                    </com.google.android.material.chip.ChipGroup>
+                    <TextView
+                        style="@style/Widget.App.SectionTitle"
+                        android:layout_marginTop="@dimen/space_6"
+                        android:text="@string/upload_content_tags" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_1"
+                        android:text="@string/upload_content_tags_hint"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/content_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2" />
 
                     <!-- Deskripsi -->
                     <com.google.android.material.textfield.TextInputLayout
@@ -233,7 +244,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_2"
-                        android:fontFamily="@font/geist_mono_regular"
+                        android:fontFamily="@font/plus_jakarta_sans_regular"
                         android:textAppearance="@style/TextAppearance.App.BodySmall" />
 
                     <TextView
@@ -241,7 +252,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_6"
-                        android:fontFamily="@font/geist_mono_regular"
+                        android:fontFamily="@font/plus_jakarta_sans_regular"
                         android:textAppearance="@style/TextAppearance.App.BodySmall"
                         android:textColor="@color/color_muted" />
                 </LinearLayout>

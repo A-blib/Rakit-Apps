@@ -54,6 +54,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/templates/*/thumbnail").permitAll()
                         // Detail & paket template untuk layar Unduh pembuat website (tamu juga boleh).
                         .requestMatchers(HttpMethod.GET, "/api/templates/*", "/api/templates/*/package").permitAll()
+                        // Daftar kategori organisasi untuk form (juga dibaca sebelum login) dan logo organisasi
+                        // (tampil di pratinjau undangan dan nanti di website organisasi).
+                        .requestMatchers(HttpMethod.GET, "/api/meta/categories", "/api/organizations/*/logo").permitAll()
+                        // Portal web: landing & pusat dokumentasi dibaca tanpa login (docs/rancangan/portal-web.md).
+                        .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
                 // Filter JWT dipasang sebelum filter login bawaan Spring agar user sudah dikenali lebih dulu.

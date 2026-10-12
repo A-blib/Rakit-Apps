@@ -1,8 +1,21 @@
-# Alur Fitur Pembuatan Website
+# Alur Fitur Pembuatan Website (Dashboard Pembuat Website)
 
-> **Status:** Beranda, Project Anda, Profil (versi awal), dua halaman editor "Segera hadir", dan **galeri Template versi awal (data dummy, bagian 6.2)** sudah cukup jelas untuk dijadikan instruksi agent berikutnya. **Editor (template mode & custom mode), kerangka section, dan galeri Template lanjutan belum dibahas**. Ketiganya akan didesain mendalam bersamaan dengan fitur Upload di sisi provider. Dokumen ini belum untuk dieksekusi agent sampai Aris memintanya.
+> **Status:** instruksi untuk agent, **revisi besar 12 Oktober 2026** mengikuti keputusan `penyempurnaanSystem.md` (K4–K24). Versi sebelumnya (4 Oktober 2026) dianggap usang.
+> **Kerjakan setelah** fase R1–R4 di `revisiFondasiOrgSpace.md` selesai (organisasi, peran, desain, bahasa).
 >
-> Terakhir diperbarui: 4 Oktober 2026 (galeri Template versi awal dengan data dummy, bagian 6.2)
+> **Dokumen terkait:**
+> - `revisiFondasiOrgSpace.md`: ruang kerja, peran, onboarding, desain, bahasa
+> - `alurFiturBuatWibeSiteviatemplate.md`: editor mode **Pakai template**, data project di cloud, kunci edit
+> - `alurFiturPublishWebsite.md`: Terbitkan, Riwayat versi, Domain, Pengaturan situs, QR code
+> - `penyempurnaanSystem.md` bagian 5.5: rancangan mode **Rakit sendiri** (dokumen instruksinya dibuat terpisah nanti)
+
+---
+
+## 0. Baca dulu sebelum mulai
+
+1. Semua aturan kerja `AGENTS.md` bagian 3 tetap berlaku (per fase, laporan 13.4, catatan belajar, komentar Bahasa Indonesia, tanpa rahasia, versi library dari sumber resmi).
+2. Desain dan teks mengikuti `revisiFondasiOrgSpace.md` bagian 7–8 (palet Biru Semangat, Plus Jakarta Sans, bahasa "kamu").
+3. Dokumen ini mengatur **kerangka dashboard**: menu bawah, Beranda, tab Website, halaman kelola website (kerangkanya), galeri Template, tab Profil, layar Organisasi. Isi detail layar editor dan publish ada di dokumen terkait.
 
 ---
 
@@ -10,430 +23,381 @@
 
 | Keputusan | Isi |
 |---|---|
-| Dua cara membuat website | **Template mode** (mulai dari template jadi) dan **Custom mode** (menyusun sendiri dari kerangka yang disediakan). |
-| Satu mesin, dua tampilan | Tools editor template mode dan custom mode **berbeda desainnya**, tetapi keduanya **berjalan di mesin yang sama**: format project JSON sama, renderer (preview) sama, dan exporter (ZIP) sama. |
-| Kerangka (skeleton) | Kerangka disediakan **per jenis section**, misalnya kerangka header, kerangka hero, dan kerangka footer. User custom mode menyusun website dari kerangka-kerangka ini. Detail dibahas bersama editor. |
-| Sumber kerangka | **Versi awal: kerangka disediakan langsung oleh app** (dibuat Aris, ikut terpasang di dalam app sehingga bisa dipakai offline). **Ke depan:** provider juga bisa membuat kerangka untuk dipajang siap pakai di custom mode. Fitur ini **tidak dibangun sekarang** (lihat bagian 9). |
-| Format kerangka | Kerangka bawaan app dan kerangka buatan provider nanti memakai **format yang sama**, supaya saat fitur provider ditambahkan, mesin custom mode tidak perlu diubah. Format detailnya dibahas bersama editor. |
-| Tombol buat project | **Bukan halaman**, melainkan tombol **+** di tengah bottom nav yang **lebih menonjol** dari menu lain. |
-| Buat via template | User cukup **klik template** (dari tab Template atau "Template untuk anda" di Beranda), lalu app **otomatis membuka editor khusus template mode**. Tidak ada langkah tambahan. Detail di bagian 2.1. |
-| Buka project yang sudah ada | Dari mana pun project dibuka (Lanjutkan project di Beranda atau tab Project), user cukup **klik kartu project**, lalu app **langsung** membuka **editor sesuai mode project itu** tanpa langkah tambahan. Aturan ini berlaku sama untuk kedua mode: project template → editor template mode, project custom → editor custom mode. |
-| Editor versi awal | Dua halaman editor (template mode dan custom mode) **dibuat sebagai layar terpisah** yang menampilkan pesan "Segera hadir" karena masih tahap perencanaan dan desain. Klik project atau template sudah benar-benar membuka halaman editor yang sesuai (bagian 6.1). |
-| Status project | Tiga tahap: **Draft** → **Siap export** → **Sudah diexport**, dihitung otomatis oleh app setiap kali project disimpan (bagian 4.2). |
-| Status setelah diedit ulang | Project yang sudah diexport lalu diedit tetap `exported` + teks kecil "Ada perubahan sejak export terakhir" (bagian 4.2). |
-| Daftar project | **List satu kolom** (bagian 4.1 dan 4.5). |
-| Jumlah project | **Tidak dibatasi**, selama user masih mau membuat. |
-| Penyimpanan | **Autosave** setiap kali user melakukan perubahan (bagian 4.7). |
-| Nama awal project | Template: **mengikuti nama template**. Custom: **"Project tanpa nama"** (bagian 4.7). |
-| Data contoh untuk testing | Tombol debug **"Isi project contoh"** dan **"Hapus project contoh"**, hanya di build debug (bagian 6). |
-| Panduan di Beranda | Section **Panduan** ada di Beranda, berisi artikel singkat statis yang tersimpan di app dan bisa dibaca offline. Minimal ada panduan mengonlinekan file ZIP (bagian 3.4). |
-| Galeri Template versi awal | Tab **Template** dan section **"Template untuk anda"** di Beranda **dibangun sekarang** dengan **data dummy** untuk kebutuhan testing (bagian 6.2). Klik template tetap membuka Editor Template Mode "Segera hadir". **Editor belum dibangun.** |
-| Fokus diskusi sekarang | Beranda, Project Anda, Profil, dan galeri Template versi awal. Editor dan galeri Template lanjutan ditunda (bagian 9). |
+| Ruang kerja | Semua website berada di dalam **ruang kerja** (organisasi atau ruang pribadi). Dashboard selalu menampilkan isi ruang kerja aktif. Pemilih ruang kerja di app bar (K6) |
+| Dua cara membuat website | **Pakai template** (mulai dari template kreator) dan **Rakit sendiri** (menyusun dari section bawaan OrgSpace, K19–K20). Istilah lama "Custom" diganti "Rakit sendiri" |
+| Satu format, satu mesin | Kedua cara memakai format data project yang sama dan **dibangun oleh server** saat diterbitkan (K21). Tampilan tools editornya berbeda |
+| Mode tidak bisa dipindah | Website dari template tidak bisa diubah ke Rakit sendiri, dan sebaliknya (K20) |
+| Menu bawah | `Beranda · Website · [ + ] · Template · Profil`. Tab **Project** diganti **Website** (K16) |
+| Kartu website | Ketuk kartu di tab Website → **halaman kelola website** (bagian 5). Kartu "Lanjutkan" di Beranda → langsung ke editor |
+| Status website | **Draft** (belum pernah terbit), **Online**, **Online · ada perubahan belum diterbitkan**, **Dimatikan sementara**, **Ditangguhkan** (bagian 4.2). Status lama `ready`/`exported` dihapus |
+| Penyimpanan | Autosave di HP (cache) lalu disinkron ke cloud (K17). Detail di `alurFiturBuatWibeSiteviatemplate.md` |
+| Batas | Website **online** maks **5 per ruang kerja** (organisasi maupun pribadi, K21/K24; nilai konfigurasi). Website draft tidak dibatasi jumlahnya, tetapi total penyimpanan gambar per ruang kerja dibatasi (nilai konfigurasi; angka final ditetapkan bersama T6) |
+| Nama awal | Pakai template: **nama template**. Rakit sendiri: **"Website {org}"** (mis. "Website OSIS Smansa") |
+| Kalimat sapaan | Beranda: **"Kerja keras {org} layak dilihat banyak orang"** (K23) |
+| Kategori | Kategori organisasi dari `GET /api/meta/categories` (`revisiFondasiOrgSpace.md` bagian 6). Kategori lama (Sekolah, UMKM, Instansi, Pribadi) dihapus |
+| Panduan | Section Panduan tetap ada di Beranda; isinya diganti (bagian 3.4) |
+
+### 1.1 Keputusan default (boleh diubah Aris; laporkan jika berubah)
+
+| No | Hal | Default yang dibangun |
+|---|---|---|
+| G1 | Tamu (belum masuk) | Boleh melihat Beranda versi tamu, galeri Template, dan layar detail template. **Membuat atau menyimpan website butuh masuk** dan punya ruang kerja, karena website disimpan di cloud (K17). Saat tamu menekan "Pakai template" / "Rakit sendiri", tampilkan layar Masuk, lalu onboarding, lalu kembali ke aksi semula |
+| G2 | Urutan default tab Website | Terakhir diubah |
+| G3 | Hak Editor di tab Website | Melihat semua website, membuka editor, membuat draft baru. Tidak melihat tombol Hapus, Domain, Pengaturan situs (`revisiFondasiOrgSpace.md` 3.1) |
 
 ---
 
-## 2. Segmen Dashboard Pembuat Website
+## 2. Kerangka dashboard
 
-Bottom navigation dengan 4 menu + 1 tombol aksi di tengah:
+### 2.1 App bar
 
 ```
-Beranda · Project · [ + ] · Template · Profil
+┌──────────────────────────────────┐
+│ [logo] OSIS Smansa ▾        (A)  │   ← pemilih ruang kerja · avatar
+└──────────────────────────────────┘
 ```
 
-| Segmen | Fungsi singkat | Status diskusi |
-|---|---|---|
-| **Beranda** | Titik awal: mulai bikin, lanjutkan project, rekomendasi template, panduan | Siap untuk versi awal (bagian 3) |
-| **Project** | Daftar semua project milik user + filter + search | Siap untuk versi awal (bagian 4) |
-| **[ + ] Buat project** | Tombol menonjol, membuka bottom sheet pilihan **Pakai template** / **Custom** | Tombol dan alurnya final. Halaman editornya masih "Segera hadir" (bagian 2.1 dan 6.1) |
-| **Template** | Galeri template lengkap dengan search | Versi awal dengan data dummy (bagian 6.2). Versi lanjutan ditunda (bagian 9) |
-| **Profil** | Data diri, info onboarding, pengaturan, beralih mode | Siap untuk versi awal (bagian 5) |
+- **Pemilih ruang kerja**: logo + nama singkat + ikon panah bawah. Ketuk → bottom sheet:
+  - daftar ruang kerja saya (logo, nama, badge peran: Pemilik / Admin / Editor), tanda centang di yang aktif;
+  - **Kelola organisasi** (membuka layar Organisasi, bagian 7) — tidak tampil di ruang pribadi;
+  - **+ Buat organisasi baru**, **Gabung organisasi**, **Buat ruang pribadi** (hanya jika belum punya).
+- Pindah ruang kerja memanggil `PATCH /api/users/me/last-organization` dan memuat ulang semua tab.
+- Tamu: app bar menampilkan "OrgSpace" + tombol **Masuk**.
+- Mode provider (Ruang kreator) **tidak** memakai pemilih ruang kerja.
 
-**Gaya tombol +:** kotak berisi `color_foreground` (hitam di mode terang, putih di mode gelap), radius 6–8dp, ikon `add` Outlined, sedikit lebih besar dan sedikit naik dari baris bottom nav. Tidak bulat warna-warni dan tanpa bayangan tebal, supaya tetap sesuai gaya monokrom (AGENTS.md bagian 9).
+### 2.2 Menu bawah
 
-### 2.1 Alur masuk ke editor
+```
+Beranda · Website · [ + ] · Template · Profil
+```
+
+| Menu | Fungsi |
+|---|---|
+| **Beranda** | Sapaan, lanjutkan website, mulai, template untuk organisasi, panduan |
+| **Website** | Daftar website di ruang kerja aktif (draft & online) |
+| **[ + ]** | Tombol menonjol: bottom sheet **Pakai template** / **Rakit sendiri** |
+| **Template** | Galeri template |
+| **Profil** | Akun pribadi (bukan profil organisasi) |
+
+**Gaya tombol +:** bulat/pil berisi `color_primary`, ikon `add` (Material Symbols Rounded) warna `color_on_primary`, sedikit lebih besar dan sedikit naik dari baris menu bawah, tanpa bayangan.
+
+### 2.3 Alur masuk ke editor
 
 ```
 Tombol + / kartu Mulai
-├─ Pakai template ──→ tab Template ──→ klik template ──→ EDITOR TEMPLATE MODE (project baru)
-└─ Custom ─────────────────────────────────────────→ EDITOR CUSTOM MODE (project baru)
+├─ Pakai template ─→ tab Template ─→ detail template ─→ [Pakai template] ─→ EDITOR TEMPLATE (website baru)
+└─ Rakit sendiri ─→ pilih tema dasar ─→ EDITOR RAKIT SENDIRI (website baru)
 
-Klik template di tab Template / "Template untuk anda" ──→ EDITOR TEMPLATE MODE (project baru)
-
-Buka project (Lanjutkan project di Beranda / tab Project)
-└─ cek kolom `mode` project
-   ├─ template ──→ EDITOR TEMPLATE MODE
-   └─ custom   ──→ EDITOR CUSTOM MODE
+Kartu "Lanjutkan" di Beranda ─→ editor sesuai mode website
+Kartu di tab Website ─→ HALAMAN KELOLA WEBSITE ─→ [Edit tampilan] ─→ editor sesuai mode
 ```
 
-- Klik kartu project (di Beranda maupun tab Project) **langsung** membuka editor, baik untuk project template maupun project custom. Menu ⋮ di kartu hanya untuk aksi lain (ganti nama, duplikat, export, hapus).
-- Kolom `mode` di tabel `projects` (bagian 4.6) menjadi penentu editor mana yang dibuka. Karena kedua editor memakai mesin yang sama, yang berbeda hanya layar tools-nya.
-- Saat template diklik, isi template **disalin** menjadi project baru. Template aslinya tidak pernah berubah, sehingga satu template bisa dipakai berkali-kali untuk project berbeda.
-- Kapan project baru tersimpan dan bagaimana nama awalnya: lihat bagian 4.7.
-
-Prinsip: Beranda hanya berisi **titik masuk** dan **ringkasan**. Pengelolaan project (ganti nama, hapus, filter) ada di tab Project, supaya keduanya tidak tumpang tindih. Prinsip ini sama dengan Dashboard Provider.
+- Kolom `mode` website (`template` / `assembled`) menentukan editor yang dibuka.
+- Jika website sedang **dikunci** anggota lain, editor terbuka dalam **mode baca** dengan banner "Sedang diedit oleh {nama}" (aturan kunci di `alurFiturBuatWibeSiteviatemplate.md`).
+- Editor Rakit sendiri: sampai dokumen instruksinya dibuat, layar editornya tetap **"Segera hadir"** (bagian 9). Tombolnya tetap tampil agar alur navigasi sudah benar.
 
 ---
 
 ## 3. Beranda
 
-### 3.1 Isi Beranda (urut dari atas ke bawah)
+### 3.1 Isi Beranda (urut dari atas)
 
-| No | Bagian | Isi | Status |
-|---|---|---|---|
-| 1 | **Mulai** | Dua kartu pilihan: **Pakai template** dan **Custom**. Tampil besar jika user belum punya project, lalu mengecil menjadi satu baris jika sudah punya. | Dari alur Aris |
-| 2 | **Lanjutkan project** | 1 kartu besar (project terakhir diedit) + maksimal 3 kartu kecil yang bisa digeser ke samping, serta link "Lihat semua →" ke tab Project. Disembunyikan jika belum ada project. | Dari alur Aris |
-| 3 | **Template untuk anda** | Rekomendasi template yang bisa digeser ke samping, berdasarkan **tujuan website** dari onboarding (`website_purpose`). Tamu atau user yang melewati onboarding mendapat template populer. "Lihat semua →" mengarah ke tab Template. | Versi awal dengan data dummy (bagian 6.2) |
-| 4 | **Panduan** | Artikel singkat yang tersimpan di dalam app (bisa dibaca offline). | Final (bagian 3.4) |
+| No | Bagian | Isi |
+|---|---|---|
+| 1 | **Sapaan** | Judul **"Kerja keras {org} layak dilihat banyak orang"**, subjudul "Tunjukkan kegiatan dan karya kalian lewat website sendiri.", tombol **Mulai sekarang** (membuka bottom sheet +). Tampil besar jika ruang kerja belum punya website; jika sudah punya, diganti baris kecil **"Hai, {nama depan}"** (tanpa emoji) |
+| 2 | **Lanjutkan** | 1 kartu besar (website terakhir diubah di ruang kerja ini) + maks 3 kartu kecil yang bisa digeser + "Lihat semua →" ke tab Website. Kartu menampilkan status dan, jika ada, "Sedang diedit oleh {nama}". Disembunyikan jika belum ada website |
+| 3 | **Mulai** | Dua kartu: **Pakai template** dan **Rakit sendiri**. Besar jika belum ada website; satu baris jika sudah ada |
+| 4 | **Template untuk {org}** | 6 template populer di kategori ruang kerja aktif (ruang pribadi: semua kategori). "Lihat semua →" membuka tab Template dengan kategori terpilih |
+| 5 | **Panduan** | Artikel singkat statis di app (bagian 3.4) |
 
-### 3.2 Beranda menyesuaikan kondisi user
+### 3.2 Beranda menyesuaikan kondisi
 
 | Kondisi | Yang tampil |
 |---|---|
-| Belum punya project (tamu atau user login) | **Mulai** tampil besar sebagai kartu utama → Template untuk anda → Panduan |
-| Sudah punya project | **Lanjutkan project** paling atas → Mulai (satu baris) → Template untuk anda → Panduan |
-| Tamu | App bar menampilkan tombol **Masuk** |
-| User login | App bar menampilkan avatar (mengarah ke tab Profil) |
+| Tamu | App bar "OrgSpace" + **Masuk**. Sapaan generik: **"Saatnya organisasimu punya rumah online"** + tombol **Mulai sekarang** (→ Masuk). Lalu Template populer + Panduan |
+| Ruang kerja belum punya website | Sapaan besar → Mulai → Template untuk {org} → Panduan |
+| Ruang kerja sudah punya website | Sapaan kecil → Lanjutkan → Mulai (satu baris) → Template untuk {org} → Panduan |
+| Ada website online dengan perubahan belum diterbitkan dan user Admin/Pemilik | Banner kecil di atas: "{n} website punya perubahan yang belum diterbitkan." + tombol **Lihat** |
+| Ada permintaan "Minta diterbitkan" dari Editor (Admin/Pemilik) | Banner: "{nama} minta website {nama website} diterbitkan." + tombol **Periksa** (membuka halaman kelola website) |
 
 ### 3.3 Gambaran layar
 
 ```
 ┌──────────────────────────────────┐
-│ Nama app             [Masuk] / ○ │
+│ [logo] OSIS Smansa ▾        (A)  │
 ├──────────────────────────────────┤
-│ LANJUTKAN PROJECT                │
+│ Hai, Rina                        │
+│                                  │
+│ LANJUTKAN                        │
 │ ┌──────────────────────────────┐ │
 │ │ [thumbnail]                  │ │
-│ │ Toko Kue Bu Ani              │ │
-│ │ DRAFT · diedit 2 jam lalu    │ │
-│ │ 3 isian belum diisi          │ │
+│ │ Website OSIS 2026            │ │
+│ │ ● Online · ada perubahan     │ │
+│ │ Diubah 2 jam lalu oleh Budi  │ │
 │ └──────────────────────────────┘ │
-│ [kecil] [kecil] [kecil]  →       │
-│                     Lihat semua →│
+│ [kecil] [kecil]  →  Lihat semua →│
 │                                  │
 │ MULAI                            │
-│ [Pakai template]  [Custom]       │
+│ [Pakai template] [Rakit sendiri] │
 │                                  │
-│ TEMPLATE UNTUK ANDA              │
+│ TEMPLATE UNTUK OSIS SMANSA       │
 │ [ ] [ ] [ ]  →     Lihat semua → │
 │                                  │
 │ PANDUAN                          │
-│ Cara mengonlinekan file ZIP    › │
-│ Beda template mode & custom    › │
+│ Cara menerbitkan website       › │
+│ Ajak pengurus lain             › │
 ├──────────────────────────────────┤
-│ Beranda  Project [+] Template  Profil │
+│ Beranda  Website (+) Template Profil │
 └──────────────────────────────────┘
 ```
 
-### 3.4 Panduan
-
-Alasan: hasil akhir app berupa **file ZIP**. User non-teknis belum tentu tahu apa yang harus dilakukan dengan file itu, jadi panduan mengonlinekan website sangat membantu.
+### 3.4 Panduan (statis di app, bisa dibaca offline)
 
 | Judul | Isi singkat |
 |---|---|
-| Cara mengonlinekan file ZIP | Langkah gratis lewat layanan hosting statis (misalnya Netlify Drop atau GitHub Pages), dengan bahasa sederhana |
-| Beda template mode & custom mode | Kapan memilih yang mana |
-| Cara bikin website pertamamu | Ditulis setelah editor selesai didesain |
-
-Disimpan sebagai konten statis di app (tanpa backend), supaya bisa dibaca offline.
+| Cara menerbitkan website | Dari editor sampai website online dan dibagikan lewat link/QR code |
+| Pakai template atau Rakit sendiri? | Kapan memilih yang mana |
+| Ajak pengurus lain | Kode undangan, peran Pemilik/Admin/Editor |
+| Saat ganti kepengurusan | Langkah serah terima agar website tetap aman |
+| Pakai domain sendiri | Membeli domain (mis. `.my.id`) lalu menghubungkannya |
+| Mengonlinekan sendiri file ZIP | Untuk yang ingin hosting di luar OrgSpace (Export ZIP) |
 
 ---
 
-## 4. Project Anda
+## 4. Tab Website
 
 ### 4.1 Isi layar (urut dari atas)
 
-1. Kolom **search** (cari berdasarkan nama project)
-2. **Chip filter status** beserta jumlahnya: `Semua (8) · Draft (5) · Siap export (2) · Sudah diexport (1)`
-3. **Urutan**: Terakhir diedit (default) · Terbaru dibuat · Nama A–Z
-4. **Daftar project** dalam bentuk **list satu kolom**: satu kartu per baris, thumbnail di kiri dan info di kanan
+1. Kolom **search** (nama website)
+2. **Chip filter** + jumlah: `Semua (6) · Draft (2) · Online (3) · Ada perubahan (1)` (Dimatikan dan Ditangguhkan ikut "Semua")
+3. **Urutan**: Terakhir diubah (default) · Terbaru dibuat · Nama A–Z
+4. **Daftar website**: list satu kolom, thumbnail di kiri, info di kanan
+5. Info batas: "3 dari 5 website online" (teks kecil di bawah filter)
 
-### 4.2 Status project
+### 4.2 Status website
 
 | Status | Arti | Badge |
 |---|---|---|
-| `draft` | Masih ada isi contoh (teks/foto bawaan template) yang belum diganti, atau isian wajib masih kosong (misalnya nomor WA di section kontak) | `DRAFT` abu-abu |
-| `ready` | Semua isian lolos cek otomatis | `SIAP EXPORT` hijau (`color_success`) |
-| `exported` | Sudah pernah diexport; tampilkan tanggal export terakhir | `DIEXPORT` outlined |
+| Draft | Belum pernah diterbitkan | `Draft` (abu-abu, `color_muted`) |
+| Online | Terbit dan versi online sama dengan isi editor | `Online` (`color_success`) |
+| Online · ada perubahan | Terbit, tetapi isi editor lebih baru dari versi online | `Online` + teks kecil "Ada perubahan belum diterbitkan" (`color_warning`) |
+| Dimatikan sementara | Dimatikan oleh Admin/Pemilik | `Dimatikan` (outlined) |
+| Ditangguhkan | Ditangguhkan tim OrgSpace | `Ditangguhkan` (`color_error`) |
 
-**Project yang sudah diexport lalu diedit lagi** tetap berstatus `exported`, ditambah teks kecil **"Ada perubahan sejak export terakhir"** (warna `color_warning`). Tujuannya agar user tahu websitenya pernah diexport, sekaligus sadar file ZIP yang sudah dia online-kan sudah ketinggalan dan perlu diexport ulang. Kondisi ini tidak butuh kolom baru: cukup cek `updated_at` lebih baru dari `last_exported_at`.
+Status dihitung **server** dari data website + rilis (bukan dihitung di HP), sehingga sama di semua HP anggota.
 
-Status dihitung otomatis oleh app setiap kali project disimpan, mirip pengecekan otomatis template di sisi provider. **Aturan cek detailnya ditentukan saat membahas editor**, karena bergantung pada isi kerangka dan section.
+**Kelengkapan** ("3 isian belum diisi") tetap ditampilkan sebagai info di kartu; aturan hitungnya di `alurFiturBuatWibeSiteviatemplate.md`.
 
-### 4.3 Kartu project
+### 4.3 Kartu website
 
 | Isi | Keterangan |
 |---|---|
-| Thumbnail | Di sisi kiri kartu. Gambar tampilan atas website, dibuat app saat project disimpan |
-| Nama project | Maksimal 2 baris |
-| Badge status | Lihat 4.2 |
-| Label mode | `TEMPLATE` atau `CUSTOM` dengan font Geist Mono |
-| Waktu | "Diedit 2 jam lalu" |
-| Info tambahan | Jika draft: "3 isian belum diisi". Jika diexport lalu diedit: "Ada perubahan sejak export terakhir" |
+| Thumbnail | Tampilan atas website, diambil app dari pratinjau editor (WebView) lalu diunggah saat sinkron (detail di `alurFiturBuatWibeSiteviatemplate.md`) |
+| Nama website | Maks 2 baris |
+| Badge status | Bagian 4.2 |
+| Label mode | `Template` atau `Rakit sendiri` (style Label) |
+| Alamat | Jika pernah terbit: `osis-smansa.{DOMAIN_SITUS}` |
+| Waktu | "Diubah 2 jam lalu oleh Budi" |
+| Kunci | Jika sedang diedit orang lain: ikon gembok + "Sedang diedit oleh Rina" |
+| Info tambahan | "3 isian belum diisi" bila ada |
 
-**Klik kartu** langsung membuka editor sesuai mode (bagian 2.1).
+**Ketuk kartu** → halaman kelola website (bagian 5).
 
-**Menu ⋮ di kartu:** Ganti nama · Duplikat · Export (hanya jika status `ready` atau `exported`) · Hapus (dengan dialog konfirmasi).
+**Menu ⋮ di kartu:** Ganti nama · Duplikat · Export ZIP · Hapus (hanya Pemilik; konfirmasi ketik nama website jika website pernah online).
 
 ### 4.4 Kondisi khusus
 
 | Kondisi | Tampilan |
 |---|---|
-| Belum ada project | Lottie + "Belum ada project" + tombol utama "Buat website" (membuka bottom sheet yang sama dengan tombol +) |
-| Hasil search/filter kosong | "Tidak ada project yang cocok." + tombol "Hapus filter" |
-| Offline | Tidak ada perbedaan, karena semua project tersimpan di HP |
+| Belum ada website | Lottie + **"Belum ada website di {org}"** + "Mulai dari template atau rakit sendiri." + tombol **Mulai sekarang** |
+| Hasil search/filter kosong | "Tidak ada website yang cocok." + tombol **Hapus filter** |
+| Offline | Daftar dari cache (Room) dengan banner "Kamu sedang offline. Data terakhir disimpan {waktu}." Aksi yang butuh internet (Terbitkan, Hapus, Duplikat) menampilkan pesan koneksi |
+| Batas website online tercapai | Pesan saat menerbitkan (lihat `alurFiturPublishWebsite.md`) |
 
 ### 4.5 Gambaran layar
 
 ```
 ┌──────────────────────────────────┐
-│ Project                          │
+│ [logo] OSIS Smansa ▾        (A)  │
 ├──────────────────────────────────┤
-│ [ Cari project...            ]   │
-│ (Semua 8)(Draft 5)(Siap 2)(Exp 1)│
-│ Urutkan: Terakhir diedit ▾       │
+│ Website                          │
+│ [ Cari website...            ]   │
+│ (Semua 6)(Draft 2)(Online 3)(Ada perubahan 1)
+│ 3 dari 5 website online          │
 │                                  │
 │ ┌──────────────────────────────┐ │
-│ │ [thumb] Toko Kue Bu Ani    ⋮ │ │
-│ │         DRAFT · TEMPLATE     │ │
-│ │         Diedit 2 jam lalu    │ │
-│ │         3 isian belum diisi  │ │
+│ │ [thumb] Website OSIS 2026  ⋮ │ │
+│ │         Online · Template    │ │
+│ │         osis-smansa.….site   │ │
+│ │         Ada perubahan belum  │ │
+│ │         diterbitkan          │ │
 │ └──────────────────────────────┘ │
 │ ┌──────────────────────────────┐ │
-│ │ [thumb] SMK Negeri 1       ⋮ │ │
-│ │         DIEXPORT · CUSTOM    │ │
-│ │         Diedit kemarin       │ │
-│ │         Ada perubahan sejak  │ │
-│ │         export terakhir      │ │
+│ │ [thumb] Pensi 2026         ⋮ │ │
+│ │         Draft · Rakit sendiri│ │
+│ │         [gembok] Sedang diedit Budi│ │
 │ └──────────────────────────────┘ │
-│ ┌──────────────────────────────┐ │
-│ │ ...                          │ │
 └──────────────────────────────────┘
 ```
 
-### 4.6 Gambaran data (di HP, Room)
-
-Project disimpan di HP (offline dulu). Tabel `projects` versi awal hanya berisi **metadata**. Isi website (format JSON section) ditentukan saat membahas editor.
-
-| Kolom | Keterangan |
-|---|---|
-| `id` | UUID (string) |
-| `name` | Nama project |
-| `mode` | `template` / `custom` |
-| `source_template_id` | ID template asal (null untuk custom). Dipakai untuk penghitungan "Didownload" di sisi provider |
-| `status` | `draft` / `ready` / `exported` |
-| `missing_count` | Jumlah isian yang belum lengkap (untuk teks "3 isian belum diisi") |
-| `thumbnail_path` | Lokasi file thumbnail di folder project |
-| `content_path` | Lokasi file JSON isi project. Formatnya menunggu diskusi editor |
-| `created_at`, `updated_at`, `last_exported_at` | Waktu |
-
-Search, filter, dan urutan dijalankan lewat query Room, sehingga semuanya tetap jalan tanpa internet.
-
-**Tidak ada batas jumlah project.** User boleh membuat project sebanyak yang dia mau, karena semuanya tersimpan di HP-nya sendiri.
-
-### 4.7 Penyimpanan dan nama awal project
-
-| Aturan | Isi |
-|---|---|
-| Kapan tersimpan | **Otomatis tersimpan saat user melakukan perubahan** (autosave), tanpa tombol Simpan. Project baru dari template atau custom baru masuk ke tab Project setelah perubahan pertama. Jika user hanya membuka editor lalu keluar tanpa mengubah apa pun, tidak ada project yang tersimpan. |
-| Nama awal project template | **Mengikuti nama template** yang dipakai |
-| Nama awal project custom | **"Project tanpa nama"** |
-| Ganti nama | Kapan saja lewat menu ⋮ → Ganti nama |
-
 ---
 
-## 5. Profil (versi awal)
+## 5. Halaman kelola website (kerangka)
 
-### 5.1 User yang sudah login
-
-| Bagian | Isi |
-|---|---|
-| Kepala | Avatar, nama, email, badge mode `PEMBUAT WEBSITE` |
-| Info pembuat website | Tujuan website dan nama organisasi (dari onboarding), bisa diedit |
-| Ringkasan | Jumlah project dan jumlah yang sudah diexport (dihitung dari Room di HP) |
-| Menu | Beralih ke mode provider / Jadi penyedia template · Pengaturan (termasuk metode login terhubung) · Keluar |
-
-### 5.2 Tamu
-
-| Bagian | Isi |
-|---|---|
-| Kartu ajakan | "Kamu belum masuk" + tombol **Masuk** |
-| Info | Teks kecil: "Project tersimpan di HP ini." (usulan) |
-| Menu | Pengaturan |
-
-### 5.3 Catatan terhadap AGENTS.md
-
-- Profil sekarang menjadi **tab sendiri**, sama seperti di Dashboard Provider. Bottom sheet menu profil (`ProfileSheet`) di AGENTS.md nantinya digantikan tab ini. Avatar di app bar mengarah ke tab Profil.
-- Pemindahan project tamu ke akun tetap ditunda (AGENTS.md bagian 2.2).
-
-### 5.4 Kebutuhan backend
-
-| Endpoint | Fungsi |
-|---|---|
-| `PATCH /api/users/me/creator-profile` | Mengubah `displayName`, `websitePurpose`, `organizationName`. Membalas `UserResponse` |
-
-Data lain sudah tersedia dari `GET /api/users/me`.
-
----
-
-## 6. Versi awal: bagian yang "Segera hadir"
-
-Karena editor masih dalam tahap perencanaan dan desain, user belum bisa membuat project. Perilaku versi awal:
-
-| Bagian | Perilaku versi awal |
-|---|---|
-| Tombol **+** | Membuka bottom sheet Pakai template / Custom. **Pakai template** membuka tab Template (galeri versi awal, bagian 6.2). **Custom** membuka **halaman Editor Custom Mode "Segera hadir"** (bagian 6.1) |
-| Kartu **Mulai** di Beranda | Sama dengan tombol + |
-| Tab **Template** | **Galeri versi awal dengan data dummy** (bagian 6.2) |
-| Section **Template untuk anda** | **Dibangun dengan data dummy** (bagian 6.2) |
-| Klik kartu project (Beranda / tab Project) | Membuka **halaman editor sesuai mode project** (bagian 2.1): project template → Editor Template Mode "Segera hadir", project custom → Editor Custom Mode "Segera hadir" (bagian 6.1) |
-| Klik template (tab Template / Template untuk anda) | Membuka Editor Template Mode "Segera hadir" |
-| Menu ⋮ → **Export** | Dialog "Segera hadir" |
-| Tab **Project** | Dibangun lengkap (list, filter, search, urutan, ganti nama, duplikat, hapus) beserta state kosong |
-
-### 6.1 Halaman editor "Segera hadir"
-
-Dua halaman editor **sudah dibuat sebagai layar terpisah**, masing-masing untuk satu mode. Navigasi dan logika pemilihan editor berdasarkan `mode` sudah berjalan sungguhan; isinya saja yang masih berupa pesan "Segera hadir". Saat editor didesain nanti, cukup isi layar ini tanpa mengubah alur navigasi.
-
-| Bagian | Editor Template Mode | Editor Custom Mode |
-|---|---|---|
-| App bar | Tombol kembali + nama project (atau nama template) | Tombol kembali + nama project (atau "Project tanpa nama") |
-| Label mode | `EDITOR TEMPLATE` (Geist Mono) | `EDITOR CUSTOM` (Geist Mono) |
-| Badge | `SEGERA HADIR` | `SEGERA HADIR` |
-| Judul | "Editor template sedang dirancang" | "Editor custom sedang dirancang" |
-| Teks | "Fitur ini masih dalam tahap perencanaan dan desain. Nantinya kamu bisa mengganti teks, foto, dan warna template di sini." | "Fitur ini masih dalam tahap perencanaan dan desain. Nantinya kamu bisa menyusun website dari kerangka header, hero, footer, dan lainnya di sini." |
-| Animasi | Lottie garis monokrom | Lottie garis monokrom |
-| Tombol | "Kembali" (outlined) | "Kembali" (outlined) |
-
-Aturan versi awal:
-
-- Membuka halaman ini **tidak membuat project baru** dan tidak mengubah data project yang ada (termasuk `updated_at`).
-- Tombol kembali mengembalikan user ke layar asal (Beranda, tab Project, atau bottom sheet +).
-- Halaman Editor Template Mode bisa dicoba dengan mengklik template di galeri (data dummy) atau project contoh bermode `template` dari tombol debug.
-
-**Data contoh (sama polanya dengan template provider):**
-
-- **Test otomatis (wajib):** data project dummy di unit test untuk filter, search, urutan, dan perhitungan status.
-- **Tombol debug "Isi project contoh" (disetujui, untuk kebutuhan testing):**
-  - Letak: grup `DEBUG` di bagian paling bawah layar Pengaturan.
-  - "Isi project contoh" mengisi Room dengan 6–8 project dummy dengan status (`draft`, `ready`, `exported`, termasuk yang diedit setelah export), mode (`template`, `custom`), dan waktu yang beragam.
-  - "Hapus project contoh" mengosongkannya lagi, supaya state kosong juga bisa dicek.
-  - Tujuannya agar Beranda, tab Project, dan halaman Editor Template Mode "Segera hadir" bisa dicoba dan didemokan di HP asli.
-  - Kodenya ditaruh di source set `src/debug/`, sehingga **tidak pernah ikut ke build release**.
-
-### 6.2 Galeri Template versi awal (data dummy)
-
-Tujuan versi awal: **menguji tampilan dan alur** tab Template dan section "Template untuk anda" di Beranda. Datanya dummy. Detail galeri lanjutan (preview sebelum dipakai, template bawaan app, dll.) tetap dibahas nanti (bagian 9).
-
-**Sumber data: backend, tabel `templates` yang sama dengan sisi provider** (`alurUntukProvider.md` bagian 6.6). Galeri hanya menampilkan template berstatus `published`.
-
-| Aturan | Isi |
-|---|---|
-| Data dummy | Memakai **seeder demo yang sama** dengan sisi provider: profile `dev`, mati secara bawaan, dinyalakan dengan `app.seed.demo-templates=true`. Template `published` milik akun provider demo otomatis muncul di galeri. Tanpa seeder, galeri tampil kosong. |
-| Test otomatis | Wajib: filter kategori, search, urutan, paginasi, dan rekomendasi berdasarkan `website_purpose` (backend: Testcontainers; Android: unit test ViewModel/mapper). |
-| Login | **Tidak perlu login.** Tamu boleh melihat galeri (endpoint publik). |
-| Internet | Galeri butuh internet. Saat offline tampil "Tidak ada koneksi. Periksa internet lalu coba lagi." + tombol coba lagi. |
-| Klik template | Membuka **Editor Template Mode "Segera hadir"** (bagian 6.1). Tidak membuat project. |
-| Kategori | Sama dengan pilihan tujuan website di onboarding: Sekolah, Organisasi, Usaha / UMKM, Instansi, Pribadi / Portofolio, Lainnya (nilai `sekolah`/`organisasi`/`umkm`/`instansi`/`pribadi`/`lainnya`). |
-| Thumbnail | Jika `thumbnail_url` kosong (data dummy), app menampilkan placeholder netral bergaya garis monokrom. |
-
-**Tab Template, isi layar (urut dari atas):**
-
-1. Kolom **search** (nama template)
-2. **Chip kategori**: Semua · Sekolah · Organisasi · Usaha / UMKM · Instansi · Pribadi / Portofolio · Lainnya
-3. **Urutan**: Populer (Didownload terbanyak, default) · Terbaru
-4. **Daftar template**, paginasi 20 per halaman, dimuat lanjut saat scroll
-
-**Kartu template:**
-
-| Isi | Keterangan |
-|---|---|
-| Thumbnail | Tampilan website |
-| Nama template | Maksimal 2 baris |
-| Nama kreator | `creator_name` provider |
-| Label kategori | Geist Mono, mis. `UMKM` |
-| Jumlah download | Mis. "120 download" |
-
-**Kondisi khusus:**
-
-| Kondisi | Tampilan |
-|---|---|
-| Belum ada template (seeder mati) | Lottie + "Belum ada template" + teks "Template akan muncul di sini." |
-| Hasil search/filter kosong | "Tidak ada template yang cocok." + tombol "Hapus filter" |
-| Offline / error server | `StateView` error + tombol coba lagi |
-
-**"Template untuk anda" di Beranda:**
-
-| Kondisi | Isi |
-|---|---|
-| User login dengan `website_purpose` | 6 template terpopuler di kategori itu. Jika kurang dari 6, app memanggil endpoint sekali lagi tanpa kategori untuk melengkapinya (tanpa duplikat) |
-| Tamu / melewati onboarding | 6 template terpopuler dari semua kategori |
-| "Lihat semua →" | Membuka tab Template dengan chip kategori yang sesuai sudah terpilih |
-| Offline atau galeri kosong | Section disembunyikan, agar Beranda tidak menampilkan error |
-
-**Kebutuhan backend:**
-
-| Endpoint | Fungsi |
-|---|---|
-| `GET /api/templates?category=&q=&sort=popular\|newest&page=&size=` | Publik. Daftar template `published` + info kreator dan jumlah download |
-
-"Template untuk anda" memakai endpoint yang sama (`category={website_purpose}&sort=popular&size=6`), sehingga tidak perlu endpoint khusus.
-
-**Gambaran layar:**
+Halaman yang terbuka saat kartu di tab Website diketuk. Dokumen ini hanya mengatur **kerangka dan navigasinya**; isi tiap bagian ada di dokumen terkait.
 
 ```
 ┌──────────────────────────────────┐
-│ Template                         │
+│ ←  Website OSIS 2026          ⋮  │
 ├──────────────────────────────────┤
-│ [ Cari template...           ]   │
-│ (Semua)(Sekolah)(Organisasi)(UMKM)→
-│ Urutkan: Populer ▾               │
-│                                  │
-│ ┌──────────────────────────────┐ │
-│ │ [thumb] Toko Kue Modern      │ │
-│ │         oleh Rina Studio     │ │
-│ │         UMKM · 120 download  │ │
-│ └──────────────────────────────┘ │
-│ ┌──────────────────────────────┐ │
-│ │ [thumb] Sekolah Hijau        │ │
-│ │         oleh Budi Design     │ │
-│ │         SEKOLAH · 87 download│ │
-│ └──────────────────────────────┘ │
+│ [thumbnail besar]                │
+│ ● Online   osis-smansa.….site    │
+│ [Edit tampilan]   [Terbitkan]    │
+├──────────────────────────────────┤
+│ Ringkasan                      › │
+│ Riwayat versi                  › │
+│ Domain                         › │
+│ Pengaturan situs               › │
+│ Konten          (Segera hadir)   │  ← v2
+│ Statistik       (Segera hadir)   │  ← v2
+│ Data masuk      (Segera hadir)   │  ← v3
 └──────────────────────────────────┘
 ```
 
+| Bagian | Isi | Tahap | Dokumen |
+|---|---|---|---|
+| Kepala | Thumbnail, status, alamat, **Edit tampilan**, **Terbitkan** (Admin/Pemilik) atau **Minta diterbitkan** (Editor) | v1 | `alurFiturPublishWebsite.md` |
+| Ringkasan | Status, link, Salin, Bagikan, Buka, **QR code**, terakhir diterbitkan oleh siapa | v1 | `alurFiturPublishWebsite.md` |
+| Riwayat versi | Daftar versi + siapa yang menerbitkan + Kembalikan | v1 | `alurFiturPublishWebsite.md` |
+| Domain | Subdomain, ganti nama, domain sendiri | v1 | `alurFiturPublishWebsite.md` |
+| Pengaturan situs | Judul & deskripsi Google, favicon, gambar saat dibagikan, Matikan sementara | v1 | `alurFiturPublishWebsite.md` |
+| Konten | Berita, Struktur kepengurusan | v2 | dokumen modul (belum dibuat) |
+| Statistik | Pengunjung | v2 | belum dibuat |
+| Data masuk | Kiriman formulir | v3 | belum dibuat |
+
+- Untuk website **Draft**, kepala menampilkan "Belum terbit" dan tombol **Terbitkan pertama kali**; Riwayat versi dan Domain menampilkan keadaan kosong yang menjelaskan "Muncul setelah website diterbitkan."
+- Bagian yang tidak boleh diakses peran user **tidak ditampilkan** (G3).
+- Menu ⋮: Ganti nama · Duplikat · Export ZIP · Hapus.
+
 ---
 
-## 7. Keputusan yang masih terbuka
+## 6. Galeri Template (tab Template + "Template untuk {org}")
 
-| No | Pertanyaan | Usulan |
-|---|---|---|
-| 1 | ~~Daftar di tab Template: list satu kolom atau grid 2 kolom?~~ | **Diputuskan Aris (4 Okt 2026): list satu kolom.** |
-| 2 | Kapan angka **"Dilihat"** milik provider dihitung, padahal klik template langsung membuka editor tanpa halaman detail? | **Diputuskan Aris (4 Okt 2026): dihitung saat template diklik** (editor template mode terbuka), termasuk di versi awal. Definisi di `alurUntukProvider.md` 3.4 sudah diperbarui. |
-| 3 | Menu profil (bottom sheet) di Dashboard Provider setelah Profil jadi tab | **Diputuskan Aris (4 Okt 2026): avatar di kedua dashboard membuka tab Profil; bottom sheet dihapus.** |
+**Sumber data:** backend, tabel `templates` milik sisi provider (`alurUntukProvider.md`), hanya status `published`.
 
----
-
-## 8. Hubungan dengan fitur lain
-
-| Fitur | Hubungan |
+| Aturan | Isi |
 |---|---|
-| Onboarding (AGENTS.md 6.6) | `website_purpose` dipakai untuk "Template untuk anda" |
-| Provider: angka "Didownload" | Export pertama dari project yang `source_template_id`-nya template provider dicatat sebagai event (lihat `alurUntukProvider.md` bagian 3.4–3.6) |
-| Provider: tabel `templates` & seeder demo | Galeri memakai tabel `templates` dan seeder demo yang sama dengan sisi provider (`alurUntukProvider.md` bagian 5.0 dan 6.6) |
-| Mode tamu & offline | Semua yang ada di dokumen ini bisa jalan tanpa login. Yang butuh internet: edit profil dan galeri Template (termasuk "Template untuk anda") |
+| Login | Tidak perlu. Tamu boleh melihat galeri dan detail template |
+| Internet | Butuh internet. Offline: `StateView` error dengan teks koneksi (`revisiFondasiOrgSpace.md` 8.2) + **Coba lagi** |
+| Ketuk template | Membuka **layar detail/unduh template** (`alurFiturBuatWibeSiteviatemplate.md` bagian 5). Angka "Dilihat" dihitung saat layar ini terbuka |
+| Kategori | Dari `GET /api/meta/categories`. Chip: **Semua** + kategori sesuai jenjang ruang kerja aktif (tamu/ruang pribadi: semua kategori) |
+| Label isi template | Kartu menampilkan konten khas yang dimiliki template, mis. *"Punya: Struktur · Berita · Kontak"* (K9; data dari `alurFiturUpload.md`) |
+| Filter modul | **v2**: chip "Mendukung Berita", "Mendukung Struktur" (K18) |
+| Thumbnail kosong | Placeholder ilustrasi bergaya app (biru/kuning), bukan abu-abu monokrom |
+| Data dummy | Seeder demo sisi provider (profile `dev`, `app.seed.demo-templates=true`) diperbarui memakai kategori organisasi baru |
+
+**Isi tab Template (urut dari atas):**
+1. Search (nama template)
+2. Chip kategori
+3. Urutan: Populer (default) · Terbaru
+4. Daftar template, list satu kolom, paginasi 20, dimuat lanjut saat scroll
+
+**Kartu template:** thumbnail, nama (maks 2 baris), "oleh {nama kreator}", label kategori, label isi template, jumlah dipakai (mis. "120 kali dipakai").
+
+**"Template untuk {org}" di Beranda:**
+
+| Kondisi | Isi |
+|---|---|
+| Ruang kerja organisasi | 6 template terpopuler di kategori organisasi; jika kurang dari 6, dilengkapi dari semua kategori tanpa duplikat |
+| Ruang pribadi / tamu | 6 template terpopuler semua kategori (judul section: "Template populer") |
+| Offline / kosong | Section disembunyikan |
+
+**Endpoint:** `GET /api/templates?category=&q=&sort=popular|newest&page=&size=` (publik), kategori memakai kode baru.
+
+**Kondisi khusus:** belum ada template → Lottie + "Belum ada template" + "Template dari kreator akan muncul di sini."; hasil kosong → "Tidak ada template yang cocok." + **Hapus filter**.
 
 ---
 
-## 9. Yang perlu dibahas berikutnya
+## 7. Layar Organisasi (dari pemilih ruang kerja → Kelola organisasi)
 
-> **Belum didiskusikan secara matang.** Jangan membangun apa pun dari daftar di bawah ini. Bagian ini dibahas bersamaan dengan fitur Upload di sisi provider.
+Isi detail dan aturannya di `revisiFondasiOrgSpace.md` (bagian 3–5, fase R4). Kerangka:
 
-- **Editor template mode**: desain tools, cara ganti teks/foto/warna, preview
-- **Editor custom mode**: desain tools, cara memilih dan menyusun kerangka (header, hero, footer, dll.)
-- **Kerangka section**: daftar jenis kerangka bawaan app, variasi layout, cara kerangka ditampilkan di custom mode
-- **Kerangka buatan provider** (rencana ke depan): cara provider membuat dan mengunggah kerangka, pengecekan otomatisnya, cara kerangka provider dipajang di custom mode, dan apakah pemakaiannya ikut dihitung di statistik provider
-- **Format project JSON** (dipakai bersama oleh kedua mode)
-- **Website satu halaman atau multi-halaman**
-- **Galeri Template lanjutan**: preview sebelum dipakai, template bawaan app (offline) vs template provider (online), cache galeri untuk offline, halaman profil kreator
-- **Preview & Export**: toggle tampilan HP/desktop, isi ZIP, cara membagikan file
-- **Aturan cek status project** (kapan dianggap `ready`)
+| Menu | Isi | Peran yang melihat |
+|---|---|---|
+| Profil organisasi | Nama, nama singkat, logo, jenjang, kategori, instansi, kota, periode, alamat, email, WhatsApp, Instagram, TikTok, YouTube. Dipakai untuk isi otomatis template (K10) | Semua (ubah: Admin/Pemilik) |
+| Anggota | Daftar, undang (kode + Bagikan), ubah peran, keluarkan | Semua (aksi sesuai peran) |
+| Riwayat aktivitas | "Rina menerbitkan Website OSIS 2026 · 2 jam lalu" | Semua |
+| Serah terima | Jadikan anggota lain Pemilik | Pemilik |
+| Tagihan | **Segera hadir** (menunggu T6) | Admin/Pemilik |
+| Keluar dari organisasi | Konfirmasi | Semua |
+
+---
+
+## 8. Tab Profil (akun pribadi)
+
+| Bagian | Isi |
+|---|---|
+| Kepala | Avatar, nama tampilan (bisa diubah), email, badge mode **Pembuat website** |
+| Ruang kerja saya | Daftar organisasi + ruang pribadi, dengan peran; ketuk → pindah ruang kerja |
+| Menu | **Beralih ke mode kreator** / **Jadi kreator template** · Pengaturan (metode login terhubung, tema) · Keluar |
+| Tamu | Kartu "Kamu belum masuk" + **Masuk**; menu Pengaturan |
+
+- Info "Tujuan website" dan "Nama organisasi" di profil lama **dihapus** (sekarang ada di Profil organisasi).
+- Endpoint ubah nama: `PATCH /api/users/me` `{ displayName }` → `UserResponse` (menggantikan `PATCH /api/users/me/creator-profile`).
+- `ProfileSheet` dari `AGENTS.md` digantikan tab ini; avatar di app bar membuka tab Profil.
+
+---
+
+## 9. Yang belum dibangun di dokumen ini
+
+| Hal | Status |
+|---|---|
+| Editor **Rakit sendiri** | Rancangan disetujui (`penyempurnaanSystem.md` 5.5). Layar editornya **"Segera hadir"** sampai dokumen instruksinya dibuat |
+| Konten, Statistik (v2), Data masuk (v3) | Ditampilkan "Segera hadir" di halaman kelola website |
+| Tagihan | Menunggu keputusan T6 |
+| Web dashboard di website utama OrgSpace | Belum dibahas |
+
+**Isi layar "Segera hadir" Editor Rakit sendiri:** app bar (kembali + nama website), badge **Segera hadir** (`color_accent`), judul "Editor Rakit sendiri lagi kami siapkan", teks "Sebentar lagi kamu bisa menyusun website dari section siap pakai: hero, struktur, berita, dan lainnya.", Lottie berwarna, tombol **Kembali** (sekunder). Membuka layar ini **tidak** membuat website baru.
+
+---
+
+## 10. Data dan backend
+
+| Hal | Isi |
+|---|---|
+| Daftar website | `GET /api/organizations/{id}/websites?status=&q=&sort=&page=` (anggota). Detail data project ada di `alurFiturBuatWibeSiteviatemplate.md` |
+| Jumlah per status | Dikirim bersama daftar (`counts`) untuk chip filter |
+| Cache | Room menyimpan daftar website per ruang kerja untuk tampilan offline |
+| Data contoh | Seeder `dev` membuat 3–6 website contoh (draft, online, online + perubahan, dimatikan) di organisasi dummy. Tombol debug "Isi project contoh" di Android **dihapus** (data sekarang di server) |
+| Test | Backend: filter/search/urutan/hitungan status/hak per peran (Testcontainers). Android: unit test ViewModel Beranda, tab Website, pemilih ruang kerja |
+
+---
+
+## 11. Fase pengerjaan
+
+| Fase | Kerjakan | Anggap selesai jika |
+|---|---|---|
+| **W1** Kerangka dashboard | Menu bawah baru, app bar + pemilih ruang kerja, tab Profil baru, layar Organisasi (menyambung layar R4) | Pindah ruang kerja memuat ulang semua tab; tab Profil menampilkan ruang kerja saya |
+| **W2** Tab Website & halaman kelola (kerangka) | Endpoint daftar website, tab Website lengkap (search, filter, urutan, kartu, cache offline), halaman kelola dengan bagian "Segera hadir" untuk yang belum dibangun | Skenario 3–7 bagian 12 berhasil |
+| **W3** Beranda | Sapaan, Lanjutkan, Mulai, Template untuk {org}, Panduan, banner perubahan/permintaan terbit | Skenario 1–2, 8 berhasil |
+| **W4** Galeri Template | Kategori baru, label isi template, layar detail (menyambung `alurFiturBuatWibeSiteviatemplate.md`) | Skenario 9–10 berhasil |
+
+Setiap fase: perbarui README, tulis catatan belajar `docs/catatan-belajar/fase-WX.md`.
+
+---
+
+## 12. Skenario uji di HP asli
+
+| No | Skenario | Hasil yang diharapkan |
+|---|---|---|
+| 1 | Tamu membuka app | Sapaan "Saatnya organisasimu punya rumah online", tombol Masuk, Template populer |
+| 2 | Tamu menekan Mulai sekarang → Pakai template | Layar Masuk → onboarding → kembali ke galeri Template |
+| 3 | Ruang kerja baru tanpa website, buka tab Website | State kosong "Belum ada website di {org}" + Mulai sekarang |
+| 4 | Seeder aktif, buka tab Website | Daftar website dengan status beragam; chip filter menampilkan jumlah benar |
+| 5 | Pindah ke ruang kerja lain | Daftar website berganti sesuai ruang kerja |
+| 6 | Anggota A membuka editor; anggota B membuka tab Website | Kartu di HP B menampilkan "Sedang diedit oleh A" |
+| 7 | Editor membuka halaman kelola website | Tidak ada menu Domain dan Pengaturan situs; tombol "Minta diterbitkan" tampil |
+| 8 | Editor menekan Minta diterbitkan; Admin membuka Beranda | Banner permintaan tampil di HP Admin |
+| 9 | Ruang kerja OSIS (jenjang SMA), buka tab Template | Chip kategori hanya kategori sekolah; "Template untuk OSIS Smansa" berisi kategori OSIS / MPK |
+| 10 | Matikan internet, buka tab Website lalu tab Template | Tab Website menampilkan cache + banner offline; tab Template menampilkan pesan koneksi + Coba lagi |
+| 11 | Mode gelap | Semua layar dashboard terbaca jelas |

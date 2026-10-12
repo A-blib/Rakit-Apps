@@ -38,7 +38,7 @@ public record MarkingData(List<Page> pages, List<Section> sections, List<Field> 
         for (int i = 0; i < sorted.size(); i++) {
             Field f = sorted.get(i);
             numbered.add(new Field(f.key(), f.label(), f.type(), f.hint(), f.maxLength(), f.required(), i + 1,
-                    f.aspectRatio(), f.styles(), f.sectionId(), f.elements()));
+                    f.aspectRatio(), f.styles(), f.sectionId(), f.elements(), f.profileKey(), f.hideWhenEmpty()));
         }
         return new MarkingData(pages, sections, numbered, theme);
     }
@@ -61,8 +61,13 @@ public record MarkingData(List<Page> pages, List<Section> sections, List<Field> 
      * @param aspectRatio rasio gambar, mis. "16:9" (jenis image)
      * @param elements    satu isian bisa mengubah beberapa elemen (versi HP & desktop, atau lintas halaman)
      */
+    /**
+     * @param profileKey    kolom Profil organisasi yang mengisi otomatis isian ini (alur-fitur-upload.md 15.3), atau null
+     * @param hideWhenEmpty sembunyikan elemen jika kolom profil itu kosong (hanya berlaku bila {@code profileKey} ada)
+     */
     public record Field(String key, String label, String type, String hint, Integer maxLength, boolean required,
-                        int order, String aspectRatio, List<Style> styles, String sectionId, List<Element> elements) {
+                        int order, String aspectRatio, List<Style> styles, String sectionId, List<Element> elements,
+                        String profileKey, Boolean hideWhenEmpty) {
     }
 
     /** @param prop color · background-color · font-size · border-radius */

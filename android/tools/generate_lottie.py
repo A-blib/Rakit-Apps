@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
-Membuat animasi Lottie bergaya garis monokrom (bagian 9.3) dari bentuk sederhana: garis, kotak, lingkaran.
+Membuat animasi Lottie berwarna OrgSpace (revisi-fondasi-orgspace.md 7.5): garis biru + isian kuning,
+dari bentuk sederhana: garis, kotak, lingkaran.
 
 Kenapa dibuat dengan skrip, bukan diunduh?
-- Instruksi melarang memakai aset milik pihak lain (mis. Next.js/Vercel) dan meminta gaya garis monokrom.
+- Aset pihak lain bisa berhak cipta, dan gayanya harus seragam dengan token warna app.
 - Bentuknya sederhana, jadi lebih mudah dibuat dan diubah lewat kode daripada lewat aplikasi desain.
 
-Warna garis di file ini hitam. Di app, warnanya diganti mengikuti tema (color_foreground) lewat
-"dynamic properties" Lottie (LottieTint.java), sehingga animasi tetap terbaca di mode gelap.
+Setiap garis/isian diberi nama "stroke-primary", "fill-primary", "stroke-accent", atau "fill-accent".
+Warna di file ini hanya contoh; di app, LottieTint.java mewarnai ulang elemen bernama itu dengan color_primary
+dan color_accent lewat "dynamic properties" Lottie, sehingga animasi ikut berganti di mode gelap.
 
 Cara menjalankan (dari folder android/):
     python3 tools/generate_lottie.py
@@ -19,7 +21,9 @@ import os
 SIZE = 240          # kanvas 240x240
 FPS = 30
 STROKE = 6          # tebal garis (di kanvas 240); terlihat tipis setelah diperkecil di layar
-BLACK = [0, 0, 0, 1]
+# Warna contoh (palet terang). Hanya terlihat di pratinjau file JSON; app selalu mewarnai ulang.
+PRIMARY = [0.231, 0.357, 0.992, 1]   # #3B5BFD
+ACCENT = [1.0, 0.773, 0.192, 1]      # #FFC531
 EASE_IN = {"x": [0.4], "y": [0]}
 EASE_OUT = {"x": [0.2], "y": [1]}
 
@@ -60,13 +64,15 @@ def line(points, closed=False):
             "ks": static({"i": zeros, "o": zeros, "v": points, "c": closed})}
 
 
-def stroke(width=STROKE):
-    return {"ty": "st", "c": static(BLACK), "o": static(100), "w": static(width),
-            "lc": 2, "lj": 2, "ml": 4, "nm": "stroke"}
+def stroke(width=STROKE, role="primary"):
+    color = PRIMARY if role == "primary" else ACCENT
+    return {"ty": "st", "c": static(color), "o": static(100), "w": static(width),
+            "lc": 2, "lj": 2, "ml": 4, "nm": "stroke-" + role}
 
 
-def fill(opacity=100):
-    return {"ty": "fl", "c": static(BLACK), "o": static(opacity), "r": 1, "nm": "fill"}
+def fill(opacity=100, role="accent"):
+    color = PRIMARY if role == "primary" else ACCENT
+    return {"ty": "fl", "c": static(color), "o": static(opacity), "r": 1, "nm": "fill-" + role}
 
 
 def trim(start_frame, end_frame, hold_until=None, erase_at=None):
@@ -135,7 +141,8 @@ def empty():
     shapes = [
         group([line([[60, 110], [80, 160], [160, 160], [180, 110]]), stroke()], "tray"),
         group([line([[60, 110], [95, 110], [105, 128], [135, 128], [145, 110], [180, 110]]), stroke()], "rim"),
-        group([line([[100, 72], [140, 72]]), stroke(4), trim(0, 30, 60, 85)], "dash"),
+        group([line([[100, 72], [140, 72]]), stroke(4, "accent"), trim(0, 30, 60, 85)], "dash"),
+        group([ellipse(120, 52, 10, 10), fill()], "spark"),
     ]
     return animation("empty", total, [layer(1, "tray", shapes, total, position=bob(total, 6))])
 
@@ -199,8 +206,8 @@ def loading():
     arc_layer["ks"]["s"] = animated([(0, [100, 100, 100]), (28, [100, 100, 100]), (40, [20, 20, 100])])
 
     # ---- 2. Pahlawan: anggota badan garis tebal berujung bulat, kepala & kepalan lingkaran penuh ----
-    head = group([ellipse(174, 100, 24, 24), fill()], "head")
-    fist = group([ellipse(204, 96, 13, 13), fill()], "fist")
+    head = group([ellipse(174, 100, 24, 24), fill(role="primary")], "head")
+    fist = group([ellipse(204, 96, 13, 13), fill(role="primary")], "fist")
     arm_front = group([line([[156, 106], [200, 98]]), stroke(9)], "arm-front")
     body = group([line([[154, 112], [118, 119]]), stroke(20)], "body")
     leg_front = group([line([[118, 118], [68, 120]]), stroke(12)], "leg-front")
@@ -212,7 +219,7 @@ def loading():
         up = -5 if i % 2 == 0 else 5
         cape_frames.append((t, [[158, 104], [126, 92 + up / 2], [90, 86 + up], [56, 96 - up], [86, 104 + up / 2],
                                 [120, 110]]))
-    cape = group([animated_line(cape_frames, closed=True), fill(30), stroke(4)], "cape")
+    cape = group([animated_line(cape_frames, closed=True), fill(), stroke(4, "accent")], "cape")
     hero = [head, fist, arm_front, body, leg_front, leg_back, cape]
 
     mid = (intro + loop_end) / 2
@@ -242,14 +249,14 @@ def loading():
             return [100 * p / 0.25 if p < 0.25 else 100 * (1 - p) / 0.75]
 
         x_end = 44
-        shapes = [group([line([[x_end - length, y], [x_end, y]]), stroke(4)], f"wind-{i}")]
+        shapes = [group([line([[x_end - length, y], [x_end, y]]), stroke(4, "accent")], f"wind-{i}")]
         streaks.append(layer(10 + i, f"wind-{i}", shapes, total,
                              position=sampled(position, total), opacity=sampled(fade, total)))
 
     # Garis laju saat melaju ke kanan: dua garis panjang memanjang di belakang pahlawan lalu memudar.
     dash = []
     for i, y in enumerate((112, 128)):
-        dash.append(group([line([[20, y], [150, y]]), stroke(4),
+        dash.append(group([line([[20, y], [150, y]]), stroke(4, "accent"),
                            {"ty": "tm", "s": animated([(loop_end, 100), (total, 0)]), "e": static(100),
                             "o": static(0), "m": 1, "nm": "trim"}], f"speed-{i}"))
     speed = layer(20, "speed", dash, total, opacity=animated([(loop_end, 0), (loop_end + 6, 100), (total, 0)]))
@@ -258,44 +265,70 @@ def loading():
     return animation("loading", total, [hero_layer, speed, arc_layer] + streaks)
 
 
-def intro_build():
-    """Intro 1: blok-blok section muncul di jendela browser (menyusun website)."""
+def intro_home():
+    """Intro 1 "rumah online": jendela browser berisi rumah kecil + bendera kuning yang berkibar."""
     total = 120
-    blocks = [
-        group([rect(120, 108, 136, 26, 4), stroke(), trim(10, 35, 95, 115)], "hero"),
-        group([rect(84, 152, 64, 36, 4), stroke(), trim(30, 55, 95, 115)], "card-left"),
-        group([rect(156, 152, 64, 36, 4), stroke(), trim(45, 70, 95, 115)], "card-right"),
+    house = [
+        group([line([[84, 128], [120, 98], [156, 128]]), stroke(), trim(8, 30)], "roof"),
+        group([line([[92, 122], [92, 160], [148, 160], [148, 122]]), stroke(), trim(18, 42)], "walls"),
+        group([rect(120, 146, 18, 28, 4), fill()], "door"),
+        group([line([[156, 98], [156, 66]]), stroke(4)], "pole"),
     ]
-    return animation("intro_build", total, [
-        layer(1, "blocks", blocks, total, position=bob(total)),
-        layer(2, "frame", browser_frame(), total, position=bob(total)),
+    flag_frames = []
+    for i, t in enumerate(range(0, total + 1, 20)):
+        wave = 4 if i % 2 == 0 else -4
+        flag_frames.append((t, [[156, 66], [172, 68 + wave / 2], [186, 66], [186, 82], [172, 84 + wave / 2], [156, 82]]))
+    flag = [group([animated_line(flag_frames, closed=True), fill()], "flag")]
+    return animation("intro_home", total, [
+        layer(1, "flag", flag, total, position=bob(total)),
+        layer(2, "house", house, total, position=bob(total)),
+        layer(3, "frame", browser_frame(), total, position=bob(total)),
     ])
 
 
-def intro_customize():
-    """Intro 2: penggeser warna/teks bergerak (mengubah template sesukamu)."""
+def person(x, y, role="primary"):
+    """Sosok sederhana: kepala lingkaran + bahu setengah lingkaran."""
+    return [
+        group([ellipse(x, y, 26, 26), fill(role=role)], "head"),
+        group([line([[x - 22, y + 44], [x - 18, y + 28], [x, y + 20], [x + 18, y + 28], [x + 22, y + 44]]),
+               stroke(role=role)], "shoulders"),
+    ]
+
+
+def intro_team():
+    """Intro 2 "kerjakan bareng": tiga pengurus muncul bergantian, terhubung garis kerja sama."""
     total = 120
-    rails = [group([line([[56, y], [184, y]]), stroke(4)], f"rail-{i}") for i, y in enumerate((80, 120, 160))]
-    knob_layers = []
-    for i, (y, a, b) in enumerate(((80, 80, 150), (120, 160, 96), (160, 110, 170))):
+    links = [group([line([[72, 104], [120, 84]]), stroke(4, "accent"), trim(30, 50)], "link-left"),
+             group([line([[120, 84], [168, 104]]), stroke(4, "accent"), trim(45, 65)], "link-right")]
+    layers = [layer(1, "links", links, total)]
+    for i, (x, y, at) in enumerate(((72, 104, 0), (120, 80, 12), (168, 104, 24))):
         c = SIZE / 2
-        position = animated([(0, [c + a - 120, c, 0]), (60, [c + b - 120, c, 0]), (total, [c + a - 120, c, 0])])
-        knob = [group([ellipse(120, y, 20, 20), stroke()], f"knob-{i}")]
-        knob_layers.append(layer(10 + i, f"knob-{i}", knob, total, position=position))
-    return animation("intro_customize", total, knob_layers + [layer(1, "rails", rails, total)])
+        member = layer(10 + i, f"member-{i}", person(x, y, "accent" if i == 1 else "primary"), total,
+                       position=animated([(at, [c, c + 12, 0]), (at + 15, [c, c, 0])]),
+                       opacity=animated([(at, 0), (at + 12, 100)]))
+        layers.append(member)
+    return animation("intro_team", total, layers)
 
 
-def intro_share():
-    """Intro 3: panah keluar dari kotak (mengunggah/membagikan template)."""
-    total = 90
+def intro_period():
+    """Intro 3 "dari periode ke periode": kalender berganti tahun, website (bintang) tetap di tengah."""
+    total = 120
     c = SIZE / 2
-    arrow_position = animated([(0, [c, c + 6, 0]), (45, [c, c - 10, 0]), (total, [c, c + 6, 0])])
-    box = [group([line([[70, 120], [70, 176], [170, 176], [170, 120]]), stroke()], "box")]
-    arrow = [group([line([[120, 150], [120, 64]]), stroke()], "shaft"),
-             group([line([[92, 92], [120, 64], [148, 92]]), stroke()], "head")]
-    return animation("intro_share", total, [
-        layer(1, "arrow", arrow, total, position=arrow_position),
-        layer(2, "box", box, total),
+    calendar = [
+        group([rect(120, 128, 132, 104, 14), stroke()], "page"),
+        group([line([[54, 104], [186, 104]]), stroke(4)], "header"),
+        group([line([[92, 66], [92, 86]]), stroke(4)], "ring-left"),
+        group([line([[148, 66], [148, 86]]), stroke(4)], "ring-right"),
+    ]
+    # Halaman bulan "dibalik" naik ke atas dan memudar, berulang: tanda pergantian periode.
+    sheet = [group([rect(120, 140, 108, 44, 8), fill(60)], "sheet")]
+    star = [group([line([[120, 122], [126, 136], [141, 137], [129, 146], [133, 160], [120, 152], [107, 160],
+                         [111, 146], [99, 137], [114, 136]], closed=True), fill(role="primary")], "star")]
+    return animation("intro_period", total, [
+        layer(1, "star", star, total, opacity=animated([(50, 0), (70, 100)])),
+        layer(2, "sheet", sheet, total, position=animated([(0, [c, c, 0]), (45, [c, c - 30, 0])]),
+              opacity=animated([(0, 100), (45, 0)])),
+        layer(3, "calendar", calendar, total, position=bob(total)),
     ])
 
 
@@ -304,9 +337,9 @@ def main():
     files = {
         "empty.json": empty(),
         "loading.json": loading(),
-        "intro_build.json": intro_build(),
-        "intro_customize.json": intro_customize(),
-        "intro_share.json": intro_share(),
+        "intro_home.json": intro_home(),
+        "intro_team.json": intro_team(),
+        "intro_period.json": intro_period(),
     }
     for name, data in files.items():
         with open(os.path.join(OUT_DIR, name), "w") as f:

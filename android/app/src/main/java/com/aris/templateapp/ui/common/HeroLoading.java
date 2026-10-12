@@ -43,7 +43,7 @@ public final class HeroLoading {
         onFinished = null;
         view.removeAllAnimatorListeners();
         view.setAnimation(R.raw.loading);
-        LottieTint.applyForeground(view);
+        LottieTint.apply(view);
         introPlaying = true;
         view.setRepeatCount(0);
         view.setMinAndMaxFrame(0, INTRO_END);

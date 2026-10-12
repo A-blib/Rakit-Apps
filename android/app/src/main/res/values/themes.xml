@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Tema app. Token warna dipetakan ke atribut Material 3 (bagian 9.2), lalu style komponen
+    Tema app. Token warna dipetakan ke atribut Material 3 (revisi-fondasi-orgspace.md 7.2), lalu style komponen
     dipasang sebagai default, sehingga semua layar otomatis seragam. Mode gelap tidak perlu tema terpisah:
     parent DayNight + warna @color/... yang berganti sendiri lewat values-night/colors.xml.
 -->
 <resources>
     <style name="Base.Theme.App" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Warna -->
-        <item name="colorPrimary">@color/color_foreground</item>
-        <item name="colorOnPrimary">@color/color_background</item>
-        <item name="colorPrimaryContainer">@color/color_surface_subtle</item>
-        <item name="colorOnPrimaryContainer">@color/color_foreground</item>
-        <item name="colorSecondary">@color/color_muted</item>
-        <item name="colorOnSecondary">@color/color_background</item>
-        <item name="colorSecondaryContainer">@color/color_surface_subtle</item>
-        <item name="colorOnSecondaryContainer">@color/color_foreground</item>
+        <item name="colorPrimary">@color/color_primary</item>
+        <item name="colorOnPrimary">@color/color_on_primary</item>
+        <item name="colorPrimaryContainer">@color/color_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/color_on_primary_container</item>
+        <item name="colorSecondary">@color/color_accent</item>
+        <item name="colorOnSecondary">@color/color_on_accent</item>
+        <item name="colorSecondaryContainer">@color/color_primary_container</item>
+        <item name="colorOnSecondaryContainer">@color/color_on_primary_container</item>
         <item name="colorTertiary">@color/color_link</item>
         <item name="colorSurface">@color/color_surface</item>
         <item name="colorOnSurface">@color/color_foreground</item>
@@ -28,15 +28,18 @@
         <item name="colorOutline">@color/color_border</item>
         <item name="colorOutlineVariant">@color/color_border</item>
         <item name="colorError">@color/color_error</item>
-        <item name="colorOnError">@color/color_background</item>
-        <!-- Material 3 biasanya memberi lapisan warna pada permukaan yang terangkat; dimatikan agar tetap netral. -->
+        <item name="colorOnError">@color/color_on_primary</item>
+        <item name="colorControlActivated">@color/color_primary</item>
+        <!-- Material 3 biasanya memberi lapisan warna pada permukaan yang terangkat; dimatikan agar warna kartu tetap sesuai token. -->
         <item name="elevationOverlayEnabled">false</item>
         <item name="android:colorBackground">@color/color_background</item>
         <item name="android:windowBackground">@color/color_background</item>
 
-        <!-- Tipografi default untuk komponen Material -->
-        <item name="fontFamily">@font/geist</item>
-        <item name="android:fontFamily">@font/geist</item>
+        <!-- Tipografi. Font TIDAK dipasang lewat android:fontFamily di tema: atribut tema dianggap atribut view,
+             sehingga menimpa font dari textAppearance (judul ExtraBold jadi tampil Regular). Sebagai gantinya,
+             TextView tanpa textAppearance memakai TextAppearance.App.Default, dan komponen Material memakai
+             textAppearance masing-masing di bawah. -->
+        <item name="android:textAppearance">@style/TextAppearance.App.Default</item>
         <item name="textAppearanceDisplaySmall">@style/TextAppearance.App.Display</item>
         <item name="textAppearanceHeadlineSmall">@style/TextAppearance.App.Headline</item>
         <item name="textAppearanceTitleMedium">@style/TextAppearance.App.Title</item>

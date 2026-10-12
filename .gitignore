@@ -14,6 +14,7 @@ google-services.json
 
 # --- Upload lokal backend ---
 backend/uploads/
+backend/data/
 
 # --- Hasil build ---
 build/
@@ -49,3 +50,4 @@ Thumbs.db
 
 # --- Bahan referensi pribadi Aris (salinannya sudah ada di CLAUDE.md dan docs/) ---
 /Instruksi dan alur/
+/revisi all of fiture/

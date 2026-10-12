@@ -4,7 +4,9 @@
 >
 > Dokumen ini melengkapi `alurUntukProvider.md` bagian 5 dan **menggantikan bagian 5.3** (cara kerja mode tandai) di sana.
 >
-> Terakhir diperbarui: 7 Oktober 2026 (cek konten JS statis di server; laporkan pengecekan keliru; ZIP uji; pesan error → Panduan)
+> **Revisi 12 Oktober 2026 (OrgSpace):** kategori diganti kategori organisasi, ada isian **Isi template** (label konten khas), pilihan **Hubungkan ke profil organisasi** saat menandai, uji kolom profil kosong di langkah Coba, dan rencana penanda modul `data-ws-*` (v2). Ringkasan lengkap di **bagian 15**. Di teks UI, "provider" disebut **kreator template**; nama di kode tetap `provider`.
+>
+> Terakhir diperbarui: 7 Oktober 2026 (semua keputusan terbuka Upload selesai; perbaikan otomatis ditunda)
 
 ---
 
@@ -170,7 +172,7 @@ Saat provider menekan tab **Upload** di bottom nav, yang tampil adalah halaman a
 - Wizard terbuka **layar penuh**; **bottom nav disembunyikan** agar provider fokus.
 - Tombol **✕** di kiri atas. Setelah langkah 2 lolos, menekan ✕ menampilkan: *"Pekerjaanmu tersimpan sebagai draft. Lanjutkan kapan saja dari tab Upload."*
 - Memilih file **RAR** langsung memunculkan pesan "Format RAR belum didukung" + tombol "Lihat caranya".
-- Gaya visual mengikuti token desain AGENTS.md bagian 9: monokrom, garis tipis, label kecil Geist Mono (`PERLU DIPERBAIKI`, `LANJUTKAN DRAFT`). Warna semantik hanya untuk error (merah), peringatan (kuning), dan tanda selesai (hijau).
+- Gaya visual mengikuti token desain `revisiFondasiOrgSpace.md` bagian 7 (palet Biru Semangat, Plus Jakarta Sans, sudut membulat). Label kelompok memakai style Label (mis. "Perlu diperbaiki", "Lanjutkan draft"). Warna semantik untuk error (merah), peringatan (kuning), dan tanda selesai (hijau).
 
 ### 3.3 Tata letak umum editor (langkah 4–5)
 
@@ -250,6 +252,7 @@ Bottom sheet (tandai elemen, daftar elemen, panel isian) muncul dari zona bawah 
 - **Upload file perbaikan**: pilih ZIP baru → langsung dicek lagi. File baru **menggantikan** ZIP di catatan template yang sama, bukan membuat template baru.
 - **Nanti saja**: kembali ke Beranda. Masalahnya tetap ada di **"Perlu tindakan"** beserta notifikasinya.
 - **Ini keliru? Laporkan**: ada di setiap Error (bagian 5.9).
+- **Prinsip perbaikan:** file asli di laptop provider adalah sumber kebenaran. Versi awal **tidak** menyediakan editor kode di app maupun perbaikan otomatis; provider memperbaiki file, membuat ZIP ulang, lalu **Upload file perbaikan**. Karena Error terdeteksi di langkah 2 (sebelum menandai), tidak ada pekerjaan menandai yang hilang. Peringatan tidak wajib diperbaiki sebelum publish.
 
 ### 5.5 Status template selama Upload
 
@@ -316,7 +319,7 @@ Selain error fatal, **semua aturan tetap dijalankan** dan semua masalah dilapork
 | Tidak ada `<title>`, atau gambar tanpa `alt` | P |
 | **Framework komponen terdeteksi** (jejak React/Vue/Svelte/Next.js/Gatsby/Nuxt, mis. `__NEXT_DATA__`, `___gatsby`, `__NUXT__`, `data-reactroot`, `<astro-island>`) | E: "Template React/Vue/Svelte belum didukung. Gunakan HTML, CSS, dan JS biasa." (alasan: bagian 10.6) |
 | Halaman hampir tanpa teks/gambar yang bisa ditandai (perkiraan kasar, hanya kasus ekstrem) | E. Jumlah minimal 3 isian yang sebenarnya dihitung di langkah 4 |
-| Atribut khusus app sudah dipakai provider (`data-edit`, `data-key`, `data-label`, `data-tpl-id`) | E (bentrok dengan sistem penandaan) |
+| Atribut khusus app sudah dipakai provider (`data-edit`, `data-key`, `data-label`, `data-tpl-id`, `data-ws-*`) | E (bentrok dengan sistem penandaan) |
 | `<base href>` | E: membuat semua path relatif diambil dari situs lain, bukan dari ZIP. Saran: hapus baris ini |
 | `<object>`, `<embed>`, `<applet>` | E (teknologi plugin lama) |
 | Encoding bukan UTF-8 / tidak ada `<meta charset>` | P (huruf bisa rusak) |
@@ -542,8 +545,9 @@ Tujuan layar ini: **membuat template mudah ditemukan dan menarik di galeri**. Se
 
 | Isian | Wajib? | Aturan | Kegunaan |
 |---|---|---|---|
-| **Nama template** | Wajib | 3–60 karakter. Terisi otomatis dari nama ZIP (`toko-kue.zip` → "Toko Kue"), bisa diganti. Peringatan jika sama dengan nama template lain milik provider sendiri | Judul kartu galeri dan pencarian |
-| **Kategori** | Wajib | Pilih **satu**: Sekolah, Organisasi, Usaha / UMKM, Instansi, Pribadi / Portofolio, Lainnya | Filter galeri dan rekomendasi "Template untuk anda" (cocok dengan tujuan website di onboarding) |
+| **Nama template** | Wajib | 3–60 karakter. Terisi otomatis dari nama ZIP (`aksara-osis.zip` → "Aksara Osis"), bisa diganti. Peringatan jika sama dengan nama template lain milik kreator sendiri | Judul kartu galeri dan pencarian |
+| **Kategori** | Wajib | Pilih **satu** kategori organisasi dari `GET /api/meta/categories` (`revisiFondasiOrgSpace.md` bagian 6): OSIS / MPK, BEM / DEMA / DPM, Himpunan, UKM, Pramuka, Jurnalistik / Media, PMR / KSR, Paskibra, Kerohanian, Seni & Olahraga, Ekskul / Komunitas lain | Filter galeri dan "Template untuk {org}" (cocok dengan kategori organisasi di ruang kerja) |
+| **Isi template** | Wajib, minimal 1 | Pilih konten khas yang ada di template (multi-pilih): Profil / visi-misi, Struktur kepengurusan, Kontak + media sosial, Program kerja, Berita kegiatan, Galeri, Agenda, Open recruitment, Kotak aspirasi. App memberi **saran otomatis** dari nama section yang terdeteksi (mis. section `struktur` → Struktur kepengurusan) | Label "Punya: ..." di kartu galeri; dasar Peringatan konten Inti (bagian 15.2) |
 | **Deskripsi singkat** | **Wajib** | 20–300 karakter, dengan penghitung. Contoh: "Landing page satu halaman untuk toko kue rumahan, ada katalog produk dan tombol pesan via WhatsApp" | Menjelaskan cocok untuk apa; ikut dicari di galeri |
 | **Kata kunci** | **Wajib, minimal 1** | 1–5 kata kunci, masing-masing maks 20 karakter, huruf kecil, tanpa duplikat. Mis. `kue`, `kuliner`, `whatsapp` | Membantu pencarian di galeri |
 | **Thumbnail** | Otomatis | Lihat bagian 6.2 | Gambar pertama yang dilihat orang di galeri |
@@ -572,11 +576,15 @@ Toggle **HP / Desktop** menentukan thumbnail diambil dari tampilan mana.
 │ [Ganti dari section] [Upload]│
 │                              │
 │ Nama template *              │
-│ [ Toko Kue               ]   │
+│ [ Aksara Osis            ]   │
 │                              │
 │ Kategori *                   │
-│ (Sekolah)(Organisasi)(UMKM)  │
-│ (Instansi)(Pribadi)(Lainnya) │
+│ (OSIS / MPK)(BEM)(Himpunan)  │
+│ (UKM)(Pramuka)(Media) ...    │
+│                              │
+│ Isi template * (saran ✦)     │
+│ (Profil ✓)(Struktur ✓)(Kontak ✓)
+│ (Proker)(Berita)(Galeri) ... │
 │                              │
 │ Deskripsi singkat *          │
 │ [                        ]   │
@@ -596,7 +604,7 @@ Toggle **HP / Desktop** menentukan thumbnail diambil dari tampilan mana.
 
 ### 6.4 Aturan layar
 
-- Tombol **Lanjut** aktif setelah **nama, kategori, deskripsi, dan minimal 1 kata kunci** terisi sesuai aturan.
+- Tombol **Lanjut** aktif setelah **nama, kategori, isi template (minimal 1), deskripsi, dan minimal 1 kata kunci** terisi sesuai aturan.
 - Semua isian **tersimpan otomatis** ke draft.
 - Semua isian bisa diubah lagi: sebelum Kirim, dan setelah tayang lewat Template Anda → Edit info.
 - Konfirmasi hak pakai aset ("Saya berhak memakai gambar dan font di template ini") ditempatkan di langkah **Kirim** (bagian 9), bukan di sini.
@@ -712,6 +720,7 @@ Teknis: cukup **satu WebView** per halaman. Tinggi WebView diatur sesuai slide l
 │ ☑ Ukuran huruf  [32]–[48] px │
 │ ☐ Sudut                      │
 │ 🔗 Hubungkan ke isian lain › │
+│ ⊕ Hubungkan ke profil org.   › │
 │ [ Batal ]        [ Simpan ]  │
 └──────────────────────────────┘
 ```
@@ -725,6 +734,7 @@ Teknis: cukup **satu WebView** per halaman. Tinggi WebView diatur sesuai slide l
 | Juga boleh diubah (gaya) | Centang gaya yang boleh diubah pembuat website untuk elemen ini: warna teks, warna latar, ukuran huruf (dengan rentang), sudut. V1+: warna hover, jenis huruf. Detail di bagian 7.11 |
 | Pilih induk / pilih anak | Memperluas atau mempersempit elemen yang dipilih |
 | Hubungkan ke isian yang sudah ada | Untuk konten yang ditulis lebih dari sekali (versi HP & desktop, atau header/footer di beberapa halaman): semuanya jadi satu isian |
+| **Hubungkan ke profil organisasi** (K10) | Opsional. Pilih kolom profil: nama organisasi, nama singkat, logo, nama instansi, alamat, email, WhatsApp, Instagram, TikTok, YouTube. Jenis isian harus cocok (mis. logo → Gambar, Instagram → Link). Ada centang **"Sembunyikan jika kosong"** (bawaan: aktif untuk media sosial, WhatsApp, email). App memberi **saran otomatis** dari isi contoh (mis. teks yang mirip nama organisasi di header, link `instagram.com`) |
 
 3. **Simpan** → elemen diberi tanda ✓ dan labelnya.
 4. Ringkasan per section: daftar elemen yang sudah ditandai, bisa diubah atau dihapus. Tombol **"Section selesai"**.
@@ -1022,21 +1032,22 @@ Tandai beberapa elemen → SIMPAN → Coba (cek hasil) → Kembali ke Tandai →
 | Kembalikan ke isi asli | Reset semua percobaan | V1 |
 | Uji isi panjang | Satu tombol mengisi semua isian dengan teks maksimal dan gambar rasio berbeda, untuk melihat apakah layout rusak | V1+ |
 | Lompat balik ke Tandai ("Ubah tandaan ini") | Dari isian yang kurang pas, satu ketukan kembali ke elemennya di langkah 4 | V1 |
+| **Pakai profil contoh / profil kosong** | Isian yang terhubung ke profil organisasi diisi dengan **profil organisasi contoh** (nama, logo, media sosial), lalu tombol **Kosongkan profil** mengosongkan semuanya untuk mengecek elemen "Sembunyikan jika kosong" benar-benar hilang tanpa merusak layout (bagian 15.3) | V1 |
 
-Bentuk form dan preview ini sama dengan **editor template mode** di sisi pembuat website (`alurFiturPembuatanWibesite.md`), sehingga cukup dibangun satu kali.
+Bentuk form dan preview ini sama dengan **editor mode Pakai template** di sisi pembuat website (`alurFiturBuatWibeSiteviatemplate.md`), sehingga cukup dibangun satu kali.
 
 ---
 
 ## 9. Langkah 6: Kirim
 
-1. Ringkasan: nama, kategori, jumlah halaman, jumlah section, jumlah isian, jumlah peringatan.
+1. Ringkasan: nama, kategori, isi template, jumlah halaman, jumlah section, jumlah isian, jumlah isian terhubung ke profil, jumlah peringatan.
    - **Konfirmasi hak pakai aset** (wajib dicentang): "Saya berhak memakai semua gambar, font, dan isi dalam template ini."
-   - **Preview kartu galeri**: contoh tampilan template di galeri (thumbnail, nama, kategori).
+   - **Preview kartu galeri**: contoh tampilan template di galeri (thumbnail, nama, kategori, label "Punya: ...").
    - **Daftar peringatan** yang tersisa, masing-masing dengan tautan untuk memperbaikinya.
 2. Tombol **Kirim** → status `checking`.
 3. Server menjalankan **pengecekan akhir**: aturan tandaan + aturan file sekali lagi. Karena file sudah lolos di langkah 2 dan tandaan sudah dicek langsung di langkah 4, pengecekan ini **hampir pasti lolos**.
 4. Server **menyalin library dari CDN** ke dalam paket template (bagian 10.5).
-5. Server menyisipkan atribut ke HTML asli: `data-edit`, `data-key`, `data-label`, dan `data-section`.
+5. Server menyisipkan atribut ke HTML asli: `data-edit`, `data-key`, `data-label`, dan `data-section`, lalu membuat `manifest.json` (format di `alurFiturBuatWibeSiteviatemplate.md` 11.3, termasuk `category`, `profileKey`, `hideWhenEmpty`).
 6. Lolos → `published`, tayang di galeri. Ada peringatan → tetap tayang, peringatan masuk "Perlu tindakan".
 
 ---
@@ -1207,9 +1218,10 @@ Data yang dikirim app ke server bersama draft:
       ]
     },
     {
-      "key": "nama_toko",
-      "label": "Nama toko",
+      "key": "nama_organisasi",
+      "label": "Nama organisasi",
       "type": "text",
+      "profileKey": "short_name",
       "sectionId": "s1",
       "elements": [
         { "page": "index.html",   "tplId": 5, "visibleIn": ["mobile", "desktop"] },
@@ -1224,7 +1236,9 @@ Data yang dikirim app ke server bersama draft:
 - `hint`, `maxLength`, `required`, dan `order` berasal dari bottom sheet tandai (bagian 7.3) dan fitur urutkan isian (bagian 7.10). Untuk jenis gambar ada `aspectRatio` (mis. `"16:9"`).
 - `tplId` adalah nomor unik elemen di **HTML asli** (bagian 7.8), sehingga server bisa menemukan elemen yang sama walaupun library mengubah halaman saat tampil.
 - Satu `field` bisa berisi beberapa `elements`, termasuk lintas halaman → wujud fitur "hubungkan ke isian yang sudah ada".
-- Format final ditetapkan bersama format project JSON di sisi pembuat website.
+- `profileKey` dan `hideWhenEmpty` berasal dari pilihan "Hubungkan ke profil organisasi" (bagian 7.3).
+- Info template ikut dikirim: `category` (kode kategori organisasi) dan `contentTags` (mis. `["profil", "struktur", "kontak"]`).
+- Format manifest final yang dipakai editor ada di `alurFiturBuatWibeSiteviatemplate.md` bagian 11.3.
 
 ---
 
@@ -1235,28 +1249,16 @@ Data yang dikirim app ke server bersama draft:
 | `alurUntukProvider.md` bagian 4 | Status template, error vs peringatan, notifikasi, pengingat peringatan |
 | `alurUntukProvider.md` bagian 5.2 & 5.4 | Cara memasukkan file (ZIP saja) dan aturan draft |
 | `alurUntukProvider.md` bagian 5.3 | **Digantikan** oleh dokumen ini (ZIP diupload dan dicek di awal; tampilan slide; JS provider tetap berjalan dengan jembatan terbatas) |
-| Editor template mode (`alurFiturPembuatanWibesite.md`) | Memakai struktur halaman, slide, dan isian yang sama dengan langkah 5. Karena template boleh multi-halaman, editor template mode harus bisa berpindah halaman, dan export ZIP berisi semua halaman |
-| Kerangka buatan provider | Rencana ke depan; kemungkinan memakai alur upload serupa |
+| Editor mode Pakai template (`alurFiturBuatWibeSiteviatemplate.md`) | Memakai struktur halaman, isian, gaya, `profileKey`, dan `hideWhenEmpty` yang sama dengan langkah 5 |
+| Terbitkan (`alurFiturPublishWebsite.md`) | Tahap Periksa memakai ulang aturan bagian 5.6 untuk hasil bangun |
+| Skeleton section buatan kreator (T5) | Dibangun setelah v1 (`penyempurnaanSystem.md` 5.5); memakai mesin upload yang sama dengan wizard lebih pendek |
 
-**Dampak ke dokumen lain (belum disinkronkan; disesuaikan saat dokumen itu dikerjakan):**
-
-| Dokumen | Yang perlu disesuaikan |
-|---|---|
-| `alurFiturPembuatanWibesite.md` bagian 6.2 | Pencarian galeri mencari di **nama, deskripsi, dan kata kunci** (bukan nama saja); kartu/detail template bisa menampilkan info teknis |
-| `alurFiturPembuatanWibesite.md` (editor template mode) | Editor punya kontrol **gaya** (pemilih warna, slider ukuran huruf/sudut, Tema) dan menghasilkan `custom.css`; export ZIP menyertakan `custom.css` |
-| `alurUntukProvider.md` bagian 6.6 | Tabel `templates` ditambah kolom `deskripsi`, `kata_kunci` (text[]), `info_teknis` (jsonb) |
-
+**Dampak ke dokumen lain:** sudah disinkronkan pada revisi 12 Oktober 2026 (pencarian galeri di nama/deskripsi/kata kunci, kontrol gaya + `custom.css` di editor, kolom `deskripsi`, `kata_kunci`, `info_teknis` di tabel `templates`). Tambahan revisi ini untuk tabel `templates`: kolom `category` memakai kode kategori organisasi dan kolom baru `content_tags` (text[]).
 ---
 
 ## 13. Keputusan yang masih terbuka
 
-Usulan perbaikan proses validasi yang belum diputuskan Aris:
-
-| No | Usulan | Keterangan |
-|---|---|---|
-| 1 | **Perbaikan otomatis** (versi berikutnya) | Mis. menyamakan huruf besar/kecil nama file atau menghapus `<base href>`, atas persetujuan provider |
-
-Sudah diterapkan di dokumen ini: laporkan semua masalah sekaligus (bagian 5.6), cek "konten utama dibuat JS" secara statis di server (bagian 5.1 dan 5.6 C), tombol laporkan pengecekan keliru (bagian 5.9), ZIP uji per aturan (bagian 5.10), pesan error menautkan ke Panduan (bagian 5.11), dan aturan "halaman hampir tanpa elemen" hanya untuk kasus ekstrem (bagian 5.6 C).
+Tidak ada untuk cakupan Upload versi awal. Semua usulan perbaikan proses validasi sudah diputuskan: laporkan semua masalah sekaligus (bagian 5.6), cek "konten utama dibuat JS" statis di server (bagian 5.1, 5.6 C), laporkan pengecekan keliru (bagian 5.9), ZIP uji per aturan (bagian 5.10), pesan error menautkan ke Panduan (bagian 5.11), aturan "halaman hampir tanpa elemen" hanya untuk kasus ekstrem (bagian 5.6 C). Perbaikan otomatis ditunda (bagian 14).
 
 ---
 
@@ -1266,7 +1268,48 @@ Sudah diterapkan di dokumen ini: laporkan semua masalah sekaligus (bagian 5.6), 
 
 - **Versi template**: cara provider memperbarui template yang sudah tayang, dan nasib project pembuat website yang memakai versi lama
 - Penandaan **tingkat section** (pembuat website bisa menyembunyikan/mengurutkan section)
-- Detail visual lanjutan (ukuran, animasi, ikon final) disesuaikan saat implementasi berdasarkan token desain AGENTS.md bagian 9
+- Detail visual lanjutan (ukuran, animasi, ikon final) disesuaikan saat implementasi berdasarkan token desain `revisiFondasiOrgSpace.md` bagian 7
 - Render halaman di server (Chromium headless, mis. lewat Playwright) agar hasil pengecekan render konsisten
+- **Perbaikan otomatis** (ditunda): mis. menyamakan huruf besar/kecil nama file, menghapus `<base href>`, mengganti spasi di nama file, menambah `<meta charset>`/`<meta viewport>`, atas persetujuan provider + daftar perubahan + unduh balik ZIP yang sudah diperbaiki
 - `import` library dari CDN di dalam file JS modul
 - Proses pengajuan library baru ke daftar yang diizinkan
+
+---
+
+## 15. Revisi OrgSpace (12 Oktober 2026)
+
+Ringkasan perubahan sesuai `penyempurnaanSystem.md` (K9, K10, K11, K18). Bangun bersama fase Upload; bagian 15.4 baru dibangun saat modul Konten (v2).
+
+### 15.1 Kategori dan isi template (K11, K9)
+
+- **Kategori** diganti kategori organisasi (bagian 6.1), diambil dari `GET /api/meta/categories`. Seeder demo dan data template lama di `dev` disesuaikan.
+- Isian baru **Isi template** (bagian 6.1) disimpan sebagai `templates.content_tags` dan tampil sebagai label "Punya: ..." di galeri.
+
+### 15.2 Peringatan konten Inti (K9)
+
+| Kode | Kapan | Tingkat |
+|---|---|---|
+| `ORG_CORE_CONTENT` v1 | Template kategori organisasi **tidak** mencantumkan salah satu konten Inti di Isi template: Profil / visi-misi, Struktur kepengurusan, Kontak + media sosial | **Peringatan (P)**, bukan Error |
+
+- Dicek saat **Kirim** (bagian 9) karena bergantung pada isian Info template.
+- Pesan: "Template organisasi sebaiknya punya bagian Profil, Struktur kepengurusan, dan Kontak. Template tetap bisa tayang." + tautan Panduan "Konten yang dicari organisasi".
+- Bisa diperketat menjadi Error di versi berikutnya bila kualitas template menurun.
+
+### 15.3 Hubungkan ke profil organisasi (K10)
+
+- Pilihan di bottom sheet Tandai (bagian 7.3) menghasilkan `profileKey` dan `hideWhenEmpty` di data tandaan (bagian 11).
+- **Aturan cocok jenis:** `logo` → Gambar; `instagram`, `tiktok`, `youtube` → Link atau Tombol; `email` → Link (`mailto:`); `whatsapp` → Link atau Tombol (`https://wa.me/`); kolom lain → Teks pendek / Paragraf. Tidak cocok → tidak bisa disimpan, dengan pesan.
+- **Pengecekan langsung (bagian 7.7):** Peringatan jika satu kolom profil dihubungkan ke dua isian berbeda yang tidak saling terhubung (sarankan "hubungkan ke isian yang sudah ada").
+- **Langkah Coba (bagian 8):** wajib bisa menguji profil contoh dan profil kosong. Elemen dengan "Sembunyikan jika kosong" disembunyikan dengan `display: none` pada **elemen yang ditandai** (atau pembungkus link ikon jika kreator memilih induknya); kreator memastikan layout tetap rapi.
+- Panduan kreator: "Hubungkan nama, logo, dan media sosial ke profil organisasi agar pengurus tidak perlu mengetik ulang."
+
+### 15.4 Penanda modul `data-ws-*` (v2, jangan dibangun sekarang)
+
+Rancangan disetujui di `penyempurnaanSystem.md` bagian 3.6 dan 4.6 (K18). Ringkasannya untuk dikerjakan saat modul Konten dibangun:
+
+1. Jenis tanda baru **"Daftar konten"** di bottom sheet Tandai: kreator menandai **satu kartu contoh**, memilih modul (Berita / Struktur kepengurusan), lalu memetakan bagian kartu ke kolom modul yang **ditetapkan sistem** (mis. Berita: judul, foto, tanggal, ringkasan, tautan detail). Server menyisipkan `data-ws-list`, `data-ws-item`, `data-ws-field`, `data-ws-link`, `data-ws-empty`.
+2. Pengecekan otomatis: area modul berisi tepat satu kartu contoh; kolom wajib terpetakan; ada halaman detail (jika tidak, sistem memakai halaman detail bawaan yang mengikuti warna dan font template).
+3. Langkah Coba menguji data dummy **0 item** (tampilan kosong rapi), **1 item**, **20 item** (batas + "Lihat semua"), **judul sangat panjang / tanpa foto**. Hasil rusak → Peringatan/Error seperti tahap C.
+4. Galeri menampilkan label "Mendukung: Berita, Struktur" dan filter modul.
+5. Atribut `data-ws-*` yang ditulis kreator sendiri di ZIP diperlakukan seperti atribut khusus app lain (bagian 5.6): **Error** jika dipakai sebelum fitur modul aktif.
+

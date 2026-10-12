@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import com.aris.templateapp.data.model.ProviderStatus;
 import com.aris.templateapp.data.model.User;
 import com.aris.templateapp.data.model.UserRole;
-import com.aris.templateapp.data.remote.dto.CreatorProfileDto;
 import com.aris.templateapp.data.remote.dto.UserDto;
 
 import org.junit.Test;
@@ -26,8 +25,7 @@ public class UserMapperTest {
         dto.onboardingCompleted = true;
         dto.roles = List.of("creator", "provider");
         dto.providerStatus = "suspended";
-        dto.creatorProfile = new CreatorProfileDto();
-        dto.creatorProfile.websitePurpose = "sekolah";
+        dto.lastOrganizationId = "org-1";
 
         User user = UserMapper.toModel(dto);
 
@@ -36,7 +34,7 @@ public class UserMapperTest {
         assertTrue(user.hasRole(UserRole.PROVIDER));
         assertEquals(ProviderStatus.SUSPENDED, user.getProviderStatus());
         assertTrue(user.isProviderSuspended());
-        assertEquals("sekolah", user.getWebsitePurpose());
+        assertEquals("org-1", user.getLastOrganizationId());
     }
 
     @Test
@@ -50,6 +48,6 @@ public class UserMapperTest {
         assertFalse(user.isOnboardingCompleted());
         assertTrue(user.getRoles().isEmpty());
         assertNull(user.getProviderStatus());
-        assertNull(user.getWebsitePurpose());
+        assertNull(user.getLastOrganizationId());
     }
 }

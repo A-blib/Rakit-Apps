@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Teks ruang kerja organisasi OrgSpace (docs/rancangan/revisi-fondasi-orgspace.md bagian 5 & 8).
+    Sapaan memakai "kamu", kalimat pendek dan hangat, tanpa istilah teknis.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Kode error ruang kerja -->
+    <string name="error_invitation_invalid">Kode undangan ini sudah tidak berlaku. Minta kode baru ke pengurus, ya.</string>
+    <string name="error_already_member">Kamu sudah jadi anggota organisasi ini.</string>
+    <string name="error_org_member_limit">Anggota organisasi ini sudah penuh. Hubungi pengurusnya, ya.</string>
+    <string name="error_personal_space_exists">Kamu sudah punya ruang pribadi.</string>
+    <string name="error_category_level_mismatch">Kategori ini tidak tersedia untuk jenjang yang dipilih.</string>
+    <string name="error_last_owner">Jadikan anggota lain Pemilik dulu sebelum keluar.</string>
+    <string name="error_role_not_allowed">Peranmu belum bisa melakukan ini.</string>
+    <string name="error_too_many_attempts">Terlalu banyak percobaan. Tunggu sebentar, lalu coba lagi.</string>
+
+    <!-- Layar pilihan ruang kerja (bagian 5) -->
+    <string name="workspace_choice_title">Mulai jejak digital organisasimu dari sini</string>
+    <string name="workspace_choice_subtitle">Pilih cara kamu mulai. Bisa tambah organisasi lain nanti.</string>
+    <string name="workspace_choice_create_title">Buat ruang organisasi</string>
+    <string name="workspace_choice_create_body">Untuk OSIS, BEM, Pramuka, ekskul, atau komunitasmu.</string>
+    <string name="workspace_choice_join_title">Gabung organisasi</string>
+    <string name="workspace_choice_join_body">Punya kode undangan dari pengurus? Masuk ke sini.</string>
+    <string name="workspace_choice_personal_title">Untuk pribadi</string>
+    <string name="workspace_choice_personal_body">Website portofolio atau proyekmu sendiri.</string>
+
+    <!-- Form organisasi (bagian 5.1) -->
+    <string name="org_form_title">Kenalan dulu sama organisasimu</string>
+    <string name="org_form_subtitle">Data ini mengisi website kalian secara otomatis. Bisa diubah kapan saja.</string>
+    <string name="org_field_name">Nama organisasi</string>
+    <string name="org_field_name_helper">Contoh: OSIS SMA Negeri 1 Bandung</string>
+    <string name="org_field_short_name">Nama singkat (opsional)</string>
+    <string name="org_field_short_name_helper">Contoh: OSIS Smansa. Dipakai saat menyapa kalian.</string>
+    <string name="org_field_level">Jenjang</string>
+    <string name="org_field_category">Kategori</string>
+    <string name="org_field_category_empty">Pilih jenjang dulu, ya.</string>
+    <string name="org_field_institution">Nama sekolah atau kampus</string>
+    <string name="org_field_institution_helper">Contoh: SMA Negeri 1 Bandung</string>
+    <string name="org_field_city">Kota / kabupaten (opsional)</string>
+    <string name="org_field_period">Periode kepengurusan (opsional)</string>
+    <string name="org_field_period_start">Tahun mulai</string>
+    <string name="org_field_period_end">Tahun selesai</string>
+    <string name="org_field_position">Jabatan kamu (opsional)</string>
+    <string name="org_field_position_helper">Contoh: Ketua, Sekretaris, Humas</string>
+    <string name="org_form_logo_note">Logo bisa ditambahkan nanti di Profil organisasi.</string>
+    <string name="org_form_submit">Buat ruang organisasi</string>
+    <string name="org_error_name_required">Nama organisasi wajib diisi</string>
+    <string name="org_error_name_too_long">Maksimal 100 karakter</string>
+    <string name="org_error_short_name_too_long">Maksimal 40 karakter</string>
+    <string name="org_error_level_required">Pilih jenjang</string>
+    <string name="org_error_category_required">Pilih kategori</string>
+    <string name="org_error_institution_required">Nama sekolah atau kampus wajib diisi</string>
+    <string name="org_error_institution_too_long">Maksimal 150 karakter</string>
+    <string name="org_error_city_too_long">Maksimal 100 karakter</string>
+    <string name="org_error_year_invalid">Tulis tahun 4 angka, mis. 2026</string>
+    <string name="org_error_period_order">Tahun selesai tidak boleh sebelum tahun mulai</string>
+    <string name="org_error_position_too_long">Maksimal 60 karakter</string>
+
+    <!-- Gabung organisasi -->
+    <string name="join_title">Gabung organisasi</string>
+    <string name="join_subtitle">Masukkan kode undangan dari pengurus organisasimu.</string>
+    <string name="join_field_code">Kode undangan</string>
+    <string name="join_field_code_helper">Contoh: OSIS-7K2P</string>
+    <string name="join_check">Cek kode</string>
+    <string name="join_error_code_required">Masukkan kode undangan</string>
+    <string name="join_preview_role">Kamu akan bergabung sebagai %1$s</string>
+    <string name="join_submit">Gabung sekarang</string>
+
+    <!-- Ruang pribadi -->
+    <string name="personal_title">Ruang pribadi</string>
+    <string name="personal_subtitle">Tempat untuk website pribadimu. Nanti kamu tetap bisa gabung atau membuat organisasi.</string>
+    <string name="personal_submit">Buat ruang pribadi</string>
+
+    <!-- Peran (label tampilan) -->
+    <string name="role_owner">Pemilik</string>
+    <string name="role_admin">Admin</string>
+    <string name="role_editor">Editor</string>
+    <string name="workspace_personal_badge">Pribadi</string>
+
+    <!-- Pemilih ruang kerja di app bar -->
+    <string name="workspace_picker_title">Ruang kerja</string>
+    <string name="workspace_picker_create">Buat organisasi baru</string>
+    <string name="workspace_picker_join">Gabung organisasi</string>
+    <string name="workspace_picker_personal">Buat ruang pribadi</string>
+    <string name="cd_workspace_picker">Ganti ruang kerja, sekarang %1$s</string>
+    <string name="workspace_switched">Sekarang di %1$s</string>
+    <string name="profile_group_workspaces">Ruang kerja saya</string>
+    <string name="profile_edit_name">Ubah nama tampilan</string>
+    <!-- Kode error kelola organisasi -->
+    <string name="error_logo_invalid">Logo harus gambar PNG atau JPG. Pilih gambar lain, ya.</string>
+    <string name="error_confirm_name_mismatch">Nama yang diketik belum sama dengan nama organisasi.</string>
+    <string name="error_org_has_online_sites">Matikan dulu semua website yang masih online.</string>
+    <string name="error_image_unreadable">Gambar ini tidak bisa dibaca. Pilih gambar lain, ya.</string>
+
+    <!-- Kelola organisasi (R4) -->
+    <string name="workspace_picker_manage">Kelola organisasi</string>
+    <string name="workspace_picker_manage_personal">Kelola ruang pribadi</string>
+    <!-- Bahasa Indonesia tidak punya bentuk jamak, jadi saran lint "pakai plurals" diabaikan. -->
+    <string name="org_members_count" tools:ignore="PluralsCandidate">%1$d dari %2$d anggota</string>
+    <string name="org_my_role">Peranmu: %1$s</string>
+    <string name="org_menu_profile">Profil organisasi</string>
+    <string name="org_menu_profile_desc">Nama, logo, kontak, dan media sosial</string>
+    <string name="org_menu_members">Anggota</string>
+    <string name="org_menu_members_desc">Undang pengurus dan atur peran</string>
+    <string name="org_menu_activity">Riwayat aktivitas</string>
+    <string name="org_menu_activity_desc">Siapa melakukan apa di ruang kerja ini</string>
+    <string name="org_menu_transfer">Serah terima</string>
+    <string name="org_menu_transfer_desc">Jadikan pengurus baru sebagai Pemilik</string>
+    <string name="org_menu_leave">Keluar dari organisasi</string>
+    <string name="org_menu_delete">Hapus organisasi</string>
+    <string name="org_menu_profile_personal">Profil ruang pribadi</string>
+    <string name="org_menu_delete_personal">Hapus ruang pribadi</string>
+    <string name="org_leave_title">Keluar dari %1$s?</string>
+    <string name="org_leave_body">Kamu tidak bisa membuka website organisasi ini lagi sampai diundang ulang.</string>
+    <string name="org_leave_confirm">Keluar</string>
+    <string name="org_left">Kamu sudah keluar dari %1$s.</string>
+    <string name="org_delete_title">Hapus %1$s?</string>
+    <string name="org_delete_body">Anggota, undangan, dan riwayatnya ikut terhapus permanen. Ketik nama organisasi untuk melanjutkan.</string>
+    <string name="org_field_name_personal">Nama ruang pribadi</string>
+    <string name="org_delete_body_personal">Riwayatnya ikut terhapus permanen. Ketik nama ruang pribadi untuk melanjutkan.</string>
+    <string name="org_delete_confirm">Hapus permanen</string>
+    <string name="org_deleted">%1$s sudah dihapus.</string>
+
+    <!-- Profil organisasi -->
+    <string name="org_profile_readonly">Hanya Admin dan Pemilik yang bisa mengubah profil.</string>
+    <string name="org_section_identity">Identitas</string>
+    <string name="org_section_contact">Kontak &amp; media sosial</string>
+    <string name="org_logo_change">Ganti logo</string>
+    <string name="org_logo_hint">Logo persegi atau transparan paling bagus. Kami potong &amp; kecilkan otomatis.</string>
+    <string name="org_logo_saved">Logo diperbarui.</string>
+    <string name="cd_org_logo">Logo organisasi</string>
+    <string name="org_field_address">Alamat (opsional)</string>
+    <string name="org_field_email">Email (opsional)</string>
+    <string name="org_field_whatsapp">Nomor WhatsApp (opsional)</string>
+    <!-- Tanda hubung biasa, karena memang begitu nomor HP biasa ditulis. -->
+    <string name="org_field_whatsapp_helper" tools:ignore="TypographyDashes">Contoh: 0812-3456-7890</string>
+    <string name="org_field_instagram">Instagram (opsional)</string>
+    <string name="org_field_tiktok">TikTok (opsional)</string>
+    <string name="org_field_youtube">YouTube (opsional)</string>
+    <string name="org_field_social_helper">Username atau link, mis. @osis.smansa</string>
+    <string name="org_profile_saved">Profil organisasi tersimpan.</string>
+
+    <!-- Anggota -->
+    <string name="members_invite">Undang anggota</string>
+    <string name="members_invitations_title">Undangan aktif</string>
+    <string name="members_list_title">Pengurus</string>
+    <string name="member_you">%1$s (kamu)</string>
+    <string name="member_role_position">%1$s · %2$s</string>
+    <string name="invitation_row">%1$s · berlaku sampai %2$s</string>
+    <string name="invitation_revoke">Cabut</string>
+    <string name="invitation_revoke_title">Cabut undangan ini?</string>
+    <string name="invitation_revoke_body">Kode ini tidak bisa dipakai lagi. Anggota yang sudah bergabung tidak terpengaruh.</string>
+    <string name="invitation_revoked">Undangan dicabut.</string>
+    <string name="member_make_admin">Jadikan Admin</string>
+    <string name="member_make_editor">Jadikan Editor</string>
+    <string name="member_edit_position">Ubah jabatan</string>
+    <string name="member_remove">Keluarkan dari organisasi</string>
+    <string name="member_remove_title">Keluarkan %1$s?</string>
+    <string name="member_remove_body">Aksesnya ke organisasi ini langsung dicabut.</string>
+    <string name="member_remove_confirm">Keluarkan</string>
+    <string name="member_removed">%1$s dikeluarkan.</string>
+    <string name="member_updated">Data anggota tersimpan.</string>
+    <string name="member_position_title">Jabatan %1$s</string>
+
+    <!-- Undang anggota -->
+    <string name="invite_role_label">Bergabung sebagai</string>
+    <string name="invite_role_editor_desc">Editor bisa mengedit isi website dan menyimpan draft.</string>
+    <string name="invite_role_admin_desc">Admin juga bisa menerbitkan website, mengatur domain, dan mengundang anggota.</string>
+    <string name="invite_create">Buat kode undangan</string>
+    <string name="invite_code_label">Kode undangan</string>
+    <string name="invite_valid_until">Berlaku sampai %1$s dan bisa dipakai beberapa orang. Kode ini hanya tampil sekali, jadi bagikan sekarang, ya.</string>
+    <string name="invite_copy">Salin</string>
+    <string name="invite_share">Bagikan</string>
+    <string name="invite_copied">Kode disalin.</string>
+    <string name="invite_share_chooser">Bagikan kode undangan</string>
+    <string name="invite_share_text">Halo! Yuk gabung ke %1$s di OrgSpace.\n\n1. Buka app OrgSpace lalu masuk.\n2. Pilih \"Gabung organisasi\".\n3. Masukkan kode: %2$s\n\nKode berlaku sampai %3$s.</string>
+
+    <!-- Serah terima -->
+    <string name="transfer_subtitle">Pilih pengurus yang akan menjadi Pemilik baru. Website dan datanya tetap aman di organisasi.</string>
+    <string name="transfer_choose_member">Pemilik baru</string>
+    <string name="transfer_keep_label">Peranmu setelah serah terima</string>
+    <string name="transfer_keep_admin">Tetap sebagai Admin</string>
+    <string name="transfer_keep_editor">Tetap sebagai Editor</string>
+    <string name="transfer_keep_leave">Keluar dari organisasi</string>
+    <string name="transfer_submit">Serahkan kepemilikan</string>
+    <string name="transfer_confirm_title">Jadikan %1$s Pemilik?</string>
+    <string name="transfer_confirm_body">Setelah ini hanya Pemilik baru yang bisa mengembalikan kepemilikan.</string>
+    <string name="transfer_done">%1$s sekarang Pemilik %2$s.</string>
+    <string name="transfer_no_members">Belum ada anggota lain. Undang pengurus baru dulu, ya.</string>
+    <string name="transfer_member_required">Pilih Pemilik baru dulu</string>
+
+    <!-- Riwayat aktivitas -->
+    <string name="activity_just_now">Baru saja</string>
+    <string name="activity_empty">Belum ada aktivitas.</string>
+    <string name="activity_load_more">Muat lebih banyak</string>
+    <string name="activity_unknown_actor">Seseorang</string>
+    <string name="activity_org_created">%1$s membuat ruang kerja ini</string>
+    <string name="activity_org_updated">%1$s mengubah profil organisasi</string>
+    <string name="activity_logo_changed">%1$s mengganti logo</string>
+    <string name="activity_member_joined">%1$s bergabung sebagai %2$s</string>
+    <string name="activity_member_left">%1$s keluar dari organisasi</string>
+    <string name="activity_member_removed">%1$s mengeluarkan %2$s</string>
+    <string name="activity_role_changed">%1$s mengubah peran %2$s menjadi %3$s</string>
+    <string name="activity_ownership_transferred">%1$s menyerahkan kepemilikan ke %2$s</string>
+    <string name="activity_invitation_created">%1$s membuat kode undangan untuk %2$s</string>
+    <string name="activity_invitation_revoked">%1$s mencabut kode undangan</string>
+    <string name="activity_website_renamed">%1$s mengganti nama website %2$s menjadi %3$s</string>
+    <string name="activity_website_duplicated">%1$s menduplikat website %2$s</string>
+    <string name="activity_website_deleted">%1$s menghapus website %2$s</string>
+    <string name="activity_publish_requested">%1$s minta website %2$s diterbitkan</string>
+    <string name="activity_other">%1$s melakukan perubahan</string>
+</resources>

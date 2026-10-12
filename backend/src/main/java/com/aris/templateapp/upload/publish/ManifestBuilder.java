@@ -134,7 +134,8 @@ public final class ManifestBuilder {
             }
             fields.add(new TemplateManifest.Field(field.key(), field.label(), field.type(), field.hint(), field.maxLength(),
                     field.required(), field.order(), field.sectionId(), field.aspectRatio(), new ArrayList<>(fieldPages),
-                    sample, sampleHref, styles.isEmpty() ? null : styles));
+                    sample, sampleHref, styles.isEmpty() ? null : styles, field.profileKey(),
+                    field.profileKey() != null && Boolean.TRUE.equals(field.hideWhenEmpty()) ? Boolean.TRUE : null));
         }
         return new TemplateManifest(info.templateId(), info.version(), pages, sections, theme, fields);
     }

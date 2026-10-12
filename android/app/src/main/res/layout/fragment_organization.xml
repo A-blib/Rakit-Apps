@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Layar Organisasi: kepala (logo, nama, peran, jumlah anggota) + menu kelola sesuai peran (bagian 3.1). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ScrollView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="@dimen/space_8">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                    android:paddingBottom="@dimen/space_6">
+
+                    <include
+                        android:id="@+id/logo"
+                        layout="@layout/view_org_logo"
+                        android:layout_width="@dimen/org_logo_size"
+                        android:layout_height="@dimen/org_logo_size" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/space_4"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.App.Headline" />
+
+                        <TextView
+                            android:id="@+id/role"
+                            style="@style/Widget.App.Badge"
+                            android:layout_marginTop="@dimen/space_2" />
+
+                        <TextView
+                            android:id="@+id/member_count"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_2"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/profile_item"
+                    layout="@layout/item_menu_row" />
+
+                <include
+                    android:id="@+id/members_item"
+                    layout="@layout/item_menu_row" />
+
+                <include
+                    android:id="@+id/activity_item"
+                    layout="@layout/item_menu_row" />
+
+                <include
+                    android:id="@+id/transfer_item"
+                    layout="@layout/item_menu_row" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="@dimen/space_2" />
+
+                <TextView
+                    android:id="@+id/leave_item"
+                    style="@style/Widget.App.ListItem.Text"
+                    android:text="@string/org_menu_leave"
+                    app:drawableStartCompat="@drawable/ic_logout" />
+
+                <TextView
+                    android:id="@+id/delete_item"
+                    style="@style/Widget.App.ListItem.Text"
+                    android:text="@string/org_menu_delete"
+                    android:textColor="@color/color_error"
+                    app:drawableStartCompat="@drawable/ic_delete"
+                    app:drawableTint="@color/color_error" />
+            </LinearLayout>
+        </ScrollView>
+
+        <com.aris.templateapp.ui.common.StateView
+            android:id="@+id/state_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+</LinearLayout>

@@ -21,7 +21,7 @@
     { "var": "--radius", "label": "Sudut", "type": "size" }
   ],
   "fields": [
-    { "key": "nama_sekolah", "label": "Nama sekolah", "type": "text", "hint": "Nama resmi sekolahmu", "maxLength": 40, "required": true, "sectionId": "s1",
+    { "key": "nama_sekolah", "label": "Nama sekolah", "type": "text", "hint": "Nama resmi sekolahmu", "maxLength": 40, "required": true, "sectionId": "s1", "profileKey": "institution_name",
       "elements": [
         { "page": "index.html", "selector": "header .logo" }, { "page": "tentang.html", "selector": "header .logo" }, { "page": "kontak.html", "selector": "header .logo" },
         { "page": "index.html", "selector": ".foot-name" }, { "page": "tentang.html", "selector": ".foot-name" }, { "page": "kontak.html", "selector": ".foot-name" }
@@ -48,13 +48,13 @@
       "elements": [{ "page": "tentang.html", "selector": ".principal img" }] },
     { "key": "nama_kepala", "label": "Nama kepala sekolah", "type": "text", "maxLength": 60, "required": true, "sectionId": "s4",
       "elements": [{ "page": "tentang.html", "selector": ".principal figcaption" }] },
-    { "key": "alamat", "label": "Alamat", "type": "paragraph", "maxLength": 200, "required": true, "sectionId": "s5",
+    { "key": "alamat", "label": "Alamat", "type": "paragraph", "maxLength": 200, "required": true, "sectionId": "s5", "profileKey": "address",
       "elements": [{ "page": "kontak.html", "selector": ".address" }] },
     { "key": "telepon", "label": "Telepon", "type": "button", "required": false, "sectionId": "s5",
       "elements": [{ "page": "kontak.html", "selector": ".phone" }] },
     { "key": "email", "label": "Email", "type": "button", "required": false, "sectionId": "s5",
       "elements": [{ "page": "kontak.html", "selector": ".email" }] },
-    { "key": "whatsapp", "label": "Tombol WhatsApp", "type": "button", "required": true, "sectionId": "s5",
+    { "key": "whatsapp", "label": "Tombol WhatsApp", "type": "button", "required": true, "sectionId": "s5", "profileKey": "whatsapp",
       "elements": [{ "page": "kontak.html", "selector": ".contact .btn" }] }
   ]
 }

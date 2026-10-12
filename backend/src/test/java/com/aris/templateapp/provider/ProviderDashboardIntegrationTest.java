@@ -99,9 +99,9 @@ class ProviderDashboardIntegrationTest {
 
     @Test
     void summaryTrendAndPopularFollowThePeriod() throws Exception {
-        UUID a = template("Profil Sekolah", "sekolah", "published", 0);
-        UUID b = template("UMKM Kuliner", "umkm", "published", 0);
-        UUID c = template("Portofolio", "pribadi", "published", 0);
+        UUID a = template("Profil Sekolah", "osis_mpk", "published", 0);
+        UUID b = template("UMKM Kuliner", "ukm", "published", 0);
+        UUID c = template("Portofolio", "lainnya", "published", 0);
         template("Landing Event", "lainnya", "check_failed", 0);
 
         // a: 3 download (hari ini 2, kemarin 1) · b: 3 download hari ini tapi lebih sedikit dilihat · c: 1 download 10 hari lalu
@@ -128,7 +128,7 @@ class ProviderDashboardIntegrationTest {
 
     @Test
     void downloadAtEarlyMorningWibCountsForThatWibDate() throws Exception {
-        UUID a = template("Profil Sekolah", "sekolah", "published", 0);
+        UUID a = template("Profil Sekolah", "osis_mpk", "published", 0);
         // 00.30 WIB hari ini = 17.30 UTC kemarin. Harus masuk ke tanggal hari ini (WIB), bukan kemarin.
         insertEvent(a, "download", UUID.randomUUID().toString(), today().atTime(LocalTime.of(0, 30)));
 
@@ -143,9 +143,9 @@ class ProviderDashboardIntegrationTest {
         UUID failed = template("Landing Event", "lainnya", "check_failed", 1);
         UUID check = check(failed, 1, "failed");
         issue(check, "error"); issue(check, "error"); issue(check, "warning");
-        UUID warned = template("Profil Sekolah", "sekolah", "published", 3);
-        template("Draft Baru", "umkm", "draft", 0);
-        template("Rapi", "umkm", "published", 0);
+        UUID warned = template("Profil Sekolah", "osis_mpk", "published", 3);
+        template("Draft Baru", "ukm", "draft", 0);
+        template("Rapi", "ukm", "published", 0);
 
         send(get("/api/providers/me/dashboard"), null)
                 .andExpect(jsonPath("$.actionItems[*].kind",
@@ -166,11 +166,11 @@ class ProviderDashboardIntegrationTest {
 
     @Test
     void templateListFiltersCountsSortsAndSearches() throws Exception {
-        UUID sekolah = template("Profil Sekolah", "sekolah", "published", 2);
-        UUID kuliner = template("UMKM Kuliner", "umkm", "published", 0);
+        UUID sekolah = template("Profil Sekolah", "osis_mpk", "published", 2);
+        UUID kuliner = template("UMKM Kuliner", "ukm", "published", 0);
         template("Landing Event", "lainnya", "check_failed", 0);
-        template("Draft Toko", "umkm", "draft", 0);
-        template("Diskon_50%", "umkm", "disabled", 0);
+        template("Draft Toko", "ukm", "draft", 0);
+        template("Diskon_50%", "ukm", "disabled", 0);
         download(kuliner, 0); download(kuliner, 1);
 
         send(get("/api/providers/me/templates"), null)
@@ -188,7 +188,7 @@ class ProviderDashboardIntegrationTest {
                 .andExpect(jsonPath("$.items[0].name").value("UMKM Kuliner"))
                 .andExpect(jsonPath("$.items[0].downloads").value(2));
 
-        send(get("/api/providers/me/templates?category=umkm&sort=name"), null)
+        send(get("/api/providers/me/templates?category=ukm&sort=name"), null)
                 .andExpect(jsonPath("$.items[*].name", contains("Diskon_50%", "Draft Toko", "UMKM Kuliner")))
                 .andExpect(jsonPath("$.counts.all").value(3));
 
@@ -206,7 +206,7 @@ class ProviderDashboardIntegrationTest {
     @Test
     void templateListIsPaginatedBy20() throws Exception {
         for (int i = 1; i <= 25; i++) {
-            template("Template %02d".formatted(i), "umkm", "published", 0);
+            template("Template %02d".formatted(i), "ukm", "published", 0);
         }
 
         send(get("/api/providers/me/templates?sort=name&page=0"), null)
@@ -248,8 +248,8 @@ class ProviderDashboardIntegrationTest {
 
     @Test
     void eventsCountGuestsOnceAndIgnoreOwnerAndUnpublished() throws Exception {
-        UUID published = template("Profil Sekolah", "sekolah", "published", 0);
-        UUID draft = template("Draft", "umkm", "draft", 0);
+        UUID published = template("Profil Sekolah", "osis_mpk", "published", 0);
+        UUID draft = template("Draft", "ukm", "draft", 0);
         String now = java.time.Instant.now().toString();
 
         // Tamu (tanpa token): view & download dihitung.
@@ -274,7 +274,7 @@ class ProviderDashboardIntegrationTest {
 
     @Test
     void invalidEventsAreRejected() throws Exception {
-        UUID published = template("Profil Sekolah", "sekolah", "published", 0);
+        UUID published = template("Profil Sekolah", "osis_mpk", "published", 0);
         String now = java.time.Instant.now().toString();
 
         mockMvc.perform(post("/api/templates/" + published + "/events").contentType(MediaType.APPLICATION_JSON)
@@ -292,7 +292,7 @@ class ProviderDashboardIntegrationTest {
 
     @Test
     void profileCanBeReadAndEdited() throws Exception {
-        UUID a = template("Profil Sekolah", "sekolah", "published", 0);
+        UUID a = template("Profil Sekolah", "osis_mpk", "published", 0);
         download(a, 0);
 
         send(get("/api/providers/me/profile"), null)

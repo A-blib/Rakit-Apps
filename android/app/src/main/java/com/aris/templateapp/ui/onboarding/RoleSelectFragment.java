@@ -15,7 +15,7 @@ import com.aris.templateapp.databinding.FragmentRoleSelectBinding;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
-/** Pilih peran untuk akun baru (bagian 6.6): pembuat website atau penyedia template. */
+/** Pilih peran untuk akun baru (bagian 6.6): pembuat website (lanjut ke pilihan ruang kerja) atau kreator template. */
 @AndroidEntryPoint
 public class RoleSelectFragment extends Fragment {
 
@@ -31,7 +31,7 @@ public class RoleSelectFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         binding.creatorCardContent.getRoot().setOnClickListener(v ->
-                NavHostFragment.findNavController(this).navigate(R.id.action_role_select_to_creator_form));
+                NavHostFragment.findNavController(this).navigate(R.id.action_role_select_to_workspace_choice));
         binding.providerCardContent.getRoot().setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.action_role_select_to_provider_form));
     }

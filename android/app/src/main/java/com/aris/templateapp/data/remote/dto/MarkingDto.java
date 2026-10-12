@@ -51,6 +51,10 @@ public class MarkingDto {
         public List<Style> styles = new ArrayList<>();
         public String sectionId;
         public List<Element> elements = new ArrayList<>();
+        /** Kolom Profil organisasi yang mengisi otomatis isian ini (alur-fitur-upload.md 15.3); null = tidak. */
+        public String profileKey;
+        /** Sembunyikan elemen jika kolom profil kosong (hanya berlaku bila profileKey diisi). */
+        public Boolean hideWhenEmpty;
     }
 
     public static class Style {

@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Token warna mode GELAP. Nama sama dengan values/colors.xml, nilainya berbeda. -->
+<!-- Token warna mode GELAP (biru malam). Nama sama dengan values/colors.xml, nilainya berbeda. -->
 <resources>
-    <color name="color_background">#000000</color>
-    <color name="color_surface">#0A0A0A</color>
-    <color name="color_surface_subtle">#111111</color>
-    <color name="color_foreground">#EDEDED</color>
-    <color name="color_muted">#A1A1A1</color>
-    <color name="color_border">#2E2E2E</color>
-    <color name="color_border_strong">#454545</color>
-    <color name="color_link">#52A8FF</color>
+    <color name="color_background">#0E1230</color>
+    <color name="color_surface">#161B3D</color>
+    <color name="color_surface_subtle">#1D2350</color>
+    <color name="color_foreground">#EEF1FF</color>
+    <color name="color_muted">#A9B2DA</color>
+    <color name="color_border">#2C3366</color>
+    <color name="color_border_strong">#6670B8</color>
+    <color name="color_primary">#7C93FF</color>
+    <color name="color_on_primary">#0E1230</color>
+    <color name="color_primary_container">#26338F</color>
+    <color name="color_on_primary_container">#E3E9FF</color>
+    <color name="color_accent">#FFD45E</color>
+    <color name="color_on_accent">#3D2A00</color>
+    <color name="color_link">#8EA2FF</color>
     <color name="color_success">#4CC38A</color>
     <color name="color_warning">#F5A524</color>
     <color name="color_error">#FF6166</color>
@@ -17,5 +23,6 @@
     <color name="color_success_tint">#1A4CC38A</color>
     <color name="color_warning_tint">#1AF5A524</color>
     <color name="color_error_tint">#1AFF6166</color>
-    <color name="color_link_tint">#1A52A8FF</color>
+    <color name="color_link_tint">#1A8EA2FF</color>
+    <color name="color_primary_ripple">#337C93FF</color>
 </resources>

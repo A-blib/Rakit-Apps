@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Huruf depan ruang kerja di app bar (kotak 28dp), sudutnya mengikuti ShapeAppearance.App.ExtraSmall. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="@dimen/radius_extra_small" />
+    <solid android:color="@color/color_primary_container" />
+</shape>

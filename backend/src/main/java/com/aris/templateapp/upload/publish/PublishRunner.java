@@ -1,10 +1,12 @@
 package com.aris.templateapp.upload.publish;
 
+import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.config.AppProperties;
 import com.aris.templateapp.notification.NotificationRepository;
 import com.aris.templateapp.notification.NotificationService;
 import com.aris.templateapp.notification.NotificationType;
 import com.aris.templateapp.template.CheckStatus;
+import com.aris.templateapp.template.ContentTag;
 import com.aris.templateapp.template.IssueSeverity;
 import com.aris.templateapp.template.Template;
 import com.aris.templateapp.template.TemplateCheck;
@@ -23,7 +25,6 @@ import com.aris.templateapp.upload.check.TemplateFiles;
 import com.aris.templateapp.upload.marking.MarkingData;
 import com.aris.templateapp.upload.marking.MarkingValidator;
 import com.aris.templateapp.upload.marking.TemplateNumbering;
-import com.aris.templateapp.common.exception.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -39,8 +40,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Pengecekan akhir + pembuatan paket setelah Kirim (alur-fitur-upload.md bagian 9):
@@ -53,6 +56,7 @@ public class PublishRunner {
 
     static final String LIBRARY_COPY_FAILED = "LIBRARY_COPY_FAILED";
     static final String MARKING_INVALID = "MARKING_INVALID";
+    static final String ORG_CORE_CONTENT = "ORG_CORE_CONTENT";
 
     private final TemplateChecker checker;
     private final UploadStorage storage;
@@ -179,7 +183,8 @@ public class PublishRunner {
                     null, null, cut(error[2], 300), null));
         }
         long warnings = findings.stream().filter(f -> f.rule().severity() == IssueSeverity.WARNING).count()
-                + carryDeviceWarnings(templateId, checkId, check.getVersion());
+                + carryDeviceWarnings(templateId, checkId, check.getVersion())
+                + coreContentWarning(template, checkId);
         boolean passed = packageZip != null;
         check.setStatus(passed ? CheckStatus.PASSED : CheckStatus.FAILED);
         check.setStage(CheckStage.DONE);
@@ -203,6 +208,26 @@ public class PublishRunner {
                     "Template belum bisa tayang", "\"" + template.getName() + "\" gagal di pengecekan akhir. "
                             + "Buka draft-nya untuk melihat masalahnya.");
         }
+    }
+
+    /**
+     * Template organisasi sebaiknya punya Profil, Struktur kepengurusan, dan Kontak (alur-fitur-upload.md 15.2, K9).
+     * Hanya Peringatan: template tetap tayang. Dicek di sini karena bergantung pada Isi template di Info.
+     */
+    private long coreContentWarning(Template template, UUID checkId) {
+        List<ContentTag> tags = template.getContentTags().stream().map(ContentTag::fromValue)
+                .filter(Objects::nonNull).toList();
+        Set<ContentTag> missing = ContentTag.missingCore(tags);
+        if (missing.isEmpty()) {
+            return 0;
+        }
+        String names = missing.stream().map(ContentTag::label).collect(Collectors.joining(", "));
+        issueRepository.save(new TemplateCheckIssue(checkId, IssueSeverity.WARNING, ORG_CORE_CONTENT, 1,
+                "Template organisasi sebaiknya punya bagian Profil, Struktur kepengurusan, dan Kontak. Belum ada: "
+                        + names + ". Template tetap bisa tayang.", null, null,
+                "Tambahkan bagian itu di template, lalu centang di Isi template. Lihat Panduan \"Konten yang dicari "
+                        + "organisasi\".", null));
+        return 1;
     }
 
     /** Peringatan dari WebView HP (tahap C) di pengecekan sebelumnya ikut disalin, agar tidak hilang saat Kirim. */

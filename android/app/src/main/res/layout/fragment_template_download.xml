@@ -99,6 +99,15 @@
                         tools:text="4,2 MB" />
                 </com.google.android.material.chip.ChipGroup>
 
+                <!-- "Punya: Profil · Struktur · Kontak" (Isi template). -->
+                <TextView
+                    android:id="@+id/content_tags"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_3"
+                    android:textAppearance="@style/TextAppearance.App.Body.SemiBold"
+                    android:visibility="gone" />
+
                 <TextView
                     android:id="@+id/description"
                     android:layout_width="match_parent"

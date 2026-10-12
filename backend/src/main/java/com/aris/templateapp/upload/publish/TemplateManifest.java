@@ -33,12 +33,14 @@ public record TemplateManifest(UUID templateId, int version, List<Page> pages, L
      * @param pages      halaman tempat isian ini muncul (isian terhubung bisa lebih dari satu halaman)
      * @param sample     isi contoh provider: teks (text, paragraph, button), URL (link), atau path gambar dari folder
      *                   utama paket (image). Dipakai aturan "masih teks/foto contoh".
-     * @param sampleHref link contoh untuk jenis button
+     * @param sampleHref    link contoh untuk jenis button
+     * @param profileKey    kolom Profil organisasi yang mengisi otomatis isian ini, atau null
+     * @param hideWhenEmpty true = elemen disembunyikan jika kolom profil kosong; null jika tidak
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record Field(String key, String label, String type, String hint, Integer maxLength, boolean required,
                         int order, String sectionId, String aspectRatio, List<String> pages, String sample,
-                        String sampleHref, List<Style> styles) {
+                        String sampleHref, List<Style> styles, String profileKey, Boolean hideWhenEmpty) {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

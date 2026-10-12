@@ -8,9 +8,11 @@ import com.aris.templateapp.core.util.AppExecutors;
 import com.aris.templateapp.core.util.Event;
 import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.model.ApiError;
-import com.aris.templateapp.data.remote.dto.GalleryPageDto;
+import com.aris.templateapp.data.model.OrgCategories;
 import com.aris.templateapp.data.remote.dto.GalleryPageDto.GalleryTemplateDto;
+import com.aris.templateapp.data.remote.dto.GalleryPageDto;
 import com.aris.templateapp.data.repository.GalleryRepository;
+import com.aris.templateapp.data.repository.WorkspaceRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +32,9 @@ public class GalleryViewModel extends ViewModel {
     static final int PAGE_SIZE = 20;
 
     private final GalleryRepository repository;
+    private final WorkspaceRepository workspaceRepository;
     private final AppExecutors executors;
+    private final MutableLiveData<OrgCategories> categories = new MutableLiveData<>();
     private final MutableLiveData<GalleryListState> state = new MutableLiveData<>();
     private final MutableLiveData<Event<ApiError>> loadMoreFailed = new MutableLiveData<>();
 
@@ -46,9 +50,22 @@ public class GalleryViewModel extends ViewModel {
     private int generation;
 
     @Inject
-    public GalleryViewModel(GalleryRepository repository, AppExecutors executors) {
+    public GalleryViewModel(GalleryRepository repository, WorkspaceRepository workspaceRepository,
+                            AppExecutors executors) {
         this.repository = repository;
+        this.workspaceRepository = workspaceRepository;
         this.executors = executors;
+        executors.networkIO().execute(() -> {
+            Resource<OrgCategories> result = workspaceRepository.categories();
+            if (result.getStatus() == Resource.Status.SUCCESS) {
+                categories.postValue(result.getData());
+            }
+        });
+    }
+
+    /** Daftar kategori organisasi untuk chip (dari server, atau salinan di HP saat offline). */
+    public LiveData<OrgCategories> getCategories() {
+        return categories;
     }
 
     public LiveData<GalleryListState> getState() {

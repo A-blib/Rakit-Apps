@@ -16,10 +16,12 @@ import com.aris.templateapp.core.upload.ThumbnailImages;
 import com.aris.templateapp.core.util.AppExecutors;
 import com.aris.templateapp.core.util.Event;
 import com.aris.templateapp.core.util.Resource;
+import com.aris.templateapp.data.model.OrgCategories;
 import com.aris.templateapp.data.remote.dto.DraftDto;
 import com.aris.templateapp.data.remote.dto.DraftInfoDto;
 import com.aris.templateapp.data.remote.dto.UploadSettingsDto;
 import com.aris.templateapp.data.repository.UploadRepository;
+import com.aris.templateapp.data.repository.WorkspaceRepository;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -66,6 +68,7 @@ public class UploadInfoViewModel extends ViewModel {
     private final MutableLiveData<Boolean> thumbnailBusy = new MutableLiveData<>(false);
     private final MutableLiveData<Event<Integer>> message = new MutableLiveData<>();
     private final MutableLiveData<Event<Boolean>> goNext = new MutableLiveData<>();
+    private final MutableLiveData<OrgCategories> categories = new MutableLiveData<>();
 
     private String templateId;
     private DraftInfoDto pending = new DraftInfoDto();
@@ -74,11 +77,22 @@ public class UploadInfoViewModel extends ViewModel {
 
     @Inject
     public UploadInfoViewModel(UploadRepository repository, ThumbnailImages images, ThumbnailLoader thumbnailLoader,
-                               AppExecutors executors) {
+                               WorkspaceRepository workspaceRepository, AppExecutors executors) {
         this.repository = repository;
         this.images = images;
         this.thumbnailLoader = thumbnailLoader;
         this.executors = executors;
+        // Pilihan kategori & Isi template dari server (salinan di HP saat offline).
+        executors.networkIO().execute(() -> {
+            Resource<OrgCategories> result = workspaceRepository.categories();
+            if (result.getStatus() == Resource.Status.SUCCESS) {
+                categories.postValue(result.getData());
+            }
+        });
+    }
+
+    LiveData<OrgCategories> getCategories() {
+        return categories;
     }
 
     LiveData<Resource<DraftDto>> getDraft() {
@@ -171,6 +185,11 @@ public class UploadInfoViewModel extends ViewModel {
         schedule();
     }
 
+    void setContentTags(List<String> contentTags) {
+        pending.contentTags = new ArrayList<>(contentTags);
+        schedule();
+    }
+
     private void schedule() {
         hasPending = true;
         handler.removeCallbacks(saveRunnable);
@@ -219,6 +238,9 @@ public class UploadInfoViewModel extends ViewModel {
         }
         if (pending.keywords == null) {
             pending.keywords = failed.keywords;
+        }
+        if (pending.contentTags == null) {
+            pending.contentTags = failed.contentTags;
         }
         hasPending = true;
     }

@@ -2,6 +2,7 @@
 <!--
     Shell Dashboard Pembuat Website (alur-pembuatan-website.md bagian 2): app bar (nama app + Masuk/avatar),
     ViewPager2 berisi 4 tab (bisa digeser ke samping), dan bottom navigation dengan tombol + di tengah.
+    Untuk user login yang punya ruang kerja, judul app bar diganti nama ruang kerja + panah (pemilih ruang kerja).
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -14,6 +15,54 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/app_bar_height"
         app:title="@string/app_name">
+
+        <!-- Pemilih ruang kerja: logo (atau huruf depan) + nama singkat + panah (alur-pembuatan-website.md 2.1). -->
+        <LinearLayout
+            android:id="@+id/workspace_switcher"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/touch_target_min"
+            android:layout_marginEnd="@dimen/space_2"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <FrameLayout
+                android:layout_width="@dimen/workspace_switcher_logo_size"
+                android:layout_height="@dimen/workspace_switcher_logo_size"
+                android:layout_marginEnd="@dimen/space_2">
+
+                <TextView
+                    android:id="@+id/workspace_initial"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_workspace_initial_small"
+                    android:gravity="center"
+                    android:importantForAccessibility="no"
+                    android:textAppearance="@style/TextAppearance.App.Label"
+                    android:textColor="@color/color_on_primary_container" />
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/workspace_logo"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    android:scaleType="centerCrop"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.App.ExtraSmall" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/workspace_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="@dimen/space_1"
+                android:ellipsize="end"
+                android:maxWidth="@dimen/workspace_switcher_max_width"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.App.AppBarTitle"
+                app:drawableEndCompat="@drawable/ic_expand_more"
+                app:drawableTint="@color/color_foreground" />
+        </LinearLayout>
 
         <include
             android:id="@+id/account"

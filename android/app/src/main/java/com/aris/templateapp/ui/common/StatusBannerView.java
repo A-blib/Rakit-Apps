@@ -3,6 +3,7 @@ package com.aris.templateapp.ui.common;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
 
@@ -50,6 +51,8 @@ public class StatusBannerView extends LinearLayout {
         int padding = getResources().getDimensionPixelSize(R.dimen.space_3);
         setPadding(padding, padding, padding, padding);
         binding = ViewStatusBannerBinding.inflate(LayoutInflater.from(context), this);
+        // Tombol aksi sejajar tengah dengan teks yang bisa dua baris.
+        setGravity(Gravity.CENTER_VERTICAL);
         bind(Kind.INFO, null);
     }
 
@@ -65,5 +68,12 @@ public class StatusBannerView extends LinearLayout {
 
     public void bind(Kind kind, CharSequence message) {
         bind(kind, message, null);
+    }
+
+    /** Tombol teks di ujung kanan banner; {@code null} menyembunyikannya. */
+    public void setAction(@Nullable CharSequence text, @Nullable OnClickListener listener) {
+        binding.bannerAction.setVisibility(text == null ? GONE : VISIBLE);
+        binding.bannerAction.setText(text);
+        binding.bannerAction.setOnClickListener(listener);
     }
 }

@@ -19,7 +19,7 @@ import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
-/** State form onboarding pembuat website & provider (bagian 6.6). */
+/** State form onboarding kreator template (bagian 6.6). Pembuat website memakai WorkspaceSetupViewModel. */
 @HiltViewModel
 public class OnboardingViewModel extends ViewModel {
 
@@ -36,7 +36,7 @@ public class OnboardingViewModel extends ViewModel {
     public OnboardingViewModel(UserRepository userRepository, AppExecutors executors) {
         this.userRepository = userRepository;
         this.executors = executors;
-        // Untuk mengisi otomatis nama dari Google/GitHub/daftar.
+        // Untuk mengisi otomatis nama kreator dari Google/GitHub/daftar.
         executors.diskIO().execute(() -> currentUser.postValue(userRepository.getCachedUser()));
     }
 
@@ -58,22 +58,6 @@ public class OnboardingViewModel extends ViewModel {
 
     public LiveData<Event<User>> getSuccess() {
         return success;
-    }
-
-    /** Tombol "Mulai". websitePurpose/organizationName boleh null. */
-    public void submitCreator(String displayName, String websitePurpose, String organizationName) {
-        Map<OnboardingFormValidator.Field, Integer> errors = OnboardingFormValidator.validateCreator(displayName);
-        formErrors.setValue(errors);
-        if (errors.isEmpty()) {
-            String organization = organizationName == null || organizationName.trim().isEmpty()
-                    ? null : organizationName.trim();
-            run(() -> userRepository.completeCreatorOnboarding(displayName.trim(), websitePurpose, organization));
-        }
-    }
-
-    /** Tombol "Lewati": tetap menyelesaikan onboarding, cukup dengan nama tampilan. */
-    public void skipCreator(String displayName) {
-        submitCreator(displayName, null, null);
     }
 
     public void submitProvider(String creatorName, String bio, String portfolioUrl, List<String> specialties,

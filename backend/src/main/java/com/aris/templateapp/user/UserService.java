@@ -2,11 +2,12 @@ package com.aris.templateapp.user;
 
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
+import com.aris.templateapp.organization.OrganizationMemberRepository;
 import com.aris.templateapp.provider.ProviderProfile;
 import com.aris.templateapp.provider.ProviderProfileRepository;
 import com.aris.templateapp.user.dto.CreatorOnboardingRequest;
-import com.aris.templateapp.user.dto.CreatorProfileUpdateRequest;
 import com.aris.templateapp.user.dto.ProviderOnboardingRequest;
+import com.aris.templateapp.user.dto.UpdateMeRequest;
 import com.aris.templateapp.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final CreatorProfileRepository creatorProfileRepository;
     private final ProviderProfileRepository providerProfileRepository;
+    private final OrganizationMemberRepository memberRepository;
     private final Clock clock;
 
     @Transactional(readOnly = true)
@@ -33,37 +35,29 @@ public class UserService {
     }
 
     /**
-     * Onboarding pembuat website (juga dipakai tombol "Lewati"). Membuat atau memperbarui profil creator,
-     * menandai onboarding selesai, dan membuka mode pembuat website.
+     * Langkah terakhir onboarding pembuat website. Pembuat website selalu bekerja di ruang kerja, jadi user harus
+     * sudah membuat/bergabung organisasi atau membuat ruang pribadi ({@code ONBOARDING_NEEDS_SPACE}).
      */
     @Transactional
     public UserResponse completeCreatorOnboarding(UUID userId, CreatorOnboardingRequest request) {
         User user = findUser(userId);
+        if (!memberRepository.existsByUserId(userId)) {
+            throw new ApiException(ErrorCode.ONBOARDING_NEEDS_SPACE);
+        }
         user.setDisplayName(request.displayName().trim());
-
-        CreatorProfile profile = creatorProfileRepository.findById(userId).orElseGet(() -> new CreatorProfile(userId));
-        profile.setWebsitePurpose(request.websitePurpose());
-        profile.setOrganizationName(blankToNull(request.organizationName()));
-        creatorProfileRepository.save(profile);
-
+        if (!creatorProfileRepository.existsById(userId)) {
+            creatorProfileRepository.save(new CreatorProfile(userId));
+        }
         user.setOnboardingCompleted(true);
         user.setActiveMode(ActiveMode.CREATOR);
         return toResponse(user);
     }
 
-    /**
-     * Edit info pembuat website dari tab Profil. Profil creator dibuat jika belum ada (mis. user yang
-     * onboarding sebagai provider), tetapi status onboarding dan mode aktif tidak disentuh.
-     */
+    /** Edit nama tampilan dari tab Profil. Status onboarding dan mode aktif tidak disentuh. */
     @Transactional
-    public UserResponse updateCreatorProfile(UUID userId, CreatorProfileUpdateRequest request) {
+    public UserResponse updateMe(UUID userId, UpdateMeRequest request) {
         User user = findUser(userId);
         user.setDisplayName(request.displayName().trim());
-
-        CreatorProfile profile = creatorProfileRepository.findById(userId).orElseGet(() -> new CreatorProfile(userId));
-        profile.setWebsitePurpose(request.websitePurpose());
-        profile.setOrganizationName(blankToNull(request.organizationName()));
-        creatorProfileRepository.save(profile);
         return toResponse(user);
     }
 
@@ -131,8 +125,7 @@ public class UserService {
                 user.isOnboardingCompleted(),
                 roles,
                 provider.map(ProviderProfile::getStatus).orElse(null),
-                creator.map(c -> new UserResponse.CreatorProfileResponse(c.getWebsitePurpose(), c.getOrganizationName()))
-                        .orElse(null));
+                user.getLastOrganizationId());
     }
 
     private User findUser(UUID userId) {

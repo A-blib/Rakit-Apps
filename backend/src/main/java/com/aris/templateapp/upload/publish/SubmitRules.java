@@ -29,6 +29,9 @@ public final class SubmitRules {
         if (t.getKeywords() == null || t.getKeywords().isEmpty() || t.getKeywords().size() > 5) {
             return "Isi 1–5 kata kunci.";
         }
+        if (t.getContentTags() == null || t.getContentTags().isEmpty()) {
+            return "Pilih minimal satu isi template.";
+        }
         return null;
     }
 }

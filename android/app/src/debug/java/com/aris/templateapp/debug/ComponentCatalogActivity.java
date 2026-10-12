@@ -29,6 +29,8 @@ public class ComponentCatalogActivity extends AppCompatActivity {
     private static final int[] COLOR_TOKENS = {
             R.color.color_background, R.color.color_surface, R.color.color_surface_subtle,
             R.color.color_foreground, R.color.color_muted, R.color.color_border, R.color.color_border_strong,
+            R.color.color_primary, R.color.color_on_primary, R.color.color_primary_container,
+            R.color.color_on_primary_container, R.color.color_accent, R.color.color_on_accent,
             R.color.color_link, R.color.color_success, R.color.color_warning, R.color.color_error};
 
     private static final int[] ICONS = {
