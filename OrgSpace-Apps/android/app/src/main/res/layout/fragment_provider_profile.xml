@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Tab Profil versi awal (alur-provider.md bagian 7): kepala profil + chip keahlian, Edit profil,
-    ringkasan singkat, akun (email, metode login terhubung), lalu beralih mode, Pengaturan, Keluar.
+    Tab Profil kreator template (alur-provider.md bagian 7), desain ulang 12 Okt 2026 seragam dengan Profil pembuat
+    website: kartu identitas (sampul, avatar, nama, badge, bio, portofolio, keahlian, statistik) lalu menu berkelompok.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -18,129 +18,227 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="@dimen/space_6">
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingTop="@dimen/space_4"
+            android:paddingBottom="@dimen/space_8">
 
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="@dimen/screen_padding_horizontal"
-                android:paddingTop="@dimen/space_6">
-
-                <TextView
-                    android:id="@+id/avatar"
-                    android:layout_width="@dimen/space_12"
-                    android:layout_height="@dimen/space_12"
-                    android:background="@drawable/bg_avatar"
-                    android:gravity="center"
-                    android:importantForAccessibility="no"
-                    android:textAppearance="@style/TextAppearance.App.Title"
-                    android:textColor="@color/color_on_accent" />
-
-                <TextView
-                    android:id="@+id/creator_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_3"
-                    android:textAppearance="@style/TextAppearance.App.Headline" />
-
-                <TextView
-                    android:id="@+id/bio"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_2"
-                    android:textAppearance="@style/TextAppearance.App.Body"
-                    android:textColor="@color/color_muted" />
-
-                <TextView
-                    android:id="@+id/portfolio"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_2"
-                    android:autoLink="web"
-                    android:textAppearance="@style/TextAppearance.App.BodySmall"
-                    android:textColor="@color/color_link"
-                    android:textColorLink="@color/color_link" />
-
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/specialties"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_3" />
-
-                <Button
-                    android:id="@+id/edit_button"
-                    style="@style/Widget.App.Button.Outlined"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_4"
-                    android:text="@string/profile_edit"
-                    app:icon="@drawable/ic_edit"
-                    app:iconGravity="textStart" />
+                android:layout_height="wrap_content">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_4"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
-                    <include
-                        android:id="@+id/stat_published"
-                        layout="@layout/item_stat_box" />
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/profile_cover_height"
+                        android:background="@drawable/bg_profile_cover" />
 
-                    <Space
-                        android:layout_width="@dimen/space_2"
-                        android:layout_height="0dp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="@dimen/space_4"
+                        android:paddingBottom="@dimen/space_4">
 
-                    <include
-                        android:id="@+id/stat_downloads"
-                        layout="@layout/item_stat_box" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="bottom"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/avatar"
+                                android:layout_width="@dimen/profile_avatar_size"
+                                android:layout_height="@dimen/profile_avatar_size"
+                                android:layout_marginTop="@dimen/profile_avatar_overlap"
+                                android:background="@drawable/bg_profile_avatar"
+                                android:gravity="center"
+                                android:textAppearance="@style/TextAppearance.App.Headline"
+                                android:textColor="@color/color_on_accent" />
+
+                            <Space
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
+
+                            <Button
+                                android:id="@+id/edit_button"
+                                style="@style/Widget.App.Button.Outlined.Compact"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/profile_edit"
+                                app:icon="@drawable/ic_edit_small"
+                                app:iconGravity="textStart" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/creator_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_3"
+                            android:textAppearance="@style/TextAppearance.App.Headline" />
+
+                        <TextView
+                            android:id="@+id/email"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_1"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+                        <TextView
+                            style="@style/Widget.App.Badge"
+                            android:layout_marginTop="@dimen/space_3"
+                            android:text="@string/profile_badge_provider" />
+
+                        <TextView
+                            android:id="@+id/bio"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_4"
+                            android:textAppearance="@style/TextAppearance.App.Body" />
+
+                        <!-- Link portofolio sebagai baris kecil berikon, bukan URL polos. -->
+                        <TextView
+                            android:id="@+id/portfolio"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_3"
+                            android:autoLink="web"
+                            android:drawablePadding="@dimen/space_2"
+                            android:gravity="center_vertical"
+                            android:minHeight="@dimen/touch_target_min"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall"
+                            android:textColor="@color/color_link"
+                            android:textColorLink="@color/color_link"
+                            app:drawableStartCompat="@drawable/ic_link"
+                            app:drawableTint="@color/color_link" />
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/specialties"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_2" />
+                    </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal"
+                        android:paddingVertical="@dimen/space_3">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/stat_published"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.App.Stat" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/profile_stat_published"
+                                android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                        </LinearLayout>
+
+                        <com.google.android.material.divider.MaterialDivider
+                            android:layout_width="@dimen/border_width"
+                            android:layout_height="match_parent" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/stat_downloads"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.App.Stat" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/profile_stat_downloads"
+                                android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                        </LinearLayout>
+                    </LinearLayout>
                 </LinearLayout>
-            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <TextView
-                style="@style/Widget.App.ListGroupTitle"
+                style="@style/Widget.App.ProfileSectionTitle"
+                android:text="@string/profile_section_mode" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <include
+                    android:id="@+id/switch_mode_item"
+                    layout="@layout/item_profile_row" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                style="@style/Widget.App.ProfileSectionTitle"
                 android:text="@string/profile_group_account" />
 
-            <TextView
-                android:id="@+id/email"
-                style="@style/Widget.App.ListItem.Text"
-                android:clickable="false"
-                android:focusable="false"
-                app:drawableStartCompat="@drawable/ic_mail" />
-
-            <TextView
-                android:id="@+id/linked_methods_item"
-                style="@style/Widget.App.ListItem.Text"
-                android:text="@string/settings_linked_methods"
-                app:drawableStartCompat="@drawable/ic_link" />
-
-            <TextView
-                style="@style/Widget.App.ListGroupTitle"
-                android:text="@string/profile_group_actions" />
-
-            <TextView
-                android:id="@+id/switch_mode_item"
-                style="@style/Widget.App.ListItem.Text"
-                android:text="@string/profile_switch_to_creator"
-                app:drawableStartCompat="@drawable/ic_swap_horiz" />
-
-            <TextView
-                android:id="@+id/settings_item"
-                style="@style/Widget.App.ListItem.Text"
-                android:text="@string/profile_settings"
-                app:drawableStartCompat="@drawable/ic_settings" />
-
-            <com.google.android.material.divider.MaterialDivider
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <include
+                        android:id="@+id/linked_methods_item"
+                        layout="@layout/item_profile_row" />
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:dividerInsetStart="@dimen/space_12" />
+
+                    <include
+                        android:id="@+id/settings_item"
+                        layout="@layout/item_profile_row" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6">
+
+                <include
+                    android:id="@+id/sign_out_item"
+                    layout="@layout/item_profile_row" />
+            </com.google.android.material.card.MaterialCardView>
 
             <TextView
-                android:id="@+id/sign_out_item"
-                style="@style/Widget.App.ListItem.Text"
-                android:text="@string/profile_sign_out"
-                app:drawableStartCompat="@drawable/ic_logout" />
+                android:id="@+id/version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                android:gravity="center"
+                android:textAppearance="@style/TextAppearance.App.BodySmall" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

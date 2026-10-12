@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.aris.templateapp.BuildConfig;
 import com.aris.templateapp.R;
 import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.model.UserRole;
@@ -19,13 +20,17 @@ import com.aris.templateapp.databinding.FragmentProviderProfileBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.common.HomeNavigator;
+import com.aris.templateapp.ui.profile.ProfileRow;
 import com.aris.templateapp.ui.profile.ProfileViewModel;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.snackbar.Snackbar;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
-/** Tab Profil versi awal (alur-provider.md bagian 7). */
+/**
+ * Tab Profil kreator template (alur-provider.md bagian 7): kartu identitas + statistik, lalu Mode, Akun, dan Keluar.
+ * Baris menu memakai {@link ProfileRow} agar sama dengan Profil pembuat website.
+ */
 @AndroidEntryPoint
 public class ProviderProfileFragment extends Fragment {
 
@@ -45,21 +50,29 @@ public class ProviderProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         viewModel = new ViewModelProvider(this).get(ProviderProfileViewModel.class);
         accountViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
-        binding.statPublished.label.setText(R.string.profile_stat_published);
-        binding.statDownloads.label.setText(R.string.profile_stat_downloads);
+        ProfileRow.bind(binding.switchModeItem, R.drawable.ic_swap_horiz, R.string.profile_switch_to_creator,
+                R.string.profile_switch_to_creator_desc);
+        ProfileRow.bind(binding.linkedMethodsItem, R.drawable.ic_link, R.string.settings_linked_methods,
+                R.string.profile_linked_methods_desc);
+        ProfileRow.bind(binding.settingsItem, R.drawable.ic_settings, R.string.profile_settings,
+                R.string.profile_settings_desc);
+        ProfileRow.bind(binding.signOutItem, R.drawable.ic_logout, R.string.profile_sign_out,
+                R.string.profile_sign_out_desc);
+        ProfileRow.danger(binding.signOutItem);
+        binding.version.setText(getString(R.string.profile_version, BuildConfig.VERSION_NAME));
 
         binding.editButton.setOnClickListener(v -> ProviderNav.openEditProfile(this));
-        binding.linkedMethodsItem.setOnClickListener(v ->
+        binding.linkedMethodsItem.getRoot().setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.linkedMethodsFragment));
-        binding.settingsItem.setOnClickListener(v ->
+        binding.settingsItem.getRoot().setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.settingsFragment));
-        binding.switchModeItem.setOnClickListener(v -> accountViewModel.switchMode(UserRole.CREATOR));
-        binding.signOutItem.setOnClickListener(v -> accountViewModel.signOut());
+        binding.switchModeItem.getRoot().setOnClickListener(v -> accountViewModel.switchMode(UserRole.CREATOR));
+        binding.signOutItem.getRoot().setOnClickListener(v -> accountViewModel.signOut());
 
         viewModel.getProfile().observe(getViewLifecycleOwner(), this::render);
         accountViewModel.isLoading().observe(getViewLifecycleOwner(), loading -> {
-            binding.switchModeItem.setEnabled(!loading);
-            binding.signOutItem.setEnabled(!loading);
+            binding.switchModeItem.getRoot().setEnabled(!loading);
+            binding.signOutItem.getRoot().setEnabled(!loading);
         });
         accountViewModel.getModeChanged().observe(getViewLifecycleOwner(), event -> {
             var user = event.getContentIfNotHandled();
@@ -120,9 +133,11 @@ public class ProviderProfileFragment extends Fragment {
 
     private void bind(ProviderProfileDto profile) {
         binding.avatar.setText(AppBarAccount.initialOf(profile.creatorName));
+        binding.avatar.setContentDescription(getString(R.string.cd_profile_avatar, profile.creatorName));
         binding.creatorName.setText(profile.creatorName);
         boolean hasBio = profile.bio != null && !profile.bio.trim().isEmpty();
         binding.bio.setText(hasBio ? profile.bio : getString(R.string.profile_no_bio));
+        binding.bio.setTextColor(requireContext().getColor(hasBio ? R.color.color_foreground : R.color.color_muted));
         binding.portfolio.setText(profile.portfolioUrl);
         binding.portfolio.setVisibility(profile.portfolioUrl == null ? View.GONE : View.VISIBLE);
 
@@ -138,8 +153,8 @@ public class ProviderProfileFragment extends Fragment {
         }
         binding.specialties.setVisibility(binding.specialties.getChildCount() == 0 ? View.GONE : View.VISIBLE);
 
-        binding.statPublished.value.setText(TemplateUi.count(profile.publishedCount));
-        binding.statDownloads.value.setText(TemplateUi.count(profile.totalDownloads));
+        binding.statPublished.setText(TemplateUi.count(profile.publishedCount));
+        binding.statDownloads.setText(TemplateUi.count(profile.totalDownloads));
         binding.email.setText(profile.email);
         binding.email.setVisibility(profile.email == null ? View.GONE : View.VISIBLE);
     }

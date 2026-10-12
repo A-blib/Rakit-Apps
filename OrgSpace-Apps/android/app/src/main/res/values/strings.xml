@@ -305,7 +305,6 @@ Grafik jumlah Didownload per hari. Hari tanpa download tetap tampil sebagai 0. K
     <string name="profile_stat_downloads">Total download</string>
     <string name="profile_no_bio">Belum ada bio.</string>
     <string name="profile_group_account">Akun</string>
-    <string name="profile_group_actions">Lainnya</string>
     <string name="profile_edit_title">Edit profil</string>
     <string name="profile_edit_subtitle">Profil ini dilihat pembuat website yang memakai templatemu.</string>
     <string name="action_save">Simpan</string>

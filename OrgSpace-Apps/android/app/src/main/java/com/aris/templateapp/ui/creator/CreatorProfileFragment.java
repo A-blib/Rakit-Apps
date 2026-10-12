@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.aris.templateapp.BuildConfig;
 import com.aris.templateapp.R;
 import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.data.model.User;
@@ -21,6 +22,7 @@ import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.common.HomeNavigator;
+import com.aris.templateapp.ui.profile.ProfileRow;
 import com.aris.templateapp.ui.profile.ProfileViewModel;
 import com.aris.templateapp.ui.workspace.WorkspaceRows;
 import com.aris.templateapp.ui.workspace.WorkspaceViewModel;
@@ -34,8 +36,9 @@ import javax.inject.Inject;
 import dagger.hilt.android.AndroidEntryPoint;
 
 /**
- * Tab Profil pembuat website = akun pribadi (alur-pembuatan-website.md bagian 8): kepala profil, "Ruang kerja saya"
- * (ketuk untuk pindah), beralih mode / jadi kreator template, Pengaturan, dan Keluar.
+ * Tab Profil pembuat website = akun pribadi (alur-pembuatan-website.md bagian 8): kartu identitas + statistik ruang
+ * kerja, "Ruang kerja saya" (ketuk untuk pindah), Mode (beralih / jadi kreator template), Akun, dan Keluar.
+ * Baris menu memakai {@link ProfileRow} agar sama dengan Profil kreator.
  */
 @AndroidEntryPoint
 public class CreatorProfileFragment extends Fragment {
@@ -64,21 +67,36 @@ public class CreatorProfileFragment extends Fragment {
         workspaceViewModel.getActive().observe(getViewLifecycleOwner(), active -> bindWorkspaces());
         accountViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
+        ProfileRow.bind(binding.switchModeItem, R.drawable.ic_swap_horiz, R.string.profile_switch_to_provider,
+                R.string.profile_switch_to_provider_desc);
+        ProfileRow.bind(binding.becomeProviderItem, R.drawable.ic_storefront, R.string.profile_become_provider,
+                R.string.profile_become_provider_desc);
+        ProfileRow.bind(binding.linkedMethodsItem, R.drawable.ic_link, R.string.settings_linked_methods,
+                R.string.profile_linked_methods_desc);
+        ProfileRow.bind(binding.settingsItem, R.drawable.ic_settings, R.string.profile_settings,
+                R.string.profile_settings_desc);
+        ProfileRow.bind(binding.signOutItem, R.drawable.ic_logout, R.string.profile_sign_out,
+                R.string.profile_sign_out_desc);
+        ProfileRow.danger(binding.signOutItem);
+        binding.version.setText(getString(R.string.profile_version, BuildConfig.VERSION_NAME));
+
         binding.guestSignInButton.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login));
         binding.editButton.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.creatorProfileEditFragment));
-        binding.settingsItem.setOnClickListener(v ->
+        binding.linkedMethodsItem.getRoot().setOnClickListener(v ->
+                NavHostFragment.findNavController(this).navigate(R.id.linkedMethodsFragment));
+        binding.settingsItem.getRoot().setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.settingsFragment));
-        binding.becomeProviderItem.setOnClickListener(v ->
+        binding.becomeProviderItem.getRoot().setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.providerFormFragment));
-        binding.switchModeItem.setOnClickListener(v -> accountViewModel.switchMode(UserRole.PROVIDER));
-        binding.signOutItem.setOnClickListener(v -> accountViewModel.signOut());
+        binding.switchModeItem.getRoot().setOnClickListener(v -> accountViewModel.switchMode(UserRole.PROVIDER));
+        binding.signOutItem.getRoot().setOnClickListener(v -> accountViewModel.signOut());
 
         userViewModel.getUser().observe(getViewLifecycleOwner(), this::bindUser);
         accountViewModel.isLoading().observe(getViewLifecycleOwner(), loading -> {
-            binding.switchModeItem.setEnabled(!loading);
-            binding.signOutItem.setEnabled(!loading);
+            binding.switchModeItem.getRoot().setEnabled(!loading);
+            binding.signOutItem.getRoot().setEnabled(!loading);
         });
         accountViewModel.getModeChanged().observe(getViewLifecycleOwner(), event -> {
             User user = event.getContentIfNotHandled();
@@ -116,7 +134,13 @@ public class CreatorProfileFragment extends Fragment {
     private void bindWorkspaces() {
         List<Workspace> list = workspaceViewModel.getWorkspaces().getValue();
         Workspace active = workspaceViewModel.getActive().getValue();
-        WorkspaceRows.bind(binding.workspaceList, list == null ? Collections.emptyList() : list, active,
+        List<Workspace> workspaces = list == null ? Collections.emptyList() : list;
+        long organizations = workspaces.stream().filter(w -> !w.isPersonal()).count();
+        binding.statWorkspaces.setText(String.valueOf(workspaces.size()));
+        binding.statOrganizations.setText(String.valueOf(organizations));
+        binding.workspacesSection.setVisibility(workspaces.isEmpty() || binding.userSection.getVisibility() != View.VISIBLE
+                ? View.GONE : View.VISIBLE);
+        WorkspaceRows.bind(binding.workspaceList, workspaces, active,
                 thumbnailLoader, workspace -> {
                     if (active != null && active.getId().equals(workspace.getId())) {
                         return;
@@ -131,12 +155,16 @@ public class CreatorProfileFragment extends Fragment {
         boolean loggedIn = user != null;
         binding.guestSection.setVisibility(loggedIn ? View.GONE : View.VISIBLE);
         binding.userSection.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
-        binding.signOutItem.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
-        binding.signOutDivider.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
+        binding.modeSection.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
+        binding.linkedMethodsItem.getRoot().setVisibility(loggedIn ? View.VISIBLE : View.GONE);
+        binding.linkedMethodsDivider.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
+        binding.signOutCard.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
+        bindWorkspaces();
         if (!loggedIn) {
             return;
         }
         binding.avatar.setText(AppBarAccount.initialOf(user.getDisplayName()));
+        binding.avatar.setContentDescription(getString(R.string.cd_profile_avatar, user.getDisplayName()));
         binding.name.setText(user.getDisplayName());
         binding.email.setText(user.getEmail());
         binding.email.setVisibility(user.getEmail() == null ? View.GONE : View.VISIBLE);
@@ -144,8 +172,10 @@ public class CreatorProfileFragment extends Fragment {
         // Punya profil provider aktif → beralih mode; belum provider → jadi penyedia template;
         // provider ditangguhkan → keduanya disembunyikan (mode provider terkunci).
         boolean provider = user.hasRole(UserRole.PROVIDER);
-        binding.switchModeItem.setVisibility(provider && !user.isProviderSuspended() ? View.VISIBLE : View.GONE);
-        binding.becomeProviderItem.setVisibility(provider ? View.GONE : View.VISIBLE);
+        boolean canSwitch = provider && !user.isProviderSuspended();
+        binding.switchModeItem.getRoot().setVisibility(canSwitch ? View.VISIBLE : View.GONE);
+        binding.becomeProviderItem.getRoot().setVisibility(provider ? View.GONE : View.VISIBLE);
+        binding.modeSection.setVisibility(canSwitch || !provider ? View.VISIBLE : View.GONE);
     }
 
     @Override

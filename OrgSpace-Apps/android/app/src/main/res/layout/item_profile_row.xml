@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Satu baris menu di kartu profil: ikon dalam lingkaran, judul + keterangan, panah. Diisi lewat ProfileRow. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/list_item_min_height"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/space_4"
+    android:paddingVertical="@dimen/space_3">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="@dimen/profile_row_icon_box"
+        android:layout_height="@dimen/profile_row_icon_box"
+        android:background="@drawable/bg_profile_row_icon"
+        android:importantForAccessibility="no"
+        android:padding="@dimen/space_2"
+        app:tint="@color/color_on_primary_container" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/space_4"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.Body.SemiBold" />
+
+        <TextView
+            android:id="@+id/subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.BodySmall"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/chevron"
+        android:layout_width="@dimen/icon_size_small"
+        android:layout_height="@dimen/icon_size_small"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_chevron_right"
+        app:tint="@color/color_muted" />
+</LinearLayout>

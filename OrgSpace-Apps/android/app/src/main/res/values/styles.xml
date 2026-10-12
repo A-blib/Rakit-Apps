@@ -293,6 +293,16 @@
         <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
     </style>
 
+    <!-- Judul kelompok di atas kartu menu profil (mis. "Akun"): style Label, sejajar tepi kartu. -->
+    <style name="Widget.App.ProfileSectionTitle" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingStart">@dimen/space_1</item>
+        <item name="android:paddingTop">@dimen/space_6</item>
+        <item name="android:paddingBottom">@dimen/space_2</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Label</item>
+    </style>
+
     <!-- Checkbox: kotak biru utama. -->
     <style name="Widget.App.CheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
         <item name="buttonTint">@color/color_primary</item>

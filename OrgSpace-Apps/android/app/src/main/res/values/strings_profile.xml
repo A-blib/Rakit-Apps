@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tab Profil (desain ulang 12 Okt 2026): kartu identitas + menu berkelompok, dipakai mode pembuat website & kreator. -->
+<resources>
+    <string name="profile_badge_provider">Kreator template</string>
+    <string name="profile_stat_workspaces">Ruang kerja</string>
+    <string name="profile_stat_organizations">Organisasi</string>
+    <string name="profile_section_mode">Mode</string>
+    <string name="profile_switch_to_provider_desc">Kelola template yang kamu unggah</string>
+    <string name="profile_become_provider_desc">Unggah template untuk dipakai organisasi lain</string>
+    <string name="profile_switch_to_creator_desc">Buat dan kelola website organisasi</string>
+    <string name="profile_linked_methods_desc">Google, GitHub, atau email</string>
+    <string name="profile_settings_desc">Tema dan preferensi app</string>
+    <string name="profile_sign_out_desc">Kamu bisa masuk lagi kapan saja</string>
+    <string name="profile_version">OrgSpace versi %1$s</string>
+    <string name="cd_profile_avatar">Foto profil %1$s</string>
+</resources>

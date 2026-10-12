@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Avatar besar di kartu profil: kuning aksen dengan cincin warna kartu, agar terlihat "menumpuk" di atas sampul. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/color_accent" />
+    <stroke
+        android:width="@dimen/profile_avatar_ring"
+        android:color="@color/color_surface" />
+</shape>

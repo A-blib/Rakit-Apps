@@ -37,6 +37,13 @@
     <dimen name="avatar_size_large">40dp</dimen>
     <!-- Logo di kepala layar Organisasi dan Profil organisasi. -->
     <dimen name="org_logo_size">64dp</dimen>
+    <!-- Kartu profil (tab Profil pembuat website & kreator template). -->
+    <dimen name="profile_cover_height">88dp</dimen>
+    <dimen name="profile_avatar_size">80dp</dimen>
+    <!-- Avatar naik setengah tingginya ke atas sampul. -->
+    <dimen name="profile_avatar_overlap">-40dp</dimen>
+    <dimen name="profile_avatar_ring">4dp</dimen>
+    <dimen name="profile_row_icon_box">36dp</dimen>
     <dimen name="app_bar_height">56dp</dimen>
     <!-- Nama ruang kerja panjang dipotong "…" agar avatar di kanan tetap terlihat di layar 360dp. -->
     <dimen name="workspace_switcher_max_width">200dp</dimen>
