@@ -16,7 +16,7 @@
     { "var": "--radius", "label": "Sudut", "type": "size" }
   ],
   "fields": [
-    { "key": "nama_toko", "label": "Nama toko", "type": "text", "hint": "Tulis nama usahamu", "maxLength": 30, "required": true, "sectionId": "s1",
+    { "key": "nama_toko", "label": "Nama toko", "type": "text", "hint": "Tulis nama usahamu", "maxLength": 30, "required": true, "sectionId": "s1", "profileKey": "short_name",
       "styles": [{ "prop": "color" }],
       "elements": [{ "page": "index.html", "selector": "header .brand" }, { "page": "index.html", "selector": "footer p" }] },
     { "key": "judul_hero", "label": "Judul utama", "type": "text", "hint": "Satu kalimat tentang usahamu", "maxLength": 60, "required": true, "sectionId": "s2",
@@ -45,7 +45,7 @@
       "elements": [{ "page": "index.html", "selector": "#tentang p" }] },
     { "key": "alamat", "label": "Alamat & jam buka", "type": "paragraph", "maxLength": 150, "required": true, "sectionId": "s5",
       "elements": [{ "page": "index.html", "selector": "#kontak p" }] },
-    { "key": "link_instagram", "label": "Link Instagram", "type": "link", "required": false, "sectionId": "s5",
+    { "key": "link_instagram", "label": "Link Instagram", "type": "link", "required": false, "sectionId": "s5", "profileKey": "instagram", "hideWhenEmpty": true,
       "elements": [{ "page": "index.html", "selector": "#kontak .link" }] }
   ]
 }

@@ -191,6 +191,26 @@
             android:textAppearance="@style/TextAppearance.App.BodySmall"
             android:visibility="gone" />
 
+        <!-- Hubungkan ke Profil organisasi (alur-fitur-upload.md 15.3): nilai diisi otomatis saat website dibuat. -->
+        <TextView
+            style="@style/Widget.App.SectionTitle"
+            android:layout_marginTop="@dimen/space_4"
+            android:text="@string/mark_profile_title" />
+
+        <Button
+            android:id="@+id/profile_button"
+            style="@style/Widget.App.Button.Dropdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_1" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/hide_empty_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mark_profile_hide_empty"
+            android:visibility="gone" />
+
         <TextView
             style="@style/Widget.App.SectionTitle"
             android:layout_marginTop="@dimen/space_4"

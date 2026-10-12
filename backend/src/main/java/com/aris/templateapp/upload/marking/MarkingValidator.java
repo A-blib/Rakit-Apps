@@ -26,6 +26,21 @@ public final class MarkingValidator {
     private static final Pattern KEY = Pattern.compile("^[a-z][a-z0-9_]{0,39}$");
     private static final Pattern RATIO = Pattern.compile("^\\d{1,2}:\\d{1,2}$");
     private static final int MAX_FIELDS = 200;
+    /**
+     * Kolom Profil organisasi → jenis isian yang cocok (alur-fitur-upload.md 15.3). Logo hanya ke Gambar; media
+     * sosial & WhatsApp ke Link/Tombol; email ke Link (mailto:); kolom teks ke Teks pendek/Paragraf.
+     */
+    public static final Map<String, Set<String>> PROFILE_KEYS = Map.of(
+            "name", Set.of("text", "paragraph"),
+            "short_name", Set.of("text", "paragraph"),
+            "institution_name", Set.of("text", "paragraph"),
+            "address", Set.of("text", "paragraph"),
+            "logo", Set.of("image"),
+            "email", Set.of("link"),
+            "whatsapp", Set.of("link", "button"),
+            "instagram", Set.of("link", "button"),
+            "tiktok", Set.of("link", "button"),
+            "youtube", Set.of("link", "button"));
 
     private MarkingValidator() {
     }
@@ -69,6 +84,12 @@ public final class MarkingValidator {
                     "Rasio gambar tidak valid: " + name);
             require(field.sectionId() == null || sectionIds.contains(field.sectionId()), "Section isian tidak ada: " + name);
             validateStyles(field, name);
+            if (field.profileKey() != null) {
+                Set<String> allowed = PROFILE_KEYS.get(field.profileKey());
+                require(allowed != null, "Kolom profil tidak dikenal: " + field.profileKey());
+                require(allowed.contains(field.type()), "Kolom profil " + field.profileKey()
+                        + " tidak cocok untuk isian jenis ini: " + name);
+            }
             require(field.elements() != null && !field.elements().isEmpty() && field.elements().size() <= 20,
                     "Isian harus menunjuk 1–20 elemen: " + name);
             for (MarkingData.Element element : field.elements()) {

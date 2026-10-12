@@ -303,4 +303,17 @@
     <string name="upload_content_tags_hint">Pilih konten yang ada di template; tampil sebagai label "Punya: …" di galeri. ✦ = saran dari nama halaman template.</string>
     <!-- %1$s = label Isi template -->
     <string name="upload_content_tag_suggested">%1$s ✦</string>
+    <string name="mark_profile_title">Hubungkan ke profil organisasi</string>
+    <string name="mark_profile_none">Tidak dihubungkan</string>
+    <string name="mark_profile_hide_empty">Sembunyikan jika kosong</string>
+    <string name="mark_profile_name">Nama organisasi</string>
+    <string name="mark_profile_short_name">Nama singkat</string>
+    <string name="mark_profile_institution">Nama sekolah / kampus</string>
+    <string name="mark_profile_address">Alamat</string>
+    <string name="mark_profile_logo">Logo</string>
+    <string name="mark_profile_email">Email</string>
+    <string name="mark_profile_whatsapp">WhatsApp</string>
+    <string name="mark_profile_instagram">Instagram</string>
+    <string name="mark_profile_tiktok">TikTok</string>
+    <string name="mark_profile_youtube">YouTube</string>
 </resources>

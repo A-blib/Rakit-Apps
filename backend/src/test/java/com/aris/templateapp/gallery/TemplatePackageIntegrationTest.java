@@ -120,6 +120,10 @@ class TemplatePackageIntegrationTest {
         TemplateManifest.Field nama = field(manifest, "nama_sekolah");
         assertThat(nama.pages()).containsExactly("index.html", "tentang.html", "kontak.html");
         assertThat(nama.sample()).isEqualTo("SMA Nusantara");
+        // Isian terhubung ke Profil organisasi (alur-fitur-upload.md 15.3).
+        assertThat(nama.profileKey()).isEqualTo("institution_name");
+        assertThat(nama.hideWhenEmpty()).isNull();
+        assertThat(field(manifest, "judul").profileKey()).isNull();
         assertThat(field(manifest, "foto_gedung").sample()).isEqualTo("img/gedung.jpg");
         assertThat(field(manifest, "foto_gedung").aspectRatio()).isEqualTo("16:9");
         assertThat(field(manifest, "whatsapp").sampleHref()).isEqualTo("https://wa.me/6281234567890");

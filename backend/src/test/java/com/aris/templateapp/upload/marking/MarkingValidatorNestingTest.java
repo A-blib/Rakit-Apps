@@ -47,6 +47,6 @@ class MarkingValidatorNestingTest {
 
     private static MarkingData.Field field(String key, String type, int tplId) {
         return new MarkingData.Field(key, key, type, null, null, false, 1, null, List.of(), null,
-                List.of(new MarkingData.Element("index.html", tplId, List.of("mobile", "desktop"))));
+                List.of(new MarkingData.Element("index.html", tplId, List.of("mobile", "desktop"))), null, null);
     }
 }

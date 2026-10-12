@@ -66,7 +66,8 @@ public class OrganizationService {
         return organizationRepository.findAllForUser(userId).stream()
                 .map(row -> new OrganizationSummaryResponse(row.getOrganization().getId(), row.getOrganization().getType(),
                         row.getOrganization().getName(), row.getOrganization().getShortName(),
-                        row.getOrganization().getLogoUrl(), row.getRole()))
+                        row.getOrganization().getLogoUrl(), row.getRole(), row.getOrganization().getCategory(),
+                        row.getOrganization().getLevel()))
                 .toList();
     }
 

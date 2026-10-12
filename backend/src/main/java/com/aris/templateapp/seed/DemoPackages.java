@@ -70,7 +70,8 @@ public class DemoPackages {
     }
 
     record SeedField(String key, String label, String type, String hint, Integer maxLength, boolean required,
-                     String aspectRatio, List<MarkingData.Style> styles, String sectionId, List<SeedElement> elements) {
+                     String aspectRatio, List<MarkingData.Style> styles, String sectionId, List<SeedElement> elements,
+                     String profileKey, Boolean hideWhenEmpty) {
     }
 
     record SeedElement(String page, String selector) {
@@ -125,7 +126,7 @@ public class DemoPackages {
                             List.of("mobile", "desktop")));
                 }
                 fields.add(new MarkingData.Field(f.key(), f.label(), f.type(), f.hint(), f.maxLength(), f.required(), 0,
-                        f.aspectRatio(), f.styles(), f.sectionId(), elements));
+                        f.aspectRatio(), f.styles(), f.sectionId(), elements, f.profileKey(), f.hideWhenEmpty()));
             }
             MarkingData marking = new MarkingData(seed.pages(), sections, fields, seed.theme()).inPageOrder();
 
