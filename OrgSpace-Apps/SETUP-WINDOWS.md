@@ -120,14 +120,16 @@ sdkmanager --list_installed                                             # cek: k
 git config --global core.longpaths true          # folder build Android bisa sangat dalam
 mkdir C:\dev -Force | Out-Null
 cd C:\dev
-git clone https://github.com/A-blib/Rakit-Apps.git   # repo privat: user harus sudah diundang Aris; login lewat browser saat diminta
-cd C:\dev\Rakit-Apps
+git clone https://github.com/A-blib/Rakit-Apps.git OrgSpace   # repo privat: user harus sudah diundang Aris; login lewat browser saat diminta
+cd C:\dev\OrgSpace\OrgSpace-Apps
 git branch -a                                    # lihat branch yang tersedia
 ```
 
 **Branch:** kerja tim di `develop`; setiap anggota punya branch sendiri (`dimas`, `wahana`, `farid`, `aris`). Fitur terbaru yang belum di-merge ada di `fitur/template-mode` (PR #2 ke `develop`). Tanyakan ke user branch mana yang dipakai, lalu `git checkout <branch>`.
 
-**Cek:** `Get-ChildItem` menampilkan `android`, `backend`, `docs`, `AGENTS.md`, `README.md`, `SETUP-WINDOWS.md`.
+**Struktur repo:** `C:\dev\OrgSpace` berisi `OrgSpace-Apps` (backend, android, docs — semua langkah di file ini) dan `OrgSpace-Website` (portal web, lihat `OrgSpace-Website\README.md`).
+
+**Cek:** `Get-ChildItem` (di `C:\dev\OrgSpace\OrgSpace-Apps`) menampilkan `android`, `backend`, `docs`, `AGENTS.md`, `README.md`, `SETUP-WINDOWS.md`.
 
 `.gitattributes` menjaga `mvnw`/`gradlew` tetap LF dan `.cmd`/`.bat`/`.ps1` tetap CRLF. Jangan diubah.
 
@@ -160,7 +162,7 @@ Nilai yang **harus diminta ke Aris lewat chat pribadi** (atau dibuat sendiri, li
 `GOOGLE_WEB_CLIENT_ID`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`.
 
 ```powershell
-cd C:\dev\Rakit-Apps\backend
+cd C:\dev\OrgSpace\OrgSpace-Apps\backend
 # JWT_SECRET: 48 byte acak, Base64 (minimal 32 karakter)
 $bytes = New-Object byte[] 48
 [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
@@ -196,7 +198,7 @@ Lalu minta user mengisi tiga nilai OAuth di `backend\.env` (tanpa tanda kutip, t
 Backend membaca konfigurasi dari **environment variable**, bukan langsung dari file `.env`. VS Code (launch "Backend: debug (dev)") memuatnya otomatis lewat `envFile`; di terminal, muat dulu:
 
 ```powershell
-cd C:\dev\Rakit-Apps\backend
+cd C:\dev\OrgSpace\OrgSpace-Apps\backend
 Get-Content .env | Where-Object { $_ -match '^\s*[A-Za-z_][A-Za-z0-9_]*=' } | ForEach-Object {
     $name, $value = $_ -split '=', 2
     [Environment]::SetEnvironmentVariable($name.Trim(), $value.Trim(), "Process")
@@ -233,7 +235,7 @@ Akun uji (password semua `password123`): `dummy1`–`dummy10@templateapp.test`, 
 
 ```powershell
 docker info --format "{{.ServerVersion}}"     # cek Docker hidup
-cd C:\dev\Rakit-Apps\backend
+cd C:\dev\OrgSpace\OrgSpace-Apps\backend
 .\mvnw.cmd test
 ```
 **Lulus jika:** `BUILD SUCCESS` dan `Tests run: ..., Failures: 0, Errors: 0`.
@@ -247,7 +249,7 @@ cd C:\dev\Rakit-Apps\backend
 Android Studio membuat file ini otomatis saat project `android` dibuka. Jika memakai pilihan B atau file belum ada:
 
 ```powershell
-cd C:\dev\Rakit-Apps\android
+cd C:\dev\OrgSpace\OrgSpace-Apps\android
 $sdkEscaped = ("$env:LOCALAPPDATA\Android\Sdk" -replace '\\', '\\') -replace ':', '\:'
 $props = @("sdk.dir=$sdkEscaped", "GOOGLE_WEB_CLIENT_ID=<Client ID Web dari Aris>")
 if (-not (Test-Path local.properties)) {
@@ -262,7 +264,7 @@ Jika memakai Android Studio: *File → Settings → Build, Execution, Deployment
 ### 7.2 Build & cek kualitas
 
 ```powershell
-cd C:\dev\Rakit-Apps\android
+cd C:\dev\OrgSpace\OrgSpace-Apps\android
 .\gradlew.bat assembleDebug          # APK: app\build\outputs\apk\debug\app-debug.apk
 .\gradlew.bat testDebugUnitTest      # unit test
 .\gradlew.bat lint                   # harus 0 error
@@ -284,14 +286,14 @@ Build pertama mengunduh Gradle & library (bisa 10+ menit). `android\gradle.prope
 ```powershell
 adb devices                         # harus ada 1 baris berstatus "device" (bukan "unauthorized")
 adb reverse tcp:8080 tcp:8080       # WAJIB diulang setiap HP dicabut-colok / adb restart
-cd C:\dev\Rakit-Apps\android
+cd C:\dev\OrgSpace\OrgSpace-Apps\android
 .\gradlew.bat installDebug
 adb shell am start -n com.aris.templateapp/.MainActivity
 ```
 
 Agar `adb reverse` tidak perlu diulang manual, jalankan penjaga di terminal terpisah (biarkan terbuka):
 ```powershell
-cd C:\dev\Rakit-Apps\android
+cd C:\dev\OrgSpace\OrgSpace-Apps\android
 powershell -ExecutionPolicy Bypass -File tools\keep-adb-reverse.ps1
 ```
 
@@ -338,7 +340,7 @@ keytool -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias and
 | `Port 8080 was already in use` | `Get-NetTCPConnection -LocalPort 8080` → lihat `OwningProcess`. Tanya user sebelum `Stop-Process`. |
 | Test gagal `Could not find a valid Docker environment` | Buka Docker Desktop, tunggu *Engine running*. |
 | `JAVA_HOME is set to an invalid directory` / Java bukan 21 | Perbaiki `JAVA_HOME` (2.3), buka PowerShell baru. |
-| `Filename too long` | `git config --global core.longpaths true`, project di `C:\dev\Rakit-Apps`. |
+| `Filename too long` | `git config --global core.longpaths true`, project di `C:\dev\OrgSpace`. |
 | `SDK location not found` | `android\local.properties` belum ada/`sdk.dir` salah (7.1). |
 | `Failed to install the following SDK components` / lisensi | `sdkmanager --licenses`. |
 | HP tidak muncul di `adb devices` | Driver USB (2.6), kabel data, mode *Transfer file*, atau wireless debugging (8.3). |

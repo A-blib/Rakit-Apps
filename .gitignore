@@ -1,53 +1,6 @@
-# --- File lokal untuk agent AI (tidak di-commit) ---
-# CLAUDE.md: salinan AGENTS.md untuk Claude Code; PROGRESS.md: catatan posisi terakhir pengembangan di laptop Aris.
-CLAUDE.md
-PROGRESS.md
-
-# --- Rahasia: jangan pernah di-commit ---
-.env
-*.env
-!.env.example
-local.properties
-*.keystore
-*.jks
-google-services.json
-
-# --- Upload lokal backend ---
-backend/uploads/
-backend/data/
-
-# --- Hasil build ---
-build/
-target/
-out/
-bin/
-.gradle/
-.kotlin/
-.externalNativeBuild/
-.cxx/
-*.apk
-*.aab
-
-# --- IDE ---
-# .idea/ milik Android Studio berisi pengaturan pribadi, jadi tidak di-commit.
-.idea/
-*.iml
-captures/
-# Hanya folder .vscode milik backend yang di-commit (pengaturan bersama tim).
-.vscode/
-!backend/.vscode/
-
-# --- Sistem operasi & log ---
+# Aturan per project ada di OrgSpace-Apps/.gitignore dan OrgSpace-Website/.gitignore.
 .DS_Store
-Thumbs.db
-*.log
-
-# --- File buatan extension Java VS Code ---
-.classpath
-.project
-.settings/
-.factorypath
-
-# --- Bahan referensi pribadi Aris (salinannya sudah ada di CLAUDE.md dan docs/) ---
-/Instruksi dan alur/
-/revisi all of fiture/
+/.idea/
+/.vscode/
+# salinan lokal AGENTS.md untuk Claude Code
+CLAUDE.md

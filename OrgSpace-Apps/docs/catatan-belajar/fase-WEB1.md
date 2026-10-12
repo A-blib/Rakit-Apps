@@ -16,14 +16,14 @@
 | `backend/.../security/SecurityConfig.java` | `GET /api/public/**` tanpa login |
 | `backend/.../common/response/PageResponse.java` | Bentuk daftar bernomor halaman untuk web |
 | `backend/src/test/.../portal/PortalIntegrationTest.java` | 6 test: akses admin, percakapan feedback, validasi & batas, docs, monitoring, landing |
-| repo **OrgSpace Website** | Project Next.js 16 (awalnya folder `web/`, dipindah ke repo sendiri atas permintaan Aris): landing, `/docs`, dashboard (login, ringkasan, feedback, pengguna, lalu lintas, docs, sistem) |
-| `src/lib/api/*` (repo website) | Kontrak tipe (`types.ts`) + klien API (`http.ts`, `public.ts`, `admin.ts`) |
-| `src/lib/auth/*`, `src/proxy.ts` (repo website) | Sesi cookie httpOnly, refresh token otomatis, `requireAdmin` |
-| `AGENTS.md`, `README.md` (repo website) | Aturan tim & agent AI, cara setup Windows/Linux |
+| `OrgSpace-Website/` | Project Next.js 16 (awalnya `web/`, lalu repo sendiri, akhirnya folder saudara di repo yang sama atas permintaan Aris): landing, `/docs`, dashboard (login, ringkasan, feedback, pengguna, lalu lintas, docs, sistem) |
+| `src/lib/api/*` (`OrgSpace-Website/`) | Kontrak tipe (`types.ts`) + klien API (`http.ts`, `public.ts`, `admin.ts`) |
+| `src/lib/auth/*`, `src/proxy.ts` (`OrgSpace-Website/`) | Sesi cookie httpOnly, refresh token otomatis, `requireAdmin` |
+| `AGENTS.md`, `README.md` (`OrgSpace-Website/`) | Aturan tim & agent AI, cara setup Windows/Linux |
 | `docs/rancangan/portal-web.md` | Rancangan & kontrak API portal web |
 
 ## Alasan keputusan
-- Web di repo terpisah **OrgSpace Website**, bersebelahan dengan repo ini (keputusan Aris, agar struktur lebih rapi) → tim web hanya meng-clone apa yang mereka ubah; kontrak API sumber utamanya tetap di repo ini dan disalin ke `docs/kontrak-api.md` repo website (sebelumnya: folder `web/` di monorepo).
+- Repo berisi dua folder `OrgSpace-Apps/` dan `OrgSpace-Website/` (keputusan Aris, agar rapi tapi tetap satu clone; nama tanpa spasi agar build Android di Windows aman) → tim web hanya meng-clone apa yang mereka ubah; kontrak API sumber utamanya tetap di repo ini dan disalin ke `docs/kontrak-api.md` `OrgSpace-Website/` (sebelumnya: folder `web/` di monorepo).
 - Statistik dicatat di memori lalu UPSERT tiap 60 detik → beban database kecil (alternatif: INSERT per request — terlalu berat; Spring Boot Actuator + Prometheus — butuh library & server tambahan).
 - Rute dicatat sebagai pola `/api/projects/{id}` → tidak ada data pribadi, jumlah baris kecil (alternatif: path asli — setiap ID jadi baris baru).
 - Admin = flag `users.is_admin` yang dicek ke database setiap request → pencabutan hak langsung berlaku (alternatif: klaim di JWT — baru berlaku setelah token kedaluwarsa).
@@ -60,7 +60,7 @@
 ## Yang perlu Aris lakukan
 - Tidak ada perubahan Gradle (Sync Now tidak perlu).
 - Opsional: isi `PORTAL_ANDROID_DOWNLOAD_URL` di `backend/.env` saat link unduh app sudah ada.
-- Kirim link https://github.com/A-blib/OrgSpace-Website ke tim web; mereka mulai dari `README.md` repo itu (backend: repo ini, branch `fitur/orgspace`).
+- Kirim link https://github.com/A-blib/Rakit-Apps ke tim web; mereka mulai dari `OrgSpace-Website/README.md` (branch `develop`).
 - Menu Kritik & saran di app Android (memakai `/api/feedback`) dibuat saat pengembangan app dilanjutkan.
 
 ## Rencana fase berikutnya
