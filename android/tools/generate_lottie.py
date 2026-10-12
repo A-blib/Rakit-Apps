@@ -22,7 +22,7 @@ SIZE = 240          # kanvas 240x240
 FPS = 30
 STROKE = 6          # tebal garis (di kanvas 240); terlihat tipis setelah diperkecil di layar
 # Warna contoh (palet terang). Hanya terlihat di pratinjau file JSON; app selalu mewarnai ulang.
-PRIMARY = [0.231, 0.357, 0.992, 1]   # #3B5BFD
+PRIMARY = [0.043, 0.388, 0.965, 1]   # #0B63F6
 ACCENT = [1.0, 0.773, 0.192, 1]      # #FFC531
 EASE_IN = {"x": [0.4], "y": [0]}
 EASE_OUT = {"x": [0.2], "y": [1]}
