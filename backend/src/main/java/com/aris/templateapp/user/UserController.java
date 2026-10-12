@@ -6,8 +6,8 @@ import com.aris.templateapp.organization.dto.LastOrganizationRequest;
 import com.aris.templateapp.security.CurrentUser;
 import com.aris.templateapp.user.dto.ActiveModeRequest;
 import com.aris.templateapp.user.dto.CreatorOnboardingRequest;
-import com.aris.templateapp.user.dto.CreatorProfileUpdateRequest;
 import com.aris.templateapp.user.dto.ProviderOnboardingRequest;
+import com.aris.templateapp.user.dto.UpdateMeRequest;
 import com.aris.templateapp.user.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -55,11 +55,12 @@ public class UserController {
         return userService.becomeProvider(currentUser.id(), request);
     }
 
-    @Operation(summary = "Ubah nama tampilan pembuat website",
-            description = "Dipakai tab Profil. Tidak mengubah status onboarding maupun mode aktif.")
-    @PatchMapping("/creator-profile")
-    public UserResponse updateCreatorProfile(@Valid @RequestBody CreatorProfileUpdateRequest request) {
-        return userService.updateCreatorProfile(currentUser.id(), request);
+    @Operation(summary = "Ubah nama tampilan akun",
+            description = "Dipakai tab Profil (menggantikan PATCH /creator-profile). Tidak mengubah status onboarding "
+                    + "maupun mode aktif.")
+    @PatchMapping
+    public UserResponse updateMe(@Valid @RequestBody UpdateMeRequest request) {
+        return userService.updateMe(currentUser.id(), request);
     }
 
     @Operation(summary = "Simpan ruang kerja terakhir yang dibuka")

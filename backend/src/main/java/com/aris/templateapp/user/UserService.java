@@ -6,8 +6,8 @@ import com.aris.templateapp.organization.OrganizationMemberRepository;
 import com.aris.templateapp.provider.ProviderProfile;
 import com.aris.templateapp.provider.ProviderProfileRepository;
 import com.aris.templateapp.user.dto.CreatorOnboardingRequest;
-import com.aris.templateapp.user.dto.CreatorProfileUpdateRequest;
 import com.aris.templateapp.user.dto.ProviderOnboardingRequest;
+import com.aris.templateapp.user.dto.UpdateMeRequest;
 import com.aris.templateapp.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,7 +55,7 @@ public class UserService {
 
     /** Edit nama tampilan dari tab Profil. Status onboarding dan mode aktif tidak disentuh. */
     @Transactional
-    public UserResponse updateCreatorProfile(UUID userId, CreatorProfileUpdateRequest request) {
+    public UserResponse updateMe(UUID userId, UpdateMeRequest request) {
         User user = findUser(userId);
         user.setDisplayName(request.displayName().trim());
         return toResponse(user);

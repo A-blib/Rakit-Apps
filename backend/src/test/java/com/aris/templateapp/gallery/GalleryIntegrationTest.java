@@ -167,7 +167,7 @@ class GalleryIntegrationTest {
                         .content("{\"displayName\":\"Aris\"}"))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(patch("/api/users/me/creator-profile").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        mockMvc.perform(patch("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"displayName\":\"  Aris Muslim \"}"))
                 .andExpect(status().isOk())
@@ -178,12 +178,12 @@ class GalleryIntegrationTest {
 
     @Test
     void creatorProfileValidationAndLogin() throws Exception {
-        mockMvc.perform(patch("/api/users/me/creator-profile").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(patch("/api/users/me").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"displayName\":\"Aris\"}"))
                 .andExpect(status().isUnauthorized());
 
         String token = register();
-        mockMvc.perform(patch("/api/users/me/creator-profile").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        mockMvc.perform(patch("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"displayName\":\" \"}"))
                 .andExpect(status().isBadRequest())
