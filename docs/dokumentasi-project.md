@@ -53,7 +53,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 30. [Editor template mode di Android](#30-editor-template-mode-di-android)
 31. [Ruang kerja organisasi (OrgSpace)](#31-ruang-kerja-organisasi-orgspace)
 32. [Dashboard pembuat website OrgSpace (W1–W4)](#32-dashboard-pembuat-website-orgspace-w1w4)
-33. [Glosarium](#33-glosarium)
+33. [Portal web: landing, dokumentasi, monitoring, kritik & saran (WEB1)](#33-portal-web-landing-dokumentasi-monitoring-kritik--saran-web1)
+34. [Glosarium](#34-glosarium)
 
 ---
 
@@ -1628,7 +1629,48 @@ CreatorHomeFragment ── CreatorHomeViewModel ── WebsiteRepository.page(or
 - Galeri: chip "Semua" + `categoriesFor(jenjang ruang kerja)`; tamu/ruang pribadi semua kategori. Beranda: kategori ruang kerja dulu, dilengkapi `Recommendations.merge`.
 - Upload → Info template: kategori (satu) + Isi template (minimal satu; saran ✦ dari `ContentTagSuggester`). Saat Kirim, konten Inti yang belum dicentang menghasilkan Peringatan `ORG_CORE_CONTENT`.
 
-## 33. Glosarium
+## 33. Portal web: landing, dokumentasi, monitoring, kritik & saran (WEB1)
+
+Rancangan & kontrak lengkap: [`portal-web.md`](rancangan/portal-web.md). Kode web: [`web/`](../web/).
+
+### Gambaran
+
+```
+Browser ─► Next.js (web/) ─► REST API Spring Boot (backend/) ─► PostgreSQL
+           ├ (site)/          landing + /docs           → GET /api/public/**   (tanpa login, di-cache)
+           ├ dashboard/(panel) ringkasan, feedback, ... → GET/POST /api/admin/** (akun is_admin)
+           └ proxy.ts         perbarui access token (refresh) sebelum /dashboard dirender
+```
+
+### Backend (paket baru)
+
+| Paket | Isi |
+|---|---|
+| `admin/` | `AdminGuard` (interceptor `/api/admin/**`, cek `users.is_admin` dari database setiap request), `AdminController` (`/admin/me`, `/admin/users`, `/admin/system`), `AdminUserQueries` |
+| `monitoring/` | `UsageTrackingFilter` (filter paling luar, mencatat pola endpoint + status + durasi + user + platform), `UsageRecorder` (hitungan di memori, ditulis berkala dengan UPSERT), `ClientPlatform` (header `X-OrgSpace-Client`), `StatsService` + `StatsMetric` + `StatsRange`, `AdminStatsController` |
+| `feedback/` | `FeedbackService` (aturan status & tanda belum dibaca, batas harian), `FeedbackController` (pengirim), `AdminFeedbackController` (tim) |
+| `docs/` | `DocService`, `DocCategory`, `DocsController` (publik), `AdminDocsController` |
+| `portal/` | `PortalController` (`/public/overview` untuk landing) |
+| `seed/PortalDemoSeeder` | dev: admin `dummy1`, feedback contoh, statistik 30 hari |
+
+Migrasi `V21__portal_web.sql`: `feedback`, `feedback_messages`, `doc_articles` (+ 6 artikel awal), `user_daily_activity`, `api_traffic_daily`.
+
+### Kenapa statistik dikumpulkan di memori dulu?
+
+Menulis satu baris database untuk setiap request akan menggandakan beban database. `UsageRecorder` menjumlahkan di
+`ConcurrentHashMap` (per hari + endpoint, dan per user + hari + platform), lalu tiap 60 detik menulisnya dengan
+`INSERT ... ON CONFLICT DO UPDATE` (UPSERT). `compute()`/`remove()` per kunci membuat tidak ada hitungan yang hilang
+di antara penambahan dan penulisan. Rute dicatat sebagai **pola** (`/api/projects/{id}`) agar ID tidak membuat
+baris baru dan tidak ada data pribadi.
+
+### Kenapa token disimpan di cookie httpOnly, bukan localStorage?
+
+Token di localStorage bisa dibaca script apa pun yang berjalan di halaman (risiko XSS). Cookie httpOnly hanya dikirim
+browser ke server Next.js; server yang memanggil backend. Bonusnya, browser tidak pernah memanggil backend langsung,
+jadi backend tidak perlu CORS. Refresh token backend sekali pakai, sehingga refresh dilakukan di satu tempat
+(`proxy.ts` + `lib/auth/refresh.ts`) dan refresh bersamaan untuk token yang sama dipakai bersama.
+
+## 34. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|

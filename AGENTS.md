@@ -968,3 +968,17 @@ Keputusan Aris saat memulai:
 - Library disetujui: **jsoup** di backend untuk publish, **ZXing core** di Android untuk QR code, **`androidx.exifinterface`**.
 - Agent lanjut antar-fase tanpa menunggu dan melapor di akhir setiap fase; berhenti hanya untuk keputusan produk atau aksi yang butuh Aris (VPS, domain, Cloudflare, perintah sistem).
 - Dikerjakan di branch `fitur/orgspace` (dibuat dari `develop`).
+
+---
+
+## 20. Tambahan: portal web OrgSpace (Oktober 2026)
+
+Aris meminta (12 Oktober 2026) fondasi portal web dari `Website OrgSpace/Ringkasan Proyek_ OrgSpace Web Portal (Promo, Docs, & Monitoring).docx`. Rancangan & kontrak: **`docs/rancangan/portal-web.md`**. Untuk hal yang dibahasnya, dokumen itu **mengesampingkan** bagian 2.2 (panel admin & web dashboard, konfigurasi CORS) di file ini.
+
+Keputusan Aris saat memulai:
+
+- Web = **Next.js** di folder **`web/`** monorepo ini, klien REST API Spring Boot yang sama (tanpa backend baru). Browser tidak memanggil backend langsung (token di cookie httpOnly), jadi CORS tetap tidak dipasang.
+- **Aris membuat fondasi** (endpoint, tabel, `web/src/lib/api/**`, `web/src/lib/auth/**`, `web/src/proxy.ts`, kerangka halaman); **tim web** menyempurnakan tampilan. Fitur web baru harus dikoordinasikan dengan Aris dulu. Aturan agent untuk folder web: `web/AGENTS.md`.
+- Admin dashboard = akun dengan `users.is_admin = true`, login email + password.
+- Library web yang dipakai: next, react, tailwindcss, react-markdown + remark-gfm. Library npm lain harus ditanyakan dulu.
+- Pengembangan fitur app (fase T3–T8, P2–P7) **ditunda** sampai Aris bilang "lanjutkan pengembangan sebelumnya hingga selesai"; Aris sedang mengubah desain layout.

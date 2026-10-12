@@ -95,6 +95,7 @@ Google Auth Platform → **Audience** → **Test users** → **+ Add users** →
 | **Penguji** (hanya mencoba app) | Pasang APK di HP, mencoba fitur | Minta Aris mendaftarkan emailmu sebagai Test user (0.4) dan mengirim APK. Cukup itu. |
 | **Developer backend** | Mengubah kode Spring Boot | 2 (Git, JDK, PostgreSQL, Docker, VS Code), 3–6, 8, 10 |
 | **Developer Android** | Mengubah kode app | Semua bagian (app butuh backend yang jalan di laptop) |
+| **Developer web** | Menyempurnakan portal web (landing, dokumentasi, dashboard) di folder `web/` | 2 (Git, JDK, PostgreSQL, VS Code + **Node.js 24 LTS**), 3–6, 10, lalu [`web/README.md`](../web/README.md) dan aturan [`web/AGENTS.md`](../web/AGENTS.md). Android Studio, Docker, dan OAuth tidak wajib |
 
 ---
 
@@ -671,6 +672,7 @@ main ───●───────────●─────────
 - Jalankan `mvnw test` (backend) atau `gradlew testDebugUnitTest` (Android) sebelum membuat pull request.
 - Ada file migrasi database baru? Pakai nomor berikutnya (`V7__...sql`). **Jangan mengubah** file `V1`–`V6` yang sudah ada.
 - Selesai mengubah file build Android? Ingatkan teman untuk klik **Sync Now** setelah `git pull`.
+- **Tim web**: buat cabang dari `fitur/orgspace` (mis. `web/landing-rina`) dan pull request ke `fitur/orgspace`. Fitur web baru yang butuh data/endpoint baru dikoordinasikan dengan Aris dulu; Aris membuat fondasinya (lihat `web/AGENTS.md`). Sebelum PR: `npm run lint` dan `npm run build` di folder `web/` harus bersih.
 
 ---
 
