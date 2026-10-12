@@ -26,6 +26,7 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
+    public static final String USER_ID_ATTRIBUTE = "orgspace.userId";
 
     private final JwtService jwtService;
 
@@ -38,6 +39,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 // Principal = UUID user. Belum ada peran/otoritas, jadi daftarnya kosong.
                 var authentication = new UsernamePasswordAuthenticationToken(userId, null, List.of());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                // SecurityContext dikosongkan lagi setelah rantai filter Security selesai, sedangkan pencatat
+                // monitoring (UsageTrackingFilter) membungkus rantai itu; ID user dititipkan lewat atribut request.
+                request.setAttribute(USER_ID_ATTRIBUTE, userId);
             });
         }
         chain.doFilter(request, response);

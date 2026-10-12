@@ -57,6 +57,12 @@ public enum ErrorCode {
     LOGO_INVALID(HttpStatus.BAD_REQUEST, "Logo harus gambar PNG atau JPG."),
     ONBOARDING_NEEDS_SPACE(HttpStatus.CONFLICT, "Buat atau gabung ruang kerja dulu."),
     TOO_MANY_ATTEMPTS(HttpStatus.TOO_MANY_REQUESTS, "Terlalu banyak percobaan. Tunggu sebentar, lalu coba lagi."),
+    // Portal web: admin, kritik & saran, dokumentasi (docs/rancangan/portal-web.md)
+    ADMIN_ONLY(HttpStatus.FORBIDDEN, "Halaman ini khusus tim internal OrgSpace."),
+    FEEDBACK_NOT_FOUND(HttpStatus.NOT_FOUND, "Kritik & saran tidak ditemukan."),
+    FEEDBACK_CLOSED(HttpStatus.CONFLICT, "Percakapan ini sudah ditutup. Kirim kritik & saran baru, ya."),
+    DOC_NOT_FOUND(HttpStatus.NOT_FOUND, "Artikel tidak ditemukan."),
+    DOC_SLUG_TAKEN(HttpStatus.CONFLICT, "Alamat artikel (slug) sudah dipakai artikel lain."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Silakan masuk terlebih dahulu."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Data tidak ditemukan."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan di server.");

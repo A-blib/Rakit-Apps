@@ -28,7 +28,8 @@ public record AppProperties(
         @Valid Upload upload,
         @Valid Org org,
         @Valid Sites sites,
-        @Valid Projects projects) {
+        @Valid Projects projects,
+        @Valid Portal portal) {
 
     public record Jwt(
             // HS256 butuh kunci minimal 256 bit (32 byte).
@@ -72,6 +73,19 @@ public record AppProperties(
             @Min(16) int assetMaxKb,
             @Min(1) int storageMaxMbPerOrg,
             @Min(30) int lockTtlSeconds) {
+    }
+
+    /**
+     * Portal web (landing, docs, monitoring, kritik &amp; saran) yang memakai API ini (docs/rancangan/portal-web.md).
+     *
+     * @param androidDownloadUrl  link unduh app untuk tombol di landing page; kosong = tombol disembunyikan web
+     * @param feedbackDailyLimit  batas kritik &amp; saran baru per user per 24 jam (mencegah spam)
+     * @param usageFlushSeconds   jeda menulis hitungan lalu lintas &amp; pengguna aktif dari memori ke database
+     */
+    public record Portal(
+            String androidDownloadUrl,
+            @Min(1) int feedbackDailyLimit,
+            @Min(5) int usageFlushSeconds) {
     }
 
     /**
