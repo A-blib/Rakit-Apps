@@ -35,7 +35,7 @@ public final class WorkspaceMapper {
 
     public static Workspace toModel(OrganizationSummaryDto dto) {
         return new Workspace(dto.id, TYPE_PERSONAL.equals(dto.type), dto.name, dto.shortName, dto.logoUrl,
-                WorkspaceRole.fromValue(dto.myRole));
+                WorkspaceRole.fromValue(dto.myRole), dto.category, dto.level);
     }
 
     /** Ringkasan dari profil lengkap, mis. setelah membuat atau bergabung organisasi. */
@@ -47,6 +47,8 @@ public final class WorkspaceMapper {
         summary.shortName = dto.shortName;
         summary.logoUrl = dto.logoUrl;
         summary.myRole = dto.myRole;
+        summary.category = dto.category;
+        summary.level = dto.level;
         return summary;
     }
 
@@ -114,6 +116,12 @@ public final class WorkspaceMapper {
                         new HashSet<>(category.levels == null ? List.of() : category.levels)));
             }
         }
-        return new OrgCategories(levels, categories);
+        List<OrgCategories.ContentTag> contentTags = new ArrayList<>();
+        if (dto.contentTags != null) {
+            for (CategoriesDto.ContentTag tag : dto.contentTags) {
+                contentTags.add(new OrgCategories.ContentTag(tag.value, tag.label, tag.core));
+            }
+        }
+        return new OrgCategories(levels, categories, contentTags);
     }
 }

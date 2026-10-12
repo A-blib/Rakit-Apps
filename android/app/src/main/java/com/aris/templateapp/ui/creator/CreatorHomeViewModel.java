@@ -140,15 +140,27 @@ public class CreatorHomeViewModel extends ViewModel {
     }
 
     /**
-     * Terpopuler dari semua kategori. Rekomendasi per kategori organisasi ruang kerja dipasang bersama galeri
-     * kategori baru (alur-pembuatan-website.md fase W4). Daftar lama tetap tampil sampai yang baru datang.
+     * "Template untuk {org}": terpopuler di kategori organisasi ruang kerja aktif; jika kurang dari {@link
+     * Recommendations#LIMIT}, dilengkapi dari semua kategori tanpa duplikat. Ruang pribadi & tamu: semua kategori
+     * (alur-pembuatan-website.md 6). Daftar lama tetap tampil sampai yang baru datang.
      */
     private void loadRecommendations() {
+        Workspace current = workspace;
+        String category = current == null || current.isPersonal() ? null : current.getCategory();
         executors.networkIO().execute(() -> {
-            List<GalleryTemplateDto> result = fetch(null);
-            recommendedCategory = null;
+            List<GalleryTemplateDto> result = category == null ? fetch(null) : withCategory(category);
+            recommendedCategory = category;
             recommendations.postValue(result == null ? Collections.emptyList() : result);
         });
+    }
+
+    @Nullable
+    private List<GalleryTemplateDto> withCategory(String category) {
+        List<GalleryTemplateDto> own = fetch(category);
+        if (own == null) {
+            return null;
+        }
+        return Recommendations.needsFallback(own) ? Recommendations.merge(own, fetch(null)) : own;
     }
 
     /** null jika gagal (mis. offline). */

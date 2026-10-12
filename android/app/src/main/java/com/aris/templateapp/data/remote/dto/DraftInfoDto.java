@@ -8,4 +8,6 @@ public class DraftInfoDto {
     public String category;
     public String description;
     public List<String> keywords;
+    /** Isi template (kode, mis. profil, struktur, kontak). */
+    public List<String> contentTags;
 }

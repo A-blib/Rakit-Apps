@@ -93,7 +93,9 @@
     <string name="sort_newest">Terbaru</string>
     <!-- %1$s = nama kreator -->
     <string name="gallery_by_creator">oleh %1$s</string>
-    <string name="gallery_downloads" tools:ignore="PluralsCandidate">%1$s download</string>
+    <string name="gallery_downloads" tools:ignore="PluralsCandidate">%1$s kali dipakai</string>
+    <!-- %1$s = "Profil · Struktur · Kontak" -->
+    <string name="gallery_content_tags">Punya: %1$s</string>
     <string name="gallery_empty">Belum ada template.
 Template akan muncul di sini.</string>
     <string name="gallery_filter_empty">Tidak ada template yang cocok.</string>
@@ -362,12 +364,6 @@ Grafik jumlah Didownload per hari. Hari tanpa download tetap tampil sebagai 0. K
 
     <!-- Onboarding: form pembuat website -->
     <string name="field_display_name">Nama tampilan</string>
-    <string name="purpose_sekolah">Sekolah</string>
-    <string name="purpose_organisasi">Organisasi</string>
-    <string name="purpose_umkm">Usaha / UMKM</string>
-    <string name="purpose_instansi">Instansi</string>
-    <string name="purpose_pribadi">Pribadi / Portofolio</string>
-    <string name="purpose_lainnya">Lainnya</string>
     <string name="error_display_name_required">Nama tampilan wajib diisi</string>
     <string name="error_name_too_long">Maksimal 100 karakter</string>
 

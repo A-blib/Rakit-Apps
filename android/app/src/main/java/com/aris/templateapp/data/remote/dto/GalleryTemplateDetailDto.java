@@ -13,6 +13,8 @@ public class GalleryTemplateDetailDto {
     @Nullable
     public String description;
     public List<String> keywords;
+    /** Isi template (kode, mis. profil, struktur, kontak). */
+    public List<String> contentTags;
     public String creatorName;
     @Nullable
     public String thumbnailUrl;

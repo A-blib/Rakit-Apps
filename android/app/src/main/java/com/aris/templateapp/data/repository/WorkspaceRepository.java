@@ -10,6 +10,8 @@ import com.aris.templateapp.core.storage.SessionStore;
 import com.aris.templateapp.core.util.AppExecutors;
 import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.mapper.WorkspaceMapper;
+import com.aris.templateapp.data.model.ApiError;
+import com.aris.templateapp.data.model.CategoryLabels;
 import com.aris.templateapp.data.model.InvitationPreview;
 import com.aris.templateapp.data.model.OrgCategories;
 import com.aris.templateapp.data.model.Workspace;
@@ -59,7 +61,12 @@ public class WorkspaceRepository {
         this.sessionStore = sessionStore;
         this.errorParser = errorParser;
         this.executors = executors;
-        executors.diskIO().execute(() -> publish(sessionStore.getWorkspaces(), null));
+        executors.diskIO().execute(() -> {
+            publish(sessionStore.getWorkspaces(), null);
+            // Label kategori di kartu langsung tersedia dari salinan di HP, lalu diperbarui dari server.
+            CategoryLabels.update(cachedCategories());
+        });
+        executors.networkIO().execute(this::refreshCategories);
     }
 
     public LiveData<List<Workspace>> getWorkspaces() {
@@ -112,6 +119,10 @@ public class WorkspaceRepository {
         return executeJoin(api.acceptInvitation(new InvitationCodeRequestDto(code, positionTitle)));
     }
 
+    /**
+     * Kategori & Isi template. Diambil dari server sekali per app dibuka; jika offline, dipakai salinan terakhir yang
+     * tersimpan di HP.
+     */
     @WorkerThread
     public Resource<OrgCategories> categories() {
         if (categories != null) {
@@ -121,13 +132,47 @@ public class WorkspaceRepository {
             Response<CategoriesDto> response = api.categories().execute();
             CategoriesDto body = response.body();
             if (!response.isSuccessful() || body == null) {
-                return Resource.error(errorParser.parse(response));
+                return fromStore(errorParser.parse(response));
             }
+            sessionStore.saveCategories(body);
             categories = WorkspaceMapper.toModel(body);
+            CategoryLabels.update(categories);
             return Resource.success(categories);
         } catch (IOException e) {
-            return Resource.error(errorParser.parse(e));
+            return fromStore(errorParser.parse(e));
         }
+    }
+
+    @WorkerThread
+    private void refreshCategories() {
+        try {
+            Response<CategoriesDto> response = api.categories().execute();
+            CategoriesDto body = response.body();
+            if (response.isSuccessful() && body != null) {
+                sessionStore.saveCategories(body);
+                categories = WorkspaceMapper.toModel(body);
+                CategoryLabels.update(categories);
+            }
+        } catch (IOException e) {
+            // Offline: salinan di HP tetap dipakai.
+        }
+    }
+
+    /** Untuk label di kartu (dipanggil dari thread UI): salinan di memori/HP, atau null jika belum pernah dimuat. */
+    @Nullable
+    public OrgCategories cachedCategories() {
+        if (categories == null) {
+            CategoriesDto stored = sessionStore.getCategories();
+            if (stored != null) {
+                categories = WorkspaceMapper.toModel(stored);
+            }
+        }
+        return categories;
+    }
+
+    private Resource<OrgCategories> fromStore(ApiError error) {
+        OrgCategories stored = cachedCategories();
+        return stored != null ? Resource.success(stored) : Resource.error(error);
     }
 
     /**

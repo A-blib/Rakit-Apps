@@ -19,5 +19,7 @@ public class GalleryPageDto {
         public long downloads;
         /** Waktu ISO-8601; bisa null. */
         public String publishedAt;
+        /** Isi template (kode, mis. profil, struktur, kontak). */
+        public List<String> contentTags;
     }
 }

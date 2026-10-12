@@ -27,7 +27,7 @@
                 android:layout_gravity="center"
                 android:importantForAccessibility="no"
                 android:src="@drawable/ic_web"
-                app:tint="@color/color_muted" />
+                app:tint="@color/color_primary" />
 
             <ImageView
                 android:id="@+id/thumbnail"
@@ -61,13 +61,24 @@
                 android:layout_marginTop="@dimen/space_1"
                 android:textAppearance="@style/TextAppearance.App.BodySmall" />
 
-            <!-- Kategori + jumlah download dalam satu baris label mono, mis. "UMKM · 120 DOWNLOAD". -->
+            <!-- Kategori + jumlah dipakai dalam satu baris, mis. "OSIS / MPK · 120 kali dipakai". -->
             <TextView
                 android:id="@+id/category"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_1"
                 android:textAppearance="@style/TextAppearance.App.Label" />
+
+            <!-- "Punya: Profil · Struktur · Kontak" (Isi template, alur-pembuatan-website.md 6). -->
+            <TextView
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.App.BodySmall"
+                android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

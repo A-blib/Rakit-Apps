@@ -11,6 +11,7 @@ import com.aris.templateapp.core.util.Event;
 import com.aris.templateapp.data.mapper.UserMapper;
 import com.aris.templateapp.data.model.User;
 import com.aris.templateapp.data.model.UserRole;
+import com.aris.templateapp.data.remote.dto.CategoriesDto;
 import com.aris.templateapp.data.remote.dto.OrganizationSummaryDto;
 import com.aris.templateapp.data.remote.dto.UserDto;
 import com.google.gson.Gson;
@@ -43,6 +44,7 @@ public class SessionStore {
     private static final String KEY_INSTALL_ID = "install_id";
     private static final String KEY_WORKSPACES = "workspaces";
     private static final String KEY_ACTIVE_WORKSPACE = "active_workspace";
+    private static final String KEY_CATEGORIES = "org_categories";
 
     private final SharedPreferences prefs;
     private final Gson gson;
@@ -108,6 +110,21 @@ public class SessionStore {
             return list == null ? new ArrayList<>() : list;
         } catch (JsonParseException e) {
             return new ArrayList<>();
+        }
+    }
+
+    /** Daftar kategori & Isi template terakhir dari server, untuk label saat offline. Tidak terhapus saat keluar. */
+    public synchronized void saveCategories(CategoriesDto categories) {
+        prefs.edit().putString(KEY_CATEGORIES, gson.toJson(categories)).apply();
+    }
+
+    @Nullable
+    public synchronized CategoriesDto getCategories() {
+        String json = prefs.getString(KEY_CATEGORIES, null);
+        try {
+            return json == null ? null : gson.fromJson(json, CategoriesDto.class);
+        } catch (JsonParseException e) {
+            return null;
         }
     }
 

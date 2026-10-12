@@ -25,14 +25,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.aris.templateapp.R;
 import com.aris.templateapp.core.network.ThumbnailLoader;
-import com.aris.templateapp.ui.guide.Guide;
+import com.aris.templateapp.data.model.CategoryLabels;
+import com.aris.templateapp.data.model.OrgCategories;
 import com.aris.templateapp.data.remote.dto.TemplateListDto.StatusCountsDto;
 import com.aris.templateapp.databinding.FragmentProviderTemplatesBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
+import com.aris.templateapp.ui.guide.Guide;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -52,8 +56,6 @@ public class ProviderTemplatesFragment extends Fragment {
     /** Mulai memuat halaman berikutnya saat tersisa sebanyak ini kartu di bawah layar. */
     private static final int LOAD_MORE_THRESHOLD = 5;
 
-    private static final String[] CATEGORIES = {ProviderTemplatesViewModel.ALL, "sekolah", "organisasi", "umkm",
-            "instansi", "pribadi", "lainnya"};
     private static final String[] SORTS = {"updated", "downloads", "views", "name"};
     private static final int[] SORT_LABELS = {R.string.sort_updated, R.string.sort_downloads, R.string.sort_views,
             R.string.sort_name};
@@ -196,7 +198,7 @@ public class ProviderTemplatesFragment extends Fragment {
     private void bindDropdownLabels() {
         String category = viewModel.getCategory();
         binding.categoryButton.setText(ProviderTemplatesViewModel.ALL.equals(category)
-                ? getString(R.string.filter_category_all) : getString(TemplateUi.categoryLabel(category)));
+                ? getString(R.string.filter_category_all) : TemplateUi.categoryLabel(category));
         for (int i = 0; i < SORTS.length; i++) {
             if (SORTS[i].equals(viewModel.getSort())) {
                 binding.sortButton.setText(SORT_LABELS[i]);
@@ -216,13 +218,22 @@ public class ProviderTemplatesFragment extends Fragment {
     private void showCategoryMenu(View anchor) {
         hideKeyboard();
         PopupMenu popup = new PopupMenu(requireContext(), anchor);
-        for (int i = 0; i < CATEGORIES.length; i++) {
-            String value = CATEGORIES[i];
+        // Daftar kategori dari server (salinan terakhir di HP); "Semua kategori" selalu paling atas.
+        List<String> values = new ArrayList<>();
+        values.add(ProviderTemplatesViewModel.ALL);
+        OrgCategories categories = CategoryLabels.current();
+        if (categories != null) {
+            for (OrgCategories.Category category : categories.getCategories()) {
+                values.add(category.value);
+            }
+        }
+        for (int i = 0; i < values.size(); i++) {
+            String value = values.get(i);
             popup.getMenu().add(Menu.NONE, i, i, ProviderTemplatesViewModel.ALL.equals(value)
-                    ? getString(R.string.filter_category_all) : getString(TemplateUi.categoryLabel(value)));
+                    ? getString(R.string.filter_category_all) : TemplateUi.categoryLabel(value));
         }
         popup.setOnMenuItemClickListener(item -> {
-            viewModel.setCategory(CATEGORIES[item.getItemId()]);
+            viewModel.setCategory(values.get(item.getItemId()));
             bindDropdownLabels();
             return true;
         });

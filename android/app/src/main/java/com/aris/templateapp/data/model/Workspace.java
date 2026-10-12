@@ -13,15 +13,30 @@ public class Workspace {
     @Nullable private final String shortName;
     @Nullable private final String logoUrl;
     private final WorkspaceRole role;
+    /** Kode kategori & jenjang organisasi; null untuk ruang pribadi (atau data lama sebelum W4). */
+    @Nullable private final String category;
+    @Nullable private final String level;
 
     public Workspace(String id, boolean personal, String name, @Nullable String shortName, @Nullable String logoUrl,
-                     WorkspaceRole role) {
+                     WorkspaceRole role, @Nullable String category, @Nullable String level) {
         this.id = id;
         this.personal = personal;
         this.name = name;
         this.shortName = shortName;
         this.logoUrl = logoUrl;
         this.role = role;
+        this.category = category;
+        this.level = level;
+    }
+
+    @Nullable
+    public String getCategory() {
+        return category;
+    }
+
+    @Nullable
+    public String getLevel() {
+        return level;
     }
 
     public String getId() {
@@ -61,11 +76,11 @@ public class Workspace {
         Workspace other = (Workspace) o;
         return personal == other.personal && id.equals(other.id) && name.equals(other.name)
                 && Objects.equals(shortName, other.shortName) && Objects.equals(logoUrl, other.logoUrl)
-                && role == other.role;
+                && role == other.role && Objects.equals(category, other.category) && Objects.equals(level, other.level);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, personal, name, shortName, logoUrl, role);
+        return Objects.hash(id, personal, name, shortName, logoUrl, role, category, level);
     }
 }

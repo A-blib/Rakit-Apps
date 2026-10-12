@@ -48,12 +48,6 @@
             app:singleSelection="true">
 
             <com.google.android.material.chip.Chip android:id="@+id/category_all" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/filter_all" />
-            <com.google.android.material.chip.Chip android:id="@+id/category_sekolah" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_sekolah" />
-            <com.google.android.material.chip.Chip android:id="@+id/category_organisasi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_organisasi" />
-            <com.google.android.material.chip.Chip android:id="@+id/category_umkm" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_umkm" />
-            <com.google.android.material.chip.Chip android:id="@+id/category_instansi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_instansi" />
-            <com.google.android.material.chip.Chip android:id="@+id/category_pribadi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_pribadi" />
-            <com.google.android.material.chip.Chip android:id="@+id/category_lainnya" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" android:text="@string/purpose_lainnya" />
         </com.google.android.material.chip.ChipGroup>
     </com.aris.templateapp.ui.common.PagerAwareHorizontalScrollView>
 

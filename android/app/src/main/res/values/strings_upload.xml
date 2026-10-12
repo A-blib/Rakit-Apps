@@ -299,4 +299,8 @@
 
     <!-- Detail template -->
     <string name="detail_continue_draft">Lanjutkan draft</string>
+    <string name="upload_content_tags">Isi template *</string>
+    <string name="upload_content_tags_hint">Pilih konten yang ada di template; tampil sebagai label "Punya: …" di galeri. ✦ = saran dari nama halaman template.</string>
+    <!-- %1$s = label Isi template -->
+    <string name="upload_content_tag_suggested">%1$s ✦</string>
 </resources>

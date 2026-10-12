@@ -16,35 +16,7 @@ import java.util.Map;
 /** Pembantu kecil untuk form: onboarding, ruang kerja, "Edit profil", dan Info template. */
 public final class OnboardingUi {
 
-    /**
-     * Chip kategori template di langkah Info template (fragment_upload_info.xml) dan nilai backend-nya, urutan sama.
-     * Masih kategori lama; diganti kategori organisasi bersama galeri di fase W4.
-     */
-    private static final int[] PURPOSE_CHIPS = {R.id.purpose_sekolah, R.id.purpose_organisasi, R.id.purpose_umkm,
-            R.id.purpose_instansi, R.id.purpose_pribadi, R.id.purpose_lainnya};
-    private static final String[] PURPOSE_VALUES = {"sekolah", "organisasi", "umkm", "instansi", "pribadi", "lainnya"};
-
     private OnboardingUi() {
-    }
-
-    /** Nilai backend untuk chip kategori, atau null jika tidak ada yang dipilih (View.NO_ID). */
-    public static String purposeValue(int chipId) {
-        for (int i = 0; i < PURPOSE_CHIPS.length; i++) {
-            if (PURPOSE_CHIPS[i] == chipId) {
-                return PURPOSE_VALUES[i];
-            }
-        }
-        return null;
-    }
-
-    /** Kebalikan {@link #purposeValue}: id chip untuk nilai backend, atau View.NO_ID. */
-    public static int purposeChipId(String value) {
-        for (int i = 0; i < PURPOSE_VALUES.length; i++) {
-            if (PURPOSE_VALUES[i].equals(value)) {
-                return PURPOSE_CHIPS[i];
-            }
-        }
-        return View.NO_ID;
     }
 
     public static String text(EditText input) {

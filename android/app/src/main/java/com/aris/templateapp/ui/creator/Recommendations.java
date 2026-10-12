@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * "Template untuk anda" (alur-pembuatan-website.md 6.2): template terpopuler di kategori tujuan website user;
+ * "Template untuk {org}" (alur-pembuatan-website.md 6): template terpopuler di kategori organisasi ruang kerja;
  * jika kurang dari {@link #LIMIT}, dilengkapi template terpopuler dari semua kategori tanpa duplikat.
  * Fungsi murni tanpa Android agar mudah diuji.
  */
