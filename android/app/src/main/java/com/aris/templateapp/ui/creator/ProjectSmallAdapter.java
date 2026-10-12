@@ -4,21 +4,37 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.aris.templateapp.data.local.ProjectEntity;
 import com.aris.templateapp.databinding.ItemProjectSmallBinding;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /** Kartu kecil "Lanjutkan project" di Beranda yang bisa digeser ke samping. */
 public class ProjectSmallAdapter extends ListAdapter<ProjectEntity, ProjectSmallAdapter.Holder> {
 
+    private static final DiffUtil.ItemCallback<ProjectEntity> DIFF = new DiffUtil.ItemCallback<>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull ProjectEntity a, @NonNull ProjectEntity b) {
+            return a.id.equals(b.id);
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull ProjectEntity a, @NonNull ProjectEntity b) {
+            return a.name.equals(b.name) && a.status.equals(b.status) && a.mode.equals(b.mode)
+                    && a.updatedAt == b.updatedAt && a.missingCount == b.missingCount
+                    && Objects.equals(a.lastExportedAt, b.lastExportedAt);
+        }
+    };
+
     private final Consumer<ProjectEntity> onClick;
 
     public ProjectSmallAdapter(Consumer<ProjectEntity> onClick) {
-        super(ProjectAdapter.DIFF);
+        super(DIFF);
         this.onClick = onClick;
     }
 

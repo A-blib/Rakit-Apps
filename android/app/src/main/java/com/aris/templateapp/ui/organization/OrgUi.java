@@ -25,7 +25,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 
 /** Pembantu tampilan bersama layar kelola organisasi. */
-final class OrgUi {
+public final class OrgUi {
 
     private static final Locale INDONESIA = Locale.forLanguageTag("id-ID");
 
@@ -49,7 +49,7 @@ final class OrgUi {
     }
 
     /** Dialog berisi satu isian teks; {@code onConfirm} menerima teks yang diketik. */
-    static void textDialog(Context context, String title, @Nullable String message, @StringRes int hint,
+    public static void textDialog(Context context, String title, @Nullable String message, @StringRes int hint,
                            @Nullable String initial, @StringRes int confirm, Consumer<String> onConfirm) {
         DialogTextInputBinding input = DialogTextInputBinding.inflate(LayoutInflater.from(context));
         input.inputLayout.setHint(context.getString(hint));

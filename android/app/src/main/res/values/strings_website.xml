@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tab Website & halaman kelola website (alur-pembuatan-website.md bagian 4–5, fase W2). -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="websites_search_hint">Cari website…</string>
+    <string name="filter_online">Online</string>
+    <string name="filter_changed">Ada perubahan</string>
+    <string name="sort_website_updated">Terakhir diubah</string>
+    <!-- %1$d = website beralamat, %2$d = batas -->
+    <string name="websites_limit" tools:ignore="PluralsCandidate">%1$d dari %2$d website online</string>
+    <!-- %1$s = nama singkat ruang kerja -->
+    <string name="websites_empty_title">Belum ada website di %1$s</string>
+    <string name="websites_empty_body">Mulai dari template atau rakit sendiri.</string>
+    <string name="action_start_now">Mulai sekarang</string>
+    <string name="websites_filter_empty">Tidak ada website yang cocok.</string>
+    <!-- %1$s = "2 jam lalu" -->
+    <string name="websites_offline">Kamu sedang offline. Data terakhir disimpan %1$s.</string>
+    <string name="websites_need_workspace">Pilih ruang kerja dulu untuk melihat websitenya.</string>
+
+    <string name="website_status_draft">Draft</string>
+    <string name="website_status_online">Online</string>
+    <string name="website_status_offline">Dimatikan</string>
+    <string name="website_status_suspended">Ditangguhkan</string>
+    <string name="website_changed">Ada perubahan belum diterbitkan</string>
+    <!-- %1$s = nama anggota -->
+    <string name="website_locked_by">Sedang diedit oleh %1$s</string>
+    <string name="website_missing" tools:ignore="PluralsCandidate">%1$d isian belum diisi</string>
+    <!-- %1$s = "Diubah 2 jam lalu", %2$s = nama anggota -->
+    <string name="website_updated_by">%1$s oleh %2$s</string>
+    <string name="website_updated_just_now">Diubah baru saja</string>
+    <string name="website_updated_minutes" tools:ignore="PluralsCandidate">Diubah %1$d menit lalu</string>
+    <string name="website_updated_hours" tools:ignore="PluralsCandidate">Diubah %1$d jam lalu</string>
+    <string name="website_updated_days" tools:ignore="PluralsCandidate">Diubah %1$d hari lalu</string>
+    <string name="website_updated_weeks" tools:ignore="PluralsCandidate">Diubah %1$d minggu lalu</string>
+    <string name="website_updated_months" tools:ignore="PluralsCandidate">Diubah %1$d bulan lalu</string>
+    <string name="website_updated_years" tools:ignore="PluralsCandidate">Diubah %1$d tahun lalu</string>
+    <string name="ago_just_now">baru saja</string>
+    <string name="ago_minutes" tools:ignore="PluralsCandidate">%1$d menit lalu</string>
+    <string name="ago_hours" tools:ignore="PluralsCandidate">%1$d jam lalu</string>
+    <string name="ago_days" tools:ignore="PluralsCandidate">%1$d hari lalu</string>
+    <string name="ago_weeks" tools:ignore="PluralsCandidate">%1$d minggu lalu</string>
+    <string name="ago_months" tools:ignore="PluralsCandidate">%1$d bulan lalu</string>
+    <string name="ago_years" tools:ignore="PluralsCandidate">%1$d tahun lalu</string>
+    <!-- %1$s = "Diubah 2 jam lalu oleh Budi", %2$s = "Template" / "Rakit sendiri" -->
+    <string name="website_updated_mode">%1$s · %2$s</string>
+    <string name="cd_website_menu">Menu website %1$s</string>
+
+    <string name="website_rename_title">Ganti nama website</string>
+    <string name="website_renamed">Nama website diganti.</string>
+    <string name="website_duplicated">Website diduplikat menjadi “%1$s”.</string>
+    <string name="website_export">Export ZIP</string>
+    <string name="website_export_soon">Unduh ZIP disiapkan server dan segera hadir.</string>
+    <string name="website_delete_title">Hapus “%1$s”?</string>
+    <string name="website_delete_body">Website ini dihapus dari ruang kerja untuk semua anggota dan tidak bisa dikembalikan.</string>
+    <string name="website_delete_published_body">Website ini sudah pernah online. Alamatnya ikut dihapus dan pengunjung tidak bisa membukanya lagi. Ketik nama website untuk melanjutkan.</string>
+    <string name="website_delete_name_hint">Nama website</string>
+    <string name="website_deleted">“%1$s” dihapus.</string>
+    <string name="error_website_name_mismatch">Nama yang diketik belum sama dengan nama website.</string>
+    <string name="error_project_not_found">Website ini sudah tidak ada. Mungkin baru dihapus anggota lain.</string>
+
+    <!-- Halaman kelola website (bagian 5) -->
+    <string name="website_not_published">Belum terbit</string>
+    <string name="website_edit_appearance">Edit tampilan</string>
+    <string name="website_publish">Terbitkan</string>
+    <string name="website_publish_first">Terbitkan pertama kali</string>
+    <string name="website_request_publish">Minta diterbitkan</string>
+    <string name="website_section_summary">Ringkasan</string>
+    <string name="website_section_versions">Riwayat versi</string>
+    <string name="website_section_domain">Domain</string>
+    <string name="website_section_settings">Pengaturan situs</string>
+    <string name="website_section_content">Konten</string>
+    <string name="website_section_stats">Statistik</string>
+    <string name="website_section_inbox">Data masuk</string>
+    <string name="website_summary_desc">Link, QR code, dan siapa yang terakhir menerbitkan</string>
+    <string name="website_versions_desc">Kembalikan website ke versi sebelumnya</string>
+    <string name="website_domain_desc">Alamat website dan domain sendiri</string>
+    <string name="website_settings_desc">Judul di Google, ikon, dan Matikan sementara</string>
+    <string name="website_content_desc">Berita dan struktur kepengurusan</string>
+    <string name="website_stats_desc">Jumlah pengunjung</string>
+    <string name="website_inbox_desc">Kiriman formulir dari pengunjung</string>
+    <string name="website_after_publish">Muncul setelah website diterbitkan.</string>
+    <string name="website_section_soon">Bagian ini sedang kami siapkan dan segera hadir.</string>
+    <string name="website_publish_soon">Terbitkan website sedang kami siapkan dan segera hadir.</string>
+    <string name="website_editor_soon">Editor yang tersimpan di cloud sedang kami siapkan. Sebentar lagi website ini bisa diedit dari HP semua pengurus.</string>
+    <!-- %1$s = alasan dari tim OrgSpace -->
+    <string name="website_suspended_body">Website ini ditangguhkan tim OrgSpace. Alasan: %1$s. Hubungi kami jika menurutmu ini keliru.</string>
+    <string name="website_suspended_no_reason">Website ini ditangguhkan tim OrgSpace. Hubungi kami jika menurutmu ini keliru.</string>
+    <!-- %1$s = tanggal -->
+
+    <string name="request_publish_title">Minta diterbitkan?</string>
+    <string name="request_publish_body">Admin dan Pemilik akan melihat permintaanmu di Beranda, lalu memeriksa sebelum menerbitkan.</string>
+    <string name="request_publish_note_hint">Catatan untuk Admin (opsional)</string>
+    <string name="request_publish_send">Kirim permintaan</string>
+    <string name="request_publish_sent">Permintaan terbit terkirim.</string>
+    <!-- %1$s = nama, %2$s = "2 jam lalu" -->
+    <string name="request_publish_pending">%1$s minta website ini diterbitkan · %2$s</string>
+    <string name="request_publish_pending_me">Permintaan terbit sudah dikirim · %1$s</string>
+    <string name="error_publish_note_too_long">Catatan maksimal 200 karakter.</string>
+</resources>

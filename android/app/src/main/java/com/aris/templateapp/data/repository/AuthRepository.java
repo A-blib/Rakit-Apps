@@ -39,15 +39,18 @@ public class AuthRepository {
     private final SessionStore sessionStore;
     private final ApiErrorParser errorParser;
     private final WorkspaceRepository workspaceRepository;
+    private final WebsiteRepository websiteRepository;
 
     @Inject
     public AuthRepository(AuthApi authApi, TokenStorage tokenStorage, SessionStore sessionStore,
-                          ApiErrorParser errorParser, WorkspaceRepository workspaceRepository) {
+                          ApiErrorParser errorParser, WorkspaceRepository workspaceRepository,
+                          WebsiteRepository websiteRepository) {
         this.authApi = authApi;
         this.tokenStorage = tokenStorage;
         this.sessionStore = sessionStore;
         this.errorParser = errorParser;
         this.workspaceRepository = workspaceRepository;
+        this.websiteRepository = websiteRepository;
     }
 
     @WorkerThread
@@ -105,6 +108,7 @@ public class AuthRepository {
         tokenStorage.clear();
         sessionStore.clearUser();
         workspaceRepository.clear();
+        websiteRepository.clearCache();
     }
 
     /** Menjalankan request auth dan menyimpan sesi jika berhasil. Dipakai juga oleh login Google/GitHub. */

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Tab Website (alur-pembuatan-website.md 4.1): cari, chip status + jumlah, urutan + info batas, banner offline,
+    lalu daftar satu kolom. Data dari server (cache Room saat offline).
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/search_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/screen_padding_horizontal"
+        android:layout_marginTop="@dimen/space_4"
+        app:endIconMode="clear_text"
+        app:hintEnabled="false"
+        app:startIconDrawable="@drawable/ic_search"
+        app:startIconTint="@color/color_muted">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/search_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/websites_search_hint"
+            android:imeOptions="actionSearch"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Geseran ke samping menggulir chip dulu, baru pindah tab saat chip sudah mentok. -->
+    <com.aris.templateapp.ui.common.PagerAwareHorizontalScrollView
+        android:id="@+id/chips_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_2"
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/status_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:chipSpacingHorizontal="@dimen/space_2"
+            app:selectionRequired="true"
+            app:singleLine="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip android:id="@+id/status_all" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" />
+            <com.google.android.material.chip.Chip android:id="@+id/status_draft" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" />
+            <com.google.android.material.chip.Chip android:id="@+id/status_online" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" />
+            <com.google.android.material.chip.Chip android:id="@+id/status_changed" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checkable="true" />
+        </com.google.android.material.chip.ChipGroup>
+    </com.aris.templateapp.ui.common.PagerAwareHorizontalScrollView>
+
+    <LinearLayout
+        android:id="@+id/tools_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal">
+
+        <Button
+            android:id="@+id/sort_button"
+            style="@style/Widget.App.Button.Dropdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/limit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:textAppearance="@style/TextAppearance.App.BodySmall"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <com.aris.templateapp.ui.common.StatusBannerView
+        android:id="@+id/offline_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/screen_padding_horizontal"
+        android:layout_marginBottom="@dimen/space_2"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingTop="@dimen/space_2"
+            android:paddingBottom="@dimen/space_6"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/loading_more"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:indeterminate="true"
+            android:visibility="gone" />
+
+        <com.aris.templateapp.ui.common.StateView
+            android:id="@+id/state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+</LinearLayout>

@@ -186,6 +186,21 @@
         android:id="@+id/personalSpaceFragment"
         android:name="com.aris.templateapp.ui.workspace.PersonalSpaceFragment" />
 
+    <!-- Halaman kelola website (alur-pembuatan-website.md bagian 5), dibuka dari kartu tab Website. -->
+    <fragment
+        android:id="@+id/websiteManageFragment"
+        android:name="com.aris.templateapp.ui.website.WebsiteManageFragment">
+        <argument
+            android:name="websiteId"
+            app:argType="string" />
+        <argument
+            android:name="organizationId"
+            app:argType="string" />
+        <argument
+            android:name="name"
+            app:argType="string" />
+    </fragment>
+
     <!-- Kelola ruang kerja (revisi-fondasi-orgspace.md R4). Semua layar menerima ID ruang kerja yang dikelola. -->
     <fragment
         android:id="@+id/organizationFragment"

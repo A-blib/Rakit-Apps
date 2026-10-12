@@ -55,6 +55,15 @@ public final class ActivityText {
                 return new Sentence(R.string.activity_invitation_created, actor, roleLabel(activity.meta("role")));
             case "invitation.revoked":
                 return new Sentence(R.string.activity_invitation_revoked, actor);
+            case "website.renamed":
+                return new Sentence(R.string.activity_website_renamed, actor, nameOr(activity.meta("from"), ""),
+                        nameOr(activity.meta("to"), ""));
+            case "website.duplicated":
+                return new Sentence(R.string.activity_website_duplicated, actor, nameOr(activity.meta("from"), ""));
+            case "website.deleted":
+                return new Sentence(R.string.activity_website_deleted, actor, nameOr(activity.meta("name"), ""));
+            case "website.publish_requested":
+                return new Sentence(R.string.activity_publish_requested, actor, nameOr(activity.meta("name"), ""));
             default:
                 return new Sentence(R.string.activity_other, actor);
         }

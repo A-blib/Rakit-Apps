@@ -40,4 +40,15 @@ public class ActivityTextTest {
 
         assertArrayEquals(new Object[] {"Rina", "Budi"}, ActivityText.of(activity, "Seseorang").args);
     }
+
+    @Test
+    public void websiteRenameShowsOldAndNewName() {
+        Activity activity = new Activity("4", "Sari", "website.renamed", Map.of("from", "Aksara", "to", "Pensi"),
+                null);
+
+        ActivityText.Sentence sentence = ActivityText.of(activity, "Seseorang");
+
+        assertEquals(R.string.activity_website_renamed, sentence.text);
+        assertArrayEquals(new Object[] {"Sari", "Aksara", "Pensi"}, sentence.args);
+    }
 }

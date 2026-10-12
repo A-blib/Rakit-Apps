@@ -204,5 +204,9 @@
     <string name="activity_ownership_transferred">%1$s menyerahkan kepemilikan ke %2$s</string>
     <string name="activity_invitation_created">%1$s membuat kode undangan untuk %2$s</string>
     <string name="activity_invitation_revoked">%1$s mencabut kode undangan</string>
+    <string name="activity_website_renamed">%1$s mengganti nama website %2$s menjadi %3$s</string>
+    <string name="activity_website_duplicated">%1$s menduplikat website %2$s</string>
+    <string name="activity_website_deleted">%1$s menghapus website %2$s</string>
+    <string name="activity_publish_requested">%1$s minta website %2$s diterbitkan</string>
     <string name="activity_other">%1$s melakukan perubahan</string>
 </resources>

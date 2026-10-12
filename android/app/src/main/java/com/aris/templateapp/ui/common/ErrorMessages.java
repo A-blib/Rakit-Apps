@@ -61,6 +61,8 @@ public final class ErrorMessages {
                 return context.getString(R.string.error_logo_invalid);
             case "CONFIRM_NAME_MISMATCH":
                 return context.getString(R.string.error_confirm_name_mismatch);
+            case "PROJECT_NOT_FOUND":
+                return context.getString(R.string.error_project_not_found);
             case "ORG_HAS_ONLINE_SITES":
                 return context.getString(R.string.error_org_has_online_sites);
             case "REFRESH_TOKEN_INVALID":

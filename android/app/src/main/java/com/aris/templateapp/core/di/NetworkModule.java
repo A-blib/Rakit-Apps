@@ -9,6 +9,7 @@ import com.aris.templateapp.data.remote.api.OrganizationApi;
 import com.aris.templateapp.data.remote.api.ProviderApi;
 import com.aris.templateapp.data.remote.api.UploadApi;
 import com.aris.templateapp.data.remote.api.UserApi;
+import com.aris.templateapp.data.remote.api.WebsiteApi;
 import com.google.gson.Gson;
 
 import java.util.concurrent.TimeUnit;
@@ -70,6 +71,12 @@ public final class NetworkModule {
     @Singleton
     static OrganizationApi provideOrganizationApi(Retrofit retrofit) {
         return retrofit.create(OrganizationApi.class);
+    }
+
+    @Provides
+    @Singleton
+    static WebsiteApi provideWebsiteApi(Retrofit retrofit) {
+        return retrofit.create(WebsiteApi.class);
     }
 
     @Provides

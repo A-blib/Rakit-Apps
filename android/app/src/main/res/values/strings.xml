@@ -63,15 +63,11 @@
     <string name="create_sheet_title">Buat website</string>
 
     <!-- Project -->
-    <string name="projects_search_hint">Cari project…</string>
     <string name="project_status_draft">Draft</string>
     <string name="project_status_ready">Siap export</string>
     <string name="project_status_exported">Diexport</string>
-    <string name="filter_project_ready">Siap export</string>
-    <string name="filter_project_exported">Sudah diexport</string>
     <string name="project_mode_template">Template</string>
     <string name="project_mode_custom">Rakit sendiri</string>
-    <string name="sort_project_updated">Terakhir diedit</string>
     <string name="sort_project_created">Terbaru dibuat</string>
     <string name="project_edited_just_now">Diedit baru saja</string>
     <string name="project_edited_minutes_ago" tools:ignore="PluralsCandidate">Diedit %1$d menit lalu</string>
@@ -84,26 +80,14 @@
     <!-- %1$s = tanggal export terakhir, mis. "3 Okt" -->
     <string name="project_exported_on">Diexport %1$s</string>
     <string name="project_changed_since_export">Ada perubahan sejak export terakhir</string>
-    <string name="projects_empty">Belum ada project</string>
-    <string name="action_create_website">Buat website</string>
-    <string name="projects_filter_empty">Tidak ada project yang cocok.</string>
-    <string name="cd_project_menu">Menu project</string>
+    <string name="cd_project_menu">Menu website</string>
     <string name="project_rename">Ganti nama</string>
     <string name="project_duplicate">Duplikat</string>
-    <string name="project_export">Export</string>
     <string name="project_delete">Hapus</string>
-    <string name="project_rename_title">Ganti nama project</string>
     <string name="field_project_name">Nama project</string>
-    <string name="error_project_name_required">Nama project wajib diisi</string>
+    <string name="error_project_name_required">Nama website wajib diisi</string>
     <!-- %1$s = nama project asal -->
-    <string name="project_copy_name">%1$s (salinan)</string>
-    <string name="project_duplicated">Project diduplikat.</string>
-    <string name="project_delete_title">Hapus project?</string>
     <!-- %1$s = nama project -->
-    <string name="project_delete_body">“%1$s” akan dihapus dari HP ini dan tidak bisa dikembalikan.</string>
-    <string name="project_deleted">Project dihapus.</string>
-    <string name="export_dialog_title">Export</string>
-    <string name="export_dialog_body">Fitur export menjadi file ZIP segera hadir.</string>
     <string name="project_untitled">Project tanpa nama</string>
 
     <!-- Galeri Template -->

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Baris menu dua tingkat: ikon, judul, keterangan, panah. Teks & ikon diisi dari kode. -->
+<!-- Baris menu dua tingkat: ikon, judul, keterangan, panah (atau badge "Segera hadir"). Teks & ikon diisi dari kode. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/Widget.App.ListItem">
 
@@ -29,7 +29,14 @@
             android:textAppearance="@style/TextAppearance.App.BodySmall" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/badge"
+        style="@style/Widget.App.Badge.Accent"
+        android:text="@string/badge_coming_soon"
+        android:visibility="gone" />
+
     <ImageView
+        android:id="@+id/chevron"
         android:layout_width="@dimen/icon_size_small"
         android:layout_height="@dimen/icon_size_small"
         android:importantForAccessibility="no"
