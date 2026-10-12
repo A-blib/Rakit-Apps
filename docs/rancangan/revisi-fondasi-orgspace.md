@@ -291,22 +291,24 @@ Setelah selesai → Dashboard Pembuat Website di ruang kerja yang baru dibuat/di
 
 ### 7.2 Token warna (kontras teks sudah dicek ≥ 4.5:1)
 
+> Diperbarui 12 Oktober 2026 (permintaan Aris): palet lama (`#3B5BFD`, latar gelap `#0E1230`) terlihat keunguan seperti "taro". Sekarang **biru murni** (rona ±215°), latar gelap navy. Kontras terendah 5.1:1. Web (`OrgSpace Website`, `src/app/globals.css`) memakai nilai yang sama.
+
 | Token | Terang | Gelap | Pakai untuk |
 |---|---|---|---|
-| `color_background` | `#F5F7FF` | `#0E1230` | Latar layar |
-| `color_surface` | `#FFFFFF` | `#161B3D` | Kartu, sheet, dialog |
-| `color_surface_subtle` | `#EEF1FF` | `#1D2350` | Latar input, area sekunder |
-| `color_foreground` | `#1A2150` | `#EEF1FF` | Teks utama |
-| `color_muted` | `#55608F` | `#A9B2DA` | Teks sekunder, placeholder |
-| `color_border` | `#DDE3FF` | `#2C3366` | Garis kartu, pemisah |
-| `color_border_strong` | `#7B89CC` | `#6670B8` | Border input, kartu terpilih |
-| `color_primary` | `#3B5BFD` | `#7C93FF` | Tombol utama, elemen aktif, cincin fokus |
-| `color_on_primary` | `#FFFFFF` | `#0E1230` | Teks di atas `color_primary` |
-| `color_primary_container` | `#E3E9FF` | `#26338F` | Chip terpilih, latar badge mode |
-| `color_on_primary_container` | `#1B2A8A` | `#E3E9FF` | Teks di atas `color_primary_container` |
+| `color_background` | `#F3F7FD` | `#07111F` | Latar layar |
+| `color_surface` | `#FFFFFF` | `#0E1B2E` | Kartu, sheet, dialog |
+| `color_surface_subtle` | `#E9F1FC` | `#15243B` | Latar input, area sekunder |
+| `color_foreground` | `#0B1B33` | `#E8F1FD` | Teks utama |
+| `color_muted` | `#4A5D7A` | `#9AB0CC` | Teks sekunder, placeholder |
+| `color_border` | `#D3E1F4` | `#22344F` | Garis kartu, pemisah |
+| `color_border_strong` | `#7C95B8` | `#4B6587` | Border input, kartu terpilih |
+| `color_primary` | `#0B63F6` | `#4C9AFF` | Tombol utama, elemen aktif, cincin fokus |
+| `color_on_primary` | `#FFFFFF` | `#04142B` | Teks di atas `color_primary` |
+| `color_primary_container` | `#DCEAFF` | `#0E3F86` | Chip terpilih, latar badge mode |
+| `color_on_primary_container` | `#003A94` | `#DCEAFF` | Teks di atas `color_primary_container` |
 | `color_accent` | `#FFC531` | `#FFD45E` | Badge, sorotan, avatar default |
 | `color_on_accent` | `#3D2A00` | `#3D2A00` | Teks di atas `color_accent` |
-| `color_link` | `#2F4DE0` | `#8EA2FF` | Link |
+| `color_link` | `#0A58DB` | `#6FAEFF` | Link |
 | `color_success` | `#16803C` | `#4CC38A` | Status online / berhasil |
 | `color_warning` | `#A35200` | `#F5A524` | Peringatan |
 | `color_error` | `#C9252D` | `#FF6166` | Error, ditangguhkan |
