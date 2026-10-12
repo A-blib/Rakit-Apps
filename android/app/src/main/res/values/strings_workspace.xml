@@ -104,12 +104,16 @@
     <string name="org_menu_transfer_desc">Jadikan pengurus baru sebagai Pemilik</string>
     <string name="org_menu_leave">Keluar dari organisasi</string>
     <string name="org_menu_delete">Hapus organisasi</string>
+    <string name="org_menu_profile_personal">Profil ruang pribadi</string>
+    <string name="org_menu_delete_personal">Hapus ruang pribadi</string>
     <string name="org_leave_title">Keluar dari %1$s?</string>
     <string name="org_leave_body">Kamu tidak bisa membuka website organisasi ini lagi sampai diundang ulang.</string>
     <string name="org_leave_confirm">Keluar</string>
     <string name="org_left">Kamu sudah keluar dari %1$s.</string>
     <string name="org_delete_title">Hapus %1$s?</string>
     <string name="org_delete_body">Anggota, undangan, dan riwayatnya ikut terhapus permanen. Ketik nama organisasi untuk melanjutkan.</string>
+    <string name="org_field_name_personal">Nama ruang pribadi</string>
+    <string name="org_delete_body_personal">Riwayatnya ikut terhapus permanen. Ketik nama ruang pribadi untuk melanjutkan.</string>
     <string name="org_delete_confirm">Hapus permanen</string>
     <string name="org_deleted">%1$s sudah dihapus.</string>
 
@@ -182,6 +186,7 @@
     <string name="transfer_member_required">Pilih Pemilik baru dulu</string>
 
     <!-- Riwayat aktivitas -->
+    <string name="activity_just_now">Baru saja</string>
     <string name="activity_empty">Belum ada aktivitas.</string>
     <string name="activity_load_more">Muat lebih banyak</string>
     <string name="activity_unknown_actor">Seseorang</string>

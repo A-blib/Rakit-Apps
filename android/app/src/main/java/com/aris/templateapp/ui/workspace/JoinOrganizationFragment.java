@@ -2,6 +2,7 @@ package com.aris.templateapp.ui.workspace;
 
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -60,6 +61,8 @@ public class JoinOrganizationFragment extends Fragment {
             }
             return false;
         });
+        // Kode ditampilkan kapital walau ditempel atau diketik keyboard yang mengabaikan textCapCharacters.
+        binding.codeInput.setFilters(new InputFilter[] {new InputFilter.AllCaps()});
         binding.codeInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {

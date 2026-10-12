@@ -1,5 +1,7 @@
 package com.aris.templateapp.ui.onboarding;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 
@@ -51,6 +53,32 @@ public final class OnboardingUi {
 
     public static void showError(TextInputLayout input, Integer messageRes) {
         input.setError(messageRes == null ? null : input.getContext().getString(messageRes));
+    }
+
+    /** Pesan error di bawah input hilang begitu user mulai memperbaikinya, tidak menunggu tombol ditekan lagi. */
+    public static void clearErrorOnType(TextInputLayout... layouts) {
+        for (TextInputLayout layout : layouts) {
+            EditText input = layout.getEditText();
+            if (input == null) {
+                continue;
+            }
+            input.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (layout.getError() != null) {
+                        layout.setError(null);
+                    }
+                }
+            });
+        }
     }
 
     /**

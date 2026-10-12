@@ -125,6 +125,9 @@ public class OrganizationFragment extends Fragment {
         binding.memberCount.setText(getString(R.string.org_members_count, (int) org.memberCount, org.maxMembers));
         binding.memberCount.setVisibility(org.personal ? View.GONE : View.VISIBLE);
 
+        // Ruang pribadi bukan organisasi; kata "organisasi" di menunya akan membingungkan.
+        binding.profileItem.title.setText(org.personal ? R.string.org_menu_profile_personal : R.string.org_menu_profile);
+        binding.deleteItem.setText(org.personal ? R.string.org_menu_delete_personal : R.string.org_menu_delete);
         binding.membersItem.getRoot().setVisibility(org.personal ? View.GONE : View.VISIBLE);
         binding.transferItem.getRoot().setVisibility(!org.personal && org.isOwner() ? View.VISIBLE : View.GONE);
         // Ruang pribadi tidak bisa ditinggalkan (pemiliknya satu-satunya anggota); hapus saja jika tidak dipakai.
@@ -157,9 +160,11 @@ public class OrganizationFragment extends Fragment {
         if (organization == null) {
             return;
         }
+        boolean personal = organization.personal;
         OrgUi.textDialog(requireContext(), getString(R.string.org_delete_title, organization.name),
-                getString(R.string.org_delete_body), R.string.org_field_name, null, R.string.org_delete_confirm,
-                viewModel::delete);
+                getString(personal ? R.string.org_delete_body_personal : R.string.org_delete_body),
+                personal ? R.string.org_field_name_personal : R.string.org_field_name, null,
+                R.string.org_delete_confirm, viewModel::delete);
     }
 
     @Override

@@ -94,6 +94,10 @@ public class OrganizationProfileFragment extends Fragment {
         binding.logoButton.setOnClickListener(v -> picker.launch(new PickVisualMediaRequest.Builder()
                 .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build()));
         binding.saveButton.setOnClickListener(v -> viewModel.save(readForm(), readContact()));
+        OnboardingUi.clearErrorOnType(binding.nameLayout, binding.shortNameLayout, binding.institutionLayout,
+                binding.cityLayout, binding.periodStartLayout, binding.periodEndLayout, binding.addressLayout,
+                binding.emailLayout, binding.whatsappLayout, binding.instagramLayout, binding.tiktokLayout,
+                binding.youtubeLayout);
 
         viewModel.getFormErrors().observe(getViewLifecycleOwner(), this::showErrors);
         viewModel.isBusy().observe(getViewLifecycleOwner(), busy -> {
@@ -132,6 +136,7 @@ public class OrganizationProfileFragment extends Fragment {
         OrgUi.bindLogo(binding.logo, thumbnailLoader, org.name, org.logoUrl);
         personal = org.personal;
         binding.orgOnlySection.setVisibility(org.personal ? View.GONE : View.VISIBLE);
+        binding.toolbar.setTitle(org.personal ? R.string.org_menu_profile_personal : R.string.org_menu_profile);
         OrgCategories categories = viewModel.getCategories().getValue();
         if (categories != null) {
             chips.bind(categories, org.level, org.category);

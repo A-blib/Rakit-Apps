@@ -72,6 +72,8 @@ public class OrganizationFormFragment extends Fragment {
         viewModel.loadCategories();
 
         binding.submitButton.setOnClickListener(v -> viewModel.createOrganization(readForm()));
+        OnboardingUi.clearErrorOnType(binding.nameLayout, binding.shortNameLayout, binding.institutionLayout,
+                binding.cityLayout, binding.periodStartLayout, binding.periodEndLayout, binding.positionLayout);
 
         viewModel.getFormErrors().observe(getViewLifecycleOwner(), this::showErrors);
         viewModel.isLoading().observe(getViewLifecycleOwner(), loading -> binding.submitButton.setEnabled(!loading));

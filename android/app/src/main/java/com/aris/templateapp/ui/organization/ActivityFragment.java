@@ -83,11 +83,22 @@ public class ActivityFragment extends Fragment {
                 }
             }
             row.text.setText(getString(sentence.text, args));
-            row.time.setText(activity.createdAt == null ? ""
-                    : DateUtils.getRelativeTimeSpanString(activity.createdAt.toEpochMilli(), now, DateUtils.MINUTE_IN_MILLIS));
+            row.time.setText(relativeTime(activity, now));
         }
         binding.moreButton.setVisibility(page.hasMore ? View.VISIBLE : View.GONE);
         binding.moreButton.setEnabled(true);
+    }
+
+    private CharSequence relativeTime(Activity activity, long now) {
+        if (activity.createdAt == null) {
+            return "";
+        }
+        long time = activity.createdAt.toEpochMilli();
+        // DateUtils menulis "0 menit yang lalu" untuk kejadian di bawah semenit; kalimat itu janggal dibaca.
+        if (now - time < DateUtils.MINUTE_IN_MILLIS) {
+            return getString(R.string.activity_just_now);
+        }
+        return DateUtils.getRelativeTimeSpanString(time, now, DateUtils.MINUTE_IN_MILLIS);
     }
 
     @Override

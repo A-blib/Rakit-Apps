@@ -39,10 +39,13 @@ public class WorkspaceChoiceFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         NavController nav = NavHostFragment.findNavController(this);
-        // Tanpa layar sebelumnya (dibuka dari dashboard yang kosong), tombol kembali disembunyikan.
-        boolean canGoBack = nav.getPreviousBackStackEntry() != null;
-        binding.toolbar.setNavigationIcon(canGoBack ? R.drawable.ic_arrow_back : 0);
-        binding.toolbar.setNavigationOnClickListener(v -> nav.navigateUp());
+        // Tanpa layar sebelumnya (dibuka dari dashboard yang kosong), tombol kembali disembunyikan. Ikon dihapus
+        // lewat null: setNavigationIcon(0) membuat Toolbar mencari resource #0 lalu crash.
+        if (nav.getPreviousBackStackEntry() == null) {
+            binding.toolbar.setNavigationIcon(null);
+        } else {
+            binding.toolbar.setNavigationOnClickListener(v -> nav.navigateUp());
+        }
 
         bindCard(binding.createCard, R.drawable.ic_groups, R.string.workspace_choice_create_title,
                 R.string.workspace_choice_create_body, R.id.action_workspace_choice_to_organization_form);

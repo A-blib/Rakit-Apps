@@ -212,6 +212,15 @@ public class MembersFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        // Kembali dari WhatsApp/aplikasi lain setelah membagikan kode: anggota baru mungkin sudah bergabung.
+        if (viewModel.getState().getValue() != null) {
+            viewModel.load();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
