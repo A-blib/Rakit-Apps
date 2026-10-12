@@ -1631,12 +1631,12 @@ CreatorHomeFragment ── CreatorHomeViewModel ── WebsiteRepository.page(or
 
 ## 33. Portal web: landing, dokumentasi, monitoring, kritik & saran (WEB1)
 
-Rancangan & kontrak lengkap: [`portal-web.md`](rancangan/portal-web.md). Kode web: repo terpisah [OrgSpace Website](https://github.com/A-blib/OrgSpace-Website).
+Rancangan & kontrak lengkap: [`portal-web.md`](rancangan/portal-web.md). Kode web: folder [`OrgSpace-Website/`](../../OrgSpace-Website/) di repo yang sama.
 
 ### Gambaran
 
 ```
-Browser ─► Next.js (repo OrgSpace Website) ─► REST API Spring Boot (backend/) ─► PostgreSQL
+Browser ─► Next.js (OrgSpace-Website/) ─► REST API Spring Boot (backend/) ─► PostgreSQL
            ├ (site)/          landing + /docs           → GET /api/public/**   (tanpa login, di-cache)
            ├ dashboard/(panel) ringkasan, feedback, ... → GET/POST /api/admin/** (akun is_admin)
            └ proxy.ts         perbarui access token (refresh) sebelum /dashboard dirender
