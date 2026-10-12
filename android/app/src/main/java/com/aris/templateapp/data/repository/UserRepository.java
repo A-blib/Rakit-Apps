@@ -77,8 +77,8 @@ public class UserRepository {
 
     /** Edit nama tampilan dari tab Profil; salinan user di HP ikut diperbarui. */
     @WorkerThread
-    public Resource<User> updateCreatorProfile(String displayName) {
-        return executeUser(userApi.updateCreatorProfile(new CreatorOnboardingRequestDto(displayName)));
+    public Resource<User> updateDisplayName(String displayName) {
+        return executeUser(userApi.updateMe(new CreatorOnboardingRequestDto(displayName)));
     }
 
     @WorkerThread

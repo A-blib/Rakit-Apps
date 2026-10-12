@@ -66,7 +66,7 @@ public class CreatorProfileEditViewModel extends ViewModel {
         }
         saving.setValue(true);
         executors.networkIO().execute(() -> {
-            Resource<User> result = userRepository.updateCreatorProfile(displayName.trim());
+            Resource<User> result = userRepository.updateDisplayName(displayName.trim());
             saving.postValue(false);
             if (result.getStatus() == Resource.Status.SUCCESS) {
                 saved.postValue(new Event<>(true));

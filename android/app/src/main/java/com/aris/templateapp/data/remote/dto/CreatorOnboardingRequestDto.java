@@ -1,7 +1,7 @@
 package com.aris.templateapp.data.remote.dto;
 
 /**
- * Body /users/me/onboarding/creator dan PATCH /users/me/creator-profile. Data organisasi dikirim lewat endpoint
+ * Body /users/me/onboarding/creator dan PATCH /users/me. Data organisasi dikirim lewat endpoint
  * organisasi, jadi di sini cukup nama tampilan.
  */
 public class CreatorOnboardingRequestDto {

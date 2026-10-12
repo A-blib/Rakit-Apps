@@ -45,6 +45,15 @@ public class WorkspaceViewModel extends ViewModel {
         return workspaceRepository.getActive();
     }
 
+    public LiveData<List<Workspace>> getWorkspaces() {
+        return workspaceRepository.getWorkspaces();
+    }
+
+    /** Pindah ruang kerja aktif; semua tab yang mengamati {@link #getActive()} ikut dimuat ulang. */
+    public void select(Workspace workspace) {
+        workspaceRepository.select(workspace);
+    }
+
     public LiveData<Event<Boolean>> getNeedsWorkspace() {
         return needsWorkspace;
     }

@@ -11,6 +11,8 @@
 
     <dimen name="screen_padding_horizontal">20dp</dimen>
 
+    <!-- Logo kecil di app bar -->
+    <dimen name="radius_extra_small">8dp</dimen>
     <!-- Input & chip -->
     <dimen name="radius_small">12dp</dimen>
     <!-- Kartu & banner -->
@@ -37,7 +39,8 @@
     <dimen name="org_logo_size">64dp</dimen>
     <dimen name="app_bar_height">56dp</dimen>
     <!-- Nama ruang kerja panjang dipotong "…" agar avatar di kanan tetap terlihat di layar 360dp. -->
-    <dimen name="workspace_switcher_max_width">220dp</dimen>
+    <dimen name="workspace_switcher_max_width">200dp</dimen>
+    <dimen name="workspace_switcher_logo_size">28dp</dimen>
     <dimen name="illustration_size">200dp</dimen>
     <dimen name="state_illustration_size">120dp</dimen>
     <dimen name="list_item_min_height">56dp</dimen>

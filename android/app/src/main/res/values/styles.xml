@@ -318,6 +318,11 @@
         <item name="buttonBarNegativeButtonStyle">@style/Widget.App.Button.Text</item>
     </style>
 
+    <!-- Logo kecil di app bar: sudut 12dp terlalu bulat untuk kotak 28dp. -->
+    <style name="ShapeAppearance.App.ExtraSmall" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerSize">@dimen/radius_extra_small</item>
+    </style>
+
     <style name="ShapeAppearance.App.Small" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerSize">@dimen/radius_small</item>
     </style>

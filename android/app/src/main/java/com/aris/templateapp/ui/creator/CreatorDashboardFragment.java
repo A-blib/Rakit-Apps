@@ -16,6 +16,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.databinding.FragmentCreatorDashboardBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
@@ -23,6 +24,8 @@ import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.KeyboardAwareBottomBar;
 import com.aris.templateapp.ui.workspace.WorkspacePickerSheet;
 import com.aris.templateapp.ui.workspace.WorkspaceViewModel;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -40,6 +43,9 @@ public class CreatorDashboardFragment extends Fragment {
     /** Urutan tab = urutan halaman ViewPager2. Slot tombol + di menu bukan tab, jadi tidak ada di sini. */
     static final int[] TABS = {R.id.tab_creator_home, R.id.tab_creator_projects, R.id.tab_creator_gallery,
             R.id.tab_creator_profile};
+
+    @Inject
+    ThumbnailLoader thumbnailLoader;
 
     private FragmentCreatorDashboardBinding binding;
     private CurrentUserViewModel userViewModel;
@@ -132,8 +138,15 @@ public class CreatorDashboardFragment extends Fragment {
         }
     }
 
-    /** Tombol +, kartu "Mulai", dan tombol "Buat website" di tab Project membuka bottom sheet yang sama. */
+    /**
+     * Tombol +, kartu "Mulai", dan tombol "Buat website" di tab Website membuka bottom sheet yang sama. Website
+     * disimpan di cloud milik ruang kerja, jadi tamu diminta masuk dulu (alur-pembuatan-website.md G1).
+     */
     public void showCreateSheet() {
+        if (!userViewModel.isLoggedInNow()) {
+            NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login);
+            return;
+        }
         if (getChildFragmentManager().findFragmentByTag(CreateProjectSheet.TAG) == null) {
             new CreateProjectSheet().show(getChildFragmentManager(), CreateProjectSheet.TAG);
         }
@@ -162,8 +175,14 @@ public class CreatorDashboardFragment extends Fragment {
         binding.workspaceSwitcher.setVisibility(show ? View.VISIBLE : View.GONE);
         binding.toolbar.setTitle(show ? null : getString(R.string.app_name));
         if (show) {
-            binding.workspaceSwitcher.setText(workspace.getName());
+            // Nama singkat lebih muat di app bar ("OSIS Smansa"); nama lengkap tetap ada di pemilih.
+            binding.workspaceName.setText(workspace.getGreetingName());
             binding.workspaceSwitcher.setContentDescription(getString(R.string.cd_workspace_picker, workspace.getName()));
+            binding.workspaceInitial.setText(AppBarAccount.initialOf(workspace.getName()));
+            binding.workspaceInitial.setVisibility(View.VISIBLE);
+            binding.workspaceLogo.setImageDrawable(null);
+            thumbnailLoader.load(workspace.getLogoUrl(), binding.workspaceLogo,
+                    () -> binding.workspaceInitial.setVisibility(View.INVISIBLE));
         }
     }
 

@@ -9,18 +9,28 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.data.model.Workspace;
+import com.aris.templateapp.data.repository.WorkspaceRepository;
 import com.aris.templateapp.databinding.SheetCreateProjectBinding;
 import com.aris.templateapp.ui.editor.EditorNav;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
 /**
- * Bottom sheet tombol + dan kartu "Mulai" (alur-pembuatan-website.md bagian 2 & 6): "Pakai template" membuka tab
- * Template, "Custom" membuka Editor Custom Mode untuk project baru. Selalu ditampilkan oleh shell
- * ({@link CreatorDashboardFragment#showCreateSheet()}), jadi induknya selalu shell.
+ * Bottom sheet tombol + dan kartu "Mulai" (alur-pembuatan-website.md bagian 2.3): "Pakai template" membuka tab
+ * Template, "Rakit sendiri" membuka editor Rakit sendiri ("Segera hadir", belum membuat website). Selalu
+ * ditampilkan oleh shell ({@link CreatorDashboardFragment#showCreateSheet()}), jadi induknya selalu shell.
  */
+@AndroidEntryPoint
 public class CreateProjectSheet extends BottomSheetDialogFragment {
 
     public static final String TAG = "CreateProjectSheet";
+
+    @Inject
+    WorkspaceRepository workspaceRepository;
 
     private SheetCreateProjectBinding binding;
 
@@ -42,7 +52,10 @@ public class CreateProjectSheet extends BottomSheetDialogFragment {
         binding.optionCustom.getRoot().setOnClickListener(v -> {
             CreatorDashboardFragment shell = (CreatorDashboardFragment) requireParentFragment();
             dismiss();
-            EditorNav.openCustomEditor(shell, null);
+            // Nama awal website Rakit sendiri: "Website {org}" (alur-pembuatan-website.md bagian 1).
+            Workspace workspace = workspaceRepository.getActive().getValue();
+            EditorNav.openCustomEditor(shell, workspace == null ? null
+                    : getString(R.string.website_default_name, workspace.getGreetingName()));
         });
     }
 

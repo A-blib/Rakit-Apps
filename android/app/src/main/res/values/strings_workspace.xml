@@ -79,10 +79,13 @@
 
     <!-- Pemilih ruang kerja di app bar -->
     <string name="workspace_picker_title">Ruang kerja</string>
-    <string name="workspace_picker_add">Buat atau gabung organisasi</string>
+    <string name="workspace_picker_create">Buat organisasi baru</string>
+    <string name="workspace_picker_join">Gabung organisasi</string>
+    <string name="workspace_picker_personal">Buat ruang pribadi</string>
     <string name="cd_workspace_picker">Ganti ruang kerja, sekarang %1$s</string>
     <string name="workspace_switched">Sekarang di %1$s</string>
-    <string name="profile_workspace">Ruang kerja aktif</string>
+    <string name="profile_group_workspaces">Ruang kerja saya</string>
+    <string name="profile_edit_name">Ubah nama tampilan</string>
     <!-- Kode error kelola organisasi -->
     <string name="error_logo_invalid">Logo harus gambar PNG atau JPG. Pilih gambar lain, ya.</string>
     <string name="error_confirm_name_mismatch">Nama yang diketik belum sama dengan nama organisasi.</string>
@@ -90,7 +93,8 @@
     <string name="error_image_unreadable">Gambar ini tidak bisa dibaca. Pilih gambar lain, ya.</string>
 
     <!-- Kelola organisasi (R4) -->
-    <string name="workspace_picker_manage">Kelola ruang kerja ini</string>
+    <string name="workspace_picker_manage">Kelola organisasi</string>
+    <string name="workspace_picker_manage_personal">Kelola ruang pribadi</string>
     <!-- Bahasa Indonesia tidak punya bentuk jamak, jadi saran lint "pakai plurals" diabaikan. -->
     <string name="org_members_count" tools:ignore="PluralsCandidate">%1$d dari %2$d anggota</string>
     <string name="org_my_role">Peranmu: %1$s</string>

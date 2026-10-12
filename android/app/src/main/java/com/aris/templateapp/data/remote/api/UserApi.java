@@ -31,8 +31,8 @@ public interface UserApi {
     Call<UserDto> onboardProvider(@Body ProviderOnboardingRequestDto body);
 
     /** Body-nya sama dengan onboarding pembuat website (hanya nama tampilan), jadi DTO-nya dipakai ulang. */
-    @PATCH("users/me/creator-profile")
-    Call<UserDto> updateCreatorProfile(@Body CreatorOnboardingRequestDto body);
+    @PATCH("users/me")
+    Call<UserDto> updateMe(@Body CreatorOnboardingRequestDto body);
 
     @PATCH("users/me/active-mode")
     Call<UserDto> changeActiveMode(@Body ActiveModeRequestDto body);

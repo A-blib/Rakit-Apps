@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.navigation.fragment.NavHostFragment;
@@ -13,9 +14,7 @@ import com.aris.templateapp.R;
 import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.data.repository.WorkspaceRepository;
-import com.aris.templateapp.databinding.ItemWorkspaceBinding;
 import com.aris.templateapp.databinding.SheetWorkspacePickerBinding;
-import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.organization.OrganizationArgs;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.snackbar.Snackbar;
@@ -60,36 +59,35 @@ public class WorkspacePickerSheet extends BottomSheetDialogFragment {
                         .navigate(R.id.organizationFragment, OrganizationArgs.of(active.getId()));
             }
         });
-        binding.addItem.setOnClickListener(v -> {
-            dismiss();
-            NavHostFragment.findNavController(requireParentFragment()).navigate(R.id.workspaceChoiceFragment);
-        });
+        binding.createItem.setOnClickListener(v -> open(R.id.organizationFormFragment));
+        binding.joinItem.setOnClickListener(v -> open(R.id.joinOrganizationFragment));
+        binding.personalItem.setOnClickListener(v -> open(R.id.personalSpaceFragment));
+    }
+
+    /** Form buat/gabung/ruang pribadi langsung, tanpa layar pilihan; setelah selesai kembali ke dashboard. */
+    private void open(@IdRes int destination) {
+        dismiss();
+        NavHostFragment.findNavController(requireParentFragment()).navigate(destination);
     }
 
     private void bind(List<Workspace> workspaces) {
-        binding.list.removeAllViews();
         Workspace active = workspaceRepository.getActive().getValue();
+        // Ruang pribadi juga punya layar kelola (profil, riwayat, hapus), hanya labelnya berbeda.
+        binding.manageItem.setText(active != null && active.isPersonal() ? R.string.workspace_picker_manage_personal
+                : R.string.workspace_picker_manage);
+        WorkspaceRows.bind(binding.list, workspaces, active, thumbnailLoader, workspace -> {
+            if (active == null || !active.getId().equals(workspace.getId())) {
+                workspaceRepository.select(workspace);
+                Snackbar.make(requireParentFragment().requireView(),
+                        getString(R.string.workspace_switched, workspace.getName()), Snackbar.LENGTH_SHORT).show();
+            }
+            dismiss();
+        });
+        boolean hasPersonal = false;
         for (Workspace workspace : workspaces) {
-            ItemWorkspaceBinding row = ItemWorkspaceBinding.inflate(getLayoutInflater(), binding.list, true);
-            row.name.setText(workspace.getName());
-            row.role.setText(workspace.isPersonal() ? getString(R.string.workspace_personal_badge)
-                    : getString(WorkspaceUi.roleLabel(workspace.getRole())));
-            row.initial.setText(AppBarAccount.initialOf(workspace.getName()));
-            row.logo.setImageDrawable(null);
-            thumbnailLoader.load(workspace.getLogoUrl(), row.logo, null);
-            boolean selected = active != null && active.getId().equals(workspace.getId());
-            row.check.setVisibility(selected ? View.VISIBLE : View.INVISIBLE);
-            row.getRoot().setSelected(selected);
-            row.getRoot().setOnClickListener(v -> {
-                if (!selected) {
-                    workspaceRepository.select(workspace);
-                    View root = requireParentFragment().requireView();
-                    Snackbar.make(root, getString(R.string.workspace_switched, workspace.getName()),
-                            Snackbar.LENGTH_SHORT).show();
-                }
-                dismiss();
-            });
+            hasPersonal |= workspace.isPersonal();
         }
+        binding.personalItem.setVisibility(hasPersonal ? View.GONE : View.VISIBLE);
     }
 
     @Override

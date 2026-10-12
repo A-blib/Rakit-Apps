@@ -42,7 +42,7 @@
     <string name="intro_page_indicator" tools:ignore="PluralsCandidate">Halaman %1$d dari %2$d</string>
 
     <!-- Dashboard pembuat website (docs/rancangan/alur-pembuatan-website.md) -->
-    <string name="tab_projects">Project</string>
+    <string name="tab_projects">Website</string>
     <string name="tab_gallery">Template</string>
     <string name="cd_create_project">Buat project</string>
 
@@ -54,8 +54,9 @@
     <string name="start_subheading">Tunjukkan kegiatan dan karya kalian lewat website sendiri.</string>
     <string name="start_template_title">Pakai template</string>
     <string name="start_template_body">Pilih template jadi, lalu ganti teks, foto, dan warnanya.</string>
-    <string name="start_custom_title">Custom</string>
-    <string name="start_custom_body">Susun sendiri dari kerangka header, hero, footer, dan lainnya.</string>
+    <string name="start_custom_title">Rakit sendiri</string>
+    <string name="website_default_name">Website %1$s</string>
+    <string name="start_custom_body">Susun dari section siap pakai: hero, struktur, berita, dan lainnya.</string>
     <string name="home_recommend_title">Template untuk anda</string>
 
     <!-- Bottom sheet tombol + -->
@@ -69,7 +70,7 @@
     <string name="filter_project_ready">Siap export</string>
     <string name="filter_project_exported">Sudah diexport</string>
     <string name="project_mode_template">Template</string>
-    <string name="project_mode_custom">Custom</string>
+    <string name="project_mode_custom">Rakit sendiri</string>
     <string name="sort_project_updated">Terakhir diedit</string>
     <string name="sort_project_created">Terbaru dibuat</string>
     <string name="project_edited_just_now">Diedit baru saja</string>
@@ -117,22 +118,16 @@ Template akan muncul di sini.</string>
     <string name="gallery_filter_empty">Tidak ada template yang cocok.</string>
 
     <!-- Editor "Segera hadir" -->
-    <string name="editor_label_custom">Editor custom</string>
-    <string name="editor_title_custom">Editor custom sedang dirancang</string>
-    <string name="editor_body_custom">Fitur ini masih dalam tahap perencanaan dan desain. Nantinya kamu bisa menyusun website dari kerangka header, hero, footer, dan lainnya di sini.</string>
+    <string name="editor_label_custom">Rakit sendiri</string>
+    <string name="editor_title_custom">Editor Rakit sendiri lagi kami siapkan</string>
+    <string name="editor_body_custom">Sebentar lagi kamu bisa menyusun website dari section siap pakai: hero, struktur, berita, dan lainnya.</string>
     <string name="action_back">Kembali</string>
 
     <!-- Profil pembuat website -->
     <string name="profile_badge_creator">Pembuat website</string>
-    <string name="profile_group_creator">Info pembuat website</string>
-    <string name="profile_group_summary">Ringkasan</string>
-    <string name="profile_stat_projects">Project</string>
-    <string name="profile_stat_exported">Sudah diexport</string>
-    <string name="profile_not_set">Belum diisi</string>
     <string name="profile_guest_title">Kamu belum masuk</string>
-    <string name="profile_guest_body">Masuk untuk menyimpan profil dan membagikan karyamu.</string>
-    <string name="profile_guest_local">Project tersimpan di HP ini.</string>
-    <string name="profile_creator_edit_subtitle">Info ini dipakai untuk menyarankan template yang cocok untukmu.</string>
+    <string name="profile_guest_body">Masuk untuk membuat website bersama pengurus organisasimu.</string>
+    <string name="profile_creator_edit_subtitle">Nama ini terlihat oleh pengurus lain di ruang kerjamu.</string>
     <string name="provider_suspended_redirect">Mode kreator template sedang dinonaktifkan. Hubungi tim OrgSpace untuk info lebih lanjut.</string>
 
     <!-- Dashboard provider (docs/rancangan/alur-provider.md). Bahasa Indonesia tidak punya bentuk jamak,
