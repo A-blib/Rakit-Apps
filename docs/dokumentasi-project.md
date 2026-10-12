@@ -1621,6 +1621,13 @@ CreatorHomeFragment ── CreatorHomeViewModel ── WebsiteRepository.page(or
 - Kartu Lanjutkan sementara membuka halaman kelola website sampai editor cloud (T4) ada.
 - Panduan statis ada di `Guide` (+ `strings_home.xml`); yang fiturnya belum ada tampil "Segera hadir".
 
+### Galeri dengan kategori organisasi (W4)
+
+- Kategori template = kategori organisasi (`OrgCategory`, V20). "Isi template" (`ContentTag`, kolom `templates.content_tags`) tampil sebagai "Punya: …".
+- `GET /api/meta/categories` → `levels`, `categories` (+ jenjang yang boleh), `contentTags` (+ `core`). App menyimpan salinannya (`SessionStore`) dan membaca label lewat `CategoryLabels`.
+- Galeri: chip "Semua" + `categoriesFor(jenjang ruang kerja)`; tamu/ruang pribadi semua kategori. Beranda: kategori ruang kerja dulu, dilengkapi `Recommendations.merge`.
+- Upload → Info template: kategori (satu) + Isi template (minimal satu; saran ✦ dari `ContentTagSuggester`). Saat Kirim, konten Inti yang belum dicentang menghasilkan Peringatan `ORG_CORE_CONTENT`.
+
 ## 33. Glosarium
 
 | Istilah | Arti singkat |
