@@ -47,17 +47,14 @@
     <string name="cd_create_project">Buat project</string>
 
     <!-- Beranda pembuat website -->
-    <string name="home_continue_title">Lanjutkan project</string>
+    <string name="home_continue_title">Lanjutkan</string>
     <string name="action_see_all">Lihat semua →</string>
     <string name="home_start_title">Mulai</string>
-    <string name="start_heading">Kerja keras organisasimu layak dilihat banyak orang</string>
-    <string name="start_subheading">Tunjukkan kegiatan dan karya kalian lewat website sendiri.</string>
     <string name="start_template_title">Pakai template</string>
     <string name="start_template_body">Pilih template jadi, lalu ganti teks, foto, dan warnanya.</string>
     <string name="start_custom_title">Rakit sendiri</string>
     <string name="website_default_name">Website %1$s</string>
     <string name="start_custom_body">Susun dari section siap pakai: hero, struktur, berita, dan lainnya.</string>
-    <string name="home_recommend_title">Template untuk anda</string>
 
     <!-- Bottom sheet tombol + -->
     <string name="create_sheet_title">Buat website</string>
@@ -216,9 +213,6 @@ Template akan muncul di sini.</string>
     <string name="guide_rules_title">Syarat lolos pengecekan</string>
     <string name="guide_fix_title">Memperbaiki template yang tidak lolos</string>
     <string name="guide_numbers_title">Membaca angka Dilihat dan Didownload</string>
-    <string name="guide_host_zip_title">Cara mengonlinekan file ZIP</string>
-    <string name="guide_modes_title">Beda template mode &amp; custom mode</string>
-    <string name="guide_first_website_title">Cara bikin website pertamamu</string>
     <string name="guide_coming_soon_body">Panduan ini sedang disiapkan bersama fitur Upload.</string>
     <string name="guide_prepare_body">"Template adalah satu folder website statis (HTML, CSS, JS, dan gambar) yang dikemas menjadi file ZIP.
 
@@ -302,35 +296,6 @@ Berapa kali website yang dibuat dari templatemu selesai dan diexport menjadi fil
 TREN DOWNLOAD
 Grafik jumlah Didownload per hari. Hari tanpa download tetap tampil sebagai 0. Ketuk grafik untuk melihat tanggal dan jumlahnya."</string>
 
-    <string name="guide_host_zip_body">"Hasil akhir OrgSpace adalah file ZIP berisi website (HTML, CSS, JS, dan gambar). Supaya bisa dibuka orang lain lewat internet, file itu perlu diunggah ke layanan hosting. Ada beberapa yang gratis.
-
-CARA PALING MUDAH: NETLIFY DROP
-1. Ekstrak (buka) file ZIP hasil export sampai menjadi satu folder.
-2. Buka app.netlify.com/drop di browser laptop.
-3. Seret folder tadi ke kotak di halaman itu.
-4. Tunggu beberapa detik. Kamu langsung mendapat alamat website, misalnya nama-acak.netlify.app.
-5. Buat akun Netlify (gratis) supaya websitenya tidak terhapus dan namanya bisa diganti.
-
-ALTERNATIF: GITHUB PAGES
-1. Buat akun di github.com, lalu buat repository baru.
-2. Pilih Add file → Upload files, lalu unggah isi folder website (index.html harus ada di paling atas).
-3. Buka Settings → Pages, pilih branch main, lalu Save.
-4. Beberapa menit kemudian websitemu bisa dibuka di namakamu.github.io/nama-repository.
-
-SAAT WEBSITE DIUBAH
-Export ulang dari OrgSpace, lalu unggah lagi folder yang baru dengan cara yang sama. Di tab Project, project yang sudah diexport lalu diedit diberi tanda \"Ada perubahan sejak export terakhir\"."</string>
-    <string name="guide_modes_body">"OrgSpace punya dua cara membuat website. Keduanya menghasilkan file yang sama dan bisa diexport dengan cara yang sama.
-
-TEMPLATE MODE
-Mulai dari template jadi buatan kreator template. Desainnya sudah lengkap; kamu tinggal mengganti teks, foto, dan warna.
-Cocok jika: ingin cepat jadi, belum punya bayangan desain, atau sudah menemukan template yang pas di tab Template.
-
-CUSTOM MODE
-Susun website sendiri dari kerangka bawaan app: header, hero, footer, dan lainnya. Kamu memilih bagian apa saja yang dipakai dan urutannya.
-Cocok jika: ingin susunan yang berbeda dari template yang ada, atau websitemu hanya butuh beberapa bagian tertentu.
-
-BINGUNG MEMILIH?
-Mulai dari template. Template yang mirip dengan kebutuhanmu biasanya jadi lebih cepat, dan kamu tetap bisa membuat project custom kapan saja dari tombol +."</string>
 
     <!-- Profil provider -->
     <string name="profile_edit">Edit profil</string>

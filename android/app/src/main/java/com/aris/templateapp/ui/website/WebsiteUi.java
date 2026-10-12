@@ -121,4 +121,23 @@ public final class WebsiteUi {
         int scheme = url.indexOf("://");
         return scheme < 0 ? url : url.substring(scheme + 3);
     }
+
+    /** Baris ringkas kartu Beranda: "Online · ada perubahan · Diubah 2 jam lalu oleh Budi". */
+    public static String compactStatus(Context context, Website website) {
+        String status = context.getString(statusLabel(website.status));
+        if (website.isOnlineWithChanges()) {
+            status = context.getString(R.string.template_status_with_count, status,
+                    context.getString(R.string.website_changed_short));
+        }
+        return context.getString(R.string.template_status_with_count, status, updatedLine(context, website));
+    }
+
+    /** Info tambahan kartu: kunci edit lebih penting dari isian yang belum diisi; null jika tidak ada. */
+    @Nullable
+    public static String info(Context context, Website website) {
+        if (website.lockedByName != null) {
+            return context.getString(R.string.website_locked_by, website.lockedByName);
+        }
+        return website.missingCount > 0 ? context.getString(R.string.website_missing, website.missingCount) : null;
+    }
 }

@@ -97,12 +97,6 @@ public class ProjectDaoTest {
 
         dao.delete("2");
         assertNull(dao.findById("2"));
-
-        ProjectEntity sample = project("9", "Contoh", ProjectStatus.READY, 0, 0);
-        sample.sample = true;
-        dao.insert(sample);
-        assertEquals(1, dao.deleteSamples());
-        assertEquals(3, value(dao.observeCounts(null)).total);
     }
 
     @Test

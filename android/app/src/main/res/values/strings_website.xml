@@ -21,6 +21,7 @@
     <string name="website_status_offline">Dimatikan</string>
     <string name="website_status_suspended">Ditangguhkan</string>
     <string name="website_changed">Ada perubahan belum diterbitkan</string>
+    <string name="website_changed_short">ada perubahan</string>
     <!-- %1$s = nama anggota -->
     <string name="website_locked_by">Sedang diedit oleh %1$s</string>
     <string name="website_missing" tools:ignore="PluralsCandidate">%1$d isian belum diisi</string>

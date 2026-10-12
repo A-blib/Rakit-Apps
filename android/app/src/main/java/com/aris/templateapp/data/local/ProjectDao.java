@@ -59,8 +59,6 @@ public interface ProjectDao {
     @Query("DELETE FROM projects WHERE id = :id")
     void delete(String id);
 
-    @Query("DELETE FROM projects WHERE is_sample = 1")
-    int deleteSamples();
 
     /** Nama yang sudah dipakai: nama dasar dan "nama (n)", untuk memberi nomor project baru (bagian 3). */
     @Query("SELECT name FROM projects WHERE name = :base OR name LIKE :numbered ESCAPE '\\'")

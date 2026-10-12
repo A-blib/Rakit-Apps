@@ -103,9 +103,13 @@ public class WebsitesViewModel extends ViewModel {
         if (id == null ? organizationId == null : id.equals(organizationId)) {
             return;
         }
+        boolean switched = organizationId != null;
         organizationId = id;
-        // Ruang kerja lain = pencarian & filter lama tidak relevan lagi.
-        query.setValue(WebsiteQuery.initial());
+        // Ruang kerja lain = pencarian & filter lama tidak relevan lagi. Saat pertama kali, filter yang sudah
+        // dipilih (mis. dari banner Beranda) dipertahankan.
+        if (switched) {
+            query.setValue(WebsiteQuery.initial());
+        }
         refresh();
     }
 

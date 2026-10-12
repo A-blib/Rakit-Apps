@@ -17,10 +17,14 @@ public final class WebsiteArgs {
     }
 
     public static Bundle of(Website website) {
+        return of(website.id, website.organizationId, website.name);
+    }
+
+    public static Bundle of(String websiteId, String organizationId, String name) {
         Bundle args = new Bundle();
-        args.putString(WEBSITE_ID, website.id);
-        args.putString(ORGANIZATION_ID, website.organizationId);
-        args.putString(NAME, website.name);
+        args.putString(WEBSITE_ID, websiteId);
+        args.putString(ORGANIZATION_ID, organizationId);
+        args.putString(NAME, name);
         return args;
     }
 

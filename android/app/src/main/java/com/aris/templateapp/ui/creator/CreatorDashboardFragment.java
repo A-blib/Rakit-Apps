@@ -17,11 +17,14 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.aris.templateapp.R;
 import com.aris.templateapp.core.network.ThumbnailLoader;
+import com.aris.templateapp.data.model.WebsiteQuery;
 import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.databinding.FragmentCreatorDashboardBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.KeyboardAwareBottomBar;
+import com.aris.templateapp.ui.editor.EditorNav;
+import com.aris.templateapp.ui.website.WebsitesViewModel;
 import com.aris.templateapp.ui.workspace.WorkspacePickerSheet;
 import com.aris.templateapp.ui.workspace.WorkspaceViewModel;
 
@@ -93,8 +96,15 @@ public class CreatorDashboardFragment extends Fragment {
             AppBarAccount.bind(binding.account, user);
             bindWorkspace(user == null ? null : workspaceViewModel.getActive().getValue());
         });
-        workspaceViewModel.getActive().observe(getViewLifecycleOwner(), workspace ->
-                bindWorkspace(userViewModel.getUser().getValue() == null ? null : workspace));
+        workspaceViewModel.getActive().observe(getViewLifecycleOwner(), workspace -> {
+            bindWorkspace(userViewModel.getUser().getValue() == null ? null : workspace);
+            if (workspace != null && userViewModel.isLoggedInNow()) {
+                PendingStart.Option pending = new ViewModelProvider(requireActivity()).get(PendingStart.class).take();
+                if (pending != null) {
+                    start(pending);
+                }
+            }
+        });
         workspaceViewModel.getNeedsWorkspace().observe(getViewLifecycleOwner(), event -> {
             if (event.getContentIfNotHandled() != null) {
                 // User lama tanpa ruang kerja: tampilkan layar pilihan yang sama dengan onboarding (bagian 5).
@@ -138,17 +148,31 @@ public class CreatorDashboardFragment extends Fragment {
         }
     }
 
-    /**
-     * Tombol +, kartu "Mulai", dan tombol "Buat website" di tab Website membuka bottom sheet yang sama. Website
-     * disimpan di cloud milik ruang kerja, jadi tamu diminta masuk dulu (alur-pembuatan-website.md G1).
-     */
+    /** Tombol +, "Mulai sekarang", dan kartu "Mulai" membuka bottom sheet yang sama. */
     public void showCreateSheet() {
-        if (!userViewModel.isLoggedInNow()) {
-            NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login);
-            return;
-        }
         if (getChildFragmentManager().findFragmentByTag(CreateProjectSheet.TAG) == null) {
             new CreateProjectSheet().show(getChildFragmentManager(), CreateProjectSheet.TAG);
+        }
+    }
+
+    /**
+     * Pakai template / Rakit sendiri. Website disimpan di cloud milik ruang kerja, jadi tamu diminta masuk dulu;
+     * pilihannya disimpan dan dijalankan setelah masuk & onboarding (alur-pembuatan-website.md G1).
+     */
+    public void start(PendingStart.Option option) {
+        if (!userViewModel.isLoggedInNow() || workspaceViewModel.getActive().getValue() == null) {
+            new ViewModelProvider(requireActivity()).get(PendingStart.class).set(option);
+            if (!userViewModel.isLoggedInNow()) {
+                NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login);
+            }
+            return;
+        }
+        if (option == PendingStart.Option.TEMPLATE) {
+            selectTab(R.id.tab_creator_gallery);
+        } else {
+            // Nama awal website Rakit sendiri: "Website {org}" (alur-pembuatan-website.md bagian 1).
+            Workspace workspace = workspaceViewModel.getActive().getValue();
+            EditorNav.openCustomEditor(this, getString(R.string.website_default_name, workspace.getGreetingName()));
         }
     }
 
@@ -159,7 +183,13 @@ public class CreatorDashboardFragment extends Fragment {
         }
     }
 
-    /** "Lihat semua" di "Template untuk anda": buka tab Template dengan kategori yang sesuai sudah terpilih. */
+    /** "Lihat semua" Lanjutkan & banner Beranda: buka tab Website dengan chip tertentu. */
+    public void openWebsites(WebsiteQuery.Filter filter) {
+        new ViewModelProvider(this).get(WebsitesViewModel.class).setFilter(filter);
+        selectTab(R.id.tab_creator_projects);
+    }
+
+    /** "Lihat semua" di "Template untuk {org}": buka tab Template dengan kategori yang sesuai sudah terpilih. */
     public void openGallery(@Nullable String category) {
         new ViewModelProvider(requireActivity()).get(GalleryViewModel.class)
                 .setCategory(category == null ? GalleryViewModel.ALL : category);

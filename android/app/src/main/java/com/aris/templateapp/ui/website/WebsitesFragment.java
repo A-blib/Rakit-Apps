@@ -84,7 +84,8 @@ public class WebsitesFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        viewModel = new ViewModelProvider(this).get(WebsitesViewModel.class);
+        // Dimiliki shell dashboard, supaya banner Beranda bisa membuka tab ini dengan chip tertentu terpilih.
+        viewModel = new ViewModelProvider(requireParentFragment()).get(WebsitesViewModel.class);
         adapter = new WebsiteAdapter(thumbnailLoader, new WebsiteAdapter.Listener() {
             @Override
             public void onOpen(Website website) {
