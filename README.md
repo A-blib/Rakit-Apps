@@ -38,6 +38,7 @@
 | Revisi OrgSpace R2: desain Biru Semangat, font Plus Jakarta Sans, sudut membulat & tombol pil, ikon Material Symbols Rounded, Lottie berwarna, teks baru, nama app OrgSpace | Sudah (Fase R2) |
 | Revisi OrgSpace R3: onboarding ruang kerja (buat organisasi, gabung lewat kode undangan, ruang pribadi), pemilih ruang kerja di app bar, ruang kerja terakhir diingat | Sudah (Fase R3, diuji di HP) |
 | Revisi OrgSpace R4: kelola organisasi (profil + logo, anggota, undang dengan kode + Bagikan, ubah peran/jabatan, keluarkan, keluar, serah terima, hapus, riwayat aktivitas) | Sudah (Fase R4, diuji di HP) |
+| Revisi OrgSpace W1: menu bawah Beranda · Website · + · Template · Profil, logo + nama singkat di app bar, pemilih ruang kerja (buat/gabung/ruang pribadi), tab Profil dengan "Ruang kerja saya", pilihan **Rakit sendiri** ("Segera hadir"), tamu diminta masuk sebelum membuat website | Sudah (Fase W1, diuji di HP) |
 
 > 🏷️ **Nama app: OrgSpace** (sebelumnya "Rakit"). Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
 

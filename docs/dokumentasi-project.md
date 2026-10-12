@@ -52,7 +52,8 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 29. [Paket template untuk pembuat website](#29-paket-template-untuk-pembuat-website)
 30. [Editor template mode di Android](#30-editor-template-mode-di-android)
 31. [Ruang kerja organisasi (OrgSpace)](#31-ruang-kerja-organisasi-orgspace)
-32. [Glosarium](#32-glosarium)
+32. [Dashboard pembuat website OrgSpace (W1–W4)](#32-dashboard-pembuat-website-orgspace-w1w4)
+33. [Glosarium](#33-glosarium)
 
 ---
 
@@ -463,7 +464,7 @@ Coba semuanya di Swagger UI: http://localhost:8080/swagger-ui.html
 | `GET /api/notifications` · `/unread-count` · `PATCH /{id}/read` | ✔ | – | notifikasi | ✅ Fase 11 |
 | `DELETE /api/dev/demo-templates` | – (profile dev saja) | – | `204` | ✅ Fase 11 |
 | `GET /api/templates?category=&q=&sort=popular\|newest&page=&size=` | – (tamu boleh) | – | galeri: template tayang dari provider aktif + nama kreator + jumlah download | ✅ Fase 13 |
-| `PATCH /api/users/me/creator-profile` | ✔ | `{displayName, websitePurpose?, organizationName?}` | `UserResponse` | ✅ Fase 13 |
+| `PATCH /api/users/me` | ✔ | `{displayName}` | `UserResponse` | ✅ Fase 13, diganti di W1 (dulu `/creator-profile`) |
 
 Bentuk respons:
 
@@ -1040,7 +1041,7 @@ Kenapa tabel `templates` yang sama dengan sisi provider? Satu template cukup dis
 
 ### Edit profil pembuat website
 
-`PATCH /api/users/me/creator-profile` dipakai tab Profil untuk mengubah nama tampilan, tujuan website, dan nama organisasi. Aturan validasinya sama dengan form onboarding. Bedanya dengan `POST /onboarding/creator`: endpoint ini **tidak** mengubah `onboardingCompleted` maupun `activeMode`. Kalau user belum punya profil creator (misalnya onboarding sebagai provider), profilnya dibuat.
+`PATCH /api/users/me` (sejak W1; dulu `PATCH /api/users/me/creator-profile`) dipakai tab Profil untuk mengubah nama tampilan. Tujuan website dan nama organisasi sudah dihapus (R1), karena data organisasi kini ada di Profil organisasi. Bedanya dengan `POST /onboarding/creator`: endpoint ini **tidak** mengubah `onboardingCompleted` maupun `activeMode`.
 
 ---
 
@@ -1542,7 +1543,26 @@ Dibuka dari pemilih ruang kerja → **Kelola ruang kerja ini** (`OrganizationFra
 - Logo diproses di HP dulu (`ImageProcessor.logoPng`: EXIF, potong persegi, 512 px, PNG), lalu backend memprosesnya lagi.
 - Aksi yang mengubah nama/logo/keanggotaan memuat ulang `WorkspaceRepository`, sehingga app bar dan pemilih langsung berubah. Layar Organisasi dan Anggota memuat ulang di `onResume` (misalnya kembali dari WhatsApp setelah membagikan kode).
 
-## 32. Glosarium
+## 32. Dashboard pembuat website OrgSpace (W1–W4)
+
+Rancangan: [`alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md) (revisi 12 Oktober 2026). Dashboard selalu menampilkan isi **ruang kerja aktif**.
+
+### Kerangka (W1)
+
+```
+App bar:  [logo] Nama singkat ▾ ─────────────── (avatar → tab Profil)
+             └─ WorkspacePickerSheet: daftar ruang kerja (WorkspaceRows) · Kelola organisasi/ruang pribadi
+                                      · Buat organisasi baru · Gabung organisasi · Buat ruang pribadi (jika belum)
+Menu bawah: Beranda · Website · [ + ] · Template · Profil
+             [ + ] → CreateProjectSheet: Pakai template (tab Template) | Rakit sendiri ("Segera hadir")
+```
+
+- Tamu yang menekan **+** atau kartu Mulai dibawa ke layar Masuk (`CreatorDashboardFragment.showCreateSheet`), karena website disimpan di cloud milik ruang kerja (keputusan G1).
+- **Rakit sendiri** membuka `ComingSoonEditorFragment.CustomEditor` berjudul "Website {org}" dan tidak membuat website.
+- Tab Profil = akun pribadi: kepala profil + **Ubah nama tampilan** (`PATCH /api/users/me`), **Ruang kerja saya** (ketuk = pindah), menu. Pemilih dan Profil memakai `WorkspaceRows` yang sama.
+- Pindah ruang kerja lewat `WorkspaceRepository.select` → semua layar yang mengamati `getActive()` ikut berubah.
+
+## 33. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|
