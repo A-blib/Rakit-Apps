@@ -1,6 +1,7 @@
 package com.aris.templateapp.organization;
 
 import com.aris.templateapp.organization.dto.CategoriesResponse;
+import com.aris.templateapp.template.ContentTag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,7 @@ import java.util.Arrays;
 @RestController
 public class MetaController {
 
-    @Operation(summary = "Jenjang dan kategori organisasi (publik)",
+    @Operation(summary = "Jenjang, kategori organisasi, dan pilihan Isi template (publik)",
             description = "Setiap kategori membawa daftar jenjang yang boleh memilihnya.")
     @GetMapping("/api/meta/categories")
     public CategoriesResponse categories() {
@@ -21,6 +22,9 @@ public class MetaController {
                 Arrays.stream(OrgCategory.values())
                         .map(c -> new CategoriesResponse.Category(c.value(), c.label(),
                                 Arrays.stream(OrgLevel.values()).filter(c::allows).map(OrgLevel::value).toList()))
+                        .toList(),
+                Arrays.stream(ContentTag.values())
+                        .map(t -> new CategoriesResponse.ContentTagOption(t.value(), t.label(), t.isCore()))
                         .toList());
     }
 }

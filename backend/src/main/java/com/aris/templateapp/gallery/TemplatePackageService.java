@@ -43,7 +43,7 @@ public class TemplatePackageService {
         List<String> pages = marking == null || marking.pages() == null ? List.of()
                 : marking.pages().stream().map(MarkingData.Page::name).toList();
         return new TemplateDetailResponse(template.getId(), template.getName(), template.getCategory(),
-                template.getDescription(), template.getKeywords(), provider.getCreatorName(), template.getThumbnailUrl(),
+                template.getDescription(), template.getKeywords(), template.getContentTags(), provider.getCreatorName(), template.getThumbnailUrl(),
                 galleryQueries.downloads(id), template.getPublishedAt(), pages,
                 tech == null || tech.libraries() == null ? List.of() : tech.libraries(),
                 tech != null && tech.responsive(), template.getPackageVersion(), template.getPackageSize());

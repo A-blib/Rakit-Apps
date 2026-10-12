@@ -3,13 +3,13 @@ package com.aris.templateapp.template;
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.common.persistence.PersistableEnum;
+import com.aris.templateapp.organization.OrgCategory;
 import com.aris.templateapp.provider.ProviderAccess;
 import com.aris.templateapp.template.dto.CheckResponse;
 import com.aris.templateapp.template.dto.StatusCountsResponse;
 import com.aris.templateapp.template.dto.TemplateDetailResponse;
 import com.aris.templateapp.template.dto.TemplateListResponse;
 import com.aris.templateapp.template.dto.TemplateSummaryResponse;
-import com.aris.templateapp.user.WebsitePurpose;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,12 +41,12 @@ public class ProviderTemplateService {
         providerAccess.requireActive(userId);
         ProviderTemplateQueries.StatusFilter statusFilter;
         ProviderTemplateQueries.SortOrder sortOrder;
-        WebsitePurpose categoryFilter;
+        OrgCategory categoryFilter;
         try {
             statusFilter = ProviderTemplateQueries.StatusFilter.from(status == null ? "all" : status);
             sortOrder = ProviderTemplateQueries.SortOrder.from(sort == null ? "updated" : sort);
             categoryFilter = category == null || category.equals("all") ? null
-                    : PersistableEnum.fromValue(WebsitePurpose.class, category);
+                    : PersistableEnum.fromValue(OrgCategory.class, category);
         } catch (IllegalArgumentException e) {
             throw new ApiException(ErrorCode.VALIDATION_ERROR, e.getMessage());
         }

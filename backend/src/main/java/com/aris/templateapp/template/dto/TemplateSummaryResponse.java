@@ -1,7 +1,7 @@
 package com.aris.templateapp.template.dto;
 
+import com.aris.templateapp.organization.OrgCategory;
 import com.aris.templateapp.template.TemplateStatus;
-import com.aris.templateapp.user.WebsitePurpose;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -10,7 +10,7 @@ import java.util.UUID;
 public record TemplateSummaryResponse(
         UUID id,
         String name,
-        WebsitePurpose category,
+        OrgCategory category,
         String thumbnailUrl,
         TemplateStatus status,
         int errorCount,

@@ -1,6 +1,7 @@
 package com.aris.templateapp.gallery;
 
 import com.aris.templateapp.TestcontainersConfiguration;
+import com.aris.templateapp.organization.OrgCategory;
 import com.aris.templateapp.seed.DemoPackages;
 import com.aris.templateapp.template.Template;
 import com.aris.templateapp.template.TemplateRepository;
@@ -10,7 +11,6 @@ import com.aris.templateapp.upload.check.TemplateChecker;
 import com.aris.templateapp.upload.publish.ManifestBuilder;
 import com.aris.templateapp.upload.publish.PackageManifestBackfill;
 import com.aris.templateapp.upload.publish.TemplateManifest;
-import com.aris.templateapp.user.WebsitePurpose;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -82,13 +82,13 @@ class TemplatePackageIntegrationTest {
 
     @Test
     void guestReadsDetailOfPublishedTemplate() throws Exception {
-        UUID id = publish(DemoPackages.SEKOLAH, "Profil Sekolah", WebsitePurpose.SEKOLAH);
+        UUID id = publish(DemoPackages.SEKOLAH, "Profil Sekolah", OrgCategory.OSIS_MPK);
 
         mockMvc.perform(get("/api/templates/" + id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Profil Sekolah"))
                 .andExpect(jsonPath("$.creatorName").value("Rina Studio"))
-                .andExpect(jsonPath("$.category").value("sekolah"))
+                .andExpect(jsonPath("$.category").value("osis_mpk"))
                 .andExpect(jsonPath("$.pages", contains("Beranda", "Tentang", "Kontak")))
                 .andExpect(jsonPath("$.responsive").value(true))
                 .andExpect(jsonPath("$.version").value(1))
@@ -98,7 +98,7 @@ class TemplatePackageIntegrationTest {
 
     @Test
     void packageContainsManifestAndMarkedHtml() throws Exception {
-        UUID id = publish(DemoPackages.SEKOLAH, "Profil Sekolah", WebsitePurpose.SEKOLAH);
+        UUID id = publish(DemoPackages.SEKOLAH, "Profil Sekolah", OrgCategory.OSIS_MPK);
 
         MockHttpServletResponse response = mockMvc.perform(get("/api/templates/" + id + "/package"))
                 .andExpect(status().isOk())
@@ -133,7 +133,7 @@ class TemplatePackageIntegrationTest {
     @Test
     void allDemoPackagesPassTheChecker() {
         for (String slug : new String[] {DemoPackages.KULINER, DemoPackages.SEKOLAH, DemoPackages.PORTOFOLIO}) {
-            Template template = tx.execute(s -> templateRepository.save(new Template(providerId, slug, WebsitePurpose.LAINNYA)));
+            Template template = tx.execute(s -> templateRepository.save(new Template(providerId, slug, OrgCategory.LAINNYA)));
             DemoPackages.Built built = demoPackages.build(slug, template);
             TemplateChecker.Result result = checker.check(built.sourceZip(), slug + ".zip", stage -> { });
             assertThat(result.passed()).as(slug + ": " + result.findings()).isTrue();
@@ -143,7 +143,7 @@ class TemplatePackageIntegrationTest {
 
     @Test
     void hiddenTemplatesAreNotFound() throws Exception {
-        UUID id = publish(DemoPackages.KULINER, "UMKM Kuliner", WebsitePurpose.UMKM);
+        UUID id = publish(DemoPackages.KULINER, "UMKM Kuliner", OrgCategory.UKM);
 
         jdbc.update("UPDATE templates SET status = 'disabled' WHERE id = ?", id);
         mockMvc.perform(get("/api/templates/" + id)).andExpect(status().isNotFound());
@@ -159,7 +159,7 @@ class TemplatePackageIntegrationTest {
     void templateWithoutPackageHasNoSizeAndNoPackage() throws Exception {
         UUID id = jdbc.queryForObject("""
                 INSERT INTO templates (provider_id, name, category, status, published_at)
-                VALUES (?, 'Lama', 'umkm', 'published', now()) RETURNING id""", UUID.class, providerId);
+                VALUES (?, 'Lama', 'ukm', 'published', now()) RETURNING id""", UUID.class, providerId);
 
         mockMvc.perform(get("/api/templates/" + id))
                 .andExpect(status().isOk())
@@ -169,7 +169,7 @@ class TemplatePackageIntegrationTest {
 
     @Test
     void guestViewAndDownloadEventsAreCountedOncePerProject() throws Exception {
-        UUID id = publish(DemoPackages.KULINER, "UMKM Kuliner", WebsitePurpose.UMKM);
+        UUID id = publish(DemoPackages.KULINER, "UMKM Kuliner", OrgCategory.UKM);
         String view = "{\"type\":\"view\",\"installId\":\"hp-1\",\"occurredAt\":\"%s\"}".formatted(Instant.now());
         String download = "{\"type\":\"download\",\"projectId\":\"p-1\",\"installId\":\"hp-1\",\"occurredAt\":\"%s\"}"
                 .formatted(Instant.now());
@@ -192,7 +192,7 @@ class TemplatePackageIntegrationTest {
 
     @Test
     void packagesPublishedBeforeManifestExistedAreCompletedAtStartup() throws Exception {
-        UUID id = publish(DemoPackages.KULINER, "UMKM Kuliner", WebsitePurpose.UMKM);
+        UUID id = publish(DemoPackages.KULINER, "UMKM Kuliner", OrgCategory.UKM);
         // Tiru paket Fase 18: tanpa manifest.json dan tanpa ukuran tercatat.
         Map<String, String> files = unzip(Files.readAllBytes(storage.packageZipPath(id)));
         files.remove(ManifestBuilder.FILE_NAME);
@@ -220,7 +220,7 @@ class TemplatePackageIntegrationTest {
         return out.toByteArray();
     }
 
-    private UUID publish(String slug, String name, WebsitePurpose category) {
+    private UUID publish(String slug, String name, OrgCategory category) {
         return tx.execute(s -> {
             Template template = templateRepository.save(new Template(providerId, name, category));
             template.setStatus(TemplateStatus.PUBLISHED);

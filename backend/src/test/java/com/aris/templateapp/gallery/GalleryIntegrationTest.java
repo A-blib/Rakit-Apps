@@ -58,10 +58,10 @@ class GalleryIntegrationTest {
 
     @Test
     void guestSeesOnlyPublishedTemplatesOfActiveProvidersSortedByDownloads() throws Exception {
-        UUID kue = template(studioA, "Toko Kue Modern", "umkm", "published", 3);
-        UUID sekolah = template(studioB, "Sekolah Hijau", "sekolah", "published", 2);
-        template(studioA, "Draft Rahasia", "umkm", "draft", 1);
-        template(studioA, "Gagal Cek", "umkm", "check_failed", 1);
+        UUID kue = template(studioA, "Toko Kue Modern", "ukm", "published", 3);
+        UUID sekolah = template(studioB, "Sekolah Hijau", "osis_mpk", "published", 2);
+        template(studioA, "Draft Rahasia", "ukm", "draft", 1);
+        template(studioA, "Gagal Cek", "ukm", "check_failed", 1);
         downloads(kue, 5);
         downloads(sekolah, 2);
         views(sekolah, 10);
@@ -72,7 +72,7 @@ class GalleryIntegrationTest {
                 .andExpect(jsonPath("$.totalItems").value(2))
                 .andExpect(jsonPath("$.items[*].name", contains("Toko Kue Modern", "Sekolah Hijau")))
                 .andExpect(jsonPath("$.items[0].creatorName").value("Rina Studio"))
-                .andExpect(jsonPath("$.items[0].category").value("umkm"))
+                .andExpect(jsonPath("$.items[0].category").value("ukm"))
                 .andExpect(jsonPath("$.items[0].downloads").value(5))
                 .andExpect(jsonPath("$.items[0].thumbnailUrl").doesNotExist());
 
@@ -94,18 +94,18 @@ class GalleryIntegrationTest {
 
     @Test
     void categoryAndSearchFilter() throws Exception {
-        template(studioA, "Toko Kue Modern", "umkm", "published", 1);
-        template(studioA, "Toko Baju 50%", "umkm", "published", 1);
-        template(studioB, "Sekolah Hijau", "sekolah", "published", 1);
+        template(studioA, "Toko Kue Modern", "ukm", "published", 1);
+        template(studioA, "Toko Baju 50%", "ukm", "published", 1);
+        template(studioB, "Sekolah Hijau", "osis_mpk", "published", 1);
 
-        mockMvc.perform(get("/api/templates").param("category", "umkm"))
+        mockMvc.perform(get("/api/templates").param("category", "ukm"))
                 .andExpect(jsonPath("$.totalItems").value(2));
         mockMvc.perform(get("/api/templates").param("category", "all").param("q", "TOKO"))
                 .andExpect(jsonPath("$.totalItems").value(2));
         // % dicari sebagai huruf biasa, bukan wildcard.
         mockMvc.perform(get("/api/templates").param("q", "50%"))
                 .andExpect(jsonPath("$.items[*].name", contains("Toko Baju 50%")));
-        mockMvc.perform(get("/api/templates").param("category", "sekolah").param("q", "kue"))
+        mockMvc.perform(get("/api/templates").param("category", "osis_mpk").param("q", "kue"))
                 .andExpect(jsonPath("$.totalItems").value(0))
                 .andExpect(jsonPath("$.items", hasSize(0)));
     }
@@ -113,16 +113,16 @@ class GalleryIntegrationTest {
     @Test
     void paginationAndSizeForRecommendations() throws Exception {
         for (int i = 0; i < 8; i++) {
-            template(studioA, "UMKM " + i, "umkm", "published", i + 1);
+            template(studioA, "UMKM " + i, "ukm", "published", i + 1);
         }
 
         // "Template untuk anda": category=tujuan website, sort=popular, size=6.
-        mockMvc.perform(get("/api/templates?category=umkm&sort=popular&size=6"))
+        mockMvc.perform(get("/api/templates?category=ukm&sort=popular&size=6"))
                 .andExpect(jsonPath("$.items", hasSize(6)))
                 .andExpect(jsonPath("$.size").value(6))
                 .andExpect(jsonPath("$.totalItems").value(8))
                 .andExpect(jsonPath("$.totalPages").value(2));
-        mockMvc.perform(get("/api/templates?category=umkm&size=6&page=1"))
+        mockMvc.perform(get("/api/templates?category=ukm&size=6&page=1"))
                 .andExpect(jsonPath("$.items", hasSize(2)));
     }
 
@@ -141,7 +141,7 @@ class GalleryIntegrationTest {
 
     @Test
     void clickingTemplateAsGuestCountsAsView() throws Exception {
-        UUID kue = template(studioA, "Toko Kue Modern", "umkm", "published", 1);
+        UUID kue = template(studioA, "Toko Kue Modern", "ukm", "published", 1);
 
         mockMvc.perform(post("/api/templates/" + kue + "/events").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"type\":\"view\",\"installId\":\"hp-tamu\",\"occurredAt\":\"%s\"}"

@@ -193,7 +193,9 @@ class OrganizationIntegrationTest {
         mockMvc.perform(get("/api/meta/categories"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.levels", hasSize(4)))
-                .andExpect(jsonPath("$.categories[?(@.value == 'bem_dema_dpm')].levels[*]", contains("perguruan_tinggi")));
+                .andExpect(jsonPath("$.categories[?(@.value == 'bem_dema_dpm')].levels[*]", contains("perguruan_tinggi")))
+                .andExpect(jsonPath("$.contentTags", hasSize(9)))
+                .andExpect(jsonPath("$.contentTags[?(@.core == true)].value", contains("profil", "struktur", "kontak")));
     }
 
     @Test

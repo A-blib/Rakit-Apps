@@ -9,11 +9,13 @@ import java.util.List;
  * app boleh mengirim satu isian saja setiap kali provider berhenti mengetik. Syarat lengkap (nama 3–60, deskripsi
  * 20–300, minimal 1 kata kunci) diperiksa app untuk tombol Lanjut dan diperiksa ulang server saat Kirim.
  *
- * @param category nilai kategori (sekolah, organisasi, umkm, instansi, pribadi, lainnya)
+ * @param category    kode kategori organisasi dari GET /api/meta/categories (mis. osis_mpk)
+ * @param contentTags "Isi template" (kode ContentTag, mis. profil, struktur, kontak)
  */
 public record DraftInfoRequest(
         @Size(max = 60, message = "Nama maksimal 60 karakter") String name,
         String category,
         @Size(max = 300, message = "Deskripsi maksimal 300 karakter") String description,
-        @Size(max = 5, message = "Maksimal 5 kata kunci") List<String> keywords) {
+        @Size(max = 5, message = "Maksimal 5 kata kunci") List<String> keywords,
+        List<String> contentTags) {
 }

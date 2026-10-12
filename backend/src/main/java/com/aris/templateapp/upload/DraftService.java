@@ -4,7 +4,9 @@ import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.common.persistence.PersistableEnum;
 import com.aris.templateapp.config.AppProperties;
+import com.aris.templateapp.organization.OrgCategory;
 import com.aris.templateapp.provider.ProviderAccess;
+import com.aris.templateapp.template.ContentTag;
 import com.aris.templateapp.template.IssueSeverity;
 import com.aris.templateapp.template.Template;
 import com.aris.templateapp.template.TemplateCheck;
@@ -18,13 +20,13 @@ import com.aris.templateapp.upload.dto.DeviceWarningsRequest;
 import com.aris.templateapp.upload.dto.DraftInfoRequest;
 import com.aris.templateapp.upload.dto.DraftResponse;
 import com.aris.templateapp.upload.dto.UploadSettingsResponse;
-import com.aris.templateapp.user.WebsitePurpose;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -90,7 +92,7 @@ public class DraftService {
         }
         if (request.category() != null) {
             try {
-                template.setCategory(PersistableEnum.fromValue(WebsitePurpose.class, request.category()));
+                template.setCategory(PersistableEnum.fromValue(OrgCategory.class, request.category()));
             } catch (IllegalArgumentException e) {
                 throw new ApiException(ErrorCode.VALIDATION_ERROR, "Kategori tidak dikenal.");
             }
@@ -101,6 +103,9 @@ public class DraftService {
         }
         if (request.keywords() != null) {
             template.setKeywords(normalizeKeywords(request.keywords()));
+        }
+        if (request.contentTags() != null) {
+            template.setContentTags(normalizeContentTags(request.contentTags()));
         }
         template.touch(clock.instant());
         return toResponse(template);
@@ -123,6 +128,19 @@ public class DraftService {
             result.add(clean);
         }
         return new ArrayList<>(result);
+    }
+
+    /** Isi template: kode dikenal saja, tanpa duplikat, urutan mengikuti daftar resmi (agar label galeri rapi). */
+    static List<String> normalizeContentTags(List<String> raw) {
+        Set<ContentTag> tags = EnumSet.noneOf(ContentTag.class);
+        for (String value : raw) {
+            ContentTag tag = ContentTag.fromValue(value);
+            if (tag == null) {
+                throw new ApiException(ErrorCode.VALIDATION_ERROR, "Isi template tidak dikenal: " + value);
+            }
+            tags.add(tag);
+        }
+        return tags.stream().map(ContentTag::value).toList();
     }
 
     @Transactional
@@ -234,7 +252,7 @@ public class DraftService {
     private DraftResponse toResponse(Template t) {
         boolean duplicate = templateRepository.existsByProviderIdAndNameIgnoreCaseAndIdNot(t.getProviderId(), t.getName(), t.getId());
         return new DraftResponse(t.getId(), t.getStatus(), t.getWizardStep(), t.getSourceFileName(), t.getSourceSize(),
-                t.getName(), t.getCategory(), t.getDescription(), List.copyOf(t.getKeywords()), t.getThumbnailUrl(),
+                t.getName(), t.getCategory(), t.getDescription(), List.copyOf(t.getKeywords()), List.copyOf(t.getContentTags()), t.getThumbnailUrl(),
                 t.getThumbnailSource(), t.getThumbnailView(), t.getTechInfo(), t.getWarningCount(), t.getMarkingFieldCount(), duplicate,
                 t.getUpdatedAt());
     }

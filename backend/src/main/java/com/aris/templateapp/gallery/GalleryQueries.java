@@ -2,11 +2,13 @@ package com.aris.templateapp.gallery;
 
 import com.aris.templateapp.common.persistence.PersistableEnum;
 import com.aris.templateapp.gallery.dto.GalleryTemplateResponse;
-import com.aris.templateapp.user.WebsitePurpose;
+import com.aris.templateapp.organization.OrgCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Array;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Locale;
@@ -55,9 +57,9 @@ public class GalleryQueries {
 
     private final JdbcClient jdbc;
 
-    public List<GalleryTemplateResponse> list(WebsitePurpose category, String search, SortOrder sort, int page, int size) {
+    public List<GalleryTemplateResponse> list(OrgCategory category, String search, SortOrder sort, int page, int size) {
         String sql = """
-                SELECT t.id, t.name, t.category, t.thumbnail_url, t.published_at, p.creator_name,
+                SELECT t.id, t.name, t.category, t.thumbnail_url, t.published_at, p.creator_name, t.content_tags,
                        (SELECT count(*) FROM template_events e
                          WHERE e.template_id = t.id AND e.type = 'download') AS downloads
                 """ + VISIBLE + filters(category, search)
@@ -70,11 +72,12 @@ public class GalleryQueries {
                     return new GalleryTemplateResponse(
                             rs.getObject("id", UUID.class),
                             rs.getString("name"),
-                            PersistableEnum.fromValue(WebsitePurpose.class, rs.getString("category")),
+                            PersistableEnum.fromValue(OrgCategory.class, rs.getString("category")),
                             rs.getString("thumbnail_url"),
                             rs.getString("creator_name"),
                             rs.getLong("downloads"),
-                            published == null ? null : published.toInstant());
+                            published == null ? null : published.toInstant(),
+                            contentTags(rs.getArray("content_tags")));
                 })
                 .list();
     }
@@ -87,13 +90,13 @@ public class GalleryQueries {
                 .single();
     }
 
-    public long count(WebsitePurpose category, String search) {
+    public long count(OrgCategory category, String search) {
         return params(jdbc.sql("SELECT count(*) " + VISIBLE + filters(category, search)), category, search)
                 .query(Long.class)
                 .single();
     }
 
-    private static String filters(WebsitePurpose category, String search) {
+    private static String filters(OrgCategory category, String search) {
         return (category == null ? "" : " AND t.category = :category")
                 // Pencarian di nama, deskripsi, dan kata kunci (alur-fitur-upload.md bagian 6.4).
                 + (search == null ? "" : " AND (lower(t.name) LIKE :search ESCAPE '\\'"
@@ -101,7 +104,7 @@ public class GalleryQueries {
                         + " OR EXISTS (SELECT 1 FROM unnest(t.keywords) k WHERE k LIKE :search ESCAPE '\\'))");
     }
 
-    private static JdbcClient.StatementSpec params(JdbcClient.StatementSpec spec, WebsitePurpose category,
+    private static JdbcClient.StatementSpec params(JdbcClient.StatementSpec spec, OrgCategory category,
                                                    String search) {
         if (category != null) {
             spec = spec.param("category", category.value());
@@ -112,5 +115,9 @@ public class GalleryQueries {
             spec = spec.param("search", "%" + escaped + "%");
         }
         return spec;
+    }
+
+    private static List<String> contentTags(Array array) throws SQLException {
+        return array == null ? List.of() : List.of((String[]) array.getArray());
     }
 }

@@ -1,13 +1,13 @@
 package com.aris.templateapp.template;
 
 import com.aris.templateapp.common.persistence.PersistableEnum;
+import com.aris.templateapp.organization.OrgCategory;
 import com.aris.templateapp.provider.StatsPeriod;
 import com.aris.templateapp.provider.dto.ActionItemResponse;
 import com.aris.templateapp.provider.dto.DailyCountResponse;
 import com.aris.templateapp.provider.dto.PopularTemplateResponse;
 import com.aris.templateapp.template.dto.StatusCountsResponse;
 import com.aris.templateapp.template.dto.TemplateSummaryResponse;
-import com.aris.templateapp.user.WebsitePurpose;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -108,7 +108,7 @@ public class ProviderTemplateQueries {
 
     // ---------- Template Anda ----------
 
-    public List<TemplateSummaryResponse> list(UUID providerId, StatusFilter status, WebsitePurpose category,
+    public List<TemplateSummaryResponse> list(UUID providerId, StatusFilter status, OrgCategory category,
                                               String search, SortOrder sort, int page, int size) {
         String sql = TEMPLATE_WITH_COUNTS
                 + " WHERE t.provider_id = :providerId AND " + status.condition + commonFilters(category, search)
@@ -119,7 +119,7 @@ public class ProviderTemplateQueries {
                 .query((rs, row) -> new TemplateSummaryResponse(
                         rs.getObject("id", UUID.class),
                         rs.getString("name"),
-                        PersistableEnum.fromValue(WebsitePurpose.class, rs.getString("category")),
+                        PersistableEnum.fromValue(OrgCategory.class, rs.getString("category")),
                         rs.getString("thumbnail_url"),
                         PersistableEnum.fromValue(TemplateStatus.class, rs.getString("status")),
                         rs.getInt("error_count"),
@@ -131,7 +131,7 @@ public class ProviderTemplateQueries {
     }
 
     /** Jumlah per chip status. Filter kategori & pencarian ikut berlaku, filter status tidak (agar semua chip terisi). */
-    public StatusCountsResponse countByStatus(UUID providerId, WebsitePurpose category, String search) {
+    public StatusCountsResponse countByStatus(UUID providerId, OrgCategory category, String search) {
         String sql = """
                 SELECT count(*) AS all_count,
                        count(*) FILTER (WHERE %s) AS published,
@@ -281,13 +281,13 @@ public class ProviderTemplateQueries {
         };
     }
 
-    private static String commonFilters(WebsitePurpose category, String search) {
+    private static String commonFilters(OrgCategory category, String search) {
         return (category == null ? "" : " AND t.category = :category")
                 + (search == null ? "" : " AND lower(t.name) LIKE :search ESCAPE '\\'");
     }
 
     private static JdbcClient.StatementSpec withCommonParams(JdbcClient.StatementSpec spec, UUID providerId,
-                                                             WebsitePurpose category, String search) {
+                                                             OrgCategory category, String search) {
         spec = spec.param("providerId", providerId);
         if (category != null) {
             spec = spec.param("category", category.value());
