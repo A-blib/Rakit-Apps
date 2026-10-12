@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+/*
+ * TOKEN DESAIN OrgSpace — sama dengan app Android (docs/rancangan/revisi-fondasi-orgspace.md bagian 7, palet
+ * "Biru Semangat"). Ubah warna/ukuran HANYA di sini; komponen memakai kelas Tailwind dari token ini
+ * (bg-surface, text-muted, border-border, rounded-card, ...), bukan kode warna langsung.
+ */
+:root {
+  --background: #f5f7ff;
+  --surface: #ffffff;
+  --surface-subtle: #eef1ff;
+  --foreground: #1a2150;
+  --muted: #55608f;
+  --border: #dde3ff;
+  --border-strong: #7b89cc;
+  --primary: #3b5bfd;
+  --on-primary: #ffffff;
+  --primary-container: #e3e9ff;
+  --on-primary-container: #1b2a8a;
+  --accent: #ffc531;
+  --on-accent: #3d2a00;
+  --link: #2f4de0;
+  --success: #16803c;
+  --warning: #a35200;
+  --error: #c9252d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0e1230;
+    --surface: #161b3d;
+    --surface-subtle: #1d2350;
+    --foreground: #eef1ff;
+    --muted: #a9b2da;
+    --border: #2c3366;
+    --border-strong: #6670b8;
+    --primary: #7c93ff;
+    --on-primary: #0e1230;
+    --primary-container: #26338f;
+    --on-primary-container: #e3e9ff;
+    --accent: #ffd45e;
+    --on-accent: #3d2a00;
+    --link: #8ea2ff;
+    --success: #4cc38a;
+    --warning: #f5a524;
+    --error: #ff6166;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-link: var(--link);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --font-sans: var(--font-jakarta);
+  /* Radius: input & chip 12px, kartu & banner 16px, tombol berbentuk pil. */
+  --radius-field: 12px;
+  --radius-card: 16px;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/*
+ * Komponen dasar yang dipakai berulang (kelas: btn-primary, btn-outline, card, input, textarea, label, badge, link,
+ * table). Dibuat dengan @utility agar bisa digabung dengan kelas Tailwind lain. Tim desain boleh menyempurnakan
+ * tampilannya di sini tanpa mengubah halaman.
+ */
+@utility btn {
+  @apply inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-primary text-on-primary hover:opacity-90;
+}
+@utility btn-outline {
+  @apply btn border border-border-strong text-foreground hover:bg-surface-subtle;
+}
+@utility card {
+  @apply rounded-card border border-border bg-surface p-5;
+}
+@utility input {
+  @apply h-11 w-full rounded-field border border-border-strong bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30;
+}
+@utility textarea {
+  @apply input h-auto min-h-32 py-2;
+}
+@utility label {
+  @apply mb-1 block text-sm font-medium;
+}
+@utility badge {
+  @apply inline-flex items-center rounded-full bg-primary-container px-2.5 py-0.5 text-xs font-semibold text-on-primary-container;
+}
+@utility link {
+  @apply text-link hover:underline;
+}
+@utility table {
+  @apply w-full text-left text-sm;
+
+  & th {
+    @apply border-b border-border px-3 py-2 font-semibold text-muted;
+  }
+  & td {
+    @apply border-b border-border px-3 py-2 align-top;
+  }
+}
