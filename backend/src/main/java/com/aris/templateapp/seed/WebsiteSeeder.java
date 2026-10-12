@@ -41,6 +41,7 @@ public class WebsiteSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        linkDemoTemplate();
         if (jdbc.sql("SELECT count(*) FROM projects").query(Long.class).single() > 0) {
             log.info("Seeder website dilewati: tabel projects sudah berisi data");
             return;
@@ -87,7 +88,34 @@ public class WebsiteSeeder implements ApplicationRunner {
         site(bemSite, bem.get(), "bem-unu", "online", user(7), now.minus(Duration.ofDays(6)));
         project(bem.get(), "Dies Natalis", user(8), user(8), 2, now.minus(Duration.ofHours(20)));
 
+        linkDemoTemplate();
         log.info("Seeder website: 8 website contoh di OSIS Smansa dan BEM UNU");
+    }
+
+    /**
+     * Website contoh dihubungkan ke template demo "Profil Sekolah" (jika seeder demo provider aktif), agar bisa dibuka
+     * di editor. Database yang sudah berisi website contoh lama ikut dilengkapi.
+     */
+    private void linkDemoTemplate() {
+        Optional<TemplateRef> template = jdbc.sql("""
+                        SELECT id, package_version FROM templates
+                         WHERE name = 'Profil Sekolah' AND status = 'published' AND package_size IS NOT NULL
+                         ORDER BY published_at LIMIT 1""")
+                .query((rs, row) -> new TemplateRef(rs.getObject("id", UUID.class), rs.getInt("package_version")))
+                .optional();
+        template.ifPresent(t -> {
+            int linked = jdbc.sql("""
+                            UPDATE projects SET source_template_id = :template, template_version = :version
+                             WHERE mode = 'template' AND source_template_id IS NULL""")
+                    .param("template", t.id()).param("version", t.version())
+                    .update();
+            if (linked > 0) {
+                log.info("Seeder website: {} website contoh dihubungkan ke template Profil Sekolah", linked);
+            }
+        });
+    }
+
+    private record TemplateRef(UUID id, int version) {
     }
 
     /**

@@ -38,6 +38,7 @@ public class WebsiteService {
     private final ActivityService activityService;
     private final AppProperties properties;
     private final JdbcClient jdbc;
+    private final ProjectLocks locks;
 
     @Transactional(readOnly = true)
     public WebsiteListResponse list(UUID organizationId, UUID userId, WebsiteQueries.Filter filter, String search,
@@ -180,16 +181,19 @@ public class WebsiteService {
         return project;
     }
 
-    private WebsiteDetailResponse detailOf(Project project, UUID userId) {
+    WebsiteDetailResponse detailOf(Project project, UUID userId) {
         WebsiteSummaryResponse summary = queries.find(project.getId(), userId).orElseThrow();
         WebsiteQueries.SiteInfo site = queries.siteInfo(project.getId()).orElse(null);
+        WebsiteDetailResponse.Lock lock = locks.current(project.getId(), false)
+                .map(h -> new WebsiteDetailResponse.Lock(h.name(), h.userId().equals(userId), h.expiresAt()))
+                .orElse(null);
         return new WebsiteDetailResponse(summary, project.getContent(), project.getContentVersion(),
                 site == null ? null : site.publishedAt(), queries.openRequest(project.getId()).orElse(null),
-                site == null ? null : site.suspensionReason());
+                site == null ? null : site.suspensionReason(), project.getTemplateVersion(), lock);
     }
 
     /** "Aksara" sudah ada → "Aksara (2)", lalu "(3)", dst. (rancangan T bagian 3, nama awal). */
-    String uniqueName(UUID organizationId, String base) {
+    public String uniqueName(UUID organizationId, String base) {
         String trimmed = base.length() > 94 ? base.substring(0, 94).trim() : base;
         List<String> taken = queries.namesStartingWith(organizationId, trimmed).stream()
                 .map(name -> name.toLowerCase(Locale.ROOT))

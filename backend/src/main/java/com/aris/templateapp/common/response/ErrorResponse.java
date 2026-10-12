@@ -12,13 +12,14 @@ import java.util.Map;
  * @param existingMethods metode login yang sudah dimiliki akun, untuk {@code USE_SOCIAL_LOGIN} dan
  *                        {@code ACCOUNT_LINK_REQUIRED} (mis. {@code ["google"]}), agar app bisa menyebut namanya
  * @param linkToken       hanya untuk {@code ACCOUNT_LINK_REQUIRED}: dikirim balik saat user masuk dengan metode lama
+ * @param details         data tambahan per kode error, mis. {@code PROJECT_LOCKED} → {@code holderName}, {@code lastActiveAt}
  */
 // Field yang null tidak ditulis, agar error biasa tetap ringkas.
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ErrorResponse(String code, String message, Map<String, String> fieldErrors,
-                            List<String> existingMethods, String linkToken) {
+                            List<String> existingMethods, String linkToken, Map<String, Object> details) {
 
     public static ErrorResponse of(String code, String message) {
-        return new ErrorResponse(code, message, null, null, null);
+        return new ErrorResponse(code, message, null, null, null, null);
     }
 }

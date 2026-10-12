@@ -43,6 +43,13 @@ app:
     logo-max-kb: ${ORG_LOGO_MAX_KB:1024}
     # Folder logo hasil olahan (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/org-logos.
     logo-dir: ${ORG_LOGO_DIR:./data/org-logos}
+  # Website yang diedit di cloud (docs/rancangan/alur-buat-website-via-template.md bagian 3.1 & 12).
+  projects:
+    # Folder gambar website (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/project-assets.
+    assets-dir: ${PROJECT_ASSETS_DIR:./data/project-assets}
+    asset-max-kb: ${PROJECT_ASSET_MAX_KB:1024}
+    storage-max-mb-per-org: ${PROJECT_STORAGE_MAX_MB_PER_ORG:300}
+    lock-ttl-seconds: ${PROJECT_LOCK_TTL_SECONDS:120}
   # Website organisasi yang diterbitkan (docs/rancangan/alur-publish-website.md bagian 7.1).
   sites:
     # {DOMAIN_SITUS}. Di laptop, *.sites.localhost:8081 dilayani Caddy lokal (bagian 6.5).

@@ -27,7 +27,8 @@ public record AppProperties(
         @NotBlank String timezone,
         @Valid Upload upload,
         @Valid Org org,
-        @Valid Sites sites) {
+        @Valid Sites sites,
+        @Valid Projects projects) {
 
     public record Jwt(
             // HS256 butuh kunci minimal 256 bit (32 byte).
@@ -56,6 +57,21 @@ public record AppProperties(
             @Min(1) int inviteTtlDays,
             @Min(16) int logoMaxKb,
             @NotBlank String logoDir) {
+    }
+
+    /**
+     * Website yang sedang diedit di cloud (alur-buat-website-via-template.md 3.1 & 12).
+     *
+     * @param assetsDir          folder gambar website (relatif ke folder kerja backend)
+     * @param assetMaxKb         batas satu gambar setelah diproses HP (E4)
+     * @param storageMaxMbPerOrg batas total gambar per ruang kerja (E5)
+     * @param lockTtlSeconds     umur kunci edit; app memperpanjangnya selama editor terbuka (E1)
+     */
+    public record Projects(
+            @NotBlank String assetsDir,
+            @Min(16) int assetMaxKb,
+            @Min(1) int storageMaxMbPerOrg,
+            @Min(30) int lockTtlSeconds) {
     }
 
     /**

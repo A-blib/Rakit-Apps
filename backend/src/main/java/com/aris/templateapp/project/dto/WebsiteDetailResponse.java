@@ -11,6 +11,8 @@ import java.util.Map;
  * @param publishedAt    terakhir diterbitkan, null jika belum pernah
  * @param openRequest      permintaan "Minta diterbitkan" yang masih terbuka, jika ada
  * @param suspensionReason alasan dari tim OrgSpace jika website ditangguhkan
+ * @param templateVersion  versi paket template yang dipakai editor
+ * @param lock             pemegang kunci edit saat ini (termasuk diri sendiri), atau null jika tidak ada
  */
 public record WebsiteDetailResponse(
         WebsiteSummaryResponse website,
@@ -18,5 +20,11 @@ public record WebsiteDetailResponse(
         int contentVersion,
         Instant publishedAt,
         PublishRequestResponse openRequest,
-        String suspensionReason) {
+        String suspensionReason,
+        Integer templateVersion,
+        Lock lock) {
+
+    /** @param mine true jika kunci dipegang user yang meminta (boleh mengedit) */
+    public record Lock(String holderName, boolean mine, Instant expiresAt) {
+    }
 }

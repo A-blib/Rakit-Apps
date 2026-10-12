@@ -17,3 +17,6 @@ app:
   org:
     # Logo test ditulis ke folder build, bukan ke backend/data/ milik backend dev.
     logo-dir: target/test-org-logos
+  projects:
+    # Gambar website test ditulis ke folder build, bukan ke backend/data/ milik backend dev.
+    assets-dir: target/test-project-assets

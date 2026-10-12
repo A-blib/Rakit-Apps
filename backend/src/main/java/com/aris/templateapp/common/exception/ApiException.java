@@ -15,6 +15,7 @@ public class ApiException extends RuntimeException {
     private final List<String> existingMethods;
     private final String linkToken;
     private final Map<String, String> fieldErrors;
+    private Map<String, Object> details;
 
     public ApiException(ErrorCode errorCode) {
         this(errorCode, errorCode.defaultMessage());
@@ -39,6 +40,16 @@ public class ApiException extends RuntimeException {
         this.existingMethods = null;
         this.linkToken = null;
         this.fieldErrors = fieldErrors;
+    }
+
+    /** Data tambahan untuk app (mis. siapa pemegang kunci edit). */
+    public ApiException withDetails(Map<String, Object> details) {
+        this.details = details;
+        return this;
+    }
+
+    public Map<String, Object> getDetails() {
+        return details;
     }
 
     public ErrorCode getErrorCode() {

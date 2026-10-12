@@ -63,7 +63,8 @@ public class TemplatePackageService {
     public record Package(Path file, int version) {
     }
 
-    private Template visible(UUID id) {
+    /** Template yang tayang di galeri (status published + kreator aktif); selain itu 404. */
+    public Template visible(UUID id) {
         Template template = templateRepository.findById(id).orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
         boolean active = providerProfileRepository.findById(template.getProviderId())
                 .map(p -> p.getStatus() == ProviderStatus.ACTIVE).orElse(false);
