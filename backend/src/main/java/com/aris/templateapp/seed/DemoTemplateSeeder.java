@@ -4,6 +4,7 @@ import com.aris.templateapp.auth.UserIdentity;
 import com.aris.templateapp.auth.UserIdentityRepository;
 import com.aris.templateapp.notification.NotificationService;
 import com.aris.templateapp.notification.NotificationType;
+import com.aris.templateapp.organization.OrgCategory;
 import com.aris.templateapp.provider.ProviderProfile;
 import com.aris.templateapp.provider.ProviderProfileRepository;
 import com.aris.templateapp.template.CheckStatus;
@@ -27,7 +28,6 @@ import com.aris.templateapp.user.CreatorProfile;
 import com.aris.templateapp.user.CreatorProfileRepository;
 import com.aris.templateapp.user.User;
 import com.aris.templateapp.user.UserRepository;
-import com.aris.templateapp.user.WebsitePurpose;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -87,6 +87,12 @@ public class DemoTemplateSeeder implements ApplicationRunner {
     private final ApplicationEventPublisher events;
     private final DemoPackages demoPackages;
 
+    /** "Isi template" template demo yang tayang (label "Punya: ..." di galeri, alur-fitur-upload.md 15.1). */
+    private static final Map<String, List<String>> CONTENT_TAGS = Map.of(
+            "Profil Sekolah", List.of("profil", "struktur", "kontak", "galeri"),
+            "UMKM Kuliner", List.of("profil", "galeri", "kontak"),
+            "Portofolio Minimal", List.of("profil", "galeri"));
+
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
@@ -111,17 +117,20 @@ public class DemoTemplateSeeder implements ApplicationRunner {
         providerProfileRepository.save(provider);
 
         UUID owner = user.getId();
-        Template sekolah = template(owner, "Profil Sekolah", WebsitePurpose.SEKOLAH, TemplateStatus.PUBLISHED, 3, now, 25, 2);
-        Template kuliner = template(owner, "UMKM Kuliner", WebsitePurpose.UMKM, TemplateStatus.PUBLISHED, 0, now, 20, 5);
-        Template portofolio = template(owner, "Portofolio Minimal", WebsitePurpose.PRIBADI, TemplateStatus.PUBLISHED, 0, now, 15, 9);
+        Template sekolah = template(owner, "Profil Sekolah", OrgCategory.OSIS_MPK, TemplateStatus.PUBLISHED, 3, now, 25, 2);
+        Template kuliner = template(owner, "UMKM Kuliner", OrgCategory.UKM, TemplateStatus.PUBLISHED, 0, now, 20, 5);
+        Template portofolio = template(owner, "Portofolio Minimal", OrgCategory.LAINNYA, TemplateStatus.PUBLISHED, 0, now, 15, 9);
+        for (Template published : List.of(sekolah, kuliner, portofolio)) {
+            published.setContentTags(CONTENT_TAGS.get(published.getName()));
+        }
         // Template tayang diberi paket sungguhan agar bisa dipakai di editor pembuat website.
         demoPackages.attach(sekolah, DemoPackages.SEKOLAH, now);
         demoPackages.attach(kuliner, DemoPackages.KULINER, now);
         demoPackages.attach(portofolio, DemoPackages.PORTOFOLIO, now);
-        Template event = template(owner, "Landing Event", WebsitePurpose.LAINNYA, TemplateStatus.CHECK_FAILED, 1, now, 10, 7);
-        Template organisasi = template(owner, "Organisasi Pemuda", WebsitePurpose.ORGANISASI, TemplateStatus.CHECKING, 0, now, 1, 0);
-        Template instansi = template(owner, "Instansi Desa", WebsitePurpose.INSTANSI, TemplateStatus.DRAFT, 0, now, 3, 3);
-        template(owner, "Undangan Lama", WebsitePurpose.LAINNYA, TemplateStatus.DISABLED, 0, now, 60, 30);
+        Template event = template(owner, "Landing Event", OrgCategory.LAINNYA, TemplateStatus.CHECK_FAILED, 1, now, 10, 7);
+        Template organisasi = template(owner, "Organisasi Pemuda", OrgCategory.BEM_DEMA_DPM, TemplateStatus.CHECKING, 0, now, 1, 0);
+        Template instansi = template(owner, "Instansi Desa", OrgCategory.PRAMUKA, TemplateStatus.DRAFT, 0, now, 3, 3);
+        template(owner, "Undangan Lama", OrgCategory.LAINNYA, TemplateStatus.DISABLED, 0, now, 60, 30);
 
         TemplateCheck sekolahCheck = checkRepository.save(new TemplateCheck(sekolah.getId(), 2, CheckStatus.PASSED, now.minus(Duration.ofDays(2))));
         issue(sekolahCheck, IssueSeverity.WARNING, "IMAGE_TOO_LARGE", "Gambar hero terlalu besar (4,2 MB)", "assets/hero.jpg", null,
@@ -162,6 +171,11 @@ public class DemoTemplateSeeder implements ApplicationRunner {
                 "Portofolio Minimal", DemoPackages.PORTOFOLIO);
         Instant now = clock.instant();
         for (Template template : templateRepository.findByProviderId(owner)) {
+            // Database lama (sebelum revisi OrgSpace): template demo belum punya Isi template.
+            List<String> tags = CONTENT_TAGS.get(template.getName());
+            if (tags != null && template.getContentTags().isEmpty()) {
+                template.setContentTags(tags);
+            }
             String slug = slugs.get(template.getName());
             if (slug != null && template.getStatus() == TemplateStatus.PUBLISHED && template.getPackageSize() == null) {
                 demoPackages.attach(template, slug, now);
@@ -170,7 +184,7 @@ public class DemoTemplateSeeder implements ApplicationRunner {
         }
     }
 
-    private Template template(UUID owner, String name, WebsitePurpose category, TemplateStatus status, int warnings,
+    private Template template(UUID owner, String name, OrgCategory category, TemplateStatus status, int warnings,
                               Instant now, int createdDaysAgo, int updatedDaysAgo) {
         Template template = new Template(owner, name, category);
         template.setStatus(status);

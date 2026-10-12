@@ -75,7 +75,7 @@ class FlywayMigrationTest {
     @Test
     void downloadOfSameProjectIsStoredOnce() {
         jdbc.update("INSERT INTO users (display_name) VALUES ('Aris')");
-        jdbc.update("INSERT INTO templates (provider_id, name, category, status) SELECT id, 'T', 'umkm', 'published' FROM users");
+        jdbc.update("INSERT INTO templates (provider_id, name, category, status) SELECT id, 'T', 'ukm', 'published' FROM users");
         String insert = """
                 INSERT INTO template_events (template_id, type, project_id, install_id, occurred_at)
                 SELECT id, 'download', 'project-1', 'hp', now() FROM templates""";

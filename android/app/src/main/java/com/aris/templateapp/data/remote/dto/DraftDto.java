@@ -13,6 +13,8 @@ public class DraftDto {
     public String category;
     public String description;
     public List<String> keywords;
+    /** Isi template (kode, mis. profil, struktur, kontak). */
+    public List<String> contentTags;
     public String thumbnailUrl;
     /** auto · section · custom */
     public String thumbnailSource;

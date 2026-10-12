@@ -48,7 +48,7 @@ public final class IssueListBinder {
             row.message.setText(issue.message);
             if (issue.title == null) {
                 // Tanpa judul, pesan menjadi baris utama: tebal dan tanpa jarak atas.
-                row.message.setTypeface(ResourcesCompat.getFont(list.getContext(), R.font.geist_medium));
+                row.message.setTypeface(ResourcesCompat.getFont(list.getContext(), R.font.plus_jakarta_sans_medium));
                 ((ViewGroup.MarginLayoutParams) row.message.getLayoutParams()).topMargin = 0;
             }
             String location = issue.file == null ? null : issue.line == null ? issue.file

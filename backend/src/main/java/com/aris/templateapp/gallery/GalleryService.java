@@ -5,7 +5,7 @@ import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.common.persistence.PersistableEnum;
 import com.aris.templateapp.gallery.dto.GalleryPageResponse;
 import com.aris.templateapp.gallery.dto.GalleryTemplateResponse;
-import com.aris.templateapp.user.WebsitePurpose;
+import com.aris.templateapp.organization.OrgCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,11 +25,11 @@ public class GalleryService {
 
     @Transactional(readOnly = true)
     public GalleryPageResponse list(String category, String query, String sort, int page, Integer size) {
-        WebsitePurpose categoryFilter;
+        OrgCategory categoryFilter;
         GalleryQueries.SortOrder sortOrder;
         try {
             categoryFilter = category == null || category.isBlank() || category.equals("all") ? null
-                    : PersistableEnum.fromValue(WebsitePurpose.class, category);
+                    : PersistableEnum.fromValue(OrgCategory.class, category);
             sortOrder = GalleryQueries.SortOrder.from(sort == null ? "popular" : sort);
         } catch (IllegalArgumentException e) {
             throw new ApiException(ErrorCode.VALIDATION_ERROR, e.getMessage());

@@ -357,6 +357,8 @@ public class MarkingEditor {
             field.required = edited.required;
             field.aspectRatio = edited.aspectRatio;
             field.styles = edited.styles;
+            field.profileKey = edited.profileKey;
+            field.hideWhenEmpty = edited.hideWhenEmpty;
             if (edited.sectionId != null) {
                 field.sectionId = edited.sectionId;
             }

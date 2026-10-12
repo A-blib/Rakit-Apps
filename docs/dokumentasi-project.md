@@ -1,4 +1,4 @@
-# Dokumentasi Project: Rakit
+# Dokumentasi Project: OrgSpace (dulu Rakit)
 
 Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, cara bagian itu saling terhubung, dan alasan dibuat seperti itu. Bacalah dari atas ke bawah. Setiap bagian merujuk ke file aslinya supaya bisa langsung dibuka di VS Code atau Android Studio.
 
@@ -6,7 +6,7 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 - Catatan per fase (yang dikerjakan, latihan) → `docs/catatan-belajar/`
 - Dokumen ini → **memahami** project
 
-> Status dokumen: diperbarui sampai **Fase 14** (Dashboard Pembuat Website di Android). Rancangan fitur pembuatan website: [`rancangan/alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
+> Status dokumen: diperbarui sampai **Fase R2** (revisi OrgSpace: desain Biru Semangat & Plus Jakarta Sans). Rancangan fitur pembuatan website: [`rancangan/alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md). Rancangan fitur provider: [`rancangan/alur-provider.md`](rancangan/alur-provider.md). Screenshot setiap layar ada di README bagian "Tampilan".
 
 ---
 
@@ -51,7 +51,10 @@ Dokumen ini menjelaskan **cara kerja project dari dalam**: bagian-bagiannya, car
 28. [Coba, Kirim, dan paket template](#28-coba-kirim-dan-paket-template)
 29. [Paket template untuk pembuat website](#29-paket-template-untuk-pembuat-website)
 30. [Editor template mode di Android](#30-editor-template-mode-di-android)
-31. [Glosarium](#31-glosarium)
+31. [Ruang kerja organisasi (OrgSpace)](#31-ruang-kerja-organisasi-orgspace)
+32. [Dashboard pembuat website OrgSpace (W1–W4)](#32-dashboard-pembuat-website-orgspace-w1w4)
+33. [Portal web: landing, dokumentasi, monitoring, kritik & saran (WEB1)](#33-portal-web-landing-dokumentasi-monitoring-kritik--saran-web1)
+34. [Glosarium](#34-glosarium)
 
 ---
 
@@ -462,7 +465,7 @@ Coba semuanya di Swagger UI: http://localhost:8080/swagger-ui.html
 | `GET /api/notifications` · `/unread-count` · `PATCH /{id}/read` | ✔ | – | notifikasi | ✅ Fase 11 |
 | `DELETE /api/dev/demo-templates` | – (profile dev saja) | – | `204` | ✅ Fase 11 |
 | `GET /api/templates?category=&q=&sort=popular\|newest&page=&size=` | – (tamu boleh) | – | galeri: template tayang dari provider aktif + nama kreator + jumlah download | ✅ Fase 13 |
-| `PATCH /api/users/me/creator-profile` | ✔ | `{displayName, websitePurpose?, organizationName?}` | `UserResponse` | ✅ Fase 13 |
+| `PATCH /api/users/me` | ✔ | `{displayName}` | `UserResponse` | ✅ Fase 13, diganti di W1 (dulu `/creator-profile`) |
 
 Bentuk respons:
 
@@ -543,7 +546,7 @@ android/
         │   │   ├── data/mapper/            UserMapper (DTO → model)
         │   │   └── ui/                     layar (Fragment) per fitur + ui/common
         │   ├── res/                        layout, values, font, drawable, navigation, ...
-        │   └── assets/licenses/            lisensi font Geist (OFL)
+        │   └── assets/licenses/            lisensi font Plus Jakarta Sans (OFL)
         ├── debug/                ← hanya ikut di build debug: katalog komponen, izin HTTP localhost
         └── test/                 ← unit test JVM (./gradlew testDebugUnitTest)
 ```
@@ -594,14 +597,16 @@ Semua nilai desain didefinisikan **sekali** di `res/values/` lalu dipakai lewat 
 | `values/styles.xml` | Gaya komponen: `Widget.App.Button` (+ `.Outlined`, `.Text`), `TextInputLayout`, `Card`, `Chip`, `Toolbar`, `Badge`, dll. |
 | `values/themes.xml` | `Theme.App`: memetakan token ke atribut Material 3 dan memasang style komponen sebagai default |
 | `color/selector_*.xml` | Warna yang berubah sesuai keadaan (terpilih, fokus, nonaktif) |
-| `font/` | Geist Sans (4 ketebalan) + Geist Mono (2 ketebalan) |
-| `drawable/ic_*.xml` | Ikon Material Symbols Outlined (warna otomatis mengikuti `?attr/colorOnSurface`) |
+| `font/` | Plus Jakarta Sans (Regular, Medium, SemiBold, Bold, ExtraBold) + keluarga font `plus_jakarta_sans.xml` |
+| `drawable/ic_*.xml` | Ikon Material Symbols Rounded (warna otomatis mengikuti `?attr/colorOnSurface`) |
 
-Cara tema bekerja: `Theme.App` menetapkan, misalnya, `materialButtonStyle = Widget.App.Button`. Akibatnya setiap `<Button>` di layout otomatis menjadi tombol utama monokrom. Untuk varian lain cukup tulis `style="@style/Widget.App.Button.Outlined"`.
+Cara tema bekerja: `Theme.App` menetapkan, misalnya, `materialButtonStyle = Widget.App.Button`. Akibatnya setiap `<Button>` di layout otomatis menjadi tombol utama biru berbentuk pil. Untuk varian lain cukup tulis `style="@style/Widget.App.Button.Outlined"`.
 
 - **Mode gelap:** parent tema `Theme.Material3.DayNight` + warna dari `values-night/`. Warna ikon status bar diatur `EdgeToEdge.enable()`.
 - **Edge-to-edge:** mulai Android 15, konten digambar sampai ke balik status bar. `MainActivity` menambahkan padding seukuran status bar, navigation bar, dan keyboard (`WindowInsetsCompat`).
-- **Font per ketebalan:** setiap `TextAppearance` menunjuk file font langsung (`@font/geist_semibold`), karena memilih ketebalan dari satu keluarga font baru didukung penuh mulai Android 9, sedangkan minSdk kita 8.0.
+- **Font per ketebalan:** setiap `TextAppearance` menunjuk file font langsung (`@font/plus_jakarta_sans_semibold`), karena memilih ketebalan dari satu keluarga font baru didukung penuh mulai Android 9, sedangkan minSdk kita 8.0.
+- **Jangan pasang `android:fontFamily` di tema.** Atribut tema dibaca TextView seolah-olah ditulis di layout, sehingga menimpa font dari `textAppearance` (judul ExtraBold tampil Regular). Tema memakai `android:textAppearance = TextAppearance.App.Default` untuk TextView yang tidak menulis textAppearance sendiri (ditemukan saat revisi R2).
+- **Palet (revisi OrgSpace, R2):** "Biru Semangat": `color_primary` biru `#3B5BFD` untuk tombol & elemen aktif, `color_accent` kuning `#FFC531` untuk sorotan (badge "Segera hadir", avatar, badge jumlah), latar sedikit kebiruan. Mode gelap memakai biru malam (`#0E1230`), bukan hitam.
 - **Katalog komponen** (`src/debug/.../ComponentCatalogActivity`): satu layar berisi semua token dan komponen, ditambah tombol ganti terang/gelap. Pakai katalog ini untuk memeriksa perubahan desain.
 
 ---
@@ -713,9 +718,10 @@ Pindah layar memakai ID aksi di `nav_graph.xml` (`R.id.action_startup_to_intro`)
 
 ### Animasi Lottie
 
-- File `res/raw/*.json` dibuat oleh skrip `android/tools/generate_lottie.py` dari bentuk sederhana (garis, kotak, lingkaran). Gaya garisnya monokrom dan bukan aset milik pihak lain.
+- File `res/raw/*.json` dibuat oleh skrip `android/tools/generate_lottie.py` dari bentuk sederhana (garis, kotak, lingkaran). Gayanya garis biru + isian kuning, dan bukan aset milik pihak lain.
 - Efek "menggambar garis" memakai **trim path**: bagian garis yang terlihat dianimasikan dari 0% sampai 100%.
-- Di JSON garisnya hitam. `LottieTint.applyForeground(view)` mengganti warna semua layer menjadi `color_foreground` lewat *dynamic properties*, jadi animasi ikut tema terang/gelap.
+- Setiap garis/isian di JSON diberi nama `stroke-primary`, `stroke-accent`, `fill-primary`, atau `fill-accent`. `LottieTint.apply(view)` mencari elemen bernama itu (`KeyPath("**", nama)`) dan mewarnainya dengan `color_primary` / `color_accent` lewat *dynamic properties*, jadi animasi ikut tema terang/gelap.
+- Intro 3 halaman (revisi OrgSpace): `intro_home` (rumah + bendera di jendela browser), `intro_team` (tiga pengurus terhubung), `intro_period` (kalender berganti, website tetap).
 - Animasi disembunyikan dari pembaca layar (`importantForAccessibility="no"`) karena hanya berfungsi sebagai hiasan.
 - **Animasi loading** (`loading.json`, dipakai `StateView.showLoading()` di semua layar yang memuat data) berupa **sosok pahlawan berjubah yang sedang terbang** (permintaan Aris; awalnya pesawat kertas). Sosoknya umum, bukan Superman atau tokoh berhak cipta lain: tanpa logo, tanpa kostum khas. Anggota badan digambar sebagai garis tebal berujung bulat, kepala dan kepalan tangan berupa lingkaran penuh, dan jubah berisi abu-abu tipis (`fill(30)`) yang berkibar lewat **path yang dianimasikan** (`animated_line()`: titik-titik jubah berpindah antar-keyframe). Sosok melayang naik-turun sambil sedikit miring, sementara 4 garis angin mengalir ke belakang sambil muncul lalu memudar. Gerakan garis angin ditulis sebagai fungsi waktu lalu "dicuplik" setiap 2 frame (`sampled()` di skrip), dan panjang animasi (120 frame) habis dibagi siklus angin (40 frame) dan kibaran jubah (30 frame), sehingga perulangannya mulus tanpa patahan. Contohnya bisa dilihat terus-menerus di app **Katalog komponen** (bagian paling bawah).
 - **Tiga bagian: pembuka, ulang, penutup** (permintaan Aris). Isi `loading.json`: frame 0–45 lingkaran berputar yang berubah menjadi pahlawan (lingkaran mengecil dan memudar, pahlawan membesar dari 0% ke 120%); frame 45–165 terbang di tempat (diulang); frame 165–195 melaju ke kanan keluar layar disertai garis laju. `HeroLoading` memutar bagian-bagian itu dengan `setMinAndMaxFrame` + `setRepeatCount`. Saat data siap, `StateView.hide(content, bind)` memutar penutup lalu menaikkan isi layar dari bawah (`HeroLoading.slideUpIn`). Kalau pembuka belum selesai, penutup diputar tepat setelahnya agar tidak ada lompatan gambar.
@@ -764,9 +770,9 @@ Tujuan dipilih dengan aturan yang **sama** seperti saat app dibuka (`StartupDeci
 - Di layar Masuk, kedua tombol ada **di atas** form email (bagian 6.2). Di layar Daftar, letaknya **di bawah** sebagai alternatif.
 - Aksi tombolnya dijelaskan di bab 19.
 
-### Snackbar monokrom
+### Snackbar
 
-`Widget.App.Snackbar` membalik warna: latarnya `color_foreground`, teks dan tombol aksinya `color_background`. Dengan begitu snackbar tetap kontras di mode terang maupun gelap, tanpa warna ungu bawaan Material.
+`Widget.App.Snackbar` membalik warna: latarnya `color_foreground` (biru tua), teksnya `color_background`, dan tombol aksinya kuning `color_accent`. Dengan begitu snackbar tetap kontras di mode terang maupun gelap.
 
 ---
 
@@ -988,7 +994,7 @@ Penanda "baru" pada panduan disimpan oleh `GuideStore` (SharedPreferences, per H
 Grafik ini digambar sendiri di `onDraw(Canvas)` (keputusan Aris: tanpa library):
 1. **Skala Y** dihitung `niceMax()`: nilai terbesar dibulatkan ke atas menjadi 1/2/5 × 10ⁿ × 4. Hasilnya, 4 garis grid selalu berlabel bilangan bulat, misalnya 23 → sumbu 0–40.
 2. **Garis** dibuat dengan `Path.lineTo` antar-titik. **Area** memakai path yang sama, ditutup ke dasar grafik, lalu diisi `LinearGradient` warna foreground dari alpha 70 ke 0.
-3. **Label** memakai Geist Mono. Untuk 7 hari ditampilkan nama hari; untuk 30 hari tanggal setiap 5 hari, ditambah hari terakhir (`DownloadTrendChart`).
+3. **Label** memakai huruf kecil Plus Jakarta Sans. Untuk 7 hari ditampilkan nama hari; untuk 30 hari tanggal setiap 5 hari, ditambah hari terakhir (`DownloadTrendChart`).
 4. **Ketuk/geser**: `onTouchEvent` mencari titik terdekat dari posisi jari, lalu menggambar garis vertikal + tooltip "Rab, 30 Sep · 5 download". Hanya geseran yang lebih **mendatar** (melewati *touch slop*) yang memanggil `requestDisallowInterceptTouchEvent(true)`; geseran tegak tetap dibiarkan untuk ScrollView, jadi layar bisa di-scroll walau jari mulai di atas grafik.
 5. Semua warna diambil dari `@color/...`, jadi grafik otomatis ikut mode gelap.
 
@@ -1036,7 +1042,7 @@ Kenapa tabel `templates` yang sama dengan sisi provider? Satu template cukup dis
 
 ### Edit profil pembuat website
 
-`PATCH /api/users/me/creator-profile` dipakai tab Profil untuk mengubah nama tampilan, tujuan website, dan nama organisasi. Aturan validasinya sama dengan form onboarding. Bedanya dengan `POST /onboarding/creator`: endpoint ini **tidak** mengubah `onboardingCompleted` maupun `activeMode`. Kalau user belum punya profil creator (misalnya onboarding sebagai provider), profilnya dibuat.
+`PATCH /api/users/me` (sejak W1; dulu `PATCH /api/users/me/creator-profile`) dipakai tab Profil untuk mengubah nama tampilan. Tujuan website dan nama organisasi sudah dihapus (R1), karena data organisasi kini ada di Profil organisasi. Bedanya dengan `POST /onboarding/creator`: endpoint ini **tidak** mengubah `onboardingCompleted` maupun `activeMode`.
 
 ---
 
@@ -1455,7 +1461,216 @@ Perubahan di form → ViewModel → `Change(key)` → `RakitEditor.setField(...)
 
 ZIP dibuat di `cache/exports/` (thread disk yang sama dengan autosave, jadi isi terakhir pasti tersimpan). **Simpan ke HP** menyalinnya ke lokasi pilihan user (`ACTION_CREATE_DOCUMENT`); **Bagikan** memakai `FileProvider` (`res/xml/file_paths.xml`, hanya folder `exports/`). Setelah itu project menjadi **Diexport**; export pertama project berbasis template memasukkan event `download` ke antrean.
 
-## 31. Glosarium
+## 31. Ruang kerja organisasi (OrgSpace)
+
+Rancangan: [`revisi-fondasi-orgspace.md`](rancangan/revisi-fondasi-orgspace.md) bagian 3–4. Mulai revisi OrgSpace, setiap pembuat website bekerja di dalam **ruang kerja**: organisasi (banyak anggota) atau ruang pribadi (satu orang). Website nanti dimiliki ruang kerja, bukan user, sehingga tetap utuh saat pengurus berganti.
+
+### Tabel (V17)
+
+```
+users ──< organization_members >── organizations ──< organization_invitations
+  └─ last_organization_id ───────────┘     └──< activity_logs
+```
+
+| Tabel | Isi penting |
+|---|---|
+| `organizations` | `type` (`organization`/`personal`), nama, nama singkat (untuk sapaan `{org}`), kategori + jenjang + instansi (hanya organisasi), periode, logo, kontak & media sosial |
+| `organization_members` | primary key (organisasi, user), `role` (`owner`/`admin`/`editor`), jabatan |
+| `organization_invitations` | **hash** kode undangan, peran, kedaluwarsa, dicabut |
+| `activity_logs` | pelaku, aksi (`member.joined`, `org.ownership_transferred`, …), metadata jsonb |
+
+Index unik parsial `UNIQUE (created_by) WHERE type = 'personal'` menjamin satu ruang pribadi per user.
+
+### Peran di satu tempat
+
+`OrgAction` mendaftar setiap aksi beserta peran minimalnya (mis. `PUBLISH` → Admin, `DELETE_ORGANIZATION` → Pemilik). Setiap service memulai dengan:
+
+```java
+OrganizationAccess.Membership m = access.require(orgId, userId, OrgAction.EDIT_PROFILE);
+// → ORG_NOT_FOUND / NOT_ORG_MEMBER / ROLE_NOT_ALLOWED jika gagal
+```
+
+Aturan anggota yang lebih rinci (Admin tidak boleh menyentuh Pemilik, Pemilik hanya lewat serah terima, Pemilik terakhir tidak boleh keluar) ada di method statis `canChangeRole`, `canRemove`, `canInvite`, `canLeave`, dan dites per baris di `OrganizationAccessTest`. Sebelum aturan "minimal satu Pemilik" dan "batas anggota" dicek, semua baris anggota organisasi itu **dikunci** (`lockAllByOrganizationId`).
+
+### Kode undangan
+
+```
+Admin: POST /organizations/{id}/invitations {role} → { code: "OSIS-7K2P" }  (sekali saja)
+Calon anggota: POST /invitations/preview {code} → nama, logo, peran
+               POST /invitations/accept {code, positionTitle?} → masuk sebagai Editor/Admin
+```
+
+Kode dinormalkan (`osis 7k2p` = `OSIS-7K2P`) lalu di-hash SHA-256 sebelum dicari. Satu kode berlaku 7 hari, boleh dipakai beberapa orang, bisa dicabut. `AttemptLimiter` membatasi 10 percobaan per menit per user.
+
+### Onboarding pembuat website
+
+App memanggil `POST /organizations` (buat organisasi / ruang pribadi) atau `POST /invitations/accept` lebih dulu, baru `POST /users/me/onboarding/creator {displayName}`. Tanpa ruang kerja, endpoint terakhir menolak `ONBOARDING_NEEDS_SPACE`. Ruang kerja yang baru dibuat/dimasuki disimpan di `users.last_organization_id` (juga lewat `PATCH /users/me/last-organization`) dan dikirim di `UserResponse.lastOrganizationId`.
+
+### Kategori & logo
+
+- `GET /api/meta/categories` (publik) menyajikan jenjang dan kategori dari enum `OrgLevel` + `OrgCategory`; kombinasi yang salah ditolak `CATEGORY_LEVEL_MISMATCH`.
+- `OrgLogoStorage` membaca isi file (PNG/JPG), memotong persegi, memperkecil maks 512 px, dan menulis ulang sebagai PNG di `ORG_LOGO_DIR`. URL-nya `/api/organizations/{id}/logo?v=<waktu>` (publik).
+
+### Di Android: ruang kerja aktif (R3)
+
+```
+SessionStore (daftar + id aktif, tetap ada saat offline)
+      ▲  simpan
+WorkspaceRepository ── refresh() ← GET /organizations   (dashboard onStart)
+      │                select(id) → PATCH /users/me/last-organization (best-effort)
+      ▼  LiveData
+WorkspaceViewModel → app bar "Nama ruang kerja ▾" → WorkspacePickerSheet
+                   → needsWorkspace (user login tanpa ruang kerja) → WorkspaceChoiceFragment
+```
+
+- **Onboarding**: Pilih peran → `WorkspaceChoiceFragment` → `OrganizationFormFragment` / `JoinOrganizationFragment` / `PersonalSpaceFragment`. `WorkspaceSetupViewModel` membuat/memasuki ruang kerja dulu, lalu menyelesaikan onboarding. Jika langkah kedua gagal, Coba lagi hanya mengulang langkah itu (`retryPendingFinish`), sehingga organisasi tidak dibuat dua kali.
+- **Form organisasi**: chip jenjang & kategori dari `GET /api/meta/categories` (`CategoryChips`, dipakai juga di Profil organisasi). Aturan isian ada di `OrganizationForm` (logika murni, dites di laptop).
+- **Gabung**: Cek kode (`/invitations/preview`) menampilkan kartu nama + logo + peran; Gabung sekarang (`/invitations/accept`). Input kode memakai `InputFilter.AllCaps`; normalisasi tetap di backend.
+- **Keluar akun / sesi berakhir** → `WorkspaceRepository.clear()` agar ruang kerja akun lama tidak terbawa.
+
+### Di Android: kelola organisasi (R4)
+
+Dibuka dari pemilih ruang kerja → **Kelola ruang kerja ini** (`OrganizationFragment`). Semua layar menerima argumen `organizationId` (`OrganizationArgs`) dan memanggil `OrganizationRepository`.
+
+| Layar | Isi | Siapa |
+|---|---|---|
+| `OrganizationFragment` | Logo, "Peranmu", jumlah anggota, menu | Semua anggota; Serah terima & Hapus hanya Pemilik; Anggota/Serah terima/Keluar tidak ada di ruang pribadi |
+| `OrganizationProfileFragment` | Identitas, jenjang/kategori, periode, kontak, media sosial, Ganti logo | Ubah: Admin & Pemilik; Editor hanya melihat |
+| `MembersFragment` + `InviteSheet` | Pengurus, undangan aktif, buat kode (Salin/Bagikan), ubah peran/jabatan, keluarkan, cabut | Undang & atur: Admin ke atas; Admin tidak bisa menyentuh Pemilik |
+| `TransferOwnershipFragment` | Pilih Pemilik baru + peranmu setelahnya | Pemilik |
+| `ActivityFragment` | Riwayat berupa kalimat (`ActivityText`), per halaman | Semua anggota |
+
+- Menu yang tampil mengikuti `Organization.canManage()` / `isOwner()`, tetapi keputusan akhirnya tetap di backend (`OrganizationAccess`).
+- Logo diproses di HP dulu (`ImageProcessor.logoPng`: EXIF, potong persegi, 512 px, PNG), lalu backend memprosesnya lagi.
+- Aksi yang mengubah nama/logo/keanggotaan memuat ulang `WorkspaceRepository`, sehingga app bar dan pemilih langsung berubah. Layar Organisasi dan Anggota memuat ulang di `onResume` (misalnya kembali dari WhatsApp setelah membagikan kode).
+
+## 32. Dashboard pembuat website OrgSpace (W1–W4)
+
+Rancangan: [`alur-pembuatan-website.md`](rancangan/alur-pembuatan-website.md) (revisi 12 Oktober 2026). Dashboard selalu menampilkan isi **ruang kerja aktif**.
+
+### Kerangka (W1)
+
+```
+App bar:  [logo] Nama singkat ▾ ─────────────── (avatar → tab Profil)
+             └─ WorkspacePickerSheet: daftar ruang kerja (WorkspaceRows) · Kelola organisasi/ruang pribadi
+                                      · Buat organisasi baru · Gabung organisasi · Buat ruang pribadi (jika belum)
+Menu bawah: Beranda · Website · [ + ] · Template · Profil
+             [ + ] → CreateProjectSheet: Pakai template (tab Template) | Rakit sendiri ("Segera hadir")
+```
+
+- Tamu yang menekan **+** atau kartu Mulai dibawa ke layar Masuk (`CreatorDashboardFragment.showCreateSheet`), karena website disimpan di cloud milik ruang kerja (keputusan G1).
+- **Rakit sendiri** membuka `ComingSoonEditorFragment.CustomEditor` berjudul "Website {org}" dan tidak membuat website.
+- Tab Profil = akun pribadi: kepala profil + **Ubah nama tampilan** (`PATCH /api/users/me`), **Ruang kerja saya** (ketuk = pindah), menu. Pemilih dan Profil memakai `WorkspaceRows` yang sama.
+- Pindah ruang kerja lewat `WorkspaceRepository.select` → semua layar yang mengamati `getActive()` ikut berubah.
+
+### Website di cloud & tab Website (W2)
+
+Mulai W2, website (`projects`) disimpan di **server** dan dimiliki ruang kerja. Room di HP hanya cache.
+
+```
+projects ──< project_assets        (gambar, "asset:{id}" di isi)
+   │  ├── project_locks            (kunci edit, satu orang per website)
+   │  └──< project_content_backups (isi yang tergeser)
+   └── sites (1:1, ada jika pernah terbit) ──< site_releases (snapshot isi tiap versi)
+   └──< publish_requests           ("Minta diterbitkan", maks satu yang open)
+```
+
+**Status dihitung server** di `WebsiteQueries` (satu query, LEFT JOIN `sites` + rilis aktif + kunci):
+
+| Kondisi | Status |
+|---|---|
+| belum ada baris `sites` | `draft` |
+| `sites.status = online` | `online` (+ `hasUnpublishedChanges` jika `content_updated_at` > waktu rilis aktif) |
+| `offline` / `suspended` | Dimatikan / Ditangguhkan |
+
+| Endpoint | Peran |
+|---|---|
+| `GET /api/organizations/{orgId}/websites?status=all\|draft\|online\|changed&q=&sort=updated\|newest\|name&page=&size=` → `items`, `counts`, `sitesUsed`, `sitesLimit`, `hasMore` | anggota |
+| `GET /api/projects/{id}` (kartu + isi + `publishedAt` + `openRequest` + `suspensionReason`) | anggota |
+| `PATCH /api/projects/{id}` `{name}` · `POST /api/projects/{id}/duplicate` | Editor ke atas |
+| `DELETE /api/projects/{id}` `{confirmName?}` | Pemilik (website yang pernah terbit wajib `confirmName`); pembuat boleh menghapus draft barunya yang belum diubah |
+| `POST /api/projects/{id}/publish-requests` `{note?}` | Editor ke atas |
+| `GET /api/organizations/{orgId}/publish-requests` · `POST /api/publish-requests/{id}/dismiss` | Admin & Pemilik |
+
+Duplikat menyalin baris aset dan mengganti rujukan `asset:{id}` di isi (`ContentAssets.remap`), karena isi hanya boleh merujuk aset miliknya.
+
+**Android** (`ui/website/`):
+
+```
+WebsitesFragment ── WebsitesViewModel ── WebsiteRepository ── WebsiteApi
+   (cari 400 ms,      (paginasi 20,        │  online: hasil server; daftar tanpa filter → Room "websites"
+    chip, urutan)      generation)         └─ offline (IOException, halaman 0): Room + WebsiteQuery.apply/count
+   └─ kartu → WebsiteManageFragment (kerangka bagian 5; Terbitkan & bagian publish "Segera hadir")
+```
+
+- `WebsiteQuery` (murni Java, dites) menerapkan filter/urutan yang sama dengan server saat offline.
+- Peran dari ruang kerja aktif: Hapus hanya Pemilik; Domain & Pengaturan situs hanya Admin/Pemilik; Editor melihat **Minta diterbitkan**.
+- Room naik ke versi 3 (`@AutoMigration(2 → 3)`, tabel `websites`). Tabel `projects` lama (project di HP) masih dipakai Beranda & editor sampai fase T.
+
+### Beranda (W3)
+
+```
+CreatorHomeFragment ── CreatorHomeViewModel ── WebsiteRepository.page(org, tanpa filter, 0) → 4 website teratas + counts.changed
+        │                                   └─ WebsiteRepository.openRequests(org)  (Admin/Pemilik saja)
+        ├─ tamu ................ "Saatnya organisasimu punya rumah online" + Template populer + Panduan
+        ├─ belum ada website ... "Kerja keras {org} layak dilihat banyak orang" + Mulai besar
+        └─ sudah ada ........... "Hai, {nama}" + Lanjutkan + Mulai satu baris (+ banner Periksa / Lihat)
+```
+
+- Pilihan tamu (Pakai template / Rakit sendiri) disimpan di `PendingStart` (ViewModel milik Activity) lalu dijalankan `CreatorDashboardFragment.start()` setelah user masuk dan punya ruang kerja (G1).
+- `WebsitesViewModel` dimiliki shell dashboard, sehingga `openWebsites(Filter.CHANGED)` dari banner Beranda langsung memilih chip.
+- Kartu Lanjutkan sementara membuka halaman kelola website sampai editor cloud (T4) ada.
+- Panduan statis ada di `Guide` (+ `strings_home.xml`); yang fiturnya belum ada tampil "Segera hadir".
+
+### Galeri dengan kategori organisasi (W4)
+
+- Kategori template = kategori organisasi (`OrgCategory`, V20). "Isi template" (`ContentTag`, kolom `templates.content_tags`) tampil sebagai "Punya: …".
+- `GET /api/meta/categories` → `levels`, `categories` (+ jenjang yang boleh), `contentTags` (+ `core`). App menyimpan salinannya (`SessionStore`) dan membaca label lewat `CategoryLabels`.
+- Galeri: chip "Semua" + `categoriesFor(jenjang ruang kerja)`; tamu/ruang pribadi semua kategori. Beranda: kategori ruang kerja dulu, dilengkapi `Recommendations.merge`.
+- Upload → Info template: kategori (satu) + Isi template (minimal satu; saran ✦ dari `ContentTagSuggester`). Saat Kirim, konten Inti yang belum dicentang menghasilkan Peringatan `ORG_CORE_CONTENT`.
+
+## 33. Portal web: landing, dokumentasi, monitoring, kritik & saran (WEB1)
+
+Rancangan & kontrak lengkap: [`portal-web.md`](rancangan/portal-web.md). Kode web: repo terpisah [OrgSpace Website](https://github.com/A-blib/OrgSpace-Website).
+
+### Gambaran
+
+```
+Browser ─► Next.js (repo OrgSpace Website) ─► REST API Spring Boot (backend/) ─► PostgreSQL
+           ├ (site)/          landing + /docs           → GET /api/public/**   (tanpa login, di-cache)
+           ├ dashboard/(panel) ringkasan, feedback, ... → GET/POST /api/admin/** (akun is_admin)
+           └ proxy.ts         perbarui access token (refresh) sebelum /dashboard dirender
+```
+
+### Backend (paket baru)
+
+| Paket | Isi |
+|---|---|
+| `admin/` | `AdminGuard` (interceptor `/api/admin/**`, cek `users.is_admin` dari database setiap request), `AdminController` (`/admin/me`, `/admin/users`, `/admin/system`), `AdminUserQueries` |
+| `monitoring/` | `UsageTrackingFilter` (filter paling luar, mencatat pola endpoint + status + durasi + user + platform), `UsageRecorder` (hitungan di memori, ditulis berkala dengan UPSERT), `ClientPlatform` (header `X-OrgSpace-Client`), `StatsService` + `StatsMetric` + `StatsRange`, `AdminStatsController` |
+| `feedback/` | `FeedbackService` (aturan status & tanda belum dibaca, batas harian), `FeedbackController` (pengirim), `AdminFeedbackController` (tim) |
+| `docs/` | `DocService`, `DocCategory`, `DocsController` (publik), `AdminDocsController` |
+| `portal/` | `PortalController` (`/public/overview` untuk landing) |
+| `seed/PortalDemoSeeder` | dev: admin `dummy1`, feedback contoh, statistik 30 hari |
+
+Migrasi `V21__portal_web.sql`: `feedback`, `feedback_messages`, `doc_articles` (+ 6 artikel awal), `user_daily_activity`, `api_traffic_daily`.
+
+### Kenapa statistik dikumpulkan di memori dulu?
+
+Menulis satu baris database untuk setiap request akan menggandakan beban database. `UsageRecorder` menjumlahkan di
+`ConcurrentHashMap` (per hari + endpoint, dan per user + hari + platform), lalu tiap 60 detik menulisnya dengan
+`INSERT ... ON CONFLICT DO UPDATE` (UPSERT). `compute()`/`remove()` per kunci membuat tidak ada hitungan yang hilang
+di antara penambahan dan penulisan. Rute dicatat sebagai **pola** (`/api/projects/{id}`) agar ID tidak membuat
+baris baru dan tidak ada data pribadi.
+
+### Kenapa token disimpan di cookie httpOnly, bukan localStorage?
+
+Token di localStorage bisa dibaca script apa pun yang berjalan di halaman (risiko XSS). Cookie httpOnly hanya dikirim
+browser ke server Next.js; server yang memanggil backend. Bonusnya, browser tidak pernah memanggil backend langsung,
+jadi backend tidak perlu CORS. Refresh token backend sekali pakai, sehingga refresh dilakukan di satu tempat
+(`proxy.ts` + `lib/auth/refresh.ts`) dan refresh bersamaan untuk token yang sama dipakai bersama.
+
+## 34. Glosarium
 
 | Istilah | Arti singkat |
 |---|---|

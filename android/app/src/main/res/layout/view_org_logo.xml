@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Logo organisasi; jika belum ada logo, tampil huruf depan nama di kotak biru muda.
+     Bukan <merge> karena dipakai lewat <include> yang mengatur ukurannya. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MergeRootFrame"
+    android:layout_width="@dimen/org_logo_size"
+    android:layout_height="@dimen/org_logo_size">
+
+    <TextView
+        android:id="@+id/initial"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_workspace_initial"
+        android:gravity="center"
+        android:importantForAccessibility="no"
+        android:textAppearance="@style/TextAppearance.App.Headline"
+        android:textColor="@color/color_on_primary_container" />
+
+    <!-- Sudutnya dibulatkan sama seperti kotak huruf depan, agar logo tidak tampak "beda sendiri". -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/cd_org_logo"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.App.Small" />
+</FrameLayout>

@@ -13,7 +13,7 @@
         android:id="@+id/label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/geist_semibold"
+        android:fontFamily="@font/plus_jakarta_sans_semibold"
         android:textAppearance="@style/TextAppearance.App.Body" />
 
     <TextView

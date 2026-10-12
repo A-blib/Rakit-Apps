@@ -1,6 +1,8 @@
 package com.aris.templateapp.ui.upload;
 
+import android.view.Menu;
 import android.view.View;
+import android.widget.PopupMenu;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -103,8 +105,37 @@ final class MarkElementSheet {
         b.fontRange.setVisibility(b.styleFont.isChecked() ? View.VISIBLE : View.GONE);
         b.styleFont.setOnCheckedChangeListener((v, checked) -> b.fontRange.setVisibility(checked ? View.VISIBLE : View.GONE));
 
+        // Kolom profil terpilih; diubah dari menu tombol "Hubungkan ke profil organisasi".
+        String[] profile = {existing == null ? null : existing.profileKey};
+        b.hideEmptySwitch.setChecked(existing != null && Boolean.TRUE.equals(existing.hideWhenEmpty));
+        Runnable bindProfile = () -> {
+            ProfileKeys key = profile[0] == null ? null : ProfileKeys.fromValue(profile[0]);
+            b.profileButton.setText(key == null ? R.string.mark_profile_none : key.label);
+            b.hideEmptySwitch.setVisibility(key == null ? View.GONE : View.VISIBLE);
+        };
+        b.profileButton.setOnClickListener(v -> {
+            PopupMenu menu = new PopupMenu(fragment.requireContext(), v);
+            menu.getMenu().add(Menu.NONE, -1, 0, R.string.mark_profile_none);
+            List<ProfileKeys> options = ProfileKeys.forType(typeOf(b.typeGroup.getCheckedChipId()));
+            for (int i = 0; i < options.size(); i++) {
+                menu.getMenu().add(Menu.NONE, i, i + 1, options.get(i).label);
+            }
+            menu.setOnMenuItemClickListener(item -> {
+                profile[0] = item.getItemId() < 0 ? null : options.get(item.getItemId()).value;
+                bindProfile.run();
+                return true;
+            });
+            menu.show();
+        });
+
         Runnable applyType = () -> {
             String selected = typeOf(b.typeGroup.getCheckedChipId());
+            // Jenis berubah dan kolom profil tidak cocok lagi (mis. Teks → Gambar): hubungannya dilepas.
+            ProfileKeys linked = profile[0] == null ? null : ProfileKeys.fromValue(profile[0]);
+            if (linked != null && !linked.fits(selected)) {
+                profile[0] = null;
+            }
+            bindProfile.run();
             String nested = nestingProblem(fragment, selected, wrappers, inner);
             b.nestingWarning.setText(nested);
             b.nestingWarning.setVisibility(nested == null ? View.GONE : View.VISIBLE);
@@ -177,7 +208,7 @@ final class MarkElementSheet {
         });
         b.cancelButton.setOnClickListener(v -> sheet.dismiss());
         b.saveButton.setOnClickListener(v -> {
-            MarkingDto.Field edited = read(fragment, b, ratio);
+            MarkingDto.Field edited = read(fragment, b, ratio, profile[0]);
             if (edited == null) {
                 return;
             }
@@ -223,7 +254,8 @@ final class MarkElementSheet {
 
     /** Isi form → isian baru. Null jika ada isian yang belum valid (pesannya tampil di form). */
     @Nullable
-    private static MarkingDto.Field read(Fragment fragment, SheetMarkElementBinding b, String ratio) {
+    private static MarkingDto.Field read(Fragment fragment, SheetMarkElementBinding b, String ratio,
+                                         @Nullable String profileKey) {
         String label = OnboardingUi.text(b.labelInput).trim();
         if (label.isEmpty()) {
             b.labelLayout.setError(fragment.getString(R.string.mark_label_required));
@@ -239,6 +271,8 @@ final class MarkElementSheet {
         field.maxLength = image ? null : parse(OnboardingUi.text(b.maxInput));
         field.required = b.requiredSwitch.isChecked();
         field.aspectRatio = image ? ratio : null;
+        field.profileKey = profileKey;
+        field.hideWhenEmpty = profileKey != null && b.hideEmptySwitch.isChecked() ? Boolean.TRUE : null;
         if (b.styleColor.isChecked() && !image) {
             field.styles.add(new MarkingDto.Style("color", null, null, null));
         }

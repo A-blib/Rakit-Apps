@@ -1,8 +1,14 @@
 package com.aris.templateapp.seed;
 
 import com.aris.templateapp.TestcontainersConfiguration;
+import com.jayway.jsonpath.JsonPath;
 import com.aris.templateapp.auth.UserIdentityRepository;
+import com.aris.templateapp.organization.ActivityService;
+import com.aris.templateapp.organization.OrganizationInvitationRepository;
+import com.aris.templateapp.organization.OrganizationMemberRepository;
+import com.aris.templateapp.organization.OrganizationRepository;
 import com.aris.templateapp.provider.ProviderProfileRepository;
+import com.aris.templateapp.security.TokenGenerator;
 import com.aris.templateapp.user.CreatorProfileRepository;
 import com.aris.templateapp.user.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -10,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,6 +52,11 @@ class DummyDataSeederTest {
     @Autowired private TransactionTemplate transactionTemplate;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private MockMvc mockMvc;
+    @Autowired private OrganizationRepository organizationRepository;
+    @Autowired private OrganizationMemberRepository memberRepository;
+    @Autowired private OrganizationInvitationRepository invitationRepository;
+    @Autowired private ActivityService activityService;
+    @Autowired private TokenGenerator tokenGenerator;
 
     @Test
     void seedsOnceWithLoginableUsersAndProviders() throws Exception {
@@ -74,5 +86,33 @@ class DummyDataSeederTest {
         mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"dummy10@templateapp.test\",\"password\":\"%s\"}".formatted(DummyDataSeeder.PASSWORD)))
                 .andExpect(jsonPath("$.user.providerStatus").value("suspended"));
+    }
+
+    @Test
+    void organizationSeederFillsWorkspacesWithWorkingInviteCodes() throws Exception {
+        DummyDataSeeder users = new DummyDataSeeder(userRepository, identityRepository, creatorProfileRepository,
+                providerProfileRepository, passwordEncoder, clock);
+        OrganizationSeeder organizationSeeder = new OrganizationSeeder(userRepository, organizationRepository,
+                memberRepository, invitationRepository, activityService, tokenGenerator, clock);
+        transactionTemplate.executeWithoutResult(tx -> users.run(null));
+        transactionTemplate.executeWithoutResult(tx -> organizationSeeder.run(null));
+        transactionTemplate.executeWithoutResult(tx -> organizationSeeder.run(null));
+
+        assertThat(jdbc.queryForList("SELECT type FROM organizations ORDER BY type", String.class))
+                .containsExactly("organization", "organization", "organization", "personal", "personal");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM organization_invitations", Integer.class)).isEqualTo(3);
+
+        String token = JsonPath.read(mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"dummy1@templateapp.test\",\"password\":\"%s\"}".formatted(DummyDataSeeder.PASSWORD)))
+                .andReturn().getResponse().getContentAsString(), "$.accessToken");
+        mockMvc.perform(post("/api/invitations/preview").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"code\":\"%s\"}".formatted(OrganizationSeeder.OSIS_INVITE_CODE)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.organizationName").value("OSIS SMA Negeri 1 Bandung"));
+        mockMvc.perform(post("/api/invitations/preview").header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"code\":\"%s\"}".formatted(OrganizationSeeder.EXPIRED_INVITE_CODE)))
+                .andExpect(jsonPath("$.code").value("INVITATION_INVALID"));
     }
 }

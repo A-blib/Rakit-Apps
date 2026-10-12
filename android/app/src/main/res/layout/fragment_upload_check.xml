@@ -43,7 +43,7 @@
                         android:id="@+id/file_meta"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/geist_mono_regular"
+                        android:fontFamily="@font/plus_jakarta_sans_regular"
                         android:textAppearance="@style/TextAppearance.App.BodySmall"
                         android:textColor="@color/color_muted" />
 
@@ -79,7 +79,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="@dimen/space_2"
-                            android:fontFamily="@font/geist_mono_regular"
+                            android:fontFamily="@font/plus_jakarta_sans_regular"
                             android:textAppearance="@style/TextAppearance.App.BodySmall"
                             android:textColor="@color/color_muted" />
                     </LinearLayout>

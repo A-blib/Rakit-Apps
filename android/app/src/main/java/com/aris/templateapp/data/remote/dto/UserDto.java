@@ -15,5 +15,6 @@ public class UserDto {
     public boolean onboardingCompleted;
     public List<String> roles;
     public String providerStatus;
-    public CreatorProfileDto creatorProfile;
+    /** Ruang kerja terakhir yang dibuka; null jika belum punya ruang kerja. */
+    public String lastOrganizationId;
 }

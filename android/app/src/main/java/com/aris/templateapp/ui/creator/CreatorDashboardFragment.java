@@ -11,14 +11,24 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
+import com.aris.templateapp.data.model.WebsiteQuery;
+import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.databinding.FragmentCreatorDashboardBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.KeyboardAwareBottomBar;
+import com.aris.templateapp.ui.editor.EditorNav;
+import com.aris.templateapp.ui.website.WebsitesViewModel;
+import com.aris.templateapp.ui.workspace.WorkspacePickerSheet;
+import com.aris.templateapp.ui.workspace.WorkspaceViewModel;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -37,8 +47,12 @@ public class CreatorDashboardFragment extends Fragment {
     static final int[] TABS = {R.id.tab_creator_home, R.id.tab_creator_projects, R.id.tab_creator_gallery,
             R.id.tab_creator_profile};
 
+    @Inject
+    ThumbnailLoader thumbnailLoader;
+
     private FragmentCreatorDashboardBinding binding;
     private CurrentUserViewModel userViewModel;
+    private WorkspaceViewModel workspaceViewModel;
     private KeyboardAwareBottomBar keyboardAware;
 
     /** Tombol kembali di tab selain Beranda membuka Beranda dulu; di Beranda baru menutup app. */
@@ -77,7 +91,32 @@ public class CreatorDashboardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         userViewModel = new ViewModelProvider(this).get(CurrentUserViewModel.class);
-        userViewModel.getUser().observe(getViewLifecycleOwner(), user -> AppBarAccount.bind(binding.account, user));
+        workspaceViewModel = new ViewModelProvider(this).get(WorkspaceViewModel.class);
+        userViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
+            AppBarAccount.bind(binding.account, user);
+            bindWorkspace(user == null ? null : workspaceViewModel.getActive().getValue());
+        });
+        workspaceViewModel.getActive().observe(getViewLifecycleOwner(), workspace -> {
+            bindWorkspace(userViewModel.getUser().getValue() == null ? null : workspace);
+            if (workspace != null && userViewModel.isLoggedInNow()) {
+                PendingStart.Option pending = new ViewModelProvider(requireActivity()).get(PendingStart.class).take();
+                if (pending != null) {
+                    start(pending);
+                }
+            }
+        });
+        workspaceViewModel.getNeedsWorkspace().observe(getViewLifecycleOwner(), event -> {
+            if (event.getContentIfNotHandled() != null) {
+                // User lama tanpa ruang kerja: tampilkan layar pilihan yang sama dengan onboarding (bagian 5).
+                NavHostFragment.findNavController(this).navigate(R.id.workspaceChoiceFragment, null,
+                        new NavOptions.Builder().setPopUpTo(R.id.creatorDashboardFragment, true).build());
+            }
+        });
+        binding.workspaceSwitcher.setOnClickListener(v -> {
+            if (getChildFragmentManager().findFragmentByTag(WorkspacePickerSheet.TAG) == null) {
+                new WorkspacePickerSheet().show(getChildFragmentManager(), WorkspacePickerSheet.TAG);
+            }
+        });
         binding.account.signInButton.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login));
         // Avatar membuka tab Profil (menggantikan bottom sheet menu profil, keputusan Aris).
@@ -104,12 +143,36 @@ public class CreatorDashboardFragment extends Fragment {
         super.onStart();
         // Dibaca ulang setiap layar tampil lagi, mis. setelah kembali dari layar Masuk.
         userViewModel.reload();
+        if (userViewModel.isLoggedInNow()) {
+            workspaceViewModel.refresh();
+        }
     }
 
-    /** Tombol +, kartu "Mulai", dan tombol "Buat website" di tab Project membuka bottom sheet yang sama. */
+    /** Tombol +, "Mulai sekarang", dan kartu "Mulai" membuka bottom sheet yang sama. */
     public void showCreateSheet() {
         if (getChildFragmentManager().findFragmentByTag(CreateProjectSheet.TAG) == null) {
             new CreateProjectSheet().show(getChildFragmentManager(), CreateProjectSheet.TAG);
+        }
+    }
+
+    /**
+     * Pakai template / Rakit sendiri. Website disimpan di cloud milik ruang kerja, jadi tamu diminta masuk dulu;
+     * pilihannya disimpan dan dijalankan setelah masuk & onboarding (alur-pembuatan-website.md G1).
+     */
+    public void start(PendingStart.Option option) {
+        if (!userViewModel.isLoggedInNow() || workspaceViewModel.getActive().getValue() == null) {
+            new ViewModelProvider(requireActivity()).get(PendingStart.class).set(option);
+            if (!userViewModel.isLoggedInNow()) {
+                NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login);
+            }
+            return;
+        }
+        if (option == PendingStart.Option.TEMPLATE) {
+            selectTab(R.id.tab_creator_gallery);
+        } else {
+            // Nama awal website Rakit sendiri: "Website {org}" (alur-pembuatan-website.md bagian 1).
+            Workspace workspace = workspaceViewModel.getActive().getValue();
+            EditorNav.openCustomEditor(this, getString(R.string.website_default_name, workspace.getGreetingName()));
         }
     }
 
@@ -120,11 +183,37 @@ public class CreatorDashboardFragment extends Fragment {
         }
     }
 
-    /** "Lihat semua" di "Template untuk anda": buka tab Template dengan kategori yang sesuai sudah terpilih. */
+    /** "Lihat semua" Lanjutkan & banner Beranda: buka tab Website dengan chip tertentu. */
+    public void openWebsites(WebsiteQuery.Filter filter) {
+        new ViewModelProvider(this).get(WebsitesViewModel.class).setFilter(filter);
+        selectTab(R.id.tab_creator_projects);
+    }
+
+    /** "Lihat semua" di "Template untuk {org}": buka tab Template dengan kategori yang sesuai sudah terpilih. */
     public void openGallery(@Nullable String category) {
         new ViewModelProvider(requireActivity()).get(GalleryViewModel.class)
                 .setCategory(category == null ? GalleryViewModel.ALL : category);
         selectTab(R.id.tab_creator_gallery);
+    }
+
+    /** Tamu atau belum punya ruang kerja: judul "OrgSpace". Selain itu: nama ruang kerja + panah pemilih. */
+    private void bindWorkspace(@Nullable Workspace workspace) {
+        if (binding == null) {
+            return;
+        }
+        boolean show = workspace != null;
+        binding.workspaceSwitcher.setVisibility(show ? View.VISIBLE : View.GONE);
+        binding.toolbar.setTitle(show ? null : getString(R.string.app_name));
+        if (show) {
+            // Nama singkat lebih muat di app bar ("OSIS Smansa"); nama lengkap tetap ada di pemilih.
+            binding.workspaceName.setText(workspace.getGreetingName());
+            binding.workspaceSwitcher.setContentDescription(getString(R.string.cd_workspace_picker, workspace.getName()));
+            binding.workspaceInitial.setText(AppBarAccount.initialOf(workspace.getName()));
+            binding.workspaceInitial.setVisibility(View.VISIBLE);
+            binding.workspaceLogo.setImageDrawable(null);
+            thumbnailLoader.load(workspace.getLogoUrl(), binding.workspaceLogo,
+                    () -> binding.workspaceInitial.setVisibility(View.INVISIBLE));
+        }
     }
 
     private static int indexOf(@IdRes int tab) {

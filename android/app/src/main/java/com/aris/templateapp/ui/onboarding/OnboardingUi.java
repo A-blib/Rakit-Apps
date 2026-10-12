@@ -1,5 +1,7 @@
 package com.aris.templateapp.ui.onboarding;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 
@@ -11,35 +13,10 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.Map;
 
-/** Pembantu kecil yang dipakai kedua form onboarding dan layar "Edit profil" (provider & pembuat website). */
+/** Pembantu kecil untuk form: onboarding, ruang kerja, "Edit profil", dan Info template. */
 public final class OnboardingUi {
 
-    /** Chip tujuan website di fragment_creator_form.xml dan nilai backend-nya, urutan sama. */
-    private static final int[] PURPOSE_CHIPS = {R.id.purpose_sekolah, R.id.purpose_organisasi, R.id.purpose_umkm,
-            R.id.purpose_instansi, R.id.purpose_pribadi, R.id.purpose_lainnya};
-    private static final String[] PURPOSE_VALUES = {"sekolah", "organisasi", "umkm", "instansi", "pribadi", "lainnya"};
-
     private OnboardingUi() {
-    }
-
-    /** Nilai backend untuk chip tujuan website, atau null jika tidak ada yang dipilih (View.NO_ID). */
-    public static String purposeValue(int chipId) {
-        for (int i = 0; i < PURPOSE_CHIPS.length; i++) {
-            if (PURPOSE_CHIPS[i] == chipId) {
-                return PURPOSE_VALUES[i];
-            }
-        }
-        return null;
-    }
-
-    /** Kebalikan {@link #purposeValue}: id chip untuk nilai backend, atau View.NO_ID. */
-    public static int purposeChipId(String value) {
-        for (int i = 0; i < PURPOSE_VALUES.length; i++) {
-            if (PURPOSE_VALUES[i].equals(value)) {
-                return PURPOSE_CHIPS[i];
-            }
-        }
-        return View.NO_ID;
     }
 
     public static String text(EditText input) {
@@ -48,6 +25,32 @@ public final class OnboardingUi {
 
     public static void showError(TextInputLayout input, Integer messageRes) {
         input.setError(messageRes == null ? null : input.getContext().getString(messageRes));
+    }
+
+    /** Pesan error di bawah input hilang begitu user mulai memperbaikinya, tidak menunggu tombol ditekan lagi. */
+    public static void clearErrorOnType(TextInputLayout... layouts) {
+        for (TextInputLayout layout : layouts) {
+            EditText input = layout.getEditText();
+            if (input == null) {
+                continue;
+            }
+            input.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    if (layout.getError() != null) {
+                        layout.setError(null);
+                    }
+                }
+            });
+        }
     }
 
     /**

@@ -4,20 +4,24 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewbinding.ViewBinding;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
+import com.aris.templateapp.data.model.CategoryLabels;
 import com.aris.templateapp.data.remote.dto.GalleryPageDto.GalleryTemplateDto;
 import com.aris.templateapp.databinding.ItemGalleryCardBinding;
-import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.databinding.ItemGalleryTemplateBinding;
 import com.aris.templateapp.ui.provider.TemplateUi;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -59,14 +63,18 @@ public class GalleryAdapter extends ListAdapter<GalleryTemplateDto, GalleryAdapt
         GalleryTemplateDto item = getItem(position);
         Context context = holder.binding.getRoot().getContext();
         String creator = context.getString(R.string.gallery_by_creator, item.creatorName);
-        String category = context.getString(TemplateUi.categoryLabel(item.category));
+        String category = TemplateUi.categoryLabel(item.category);
         String categoryAndDownloads = context.getString(R.string.template_status_with_count, category,
                 context.getString(R.string.gallery_downloads, TemplateUi.count(item.downloads)));
+        List<String> tags = CategoryLabels.contentTags(item.contentTags);
+        String content = tags.isEmpty() ? null
+                : context.getString(R.string.gallery_content_tags, String.join(" · ", tags));
         if (holder.binding instanceof ItemGalleryCardBinding) {
             ItemGalleryCardBinding b = (ItemGalleryCardBinding) holder.binding;
             b.name.setText(item.name);
             b.creator.setText(creator);
             b.category.setText(category);
+            bindContent(b.content, content);
         } else {
             ItemGalleryTemplateBinding b = (ItemGalleryTemplateBinding) holder.binding;
             b.thumbnailPlaceholder.setVisibility(View.VISIBLE);
@@ -74,6 +82,7 @@ public class GalleryAdapter extends ListAdapter<GalleryTemplateDto, GalleryAdapt
             b.name.setText(item.name);
             b.creator.setText(creator);
             b.category.setText(categoryAndDownloads);
+            bindContent(b.content, content);
         }
         holder.binding.getRoot().setOnClickListener(v -> onClick.accept(item));
     }
@@ -96,7 +105,13 @@ public class GalleryAdapter extends ListAdapter<GalleryTemplateDto, GalleryAdapt
         @Override
         public boolean areContentsTheSame(@NonNull GalleryTemplateDto a, @NonNull GalleryTemplateDto b) {
             return Objects.equals(a.name, b.name) && Objects.equals(a.creatorName, b.creatorName)
-                    && Objects.equals(a.category, b.category) && a.downloads == b.downloads;
+                    && Objects.equals(a.category, b.category) && a.downloads == b.downloads
+                    && Objects.equals(a.contentTags, b.contentTags);
         }
     };
+
+    private static void bindContent(TextView view, @Nullable String content) {
+        view.setText(content);
+        view.setVisibility(content == null ? View.GONE : View.VISIBLE);
+    }
 }

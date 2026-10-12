@@ -1,25 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Token warna mode TERANG (bagian 9.2). Versi gelap ada di values-night/colors.xml dengan nama yang sama;
-    Android memilih otomatis sesuai mode HP. Layout tidak boleh menulis kode warna langsung: selalu @color/color_xxx
-    atau atribut tema (?attr/colorOnSurface, dst).
+    Token warna mode TERANG, palet "Biru Semangat" (revisi-fondasi-orgspace.md 7.2; kontras teks ≥ 4.5:1).
+    Diperbarui 12 Okt 2026: biru murni (rona ±215°), sebelumnya biru-nila yang terlihat keunguan.
+    Versi gelap ada di values-night/colors.xml dengan nama yang sama; Android memilih otomatis sesuai mode HP.
+    Layout tidak boleh menulis kode warna langsung: selalu @color/color_xxx atau atribut tema (?attr/colorPrimary, dst).
 -->
 <resources>
-    <color name="color_background">#FFFFFF</color>
+    <color name="color_background">#F3F7FD</color>
     <color name="color_surface">#FFFFFF</color>
-    <color name="color_surface_subtle">#FAFAFA</color>
-    <color name="color_foreground">#0A0A0A</color>
-    <color name="color_muted">#666666</color>
-    <color name="color_border">#EAEAEA</color>
-    <color name="color_border_strong">#C9C9C9</color>
-    <color name="color_link">#0068D6</color>
-    <color name="color_success">#0A7D3A</color>
+    <color name="color_surface_subtle">#E9F1FC</color>
+    <color name="color_foreground">#0B1B33</color>
+    <color name="color_muted">#4A5D7A</color>
+    <color name="color_border">#D3E1F4</color>
+    <color name="color_border_strong">#7C95B8</color>
+    <color name="color_primary">#0B63F6</color>
+    <color name="color_on_primary">#FFFFFF</color>
+    <color name="color_primary_container">#DCEAFF</color>
+    <color name="color_on_primary_container">#003A94</color>
+    <color name="color_accent">#FFC531</color>
+    <color name="color_on_accent">#3D2A00</color>
+    <color name="color_link">#0A58DB</color>
+    <color name="color_success">#16803C</color>
     <color name="color_warning">#A35200</color>
     <color name="color_error">#C9252D</color>
 
     <!-- Latar banner status: warna semantik dengan opasitas sangat rendah (≈6%, alpha 0F). -->
-    <color name="color_success_tint">#0F0A7D3A</color>
+    <color name="color_success_tint">#0F16803C</color>
     <color name="color_warning_tint">#0FA35200</color>
     <color name="color_error_tint">#0FC9252D</color>
-    <color name="color_link_tint">#0F0068D6</color>
+    <color name="color_link_tint">#0F0A58DB</color>
+    <!-- Efek sentuh tombol utama/chip: biru sangat tipis. -->
+    <color name="color_primary_ripple">#1F0B63F6</color>
+
+    <!-- Ikon launcher: sengaja hanya di values/ (tanpa versi gelap) agar ikon app selalu sama. -->
+    <color name="color_launcher_background">#0B63F6</color>
+    <color name="color_launcher_accent">#FFC531</color>
 </resources>

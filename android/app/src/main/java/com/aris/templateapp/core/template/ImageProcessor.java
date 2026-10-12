@@ -13,6 +13,7 @@ import android.os.Build;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,6 +39,8 @@ public class ImageProcessor {
 
     public static final int MAX_SIDE = 1920;
     public static final int QUALITY = 80;
+    /** Sama dengan ukuran logo hasil olahan server (OrgLogoStorage.MAX_SIZE_PX). */
+    public static final int LOGO_SIDE = 512;
 
     private final ContentResolver resolver;
 
@@ -54,6 +57,52 @@ public class ImageProcessor {
     @WorkerThread
     @Nullable
     public String process(Uri uri, @Nullable String aspectRatio, File projectDir, String key) throws IOException {
+        Bitmap result = load(uri, aspectRatio, MAX_SIDE);
+        if (result == null) {
+            return null;
+        }
+        File imagesDir = new File(projectDir, ProjectStore.IMAGES);
+        if (!imagesDir.isDirectory() && !imagesDir.mkdirs()) {
+            throw new IOException("Folder gambar tidak bisa dibuat");
+        }
+        String name = safeKey(key) + "-" + System.currentTimeMillis() + ".webp";
+        try (OutputStream out = new FileOutputStream(new File(imagesDir, name))) {
+            if (!result.compress(webp(), QUALITY, out)) {
+                throw new IOException("Gambar tidak bisa disimpan");
+            }
+        } finally {
+            result.recycle();
+        }
+        return ProjectStore.IMAGES + "/" + name;
+    }
+
+    /**
+     * Logo organisasi: potong persegi di tengah, maks {@link #LOGO_SIDE} px, PNG (latar transparan tetap transparan).
+     * Server tetap mengolah ulang, tetapi dengan dikecilkan di HP unggahannya kecil dan selalu di bawah batas ukuran.
+     *
+     * @return isi file PNG, atau null jika gambar tidak bisa dibaca
+     */
+    @WorkerThread
+    @Nullable
+    public byte[] logoPng(Uri uri) throws IOException {
+        Bitmap result = load(uri, "1:1", LOGO_SIDE);
+        if (result == null) {
+            return null;
+        }
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            if (!result.compress(Bitmap.CompressFormat.PNG, 100, out)) {
+                throw new IOException("Gambar tidak bisa disimpan");
+            }
+            return out.toByteArray();
+        } finally {
+            result.recycle();
+        }
+    }
+
+    /** Membaca gambar (sudah diperkecil), memutarnya sesuai EXIF, lalu memotong sesuai rasio. */
+    @Nullable
+    private Bitmap load(Uri uri, @Nullable String aspectRatio, int maxSide) throws IOException {
         BitmapFactory.Options bounds = new BitmapFactory.Options();
         bounds.inJustDecodeBounds = true;
         try (InputStream in = resolver.openInputStream(uri)) {
@@ -64,7 +113,7 @@ public class ImageProcessor {
         }
         BitmapFactory.Options options = new BitmapFactory.Options();
         // Dibaca sudah diperkecil (kelipatan 2) agar foto kamera 50 MP tidak menghabiskan memori.
-        options.inSampleSize = sampleSize(bounds.outWidth, bounds.outHeight, MAX_SIDE);
+        options.inSampleSize = sampleSize(bounds.outWidth, bounds.outHeight, maxSide);
         Bitmap decoded;
         try (InputStream in = resolver.openInputStream(uri)) {
             decoded = BitmapFactory.decodeStream(in, null, options);
@@ -79,30 +128,18 @@ public class ImageProcessor {
         }
         Bitmap upright = rotate(decoded, orientation);
         int[] crop = cropRect(upright.getWidth(), upright.getHeight(), aspectRatio);
-        float scale = Math.min(1f, MAX_SIDE / (float) Math.max(crop[2], crop[3]));
+        float scale = Math.min(1f, maxSide / (float) Math.max(crop[2], crop[3]));
         Matrix matrix = new Matrix();
         matrix.setScale(scale, scale);
         Bitmap result = Bitmap.createBitmap(upright, crop[0], crop[1], crop[2], crop[3], matrix, true);
-
-        File imagesDir = new File(projectDir, ProjectStore.IMAGES);
-        if (!imagesDir.isDirectory() && !imagesDir.mkdirs()) {
-            throw new IOException("Folder gambar tidak bisa dibuat");
+        // createBitmap bisa mengembalikan bitmap yang sama jika tidak ada perubahan; hanya bitmap perantara yang dibuang.
+        if (upright != decoded && upright != result) {
+            upright.recycle();
         }
-        String name = safeKey(key) + "-" + System.currentTimeMillis() + ".webp";
-        try (OutputStream out = new FileOutputStream(new File(imagesDir, name))) {
-            if (!result.compress(webp(), QUALITY, out)) {
-                throw new IOException("Gambar tidak bisa disimpan");
-            }
-        } finally {
-            if (result != upright) {
-                result.recycle();
-            }
-            if (upright != decoded) {
-                upright.recycle();
-            }
+        if (decoded != result) {
             decoded.recycle();
         }
-        return ProjectStore.IMAGES + "/" + name;
+        return result;
     }
 
     /** Menghapus file gambar lama isian jika tidak dipakai nilai sekarang maupun riwayat undo (bagian 6.6). */

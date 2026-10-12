@@ -101,15 +101,15 @@ public class ProviderDashboardFragment extends Fragment {
             return true;
         });
 
-        // Badge tab Beranda = jumlah "Perlu tindakan" (bagian 3.3), monokrom seperti komponen lain.
+        // Badge tab Beranda = jumlah "Perlu tindakan" (bagian 3.3), kuning aksen agar menonjol.
         dashboardViewModel.getDashboard().observe(getViewLifecycleOwner(), resource -> {
             if (resource == null || resource.getData() == null) {
                 return;
             }
             int count = resource.getData().actionItems == null ? 0 : resource.getData().actionItems.size();
             BadgeDrawable badge = binding.bottomNav.getOrCreateBadge(R.id.tab_home);
-            badge.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.color_foreground));
-            badge.setBadgeTextColor(ContextCompat.getColor(requireContext(), R.color.color_background));
+            badge.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.color_accent));
+            badge.setBadgeTextColor(ContextCompat.getColor(requireContext(), R.color.color_on_accent));
             badge.setNumber(count);
             badge.setVisible(count > 0);
         });

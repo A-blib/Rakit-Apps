@@ -12,28 +12,40 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.data.model.User;
 import com.aris.templateapp.data.model.UserRole;
+import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.databinding.FragmentCreatorProfileBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.common.HomeNavigator;
 import com.aris.templateapp.ui.profile.ProfileViewModel;
-import com.aris.templateapp.ui.provider.TemplateUi;
+import com.aris.templateapp.ui.workspace.WorkspaceRows;
+import com.aris.templateapp.ui.workspace.WorkspaceViewModel;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.util.Collections;
+import java.util.List;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 /**
- * Tab Profil pembuat website (alur-pembuatan-website.md bagian 5). Menggantikan bottom sheet menu profil:
- * beralih mode / jadi penyedia template, Pengaturan, dan Keluar ada di sini.
+ * Tab Profil pembuat website = akun pribadi (alur-pembuatan-website.md bagian 8): kepala profil, "Ruang kerja saya"
+ * (ketuk untuk pindah), beralih mode / jadi kreator template, Pengaturan, dan Keluar.
  */
 @AndroidEntryPoint
 public class CreatorProfileFragment extends Fragment {
 
     private FragmentCreatorProfileBinding binding;
+    @Inject
+    ThumbnailLoader thumbnailLoader;
+
     private CurrentUserViewModel userViewModel;
+    private WorkspaceViewModel workspaceViewModel;
     private ProfileViewModel accountViewModel;
 
     @Override
@@ -46,15 +58,11 @@ public class CreatorProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         userViewModel = new ViewModelProvider(this).get(CurrentUserViewModel.class);
+        workspaceViewModel = new ViewModelProvider(this).get(WorkspaceViewModel.class);
+        // Daftar dan ruang kerja aktif diamati bersama, agar tanda ✓ pindah begitu ruang kerja diganti.
+        workspaceViewModel.getWorkspaces().observe(getViewLifecycleOwner(), list -> bindWorkspaces());
+        workspaceViewModel.getActive().observe(getViewLifecycleOwner(), active -> bindWorkspaces());
         accountViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
-        CreatorProfileViewModel profileViewModel = new ViewModelProvider(this).get(CreatorProfileViewModel.class);
-
-        binding.statProjects.label.setText(R.string.profile_stat_projects);
-        binding.statExported.label.setText(R.string.profile_stat_exported);
-        profileViewModel.getCounts().observe(getViewLifecycleOwner(), counts -> {
-            binding.statProjects.value.setText(TemplateUi.count(counts == null ? 0 : counts.total));
-            binding.statExported.value.setText(TemplateUi.count(counts == null ? 0 : counts.exported));
-        });
 
         binding.guestSignInButton.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login));
@@ -105,6 +113,20 @@ public class CreatorProfileFragment extends Fragment {
         userViewModel.reload();
     }
 
+    private void bindWorkspaces() {
+        List<Workspace> list = workspaceViewModel.getWorkspaces().getValue();
+        Workspace active = workspaceViewModel.getActive().getValue();
+        WorkspaceRows.bind(binding.workspaceList, list == null ? Collections.emptyList() : list, active,
+                thumbnailLoader, workspace -> {
+                    if (active != null && active.getId().equals(workspace.getId())) {
+                        return;
+                    }
+                    workspaceViewModel.select(workspace);
+                    Snackbar.make(binding.getRoot(), getString(R.string.workspace_switched, workspace.getName()),
+                            Snackbar.LENGTH_SHORT).show();
+                });
+    }
+
     private void bindUser(@Nullable User user) {
         boolean loggedIn = user != null;
         binding.guestSection.setVisibility(loggedIn ? View.GONE : View.VISIBLE);
@@ -118,12 +140,6 @@ public class CreatorProfileFragment extends Fragment {
         binding.name.setText(user.getDisplayName());
         binding.email.setText(user.getEmail());
         binding.email.setVisibility(user.getEmail() == null ? View.GONE : View.VISIBLE);
-
-        String purpose = user.getWebsitePurpose();
-        binding.purpose.setText(purpose == null ? getString(R.string.profile_not_set)
-                : getString(TemplateUi.categoryLabel(purpose)));
-        String organization = user.getOrganizationName();
-        binding.organization.setText(organization == null ? getString(R.string.profile_not_set) : organization);
 
         // Punya profil provider aktif → beralih mode; belum provider → jadi penyedia template;
         // provider ditangguhkan → keduanya disembunyikan (mode provider terkunci).

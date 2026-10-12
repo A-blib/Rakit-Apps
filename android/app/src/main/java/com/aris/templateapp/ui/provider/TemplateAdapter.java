@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.aris.templateapp.R;
-import com.aris.templateapp.data.remote.dto.TemplateListDto.TemplateSummaryDto;
 import com.aris.templateapp.core.network.ThumbnailLoader;
+import com.aris.templateapp.data.remote.dto.TemplateListDto.TemplateSummaryDto;
 import com.aris.templateapp.databinding.ItemTemplateBinding;
 
 import java.util.Objects;
@@ -51,7 +51,7 @@ public class TemplateAdapter extends ListAdapter<TemplateSummaryDto, TemplateAda
         b.status.setText(TemplateUi.statusLine(context, item.status, item.errorCount, item.warningCount));
         b.status.setTextColor(ContextCompat.getColor(context, statusColor(item)));
 
-        String category = context.getString(TemplateUi.categoryLabel(item.category));
+        String category = TemplateUi.categoryLabel(item.category);
         String updated = TemplateUi.updatedAgo(context, item.updatedAt);
         // Angka dilihat/download hanya bermakna untuk template yang pernah tayang.
         boolean hasStats = TemplateUi.PUBLISHED.equals(item.status) || TemplateUi.DISABLED.equals(item.status);

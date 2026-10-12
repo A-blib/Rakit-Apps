@@ -109,7 +109,7 @@ final class ColorPickerDialog {
             GradientDrawable shape = new GradientDrawable();
             shape.setShape(GradientDrawable.OVAL);
             shape.setColor(Color.parseColor(color));
-            shape.setStroke(on ? thin * 2 : thin, context.getColor(on ? R.color.color_foreground : R.color.color_border));
+            shape.setStroke(on ? thin * 2 : thin, context.getColor(on ? R.color.color_primary : R.color.color_border));
             swatch.setBackground(new InsetDrawable(shape, inset));
             swatch.setSelected(on);
         }

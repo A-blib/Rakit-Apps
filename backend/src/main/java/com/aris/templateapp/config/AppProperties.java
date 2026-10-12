@@ -25,7 +25,11 @@ public record AppProperties(
         @NotBlank String deepLink,
         // Zona waktu untuk mengelompokkan statistik per hari (mis. download per tanggal di Indonesia).
         @NotBlank String timezone,
-        @Valid Upload upload) {
+        @Valid Upload upload,
+        @Valid Org org,
+        @Valid Sites sites,
+        @Valid Projects projects,
+        @Valid Portal portal) {
 
     public record Jwt(
             // HS256 butuh kunci minimal 256 bit (32 byte).
@@ -39,6 +43,70 @@ public record AppProperties(
     }
 
     public record GitHub(String clientId, String clientSecret, String redirectUri) {
+    }
+
+    /**
+     * Ruang kerja organisasi (revisi-fondasi-orgspace.md bagian 3.2 & 4.1).
+     *
+     * @param maxMembers    batas anggota per organisasi (F4)
+     * @param inviteTtlDays masa berlaku kode undangan (F2)
+     * @param logoMaxKb     ukuran maksimal file logo yang diunggah
+     * @param logoDir       folder logo hasil olahan server (relatif ke folder kerja backend)
+     */
+    public record Org(
+            @Min(2) int maxMembers,
+            @Min(1) int inviteTtlDays,
+            @Min(16) int logoMaxKb,
+            @NotBlank String logoDir) {
+    }
+
+    /**
+     * Website yang sedang diedit di cloud (alur-buat-website-via-template.md 3.1 & 12).
+     *
+     * @param assetsDir          folder gambar website (relatif ke folder kerja backend)
+     * @param assetMaxKb         batas satu gambar setelah diproses HP (E4)
+     * @param storageMaxMbPerOrg batas total gambar per ruang kerja (E5)
+     * @param lockTtlSeconds     umur kunci edit; app memperpanjangnya selama editor terbuka (E1)
+     */
+    public record Projects(
+            @NotBlank String assetsDir,
+            @Min(16) int assetMaxKb,
+            @Min(1) int storageMaxMbPerOrg,
+            @Min(30) int lockTtlSeconds) {
+    }
+
+    /**
+     * Portal web (landing, docs, monitoring, kritik &amp; saran) yang memakai API ini (docs/rancangan/portal-web.md).
+     *
+     * @param androidDownloadUrl  link unduh app untuk tombol di landing page; kosong = tombol disembunyikan web
+     * @param feedbackDailyLimit  batas kritik &amp; saran baru per user per 24 jam (mencegah spam)
+     * @param usageFlushSeconds   jeda menulis hitungan lalu lintas &amp; pengguna aktif dari memori ke database
+     */
+    public record Portal(
+            String androidDownloadUrl,
+            @Min(1) int feedbackDailyLimit,
+            @Min(5) int usageFlushSeconds) {
+    }
+
+    /**
+     * Website organisasi yang diterbitkan (alur-publish-website.md 7.1). Antrean bangun & domain sendiri
+     * menambah properti di sini pada fase publish.
+     *
+     * @param domain         domain khusus website organisasi ({DOMAIN_SITUS}), boleh berisi port untuk development
+     * @param urlScheme      {@code https} di VPS, {@code http} di laptop
+     * @param maxPerOrg      batas website beralamat per organisasi (D1)
+     * @param maxPerPersonal batas website beralamat per ruang pribadi (D1)
+     */
+    public record Sites(
+            @NotBlank String domain,
+            @NotBlank String urlScheme,
+            @Min(1) int maxPerOrg,
+            @Min(1) int maxPerPersonal) {
+
+        /** Alamat lengkap website dari nama subdomainnya, mis. {@code https://osis-smansa.orgspace.site}. */
+        public String urlOf(String slug) {
+            return urlScheme + "://" + slug + "." + domain;
+        }
     }
 
     /**

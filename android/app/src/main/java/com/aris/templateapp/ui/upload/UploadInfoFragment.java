@@ -22,6 +22,7 @@ import com.aris.templateapp.R;
 import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.core.upload.FileSizes;
 import com.aris.templateapp.core.util.Resource;
+import com.aris.templateapp.data.model.OrgCategories;
 import com.aris.templateapp.data.remote.dto.DraftDto;
 import com.aris.templateapp.data.remote.dto.TechInfoDto;
 import com.aris.templateapp.databinding.FragmentUploadInfoBinding;
@@ -33,8 +34,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -61,6 +65,11 @@ public class UploadInfoFragment extends Fragment {
     @Nullable
     private UploadInfoViewModel.SiteReady site;
     private final List<String> keywords = new ArrayList<>();
+    private final Set<String> selectedTags = new LinkedHashSet<>();
+    private Set<String> suggestedTags = Collections.emptySet();
+    @Nullable private String selectedCategory;
+    // Chip yang dibuat/dicentang dari kode tidak boleh dianggap pilihan kreator.
+    private boolean buildingChips;
     private boolean filled;
     private KeyboardAwareBottomBar keyboardAware;
     private String thumbnailSource;
@@ -160,12 +169,14 @@ public class UploadInfoFragment extends Fragment {
             }
             validate();
         }));
-        binding.purposeGroup.setOnCheckedStateChangeListener((group, ids) -> {
-            if (filled) {
-                viewModel.setCategory(OnboardingUi.purposeValue(ids.isEmpty() ? View.NO_ID : ids.get(0)));
+        binding.categoryGroup.setOnCheckedStateChangeListener((group, ids) -> {
+            if (filled && !buildingChips) {
+                selectedCategory = ids.isEmpty() ? null : (String) group.findViewById(ids.get(0)).getTag();
+                viewModel.setCategory(selectedCategory);
             }
             validate();
         });
+        viewModel.getCategories().observe(getViewLifecycleOwner(), categories -> buildChips());
         binding.keywordLayout.setEndIconOnClickListener(v -> addKeyword());
         binding.keywordInput.setOnEditorActionListener((v, actionId, event) -> {
             // Tombol ✓ keyboard layar memberi IME_ACTION_DONE; Enter keyboard fisik memberi KeyEvent ENTER.
@@ -213,7 +224,13 @@ public class UploadInfoFragment extends Fragment {
         }
         binding.nameInput.setText(draft.name);
         binding.descriptionInput.setText(draft.description);
-        binding.purposeGroup.check(OnboardingUi.purposeChipId(draft.category));
+        selectedCategory = draft.category;
+        selectedTags.clear();
+        if (draft.contentTags != null) {
+            selectedTags.addAll(draft.contentTags);
+        }
+        suggestedTags = ContentTagSuggester.suggest(draft.techInfo == null ? null : draft.techInfo.pages,
+                draft.sourceFileName);
         keywords.clear();
         if (draft.keywords != null) {
             keywords.addAll(draft.keywords);
@@ -227,7 +244,69 @@ public class UploadInfoFragment extends Fragment {
         }
         binding.techInfo.setText(techLine(draft.techInfo));
         filled = true;
+        buildChips();
         validate();
+    }
+
+    /**
+     * Chip kategori (pilih satu) dan Isi template (pilih minimal satu) dibuat dari daftar server, setelah draft dan
+     * daftar itu sama-sama tersedia. Isi template yang cocok dengan nama halaman template diberi tanda ✦.
+     */
+    private void buildChips() {
+        OrgCategories categories = viewModel.getCategories().getValue();
+        if (binding == null || !filled || categories == null) {
+            return;
+        }
+        buildingChips = true;
+        binding.categoryGroup.removeAllViews();
+        for (OrgCategories.Category category : categories.getCategories()) {
+            Chip chip = chip(category.value, category.label);
+            binding.categoryGroup.addView(chip);
+            if (category.value.equals(selectedCategory)) {
+                binding.categoryGroup.check(chip.getId());
+            }
+        }
+        binding.contentGroup.removeAllViews();
+        for (OrgCategories.ContentTag tag : categories.getContentTags()) {
+            Chip chip = chip(tag.value, suggestedTags.contains(tag.value)
+                    ? getString(R.string.upload_content_tag_suggested, tag.label) : tag.label);
+            chip.setChecked(selectedTags.contains(tag.value));
+            chip.setOnCheckedChangeListener((button, checked) -> {
+                if (buildingChips) {
+                    return;
+                }
+                if (checked) {
+                    selectedTags.add(tag.value);
+                } else {
+                    selectedTags.remove(tag.value);
+                }
+                viewModel.setContentTags(orderedTags(categories));
+                validate();
+            });
+            binding.contentGroup.addView(chip);
+        }
+        buildingChips = false;
+        validate();
+    }
+
+    private Chip chip(String value, String label) {
+        Chip chip = new Chip(requireContext());
+        chip.setId(View.generateViewId());
+        chip.setTag(value);
+        chip.setText(label);
+        chip.setCheckable(true);
+        return chip;
+    }
+
+    /** Urutan mengikuti daftar resmi, agar label "Punya: ..." di galeri selalu rapi. */
+    private List<String> orderedTags(OrgCategories categories) {
+        List<String> ordered = new ArrayList<>();
+        for (OrgCategories.ContentTag tag : categories.getContentTags()) {
+            if (selectedTags.contains(tag.value)) {
+                ordered.add(tag.value);
+            }
+        }
+        return ordered;
     }
 
     private String techLine(@Nullable TechInfoDto tech) {
@@ -299,8 +378,9 @@ public class UploadInfoFragment extends Fragment {
         binding.nameLayout.setError(!nameOk && !name.isEmpty() ? getString(R.string.upload_name_short) : null);
         binding.descriptionLayout.setError(!descriptionOk && !description.isEmpty()
                 ? getString(R.string.upload_description_short) : null);
-        boolean categoryOk = binding.purposeGroup.getCheckedChipId() != View.NO_ID;
-        binding.nextButton.setEnabled(filled && nameOk && descriptionOk && categoryOk && !keywords.isEmpty());
+        boolean categoryOk = binding.categoryGroup.getCheckedChipId() != View.NO_ID;
+        binding.nextButton.setEnabled(filled && nameOk && descriptionOk && categoryOk && !keywords.isEmpty()
+                && !selectedTags.isEmpty());
     }
 
     private void bindSaveStatus(UploadInfoViewModel.SaveStatus status) {

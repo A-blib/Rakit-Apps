@@ -27,7 +27,7 @@
 
             <TextView
                 android:id="@+id/badge"
-                style="@style/Widget.App.Badge"
+                style="@style/Widget.App.Badge.Accent"
                 android:layout_marginBottom="@dimen/space_4"
                 android:text="@string/badge_coming_soon"
                 android:visibility="gone" />

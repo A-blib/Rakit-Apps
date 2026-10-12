@@ -56,32 +56,37 @@ class OnboardingIntegrationTest {
     }
 
     @Test
-    void creatorOnboardingCompletesOnboarding() throws Exception {
-        send(post("/api/users/me/onboarding/creator"), """
-                {"displayName":"Aris Muslimin","websitePurpose":"sekolah","organizationName":"SMK Negeri 1"}""")
+    void creatorOnboardingNeedsWorkspaceFirst() throws Exception {
+        // Pembuat website selalu bekerja di ruang kerja (revisi-fondasi-orgspace.md bagian 5).
+        send(post("/api/users/me/onboarding/creator"), "{\"displayName\":\"Aris\"}")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("ONBOARDING_NEEDS_SPACE"));
+    }
+
+    @Test
+    void creatorOnboardingCompletesAfterCreatingOrganization() throws Exception {
+        String orgId = JsonPath.read(send(post("/api/organizations"), """
+                {"type":"organization","name":"OSIS SMA Negeri 1","shortName":"OSIS Smansa","level":"sma",
+                 "category":"osis_mpk","institutionName":"SMA Negeri 1","positionTitle":"Ketua"}""")
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString(), "$.id");
+
+        send(post("/api/users/me/onboarding/creator"), "{\"displayName\":\"Aris Muslimin\"}")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.displayName").value("Aris Muslimin"))
                 .andExpect(jsonPath("$.onboardingCompleted").value(true))
                 .andExpect(jsonPath("$.activeMode").value("creator"))
                 .andExpect(jsonPath("$.roles", contains("creator")))
-                .andExpect(jsonPath("$.creatorProfile.websitePurpose").value("sekolah"))
-                .andExpect(jsonPath("$.creatorProfile.organizationName").value("SMK Negeri 1"));
+                .andExpect(jsonPath("$.lastOrganizationId").value(orgId))
+                .andExpect(jsonPath("$.creatorProfile").doesNotExist());
     }
 
     @Test
-    void skippingCreatorFormStillCompletesOnboarding() throws Exception {
-        // Tombol "Lewati": hanya nama tampilan yang sudah terisi otomatis.
+    void personalSpaceIsEnoughForOnboarding() throws Exception {
+        createPersonalSpace();
         send(post("/api/users/me/onboarding/creator"), "{\"displayName\":\"Aris\"}")
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.onboardingCompleted").value(true))
-                .andExpect(jsonPath("$.creatorProfile.websitePurpose").doesNotExist());
-    }
-
-    @Test
-    void unknownWebsitePurposeIsRejected() throws Exception {
-        send(post("/api/users/me/onboarding/creator"), "{\"displayName\":\"Aris\",\"websitePurpose\":\"kampus\"}")
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+                .andExpect(jsonPath("$.onboardingCompleted").value(true));
     }
 
     @Test
@@ -117,6 +122,7 @@ class OnboardingIntegrationTest {
 
     @Test
     void switchingModesWithBothRoles() throws Exception {
+        createPersonalSpace();
         send(post("/api/users/me/onboarding/creator"), "{\"displayName\":\"Aris\"}");
         send(post("/api/users/me/onboarding/provider"), VALID_PROVIDER)
                 .andExpect(jsonPath("$.roles", containsInAnyOrder("creator", "provider")));
@@ -162,6 +168,11 @@ class OnboardingIntegrationTest {
         mockMvc.perform(post("/api/users/me/onboarding/creator").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"displayName\":\"Aris\"}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    private void createPersonalSpace() throws Exception {
+        send(post("/api/organizations"), "{\"type\":\"personal\",\"name\":\"Ruang pribadi Aris\"}")
+                .andExpect(status().isCreated());
     }
 
     private ResultActions changeMode(String mode) throws Exception {

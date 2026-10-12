@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Tab Profil pembuat website (alur-pembuatan-website.md bagian 5). Dua versi dalam satu layout:
-    tamu (ajakan masuk) dan user login (kepala profil, info pembuat website, ringkasan, menu).
+    Tab Profil pembuat website = akun pribadi (alur-pembuatan-website.md bagian 8). Dua versi dalam satu layout:
+    tamu (ajakan masuk) dan user login (kepala profil, ruang kerja saya, menu). Data organisasi ada di Profil
+    organisasi, bukan di sini.
 -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -56,17 +57,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_3"
-                android:drawablePadding="@dimen/space_2"
-                android:gravity="center_vertical"
-                android:text="@string/profile_guest_local"
-                android:textAppearance="@style/TextAppearance.App.BodySmall"
-                app:drawableStartCompat="@drawable/ic_info"
-                app:drawableTint="@color/color_muted" />
-        </LinearLayout>
+</LinearLayout>
 
         <!-- USER LOGIN -->
         <LinearLayout
@@ -90,7 +81,8 @@
                     android:background="@drawable/bg_avatar"
                     android:gravity="center"
                     android:importantForAccessibility="no"
-                    android:textAppearance="@style/TextAppearance.App.Title" />
+                    android:textAppearance="@style/TextAppearance.App.Title"
+                    android:textColor="@color/color_on_accent" />
 
                 <TextView
                     android:id="@+id/name"
@@ -110,83 +102,28 @@
                     style="@style/Widget.App.Badge"
                     android:layout_marginTop="@dimen/space_3"
                     android:text="@string/profile_badge_creator" />
-            </LinearLayout>
 
-            <TextView
-                style="@style/Widget.App.ListGroupTitle"
-                android:text="@string/profile_group_creator" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/screen_padding_horizontal">
-
-                <LinearLayout
+                <Button
+                    android:id="@+id/edit_button"
+                    style="@style/Widget.App.Button.Outlined"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/space_4">
+                    android:layout_marginTop="@dimen/space_4"
+                    android:text="@string/profile_edit_name"
+                    app:icon="@drawable/ic_edit"
+                    app:iconGravity="textStart" />
+            </LinearLayout>
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/field_website_purpose"
-                        android:textAppearance="@style/TextAppearance.App.BodySmall" />
-
-                    <TextView
-                        android:id="@+id/purpose"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.App.Body" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_3"
-                        android:text="@string/field_organization"
-                        android:textAppearance="@style/TextAppearance.App.BodySmall" />
-
-                    <TextView
-                        android:id="@+id/organization"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.App.Body" />
-
-                    <Button
-                        android:id="@+id/edit_button"
-                        style="@style/Widget.App.Button.Outlined"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_4"
-                        android:text="@string/profile_edit"
-                        app:icon="@drawable/ic_edit"
-                        app:iconGravity="textStart" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
+            <!-- Ketuk satu ruang kerja = pindah ruang kerja aktif (sama seperti pemilih di app bar). -->
             <TextView
                 style="@style/Widget.App.ListGroupTitle"
-                android:text="@string/profile_group_summary" />
+                android:text="@string/profile_group_workspaces" />
 
             <LinearLayout
+                android:id="@+id/workspace_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                android:orientation="horizontal"
-                android:paddingHorizontal="@dimen/screen_padding_horizontal">
-
-                <include
-                    android:id="@+id/stat_projects"
-                    layout="@layout/item_stat_box" />
-
-                <Space
-                    android:layout_width="@dimen/space_2"
-                    android:layout_height="0dp" />
-
-                <include
-                    android:id="@+id/stat_exported"
-                    layout="@layout/item_stat_box" />
-            </LinearLayout>
+                android:orientation="vertical" />
 
             <TextView
                 style="@style/Widget.App.ListGroupTitle"

@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import com.aris.templateapp.ui.website.WebsitesFragment;
+
 /** Isi 4 tab Dashboard Pembuat Website untuk ViewPager2 (tombol + bukan tab, jadi tidak punya halaman). */
 class CreatorTabsAdapter extends FragmentStateAdapter {
 
@@ -16,7 +18,7 @@ class CreatorTabsAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         switch (position) {
             case 1:
-                return new ProjectsFragment();
+                return new WebsitesFragment();
             case 2:
                 return new GalleryFragment();
             case 3:

@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Grafik area sederhana untuk tren download per hari (alur-provider.md bagian 3.7): garis warna foreground,
- * area bergradasi memudar ke bawah, grid horizontal tipis, label sumbu Geist Mono, tanpa bayangan.
+ * Grafik area sederhana untuk tren download per hari (alur-provider.md bagian 3.7): garis biru utama,
+ * area bergradasi memudar ke bawah, grid horizontal tipis, label sumbu kecil, tanpa bayangan.
  * Ketuk/geser di grafik untuk melihat tanggal & jumlah pada titik terdekat.
  * <p>
  * Dibuat sendiri (bukan library) agar gaya monokromnya persis mengikuti token desain dan tidak menambah dependency.
@@ -94,12 +94,13 @@ public class AreaChartView extends View {
     public AreaChartView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         int foreground = ContextCompat.getColor(context, R.color.color_foreground);
+        int primary = ContextCompat.getColor(context, R.color.color_primary);
         int border = ContextCompat.getColor(context, R.color.color_border);
         int muted = ContextCompat.getColor(context, R.color.color_muted);
-        Typeface mono = ResourcesCompat.getFont(context, R.font.geist_mono_regular);
+        Typeface labelFont = ResourcesCompat.getFont(context, R.font.plus_jakarta_sans_regular);
         float density = getResources().getDisplayMetrics().density;
 
-        linePaint.setColor(foreground);
+        linePaint.setColor(primary);
         linePaint.setStyle(Paint.Style.STROKE);
         linePaint.setStrokeWidth(2 * density);
         linePaint.setStrokeJoin(Paint.Join.ROUND);
@@ -111,17 +112,17 @@ public class AreaChartView extends View {
         gridPaint.setStrokeWidth(getResources().getDimension(R.dimen.border_width));
 
         labelPaint.setColor(muted);
-        labelPaint.setTypeface(mono);
+        labelPaint.setTypeface(labelFont);
         labelPaint.setTextSize(getResources().getDimension(R.dimen.chart_label_text));
 
-        pointPaint.setColor(foreground);
+        pointPaint.setColor(primary);
 
         tooltipBackground.setColor(ContextCompat.getColor(context, R.color.color_surface));
         tooltipBorder.setColor(ContextCompat.getColor(context, R.color.color_border_strong));
         tooltipBorder.setStyle(Paint.Style.STROKE);
         tooltipBorder.setStrokeWidth(getResources().getDimension(R.dimen.border_width));
         tooltipText.setColor(foreground);
-        tooltipText.setTypeface(mono);
+        tooltipText.setTypeface(labelFont);
         tooltipText.setTextSize(getResources().getDimension(R.dimen.chart_label_text));
 
         labelGap = getResources().getDimension(R.dimen.space_2);
@@ -185,7 +186,7 @@ public class AreaChartView extends View {
         fillPath.lineTo(xOf(points.size() - 1, left, right), bottom);
         fillPath.close();
 
-        // Gradasi warna foreground: cukup terlihat di atas, hilang di dasar grafik.
+        // Gradasi warna garis (biru utama): cukup terlihat di atas, hilang di dasar grafik.
         int color = linePaint.getColor();
         fillPaint.setShader(new LinearGradient(0, top, 0, bottom,
                 ColorUtils.setAlphaComponent(color, 70), ColorUtils.setAlphaComponent(color, 0), Shader.TileMode.CLAMP));

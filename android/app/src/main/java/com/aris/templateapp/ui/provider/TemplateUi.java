@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.StringRes;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.data.model.CategoryLabels;
 import com.aris.templateapp.ui.common.RelativeTime;
 
 import java.text.NumberFormat;
@@ -45,26 +46,9 @@ public final class TemplateUi {
         }
     }
 
-    /** Sama dengan pilihan "Tujuan website" di onboarding (enum WebsitePurpose di backend). */
-    @StringRes
-    public static int categoryLabel(String category) {
-        if (category == null) {
-            return R.string.purpose_lainnya;
-        }
-        switch (category) {
-            case "sekolah":
-                return R.string.purpose_sekolah;
-            case "organisasi":
-                return R.string.purpose_organisasi;
-            case "umkm":
-                return R.string.purpose_umkm;
-            case "instansi":
-                return R.string.purpose_instansi;
-            case "pribadi":
-                return R.string.purpose_pribadi;
-            default:
-                return R.string.purpose_lainnya;
-        }
+    /** Label kategori organisasi dari daftar server (lihat {@link CategoryLabels}). */
+    public static String categoryLabel(String category) {
+        return CategoryLabels.category(category);
     }
 
     /**

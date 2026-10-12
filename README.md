@@ -1,6 +1,8 @@
-# Rakit
+# OrgSpace
 
-**Rakit** adalah app Android untuk merakit website tanpa coding. Satu akun punya dua mode: **pembuat website** (memilih template, mengedit teks/warna/foto, lalu export ke HTML/CSS/JS) dan **penyedia template** (mengunggah template untuk dipakai orang lain). User bisa langsung mencoba sebagai tamu; login hanya diminta saat butuh fitur online.
+**OrgSpace** adalah app Android untuk organisasi pelajar dan mahasiswa (OSIS, BEM, Pramuka, tim jurnalistik, dan lainnya) membuat dan mengelola website organisasi tanpa coding. Pengurus bekerja bersama di **ruang kerja organisasi** dengan peran Pemilik, Admin, dan Editor, sehingga website tetap milik organisasi dari periode ke periode. Satu akun punya dua mode: **pembuat website** dan **kreator template** (mengunggah template untuk organisasi lain). User bisa langsung mencoba sebagai tamu; login hanya diminta saat butuh fitur online.
+
+> 🔄 **Revisi OrgSpace (Oktober 2026)** sedang dikerjakan di branch `fitur/orgspace` (AGENTS.md bagian 19). Rancangan: [`docs/rancangan/revisi-fondasi-orgspace.md`](docs/rancangan/revisi-fondasi-orgspace.md) dan dokumen fitur yang direvisi di `docs/rancangan/`.
 
 > 🪟 **Setup di Windows dengan bantuan agent AI:** arahkan agent ke [`SETUP-WINDOWS.md`](SETUP-WINDOWS.md) (langkah berurutan + perintah cek). Panduan manusia Windows & Linux: [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md).
 
@@ -32,8 +34,17 @@
 | Buat website via template: layar Unduh paket (progres, offline, data seluler), editor template mode (preview HP/Desktop, tab Isi & Gaya, ganti foto, tema, kontras, undo/redo, autosave), Kelengkapan & status, Export ZIP (simpan/bagikan), layar Selesai + panduan, event Dilihat/Didownload dengan antrean offline | Sudah (Fase 20–25), menunggu uji di HP (Fase 26) |
 | Editor custom mode, versi template, potong foto manual, gaya hover & jenis huruf | Segera hadir (rancangan template mode bagian 4.2) |
 | Publish website menjadi link, lupa password | Segera hadir (belum dibangun) |
+| Revisi OrgSpace R1: backend ruang kerja organisasi (organisasi & ruang pribadi, peran Pemilik/Admin/Editor, kode undangan, serah terima, riwayat aktivitas, logo, kategori organisasi) | Sudah (Fase R1) |
+| Revisi OrgSpace R2: desain Biru Semangat, font Plus Jakarta Sans, sudut membulat & tombol pil, ikon Material Symbols Rounded, Lottie berwarna, teks baru, nama app OrgSpace | Sudah (Fase R2) |
+| Revisi OrgSpace R3: onboarding ruang kerja (buat organisasi, gabung lewat kode undangan, ruang pribadi), pemilih ruang kerja di app bar, ruang kerja terakhir diingat | Sudah (Fase R3, diuji di HP) |
+| Revisi OrgSpace R4: kelola organisasi (profil + logo, anggota, undang dengan kode + Bagikan, ubah peran/jabatan, keluarkan, keluar, serah terima, hapus, riwayat aktivitas) | Sudah (Fase R4, diuji di HP) |
+| Revisi OrgSpace W1: menu bawah Beranda · Website · + · Template · Profil, logo + nama singkat di app bar, pemilih ruang kerja (buat/gabung/ruang pribadi), tab Profil dengan "Ruang kerja saya", pilihan **Rakit sendiri** ("Segera hadir"), tamu diminta masuk sebelum membuat website | Sudah (Fase W1, diuji di HP) |
+| Revisi OrgSpace W2: website disimpan di server per ruang kerja (status Draft/Online/ada perubahan/Dimatikan/Ditangguhkan dihitung server), tab Website (cari, chip + jumlah, urutan, cache offline), halaman kelola website (kerangka), ganti nama/duplikat/hapus, **Minta diterbitkan** | Sudah (Fase W2, diuji di HP). Terbitkan, Ringkasan, Riwayat versi, Domain, Pengaturan situs, dan editor cloud masih "Segera hadir" (fase T & P) |
+| Revisi OrgSpace W3: Beranda baru (sapaan untuk organisasi, Lanjutkan dari server, banner perubahan & permintaan terbit untuk Admin/Pemilik, Template untuk {org}, 6 Panduan baru), tamu bisa memilih Pakai template lalu diminta masuk | Sudah (Fase W3, diuji di HP) |
+| Portal web: fondasi backend (kritik & saran, pusat dokumentasi, statistik pengguna aktif & lalu lintas API, akun admin) + web Next.js di repo terpisah [OrgSpace Website](https://github.com/A-blib/OrgSpace-Website) (landing, `/docs`, dashboard internal) | Sudah (Fase WEB1). Tampilan disempurnakan tim web |
+| Revisi OrgSpace W4: galeri & upload memakai kategori organisasi (chip sesuai jenjang ruang kerja), "Isi template" (label "Punya: …", wajib saat upload, Peringatan konten Inti), "N kali dipakai", Template untuk {org} per kategori | Sudah (Fase W4, sebagian diuji di HP) |
 
-> 🏷️ **Nama app: Rakit.** Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
+> 🏷️ **Nama app: OrgSpace** (sebelumnya "Rakit"). Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
 
 > 👥 **Ikut mengembangkan bersama tim / memakai Windows?** Ikuti [`docs/panduan-kolaborator.md`](docs/panduan-kolaborator.md): langkah lengkap dari nol untuk **Windows** dan Linux, cara mendaftarkan SHA-1 & Test user Google, berbagi kredensial dengan aman, dan alur kerja Git tim. README ini berisi rangkuman untuk Linux (Ubuntu).
 
@@ -70,7 +81,7 @@ Diambil dari HP asli (realme, Android 13) dengan akun dummy. File lengkap ada di
 ## Struktur repo
 
 ```
-Rakit Apps/
+OrgSpace Apps/
 ├── AGENTS.md             ← instruksi pengembangan untuk agent AI (pengguna Claude Code: salin menjadi CLAUDE.md, tidak di-commit)
 ├── README.md               ← file ini
 ├── docs/
@@ -79,6 +90,14 @@ Rakit Apps/
 │   └── screenshots/        ← tangkapan layar app (terang & gelap)
 ├── backend/                ← Spring Boot (Maven), dibuka di VS Code
 └── android/                ← project Android (Gradle), dibuka di Android Studio
+```
+
+Portal web (Next.js) ada di repo terpisah [OrgSpace Website](https://github.com/A-blib/OrgSpace-Website). Susunan folder yang disarankan:
+
+```
+OrgSpace/
+├── OrgSpace Apps/      ← repo ini (backend + app Android)
+└── OrgSpace Website/   ← portal web (landing, dokumentasi, dashboard internal)
 ```
 
 ---
@@ -120,7 +139,7 @@ Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan 
 
 | Tools / library | Versi |
 |---|---|
-| Gradle (wrapper) | 9.8.0 |
+| Gradle (wrapper) | 9.8.1 |
 | Android Gradle Plugin | 9.4.1 |
 | compileSdk / targetSdk / minSdk | 37 / 37 / 26 |
 | Java (source/target) | 17 (dibangun dengan JDK 21) |
@@ -141,8 +160,8 @@ Maven dan Gradle **tidak perlu diinstal**: project memakai wrapper `./mvnw` dan 
 | WorkManager (kirim event statistik yang tertunda) | 2.12.0 |
 | jsoup (menerapkan isian ke HTML saat export ZIP di HP) | 1.23.2 |
 | JUnit / arch core-testing | 4.13.2 / 2.2.0 |
-| Font Geist Sans & Geist Mono | 1.7.2 (SIL OFL 1.1, lisensi di `app/src/main/assets/licenses/geist-OFL.txt`) |
-| Ikon | Material Symbols Outlined (Apache 2.0), disalin sebagai vector drawable `ic_*.xml` |
+| Font Plus Jakarta Sans (Tokotype) | 2.7.1 (SIL OFL 1.1, lisensi di `app/src/main/assets/licenses/plus-jakarta-sans-OFL.txt`) |
+| Ikon | Material Symbols Rounded (Apache 2.0), disalin sebagai vector drawable `ic_*.xml` |
 
 ---
 
@@ -360,6 +379,10 @@ python3 tools/buat-zip-uji.py
 
 **Folder upload.** ZIP yang diupload provider, salinan bernomor (`work.zip`), thumbnail, dan paket template tayang (`package.zip`) disimpan di `backend/uploads/` (sudah di `.gitignore`). Ganti lokasinya dengan `UPLOAD_STORAGE_DIR` di `.env` jika perlu. Batas ukuran, daftar CDN, dan library yang diizinkan ada di `application.yml` bagian `app.upload`.
 
+**Alamat website.** Kartu website yang pernah terbit menampilkan alamat `http://{nama}.sites.localhost:8081` di laptop. Atur dengan `SITES_DOMAIN` dan `SITES_URL_SCHEME`; batas website beralamat per ruang kerja dengan `SITES_MAX_PER_ORG` / `SITES_MAX_PER_PERSONAL` (lihat `.env.example`).
+
+**Logo organisasi.** Logo yang diunggah diolah server (dipotong persegi, maks 512 px, PNG) lalu disimpan di `backend/data/org-logos/` (sudah di `.gitignore`). Atur dengan `ORG_LOGO_DIR`, `ORG_LOGO_MAX_KB`, `ORG_MAX_MEMBERS`, dan `ORG_INVITE_TTL_DAYS` di `.env` (lihat `.env.example`).
+
 ### Profile
 
 | Profile | Dipakai untuk | Isi khusus |
@@ -460,7 +483,7 @@ adb uninstall com.aris.templateapp.test     # hapus lagi APK test-nya
 
 **Tema terang/gelap:** app mengikuti mode HP secara bawaan. Untuk memaksa salah satunya, buka *Profil → Pengaturan → Tampilan → Tema*.
 
-**Project contoh (build debug):** *Profil → Pengaturan → DEBUG → Isi project contoh* mengisi 7 project dengan status dan mode yang beragam. *Hapus project contoh* hanya menghapus project contoh tersebut. Menu ini tidak ada di build rilis.
+**Website contoh:** sejak OrgSpace W3, menu debug "Isi project contoh" dihapus. Website contoh kini diisi server oleh `WebsiteSeeder` (lihat "Ruang kerja dummy" di bawah).
 
 Jangan menjalankan `./gradlew` dari terminal bersamaan dengan Build/Run di Android Studio.
 
@@ -478,6 +501,48 @@ Saat backend start dengan profile `dev` dan tabel `users` masih **kosong**, `Dum
 > Database yang sudah diisi **sebelum Fase 11** memakai data seeder lama: migrasi V7 mengubah status lama `pending`/`approved`/`rejected` menjadi `active`, sehingga `dummy10` ikut aktif. Jadikan `suspended` lagi dengan SQL di bagian "Contoh SQL status provider".
 
 Nama tampilannya nama Indonesia acak dengan seed tetap, jadi hasilnya selalu sama setiap kali database diisi ulang.
+
+### Ruang kerja dummy (OrgSpace)
+
+`OrganizationSeeder` mengisi ruang kerja dari akun dummy di atas saat tabel `organizations` masih kosong (database lama ikut terisi tanpa mengosongkan user):
+
+| Ruang kerja | Jenjang · kategori | Anggota (peran) |
+|---|---|---|
+| OSIS SMA Negeri 1 Bandung ("OSIS Smansa") | SMA · OSIS / MPK | dummy3 (Pemilik), dummy4 (Admin), dummy5 & dummy6 (Editor) |
+| BEM Universitas Nusantara ("BEM UNU") | Perguruan tinggi · BEM | dummy7 (Pemilik), dummy8 (Admin), dummy4 (Editor) |
+| Pramuka SMP Negeri 2 Malang | SMP · Pramuka | dummy9 (Pemilik), dummy5 (Admin), dummy3 (Editor) |
+| Ruang pribadi | – | dummy6, dummy7 |
+
+Kode undangan untuk mencoba "Gabung organisasi" (berlaku 7 hari sejak seeder jalan):
+
+| Kode | Organisasi | Peran |
+|---|---|---|
+| **`OSIS-7K2P`** | OSIS Smansa | Editor |
+| **`BEM4-HMJ8`** | BEM UNU | Admin |
+| `PRAM-KA26` | Pramuka | sudah kedaluwarsa (untuk mencoba pesan "kode tidak berlaku") |
+
+Website contoh (`WebsiteSeeder`, hanya jika tabel `projects` masih kosong):
+
+| Ruang kerja | Website |
+|---|---|
+| OSIS Smansa | Website OSIS 2026 (online, ada perubahan), Profil OSIS Smansa (online), Pensi 2026 (draft, sedang diedit dummy5), Lomba Kreativitas (draft), Website OSIS 2025 (dimatikan), Pengumuman MPLS (ditangguhkan) |
+| BEM UNU | Website BEM UNU (online, ada perubahan), Dies Natalis (draft) |
+| Pramuka | – (untuk melihat "Belum ada website") |
+
+Isi ulang website contoh (database development): `sudo -u postgres psql -d templateapp -c "TRUNCATE projects CASCADE;"` lalu jalankan ulang backend.
+
+Cara mencoba di HP:
+
+1. Masuk sebagai `dummy1@templateapp.test` (belum onboarding) → **Pembuat website** → pilih **Buat ruang organisasi**, **Gabung organisasi** (pakai kode di atas), atau **Untuk pribadi**.
+2. Ketuk nama ruang kerja ▾ di app bar Dashboard untuk berpindah ruang kerja, atau **Kelola ruang kerja ini** untuk profil, logo, anggota, undangan, serah terima, dan riwayat aktivitas.
+3. Untuk melihat tampilan Editor (hanya-baca), masuk sebagai `dummy5` lalu pilih OSIS Smansa. Untuk Pemilik, masuk sebagai `dummy3`.
+
+Jika kode sudah kedaluwarsa, isi ulang ruang kerja dummy (hanya database development):
+
+```bash
+sudo -u postgres psql -d templateapp -c "TRUNCATE organizations CASCADE;"   # anggota, undangan, riwayat ikut terhapus
+# lalu jalankan ulang backend dengan profile dev
+```
 
 Untuk mengisi ulang dari awal (hanya database development):
 
@@ -598,6 +663,18 @@ cd - && ./gradlew --stop                                                # Gradle
 ```
 
 `android/app/build.gradle.kts` menambahkan jar itu ke annotation processor hanya jika properti `rakit.sqliteShimJar` ada.
+
+## Portal web (landing, dokumentasi, dashboard)
+
+Repo [OrgSpace Website](https://github.com/A-blib/OrgSpace-Website) berisi portal web Next.js yang memakai REST API backend ini. Cara menjalankan,
+struktur, dan aturan tim ada di `README.md` dan `AGENTS.md` repo itu; kontrak API (sumber utama) di
+[`docs/rancangan/portal-web.md`](docs/rancangan/portal-web.md).
+
+- Akun admin dashboard (profile dev): `dummy1@templateapp.test` / `password123`. Akun lain dijadikan admin dengan
+  `UPDATE users SET is_admin = true WHERE lower(email) = 'nama@contoh.com';`
+- Pengaturan baru di `backend/.env` (semua opsional): `PORTAL_ANDROID_DOWNLOAD_URL`, `PORTAL_FEEDBACK_DAILY_LIMIT`,
+  `PORTAL_USAGE_FLUSH_SECONDS`.
+- Versi: Next.js 16.4.0, React 19.3.0, Tailwind CSS 4, react-markdown 10.1.0, remark-gfm 4.0.1, Node.js 24 LTS.
 
 ## Catatan belajar & dokumentasi
 

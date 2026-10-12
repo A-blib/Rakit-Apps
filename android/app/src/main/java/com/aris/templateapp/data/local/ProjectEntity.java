@@ -66,8 +66,9 @@ public class ProjectEntity {
     public Long lastExportedAt;
 
     /**
-     * true untuk project dari tombol debug "Isi project contoh". Tombol "Hapus project contoh" hanya menghapus
-     * baris ini, sehingga project buatan user sendiri tidak ikut terhapus.
+     * true untuk project dari tombol debug "Isi project contoh" lama (dihapus di fase W3 karena website kini
+     * disimpan di server). Kolomnya dibiarkan agar struktur Room tidak berubah sampai tabel ini diganti cache
+     * project cloud (fase T).
      */
     @ColumnInfo(name = "is_sample", defaultValue = "0")
     public boolean sample;

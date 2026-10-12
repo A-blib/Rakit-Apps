@@ -200,7 +200,7 @@ class UploadIntegrationTest {
         send(get("/api/providers/me/uploads/" + templateId + "/check"), null).andExpect(status().isNotFound());
 
         UUID published = jdbc.queryForObject("""
-                INSERT INTO templates (provider_id, name, category, status) VALUES (?, 'Tayang', 'umkm', 'published')
+                INSERT INTO templates (provider_id, name, category, status) VALUES (?, 'Tayang', 'ukm', 'published')
                 RETURNING id""", UUID.class, providerId);
         send(delete("/api/providers/me/uploads/" + published), null)
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("TEMPLATE_NOT_EDITABLE"));
@@ -248,19 +248,19 @@ class UploadIntegrationTest {
                 .andExpect(jsonPath("$.techInfo.responsive").value(true));
 
         // Simpan otomatis per isian: field yang tidak dikirim tidak berubah; kata kunci dirapikan.
-        send(patch(base + "/info"), "{\"category\":\"umkm\",\"keywords\":[\" Kue \",\"kue\",\"Kuliner\",\"\"]}")
+        send(patch(base + "/info"), "{\"category\":\"ukm\",\"keywords\":[\" Kue \",\"kue\",\"Kuliner\",\"\"]}")
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Toko Kue"))
-                .andExpect(jsonPath("$.category").value("umkm"))
+                .andExpect(jsonPath("$.category").value("ukm"))
                 .andExpect(jsonPath("$.keywords", contains("kue", "kuliner")));
         send(patch(base + "/info"), "{\"description\":\"Landing page untuk toko kue rumahan.\"}")
                 .andExpect(jsonPath("$.description").value("Landing page untuk toko kue rumahan."))
-                .andExpect(jsonPath("$.category").value("umkm"));
+                .andExpect(jsonPath("$.category").value("ukm"));
         send(patch(base + "/info"), "{\"category\":\"toko\"}").andExpect(status().isBadRequest());
         send(patch(base + "/info"), "{\"keywords\":[\"kata-kunci-yang-terlalu-panjang\"]}").andExpect(status().isBadRequest());
 
         // Nama sama dengan template lain milik provider sendiri = Peringatan.
-        jdbc.update("INSERT INTO templates (provider_id, name, category, status) VALUES (?, 'Toko Roti', 'umkm', 'published')", providerId);
+        jdbc.update("INSERT INTO templates (provider_id, name, category, status) VALUES (?, 'Toko Roti', 'ukm', 'published')", providerId);
         send(patch(base + "/info"), "{\"name\":\"toko roti\"}").andExpect(jsonPath("$.nameDuplicate").value(true));
 
         send(patch(base + "/step"), "{\"step\":4}").andExpect(jsonPath("$.wizardStep").value(4));
@@ -344,8 +344,15 @@ class UploadIntegrationTest {
         send(post(base + "/submit"), "{\"agreedAssetRights\":true}")
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("Pilih kategori template."));
         send(patch(base + "/info"), """
-                {"name":"Toko Kue Bu Ani","category":"umkm","description":"Landing page toko kue rumahan dengan katalog.",
+                {"name":"Toko Kue Bu Ani","category":"ukm","description":"Landing page toko kue rumahan dengan katalog.",
                  "keywords":["kue","kuliner"]}""").andExpect(status().isOk());
+        send(post(base + "/submit"), "{\"agreedAssetRights\":true}")
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("Pilih minimal satu isi template."));
+        send(patch(base + "/info"), "{\"contentTags\":[\"bukan-isi\"]}").andExpect(status().isBadRequest());
+        // Isi template disimpan rapi (urutan resmi, tanpa duplikat); Struktur sengaja tidak dicentang.
+        send(patch(base + "/info"), "{\"contentTags\":[\"galeri\",\"profil\",\"kontak\",\"galeri\"]}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contentTags", contains("profil", "kontak", "galeri")));
         send(put(base + "/marking"), marking("judul_utama", "Judul utama", 14)).andExpect(status().isOk());
         send(post(base + "/submit"), "{\"agreedAssetRights\":true}")
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("Tandai minimal 3 isian sebelum mengirim."));
@@ -370,9 +377,16 @@ class UploadIntegrationTest {
         assertThat(index).contains("data-key=\"judul_utama\"").contains("data-section=\"Hero\"")
                 .contains("data-edit=\"image\"").doesNotContain("data-tpl-id");
 
+        // Struktur kepengurusan (konten Inti) tidak dicentang → Peringatan, tetapi tetap tayang (15.2).
+        assertThat(jdbc.queryForObject("""
+                SELECT count(*) FROM template_check_issues i JOIN template_checks c ON c.id = i.check_id
+                 WHERE c.template_id = ?::uuid AND i.code = 'ORG_CORE_CONTENT' AND i.severity = 'warning'""",
+                Long.class, templateId)).isEqualTo(1);
+
         // Tayang di galeri dan bisa dicari lewat kata kunci; kartu Upload tidak lagi menampilkannya sebagai draft.
         mockMvc.perform(get("/api/templates").param("q", "kuliner")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[*].name", hasItem("Toko Kue Bu Ani")));
+                .andExpect(jsonPath("$.items[*].name", hasItem("Toko Kue Bu Ani")))
+                .andExpect(jsonPath("$.items[0].contentTags", contains("profil", "kontak", "galeri")));
         send(get("/api/providers/me/uploads"), null).andExpect(jsonPath("$.drafts", hasSize(0)));
         send(get("/api/notifications"), null).andExpect(jsonPath("$[*].type", hasItem("TEMPLATE_PUBLISHED")));
     }

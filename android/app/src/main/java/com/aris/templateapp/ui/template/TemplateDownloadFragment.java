@@ -19,6 +19,7 @@ import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.core.upload.FileSizes;
 import com.aris.templateapp.data.local.TemplatePackageEntity;
 import com.aris.templateapp.data.model.ApiError;
+import com.aris.templateapp.data.model.CategoryLabels;
 import com.aris.templateapp.data.remote.dto.GalleryTemplateDetailDto;
 import com.aris.templateapp.data.repository.TemplatePackageRepository;
 import com.aris.templateapp.databinding.FragmentTemplateDownloadBinding;
@@ -27,7 +28,8 @@ import com.aris.templateapp.ui.editor.EditorNav;
 import com.aris.templateapp.ui.provider.TemplateUi;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import java.util.Locale;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -132,10 +134,13 @@ public class TemplateDownloadFragment extends Fragment {
     private void bindDetail(GalleryTemplateDetailDto detail) {
         binding.name.setText(detail.name);
         binding.creator.setText(getString(R.string.template_download_creator, detail.creatorName));
-        binding.category.setText(getString(TemplateUi.categoryLabel(detail.category)).toUpperCase(Locale.ROOT));
+        binding.category.setText(TemplateUi.categoryLabel(detail.category));
+        List<String> tags = CategoryLabels.contentTags(detail.contentTags);
+        binding.contentTags.setVisibility(tags.isEmpty() ? View.GONE : View.VISIBLE);
+        binding.contentTags.setText(getString(R.string.gallery_content_tags, String.join(" · ", tags)));
         int pageCount = detail.pages == null ? 0 : detail.pages.size();
         binding.pages.setVisibility(pageCount > 0 ? View.VISIBLE : View.GONE);
-        binding.pages.setText(getString(R.string.template_download_pages, pageCount).toUpperCase(Locale.ROOT));
+        binding.pages.setText(getString(R.string.template_download_pages, pageCount));
         binding.size.setVisibility(detail.packageSizeBytes == null ? View.GONE : View.VISIBLE);
         binding.size.setText(detail.packageSizeBytes == null ? null : FileSizes.format(detail.packageSizeBytes));
         binding.description.setVisibility(detail.description == null ? View.GONE : View.VISIBLE);
@@ -160,7 +165,7 @@ public class TemplateDownloadFragment extends Fragment {
         binding.progress.setMax(1000);
         binding.progress.setProgressCompat((int) (downloaded * 1000 / total), true);
         binding.progressText.setText(getString(R.string.template_download_progress,
-                FileSizes.megabytes(downloaded), FileSizes.megabytes(total)).toUpperCase(Locale.ROOT));
+                FileSizes.megabytes(downloaded), FileSizes.megabytes(total)));
     }
 
     private void askMobileData(@Nullable GalleryTemplateDetailDto detail) {

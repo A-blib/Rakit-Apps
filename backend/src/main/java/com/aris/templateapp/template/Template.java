@@ -1,8 +1,8 @@
 package com.aris.templateapp.template;
 
+import com.aris.templateapp.organization.OrgCategory;
 import com.aris.templateapp.upload.check.TechInfo;
 import com.aris.templateapp.upload.marking.MarkingData;
-import com.aris.templateapp.user.WebsitePurpose;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Tabel {@code templates}. Kategori memakai enum {@link WebsitePurpose} karena pilihannya sama dengan
- * tujuan website saat onboarding pembuat website.
+ * Tabel {@code templates}. Kategori memakai kategori organisasi ({@link OrgCategory}) yang sama dengan kategori
+ * ruang kerja, sehingga "Template untuk {org}" cukup mencocokkan keduanya (revisi OrgSpace, alur-fitur-upload 15.1).
  * <p>
  * {@code updatedAt} diatur sendiri (bukan @UpdateTimestamp) karena "terakhir diperbarui" berarti
  * template diubah provider, bukan setiap kali baris ini tersentuh (mis. jumlah peringatan dihitung ulang).
@@ -47,7 +47,7 @@ public class Template {
     private String name;
 
     // Null selama Info template (langkah 3 Upload) belum diisi.
-    private WebsitePurpose category;
+    private OrgCategory category;
 
     private String thumbnailUrl;
 
@@ -73,6 +73,11 @@ public class Template {
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(nullable = false, columnDefinition = "text[]")
     private List<String> keywords = new ArrayList<>();
+
+    /** "Isi template": kode {@link ContentTag} (mis. profil, struktur, kontak). */
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(nullable = false, columnDefinition = "text[]")
+    private List<String> contentTags = new ArrayList<>();
 
     @JdbcTypeCode(SqlTypes.JSON)
     private TechInfo techInfo;
@@ -109,7 +114,7 @@ public class Template {
     // Ukuran package.zip; null selama template belum punya paket.
     private Long packageSize;
 
-    public Template(UUID providerId, String name, WebsitePurpose category) {
+    public Template(UUID providerId, String name, OrgCategory category) {
         this.providerId = providerId;
         this.name = name;
         this.category = category;

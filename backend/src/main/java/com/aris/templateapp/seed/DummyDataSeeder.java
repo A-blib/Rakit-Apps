@@ -10,7 +10,6 @@ import com.aris.templateapp.user.CreatorProfile;
 import com.aris.templateapp.user.CreatorProfileRepository;
 import com.aris.templateapp.user.User;
 import com.aris.templateapp.user.UserRepository;
-import com.aris.templateapp.user.WebsitePurpose;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
@@ -49,8 +48,6 @@ public class DummyDataSeeder implements ApplicationRunner {
             "Budi", "Siti", "Agus", "Dewi", "Rizky", "Putri", "Fajar", "Nur", "Andi", "Rina", "Hendra", "Wulan"};
     private static final String[] LAST_NAMES = {
             "Santoso", "Rahmawati", "Pratama", "Lestari", "Hidayat", "Saputra", "Wijaya", "Nugroho", "Kurniawan"};
-    private static final String[] ORGANIZATIONS = {
-            "SMK Negeri 1 Malang", "Karang Taruna Melati", "Warung Kopi Senja", "Dinas Pariwisata", "Toko Batik Ayu"};
     private static final String[] SPECIALTIES = {"Landing page", "Sekolah", "UMKM", "Portofolio", "Organisasi"};
 
     private final UserRepository userRepository;
@@ -71,7 +68,6 @@ public class DummyDataSeeder implements ApplicationRunner {
         Faker faker = new Faker(new Random(42));
         // BCrypt sengaja lambat, jadi hash dibuat sekali lalu dipakai bersama oleh semua user dummy.
         String passwordHash = passwordEncoder.encode(PASSWORD);
-        WebsitePurpose[] purposes = WebsitePurpose.values();
         // Tiga user terakhir menjadi provider: dua aktif, satu ditangguhkan (untuk mencoba mode provider terkunci).
         List<ProviderStatus> providerStatuses = List.of(
                 ProviderStatus.ACTIVE, ProviderStatus.ACTIVE, ProviderStatus.SUSPENDED);
@@ -87,10 +83,7 @@ public class DummyDataSeeder implements ApplicationRunner {
             if (i <= 2) {
                 continue;
             }
-            CreatorProfile creator = new CreatorProfile(user.getId());
-            creator.setWebsitePurpose(faker.options().option(purposes));
-            creator.setOrganizationName(faker.bool().bool() ? faker.options().option(ORGANIZATIONS) : null);
-            creatorProfileRepository.save(creator);
+            creatorProfileRepository.save(new CreatorProfile(user.getId()));
             user.setOnboardingCompleted(true);
 
             int providerIndex = i - (USER_COUNT - providerStatuses.size()) - 1;

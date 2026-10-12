@@ -14,6 +14,12 @@ spring:
     # Matikan agar query database tidak diam-diam berjalan saat JSON sedang ditulis ke response.
     open-in-view: false
 
+  servlet:
+    multipart:
+      # Sedikit di atas batas logo (ORG_LOGO_MAX_KB); ukuran sebenarnya diperiksa OrgLogoStorage.
+      max-file-size: 2MB
+      max-request-size: 3MB
+
 server:
   port: 8080
 
@@ -30,6 +36,32 @@ app:
     redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/api/auth/github/callback}
   deep-link: ${APP_DEEP_LINK:templateapp://auth/callback}
   timezone: ${APP_TIMEZONE:Asia/Jakarta}
+  # Ruang kerja organisasi (docs/rancangan/revisi-fondasi-orgspace.md bagian 3.2 & 4.1).
+  org:
+    max-members: ${ORG_MAX_MEMBERS:30}
+    invite-ttl-days: ${ORG_INVITE_TTL_DAYS:7}
+    logo-max-kb: ${ORG_LOGO_MAX_KB:1024}
+    # Folder logo hasil olahan (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/org-logos.
+    logo-dir: ${ORG_LOGO_DIR:./data/org-logos}
+  # Website yang diedit di cloud (docs/rancangan/alur-buat-website-via-template.md bagian 3.1 & 12).
+  projects:
+    # Folder gambar website (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/project-assets.
+    assets-dir: ${PROJECT_ASSETS_DIR:./data/project-assets}
+    asset-max-kb: ${PROJECT_ASSET_MAX_KB:1024}
+    storage-max-mb-per-org: ${PROJECT_STORAGE_MAX_MB_PER_ORG:300}
+    lock-ttl-seconds: ${PROJECT_LOCK_TTL_SECONDS:120}
+  # Website organisasi yang diterbitkan (docs/rancangan/alur-publish-website.md bagian 7.1).
+  sites:
+    # {DOMAIN_SITUS}. Di laptop, *.sites.localhost:8081 dilayani Caddy lokal (bagian 6.5).
+    domain: ${SITES_DOMAIN:sites.localhost:8081}
+    url-scheme: ${SITES_URL_SCHEME:http}
+    max-per-org: ${SITES_MAX_PER_ORG:5}
+    max-per-personal: ${SITES_MAX_PER_PERSONAL:5}
+  # Portal web OrgSpace: landing, docs, monitoring, kritik & saran (docs/rancangan/portal-web.md).
+  portal:
+    android-download-url: ${PORTAL_ANDROID_DOWNLOAD_URL:}
+    feedback-daily-limit: ${PORTAL_FEEDBACK_DAILY_LIMIT:10}
+    usage-flush-seconds: ${PORTAL_USAGE_FLUSH_SECONDS:60}
   seed:
     # Seeder demo template provider (hanya profile dev). Mati secara bawaan; nyalakan dengan
     # --app.seed.demo-templates=true saat menjalankan backend. Lihat README "Data demo provider".

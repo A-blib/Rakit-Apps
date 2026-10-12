@@ -19,10 +19,14 @@ public enum Guide {
     FIX_FAILED(Audience.PROVIDER, R.string.guide_fix_title, R.string.guide_fix_body),
     READ_NUMBERS(Audience.PROVIDER, R.string.guide_numbers_title, R.string.guide_numbers_body),
 
-    // Dashboard Pembuat Website (alur-pembuatan-website.md bagian 3.4)
-    HOST_ZIP(Audience.CREATOR, R.string.guide_host_zip_title, R.string.guide_host_zip_body),
-    MODES(Audience.CREATOR, R.string.guide_modes_title, R.string.guide_modes_body),
-    FIRST_WEBSITE(Audience.CREATOR, R.string.guide_first_website_title, 0);
+    // Dashboard Pembuat Website (alur-pembuatan-website.md bagian 3.4). Terbitkan, domain, dan export ZIP dibangun
+    // di fase publish, jadi panduannya "Segera hadir" sampai fiturnya ada.
+    PUBLISH(Audience.CREATOR, R.string.guide_publish_title, 0),
+    CHOOSE_MODE(Audience.CREATOR, R.string.guide_choose_mode_title, R.string.guide_choose_mode_body),
+    INVITE(Audience.CREATOR, R.string.guide_invite_title, R.string.guide_invite_body),
+    HANDOVER(Audience.CREATOR, R.string.guide_handover_title, R.string.guide_handover_body),
+    DOMAIN(Audience.CREATOR, R.string.guide_domain_title, 0),
+    HOST_ZIP(Audience.CREATOR, R.string.guide_host_zip_title, 0);
 
     /** Dashboard tempat panduan ditampilkan. */
     public enum Audience { PROVIDER, CREATOR }

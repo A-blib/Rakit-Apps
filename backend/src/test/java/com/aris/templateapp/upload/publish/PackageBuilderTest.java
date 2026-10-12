@@ -82,7 +82,7 @@ class PackageBuilderTest {
         return new MarkingData(List.of(new MarkingData.Page(page, "Beranda")),
                 List.of(new MarkingData.Section("s1", page, "Hero", 6)),
                 List.of(new MarkingData.Field("judul", "Judul utama", "text", null, 30, true, 1, null, List.of(), "s1",
-                        List.of(new MarkingData.Element(page, 7, List.of("mobile", "desktop"))))),
+                        List.of(new MarkingData.Element(page, 7, List.of("mobile", "desktop"))), null, null)),
                 List.of());
     }
 }

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Beranda pembuat website (alur-pembuatan-website.md bagian 3, fase W3). -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- %1$s = nama singkat ruang kerja (K23) -->
+    <string name="home_hero_title">Kerja keras %1$s layak dilihat banyak orang</string>
+    <string name="home_hero_body">Tunjukkan kegiatan dan karya kalian lewat website sendiri.</string>
+    <string name="home_hero_guest">Saatnya organisasimu punya rumah online</string>
+    <!-- %1$s = nama depan user -->
+    <string name="home_hi">Hai, %1$s</string>
+    <!-- %1$d = jumlah website -->
+    <string name="home_banner_changed" tools:ignore="PluralsCandidate">%1$d website punya perubahan yang belum diterbitkan.</string>
+    <!-- %1$s = nama anggota, %2$s = nama website -->
+    <string name="home_banner_request">%1$s minta website %2$s diterbitkan.</string>
+    <string name="action_view">Lihat</string>
+    <string name="action_review">Periksa</string>
+    <!-- %1$s = nama singkat organisasi -->
+    <string name="home_recommend_for">Template untuk %1$s</string>
+    <string name="home_recommend_popular" tools:ignore="Typos">Template populer</string>
+
+    <!-- Panduan pembuat website (bagian 3.4); statis di app agar bisa dibaca offline. -->
+    <string name="guide_publish_title">Cara menerbitkan website</string>
+    <string name="guide_choose_mode_title">Pakai template atau Rakit sendiri?</string>
+    <string name="guide_invite_title">Ajak pengurus lain</string>
+    <string name="guide_handover_title">Saat ganti kepengurusan</string>
+    <string name="guide_domain_title">Pakai domain sendiri</string>
+    <string name="guide_host_zip_title">Mengonlinekan sendiri file ZIP</string>
+
+    <string name="guide_choose_mode_body">"OrgSpace punya dua cara membuat website. Keduanya tersimpan di ruang kerja organisasimu dan bisa dilanjutkan pengurus lain.
+
+PAKAI TEMPLATE
+Mulai dari template jadi buatan kreator template. Desainnya sudah lengkap; kamu tinggal mengganti teks, foto, dan warna. Nama organisasi, logo, dan kontak terisi otomatis dari Profil organisasi.
+Cocok jika: ingin cepat jadi, atau sudah menemukan template yang pas di tab Template.
+
+RAKIT SENDIRI
+Susun website dari section siap pakai: hero, struktur kepengurusan, berita, dan lainnya. Editornya sedang kami siapkan.
+Cocok jika: ingin susunan yang berbeda dari template yang ada.
+
+BINGUNG MEMILIH?
+Mulai dari template yang kategorinya sama dengan organisasimu. Website dari template tidak bisa diubah menjadi Rakit sendiri (dan sebaliknya), jadi pilih yang paling dekat dengan kebutuhanmu."</string>
+
+    <string name="guide_invite_body">"Website organisasi lebih ringan dikerjakan bersama. Ajak pengurus lain masuk ke ruang kerja.
+
+MEMBUAT KODE UNDANGAN (Admin &amp; Pemilik)
+1. Ketuk nama organisasi di atas Beranda, lalu Kelola organisasi.
+2. Buka Anggota, lalu Undang anggota.
+3. Pilih perannya, lalu Buat kode undangan.
+4. Ketuk Bagikan untuk mengirim kode lewat WhatsApp, atau Salin.
+Kode berlaku 7 hari dan bisa dipakai beberapa orang. Kode hanya tampil sekali, jadi langsung bagikan.
+
+MEMAKAI KODE
+Pengurus baru memasang OrgSpace, masuk, lalu memilih Gabung organisasi dan memasukkan kode.
+
+PERAN
+Pemilik: semua hak, termasuk hapus organisasi dan serah terima.
+Admin: menerbitkan website, mengatur anggota, dan mengubah Profil organisasi.
+Editor: mengedit website dan menyimpan draft, lalu Minta diterbitkan ke Admin."</string>
+
+    <string name="guide_handover_body">"Website milik ruang kerja organisasi, bukan milik satu orang. Saat kepengurusan berganti, website tetap aman asalkan kepemilikannya diserahkan.
+
+SEBELUM PENGURUS LAMA PAMIT
+1. Undang pengurus baru ke ruang kerja (Kelola organisasi → Anggota → Undang anggota).
+2. Pemilik lama membuka Kelola organisasi → Serah terima, memilih Pemilik baru, lalu memilih perannya sendiri setelahnya (tetap Admin, tetap Editor, atau keluar).
+3. Perbarui Profil organisasi: nama periode, kontak, dan media sosial terbaru. Data ini dipakai website.
+
+SETELAH SERAH TERIMA
+Pemilik baru bisa mengubah peran pengurus lain dan mengeluarkan anggota yang sudah tidak aktif. Semua perubahan tercatat di Riwayat aktivitas."</string>
+</resources>

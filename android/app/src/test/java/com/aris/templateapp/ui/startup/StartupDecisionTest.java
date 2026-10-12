@@ -67,6 +67,6 @@ public class StartupDecisionTest {
     }
 
     private static User user(boolean onboarded, UserRole mode, EnumSet<UserRole> roles, ProviderStatus status) {
-        return new User("u-1", "Aris", "aris@mail.com", null, mode, onboarded, roles, status, null, null);
+        return new User("u-1", "Aris", "aris@mail.com", null, mode, onboarded, roles, status, null);
     }
 }
