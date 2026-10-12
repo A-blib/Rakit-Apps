@@ -1509,6 +1509,39 @@ App memanggil `POST /organizations` (buat organisasi / ruang pribadi) atau `POST
 - `GET /api/meta/categories` (publik) menyajikan jenjang dan kategori dari enum `OrgLevel` + `OrgCategory`; kombinasi yang salah ditolak `CATEGORY_LEVEL_MISMATCH`.
 - `OrgLogoStorage` membaca isi file (PNG/JPG), memotong persegi, memperkecil maks 512 px, dan menulis ulang sebagai PNG di `ORG_LOGO_DIR`. URL-nya `/api/organizations/{id}/logo?v=<waktu>` (publik).
 
+### Di Android: ruang kerja aktif (R3)
+
+```
+SessionStore (daftar + id aktif, tetap ada saat offline)
+      ▲  simpan
+WorkspaceRepository ── refresh() ← GET /organizations   (dashboard onStart)
+      │                select(id) → PATCH /users/me/last-organization (best-effort)
+      ▼  LiveData
+WorkspaceViewModel → app bar "Nama ruang kerja ▾" → WorkspacePickerSheet
+                   → needsWorkspace (user login tanpa ruang kerja) → WorkspaceChoiceFragment
+```
+
+- **Onboarding**: Pilih peran → `WorkspaceChoiceFragment` → `OrganizationFormFragment` / `JoinOrganizationFragment` / `PersonalSpaceFragment`. `WorkspaceSetupViewModel` membuat/memasuki ruang kerja dulu, lalu menyelesaikan onboarding. Jika langkah kedua gagal, Coba lagi hanya mengulang langkah itu (`retryPendingFinish`), sehingga organisasi tidak dibuat dua kali.
+- **Form organisasi**: chip jenjang & kategori dari `GET /api/meta/categories` (`CategoryChips`, dipakai juga di Profil organisasi). Aturan isian ada di `OrganizationForm` (logika murni, dites di laptop).
+- **Gabung**: Cek kode (`/invitations/preview`) menampilkan kartu nama + logo + peran; Gabung sekarang (`/invitations/accept`). Input kode memakai `InputFilter.AllCaps`; normalisasi tetap di backend.
+- **Keluar akun / sesi berakhir** → `WorkspaceRepository.clear()` agar ruang kerja akun lama tidak terbawa.
+
+### Di Android: kelola organisasi (R4)
+
+Dibuka dari pemilih ruang kerja → **Kelola ruang kerja ini** (`OrganizationFragment`). Semua layar menerima argumen `organizationId` (`OrganizationArgs`) dan memanggil `OrganizationRepository`.
+
+| Layar | Isi | Siapa |
+|---|---|---|
+| `OrganizationFragment` | Logo, "Peranmu", jumlah anggota, menu | Semua anggota; Serah terima & Hapus hanya Pemilik; Anggota/Serah terima/Keluar tidak ada di ruang pribadi |
+| `OrganizationProfileFragment` | Identitas, jenjang/kategori, periode, kontak, media sosial, Ganti logo | Ubah: Admin & Pemilik; Editor hanya melihat |
+| `MembersFragment` + `InviteSheet` | Pengurus, undangan aktif, buat kode (Salin/Bagikan), ubah peran/jabatan, keluarkan, cabut | Undang & atur: Admin ke atas; Admin tidak bisa menyentuh Pemilik |
+| `TransferOwnershipFragment` | Pilih Pemilik baru + peranmu setelahnya | Pemilik |
+| `ActivityFragment` | Riwayat berupa kalimat (`ActivityText`), per halaman | Semua anggota |
+
+- Menu yang tampil mengikuti `Organization.canManage()` / `isOwner()`, tetapi keputusan akhirnya tetap di backend (`OrganizationAccess`).
+- Logo diproses di HP dulu (`ImageProcessor.logoPng`: EXIF, potong persegi, 512 px, PNG), lalu backend memprosesnya lagi.
+- Aksi yang mengubah nama/logo/keanggotaan memuat ulang `WorkspaceRepository`, sehingga app bar dan pemilih langsung berubah. Layar Organisasi dan Anggota memuat ulang di `onResume` (misalnya kembali dari WhatsApp setelah membagikan kode).
+
 ## 32. Glosarium
 
 | Istilah | Arti singkat |

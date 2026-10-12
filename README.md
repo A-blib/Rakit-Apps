@@ -36,6 +36,8 @@
 | Publish website menjadi link, lupa password | Segera hadir (belum dibangun) |
 | Revisi OrgSpace R1: backend ruang kerja organisasi (organisasi & ruang pribadi, peran Pemilik/Admin/Editor, kode undangan, serah terima, riwayat aktivitas, logo, kategori organisasi) | Sudah (Fase R1) |
 | Revisi OrgSpace R2: desain Biru Semangat, font Plus Jakarta Sans, sudut membulat & tombol pil, ikon Material Symbols Rounded, Lottie berwarna, teks baru, nama app OrgSpace | Sudah (Fase R2) |
+| Revisi OrgSpace R3: onboarding ruang kerja (buat organisasi, gabung lewat kode undangan, ruang pribadi), pemilih ruang kerja di app bar, ruang kerja terakhir diingat | Sudah (Fase R3, diuji di HP) |
+| Revisi OrgSpace R4: kelola organisasi (profil + logo, anggota, undang dengan kode + Bagikan, ubah peran/jabatan, keluarkan, keluar, serah terima, hapus, riwayat aktivitas) | Sudah (Fase R4, diuji di HP) |
 
 > 🏷️ **Nama app: OrgSpace** (sebelumnya "Rakit"). Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
 
@@ -503,6 +505,12 @@ Kode undangan untuk mencoba "Gabung organisasi" (berlaku 7 hari sejak seeder jal
 | **`OSIS-7K2P`** | OSIS Smansa | Editor |
 | **`BEM4-HMJ8`** | BEM UNU | Admin |
 | `PRAM-KA26` | Pramuka | sudah kedaluwarsa (untuk mencoba pesan "kode tidak berlaku") |
+
+Cara mencoba di HP:
+
+1. Masuk sebagai `dummy1@templateapp.test` (belum onboarding) → **Pembuat website** → pilih **Buat ruang organisasi**, **Gabung organisasi** (pakai kode di atas), atau **Untuk pribadi**.
+2. Ketuk nama ruang kerja ▾ di app bar Dashboard untuk berpindah ruang kerja, atau **Kelola ruang kerja ini** untuk profil, logo, anggota, undangan, serah terima, dan riwayat aktivitas.
+3. Untuk melihat tampilan Editor (hanya-baca), masuk sebagai `dummy5` lalu pilih OSIS Smansa. Untuk Pemilik, masuk sebagai `dummy3`.
 
 Jika kode sudah kedaluwarsa, isi ulang ruang kerja dummy (hanya database development):
 
