@@ -1606,6 +1606,21 @@ WebsitesFragment ── WebsitesViewModel ── WebsiteRepository ── Websit
 - Peran dari ruang kerja aktif: Hapus hanya Pemilik; Domain & Pengaturan situs hanya Admin/Pemilik; Editor melihat **Minta diterbitkan**.
 - Room naik ke versi 3 (`@AutoMigration(2 → 3)`, tabel `websites`). Tabel `projects` lama (project di HP) masih dipakai Beranda & editor sampai fase T.
 
+### Beranda (W3)
+
+```
+CreatorHomeFragment ── CreatorHomeViewModel ── WebsiteRepository.page(org, tanpa filter, 0) → 4 website teratas + counts.changed
+        │                                   └─ WebsiteRepository.openRequests(org)  (Admin/Pemilik saja)
+        ├─ tamu ................ "Saatnya organisasimu punya rumah online" + Template populer + Panduan
+        ├─ belum ada website ... "Kerja keras {org} layak dilihat banyak orang" + Mulai besar
+        └─ sudah ada ........... "Hai, {nama}" + Lanjutkan + Mulai satu baris (+ banner Periksa / Lihat)
+```
+
+- Pilihan tamu (Pakai template / Rakit sendiri) disimpan di `PendingStart` (ViewModel milik Activity) lalu dijalankan `CreatorDashboardFragment.start()` setelah user masuk dan punya ruang kerja (G1).
+- `WebsitesViewModel` dimiliki shell dashboard, sehingga `openWebsites(Filter.CHANGED)` dari banner Beranda langsung memilih chip.
+- Kartu Lanjutkan sementara membuka halaman kelola website sampai editor cloud (T4) ada.
+- Panduan statis ada di `Guide` (+ `strings_home.xml`); yang fiturnya belum ada tampil "Segera hadir".
+
 ## 33. Glosarium
 
 | Istilah | Arti singkat |

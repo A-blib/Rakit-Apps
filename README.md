@@ -40,6 +40,7 @@
 | Revisi OrgSpace R4: kelola organisasi (profil + logo, anggota, undang dengan kode + Bagikan, ubah peran/jabatan, keluarkan, keluar, serah terima, hapus, riwayat aktivitas) | Sudah (Fase R4, diuji di HP) |
 | Revisi OrgSpace W1: menu bawah Beranda · Website · + · Template · Profil, logo + nama singkat di app bar, pemilih ruang kerja (buat/gabung/ruang pribadi), tab Profil dengan "Ruang kerja saya", pilihan **Rakit sendiri** ("Segera hadir"), tamu diminta masuk sebelum membuat website | Sudah (Fase W1, diuji di HP) |
 | Revisi OrgSpace W2: website disimpan di server per ruang kerja (status Draft/Online/ada perubahan/Dimatikan/Ditangguhkan dihitung server), tab Website (cari, chip + jumlah, urutan, cache offline), halaman kelola website (kerangka), ganti nama/duplikat/hapus, **Minta diterbitkan** | Sudah (Fase W2, diuji di HP). Terbitkan, Ringkasan, Riwayat versi, Domain, Pengaturan situs, dan editor cloud masih "Segera hadir" (fase T & P) |
+| Revisi OrgSpace W3: Beranda baru (sapaan untuk organisasi, Lanjutkan dari server, banner perubahan & permintaan terbit untuk Admin/Pemilik, Template untuk {org}, 6 Panduan baru), tamu bisa memilih Pakai template lalu diminta masuk | Sudah (Fase W3, diuji di HP) |
 
 > 🏷️ **Nama app: OrgSpace** (sebelumnya "Rakit"). Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
 
@@ -472,7 +473,7 @@ adb uninstall com.aris.templateapp.test     # hapus lagi APK test-nya
 
 **Tema terang/gelap:** app mengikuti mode HP secara bawaan. Untuk memaksa salah satunya, buka *Profil → Pengaturan → Tampilan → Tema*.
 
-**Project contoh (build debug):** *Profil → Pengaturan → DEBUG → Isi project contoh* mengisi 7 project dengan status dan mode yang beragam. *Hapus project contoh* hanya menghapus project contoh tersebut. Menu ini tidak ada di build rilis.
+**Website contoh:** sejak OrgSpace W3, menu debug "Isi project contoh" dihapus. Website contoh kini diisi server oleh `WebsiteSeeder` (lihat "Ruang kerja dummy" di bawah).
 
 Jangan menjalankan `./gradlew` dari terminal bersamaan dengan Build/Run di Android Studio.
 
