@@ -95,7 +95,7 @@ Google Auth Platform → **Audience** → **Test users** → **+ Add users** →
 | **Penguji** (hanya mencoba app) | Pasang APK di HP, mencoba fitur | Minta Aris mendaftarkan emailmu sebagai Test user (0.4) dan mengirim APK. Cukup itu. |
 | **Developer backend** | Mengubah kode Spring Boot | 2 (Git, JDK, PostgreSQL, Docker, VS Code), 3–6, 8, 10 |
 | **Developer Android** | Mengubah kode app | Semua bagian (app butuh backend yang jalan di laptop) |
-| **Developer web** | Menyempurnakan portal web (landing, dokumentasi, dashboard) di repo [OrgSpace Website](https://github.com/A-blib/OrgSpace-Website) | 2 (Git, JDK, PostgreSQL, VS Code + **Node.js 24 LTS**), 3–6, 10, lalu `README.md` dan aturan `AGENTS.md` di repo website. Android Studio, Docker, dan OAuth tidak wajib |
+| **Developer web** | Menyempurnakan portal web (landing, dokumentasi, dashboard) di folder `OrgSpace-Website/` | 2 (Git, JDK, PostgreSQL, VS Code + **Node.js 24 LTS**), 3–6, 10, lalu `OrgSpace-Website/README.md` dan aturan `OrgSpace-Website/AGENTS.md`. Android Studio, Docker, dan OAuth tidak wajib |
 
 ---
 
@@ -315,22 +315,23 @@ Setelah itu, lanjutkan ke bagian 9. Untuk pilihan B, `local.properties` dibuat m
 
 ## 3. Ambil kode project (clone)
 
-> 🪟 **Penting untuk Windows:** simpan project di folder **pendek tanpa spasi**, mis. `C:\dev\template-app`. Folder seperti `C:\Users\Nama Kamu\Desktop\Rakit Apps` (ada spasi, path panjang) sering membuat build Android gagal di Windows.
+> 🪟 **Penting untuk Windows:** simpan project di folder **pendek tanpa spasi**, mis. `C:\dev\OrgSpace`. Folder seperti `C:\Users\Nama Kamu\Desktop\Rakit Apps` (ada spasi, path panjang) sering membuat build Android gagal di Windows.
 
 🪟 **Windows (PowerShell)**
 ```powershell
 mkdir C:\dev -Force                     # buat folder kerja (abaikan jika sudah ada)
 cd C:\dev
-git clone https://github.com/<username-aris>/template-app.git
-cd template-app
-dir                                     # harus terlihat: android, backend, docs, README.md, ...
+git clone https://github.com/A-blib/Rakit-Apps.git OrgSpace
+cd OrgSpace
+dir                                     # harus terlihat: OrgSpace-Apps, OrgSpace-Website, README.md
+cd OrgSpace-Apps                        # backend, android, docs ada di sini
 ```
 
 🐧 **Linux**
 ```bash
 mkdir -p ~/dev && cd ~/dev
-git clone https://github.com/<username-aris>/template-app.git
-cd template-app && ls
+git clone https://github.com/A-blib/Rakit-Apps.git OrgSpace
+cd OrgSpace/OrgSpace-Apps && ls          # android, backend, docs, README.md, ...
 ```
 
 > Saat clone pertama kali, Windows membuka jendela login GitHub di browser. Login dengan akun yang sudah diundang Aris.
@@ -672,7 +673,7 @@ main ───●───────────●─────────
 - Jalankan `mvnw test` (backend) atau `gradlew testDebugUnitTest` (Android) sebelum membuat pull request.
 - Ada file migrasi database baru? Pakai nomor berikutnya (`V7__...sql`). **Jangan mengubah** file `V1`–`V6` yang sudah ada.
 - Selesai mengubah file build Android? Ingatkan teman untuk klik **Sync Now** setelah `git pull`.
-- **Tim web** bekerja di repo [OrgSpace Website](https://github.com/A-blib/OrgSpace-Website): buat cabang dari `main` (mis. `landing-rina`) dan pull request ke `main`. Fitur web baru yang butuh data/endpoint baru dikoordinasikan dengan Aris dulu; Aris membuat fondasinya (lihat `AGENTS.md` repo website). Sebelum PR: `npm run lint` dan `npm run build` harus bersih.
+- **Tim web** bekerja di folder `OrgSpace-Website/`: buat cabang dari `develop` (mis. `web/landing-rina`) dan pull request ke `develop`. Fitur web baru yang butuh data/endpoint baru dikoordinasikan dengan Aris dulu; Aris membuat fondasinya (lihat `OrgSpace-Website/AGENTS.md`). Sebelum PR: `npm run lint` dan `npm run build` harus bersih.
 
 ---
 

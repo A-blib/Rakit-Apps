@@ -1,8 +1,7 @@
 # Portal Web OrgSpace (Landing, Dokumentasi, Monitoring, Kritik & Saran)
 
-> Sumber: `OrgSpace Website/instruksi/Ringkasan Proyek_ OrgSpace Web Portal (Promo, Docs, & Monitoring).docx` (Aris, 12 Oktober 2026).
-> Kode web ada di repo terpisah **OrgSpace Website** (https://github.com/A-blib/OrgSpace-Website). Dokumen ini sumber utama kontrak;
-> salinannya `docs/kontrak-api.md` di repo website wajib diperbarui setiap kali dokumen ini berubah.
+> Sumber: `OrgSpace-Website/instruksi/Ringkasan Proyek_ OrgSpace Web Portal (Promo, Docs, & Monitoring).docx` (Aris, 12 Oktober 2026).
+> Kode web ada di folder **`OrgSpace-Website/`** di repo yang sama (path `src/...` di bawah merujuk ke folder itu).
 >
 > Dokumen ini adalah **kontrak** antara backend (dibuat Aris) dan web (dikerjakan tim web). Fondasi di sini sudah
 > dibangun dan dites; tim web menyempurnakan tampilan dan isi di atasnya.
@@ -13,12 +12,12 @@
 
 | Aturan | Isi |
 |---|---|
-| Pembagian tugas | **Aris** membuat fondasi: endpoint backend, tabel, tipe data (`src/lib/api/types.ts`), klien API (`src/lib/api/`), sesi login (`src/lib/auth/`, `src/proxy.ts`) di repo website, struktur halaman. **Tim web** mengerjakan tampilan, isi teks, dan komponen di atas fondasi itu. |
+| Pembagian tugas | **Aris** membuat fondasi: endpoint backend, tabel, tipe data (`src/lib/api/types.ts`), klien API (`src/lib/api/`), sesi login (`src/lib/auth/`, `src/proxy.ts`) di `OrgSpace-Website/`, struktur halaman. **Tim web** mengerjakan tampilan, isi teks, dan komponen di atas fondasi itu. |
 | Fitur baru | **Koordinasi dengan Aris dulu.** Aris membuat fondasinya (endpoint + tipe + kerangka halaman), baru tim web mengerjakan. Jangan membuat endpoint, tabel, atau mengubah kontrak sendiri. |
 | Boleh langsung | Mengubah tampilan halaman di `src/app/**`, komponen di `src/components/**`, token desain di `globals.css` (selaras dengan app), teks landing page, menambah halaman statis tanpa data baru. |
 | Harus tanya Aris | Mengubah `lib/api/**`, `lib/auth/**`, `proxy.ts`, `next.config.ts`; menambah library npm; menyalakan Cache Components; menyimpan token di browser (localStorage); memanggil backend langsung dari browser. |
-| Backend | Repo ini (**OrgSpace Apps**, folder `backend/`) milik Aris. Tim web hanya menjalankannya untuk development. |
-| Cabang Git | Di repo OrgSpace Website: buat cabang sendiri dari `main` (mis. `landing-rina`), lalu pull request ke `main`. |
+| Backend | Folder `OrgSpace-Apps/` (backend, android, docs) milik Aris. Tim web hanya menjalankannya untuk development. |
+| Cabang Git | Buat cabang sendiri dari `develop` (mis. `web/landing-rina`), ubah hanya file di `OrgSpace-Website/`, lalu pull request ke `develop`. |
 
 ---
 
@@ -43,7 +42,7 @@ Kritik & saran di app Android, notifikasi email balasan feedback, ekspor CSV, sh
 ## 2. Arsitektur
 
 ```
-Browser ──► Next.js (repo OrgSpace Website, port 3000) ──► Spring Boot REST API (backend/, port 8080) ──► PostgreSQL
+Browser ──► Next.js (OrgSpace-Website/, port 3000) ──► Spring Boot REST API (OrgSpace-Apps/backend/, port 8080) ──► PostgreSQL
             │ Server Component / Server Action memanggil API dengan header Authorization
             │ proxy.ts memperbarui access token (refresh) sebelum halaman /dashboard dirender
             └ token disimpan di cookie httpOnly (os_access, os_refresh) — tidak bisa dibaca JavaScript browser
@@ -121,7 +120,7 @@ UPDATE users SET is_admin = true WHERE lower(email) = 'nama@contoh.com';
 ## 5. Endpoint
 
 Semua berprefix `/api`. Contoh lengkap & coba langsung: Swagger UI `http://localhost:8080/swagger-ui.html` (grup
-"Publik: …", "Admin: …", "Kritik & saran"). Tipe TypeScript: `src/lib/api/types.ts` di repo website.
+"Publik: …", "Admin: …", "Kritik & saran"). Tipe TypeScript: `OrgSpace-Website/src/lib/api/types.ts`.
 
 ### 5.1 Publik (tanpa login)
 
@@ -178,7 +177,7 @@ Kode lain yang mungkin muncul: `UNAUTHORIZED`, `VALIDATION_ERROR` (+ `fieldError
 
 | Variabel | Di | Bawaan | Fungsi |
 |---|---|---|---|
-| `ORGSPACE_API_URL` | `.env.local` (repo website) | `http://localhost:8080/api` | Alamat backend (hanya dibaca server Next.js) |
+| `ORGSPACE_API_URL` | `OrgSpace-Website/.env.local` | `http://localhost:8080/api` | Alamat backend (hanya dibaca server Next.js) |
 | `PORTAL_ANDROID_DOWNLOAD_URL` | `backend/.env` | kosong | Link tombol unduh app di landing; kosong = tombol "segera hadir" |
 | `PORTAL_FEEDBACK_DAILY_LIMIT` | `backend/.env` | 10 | Batas feedback baru per user per 24 jam |
 | `PORTAL_USAGE_FLUSH_SECONDS` | `backend/.env` | 60 | Jeda tulis statistik dari memori ke database |
@@ -188,7 +187,7 @@ Kode lain yang mungkin muncul: `UNAUTHORIZED`, `VALIDATION_ERROR` (+ `fieldError
 ## 7. Desain
 
 Selaras dengan app (revisi-fondasi-orgspace.md bagian 7): palet **Biru Semangat** dan font **Plus Jakarta Sans**.
-Semua warna adalah token di `src/app/globals.css` (repo website) (terang + gelap otomatis), dipakai lewat kelas Tailwind
+Semua warna adalah token di `OrgSpace-Website/src/app/globals.css` (terang + gelap otomatis), dipakai lewat kelas Tailwind
 (`bg-surface`, `text-muted`, `border-border`, `bg-primary`, `rounded-card`, …) dan kelas komponen (`btn-primary`,
 `btn-outline`, `card`, `input`, `badge`, `table`). Tampilan MVP sengaja sederhana; penyempurnaan oleh tim desain.
 
