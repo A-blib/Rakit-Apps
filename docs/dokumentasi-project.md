@@ -1562,6 +1562,50 @@ Menu bawah: Beranda · Website · [ + ] · Template · Profil
 - Tab Profil = akun pribadi: kepala profil + **Ubah nama tampilan** (`PATCH /api/users/me`), **Ruang kerja saya** (ketuk = pindah), menu. Pemilih dan Profil memakai `WorkspaceRows` yang sama.
 - Pindah ruang kerja lewat `WorkspaceRepository.select` → semua layar yang mengamati `getActive()` ikut berubah.
 
+### Website di cloud & tab Website (W2)
+
+Mulai W2, website (`projects`) disimpan di **server** dan dimiliki ruang kerja. Room di HP hanya cache.
+
+```
+projects ──< project_assets        (gambar, "asset:{id}" di isi)
+   │  ├── project_locks            (kunci edit, satu orang per website)
+   │  └──< project_content_backups (isi yang tergeser)
+   └── sites (1:1, ada jika pernah terbit) ──< site_releases (snapshot isi tiap versi)
+   └──< publish_requests           ("Minta diterbitkan", maks satu yang open)
+```
+
+**Status dihitung server** di `WebsiteQueries` (satu query, LEFT JOIN `sites` + rilis aktif + kunci):
+
+| Kondisi | Status |
+|---|---|
+| belum ada baris `sites` | `draft` |
+| `sites.status = online` | `online` (+ `hasUnpublishedChanges` jika `content_updated_at` > waktu rilis aktif) |
+| `offline` / `suspended` | Dimatikan / Ditangguhkan |
+
+| Endpoint | Peran |
+|---|---|
+| `GET /api/organizations/{orgId}/websites?status=all\|draft\|online\|changed&q=&sort=updated\|newest\|name&page=&size=` → `items`, `counts`, `sitesUsed`, `sitesLimit`, `hasMore` | anggota |
+| `GET /api/projects/{id}` (kartu + isi + `publishedAt` + `openRequest` + `suspensionReason`) | anggota |
+| `PATCH /api/projects/{id}` `{name}` · `POST /api/projects/{id}/duplicate` | Editor ke atas |
+| `DELETE /api/projects/{id}` `{confirmName?}` | Pemilik (website yang pernah terbit wajib `confirmName`); pembuat boleh menghapus draft barunya yang belum diubah |
+| `POST /api/projects/{id}/publish-requests` `{note?}` | Editor ke atas |
+| `GET /api/organizations/{orgId}/publish-requests` · `POST /api/publish-requests/{id}/dismiss` | Admin & Pemilik |
+
+Duplikat menyalin baris aset dan mengganti rujukan `asset:{id}` di isi (`ContentAssets.remap`), karena isi hanya boleh merujuk aset miliknya.
+
+**Android** (`ui/website/`):
+
+```
+WebsitesFragment ── WebsitesViewModel ── WebsiteRepository ── WebsiteApi
+   (cari 400 ms,      (paginasi 20,        │  online: hasil server; daftar tanpa filter → Room "websites"
+    chip, urutan)      generation)         └─ offline (IOException, halaman 0): Room + WebsiteQuery.apply/count
+   └─ kartu → WebsiteManageFragment (kerangka bagian 5; Terbitkan & bagian publish "Segera hadir")
+```
+
+- `WebsiteQuery` (murni Java, dites) menerapkan filter/urutan yang sama dengan server saat offline.
+- Peran dari ruang kerja aktif: Hapus hanya Pemilik; Domain & Pengaturan situs hanya Admin/Pemilik; Editor melihat **Minta diterbitkan**.
+- Room naik ke versi 3 (`@AutoMigration(2 → 3)`, tabel `websites`). Tabel `projects` lama (project di HP) masih dipakai Beranda & editor sampai fase T.
+
 ## 33. Glosarium
 
 | Istilah | Arti singkat |

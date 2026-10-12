@@ -39,6 +39,7 @@
 | Revisi OrgSpace R3: onboarding ruang kerja (buat organisasi, gabung lewat kode undangan, ruang pribadi), pemilih ruang kerja di app bar, ruang kerja terakhir diingat | Sudah (Fase R3, diuji di HP) |
 | Revisi OrgSpace R4: kelola organisasi (profil + logo, anggota, undang dengan kode + Bagikan, ubah peran/jabatan, keluarkan, keluar, serah terima, hapus, riwayat aktivitas) | Sudah (Fase R4, diuji di HP) |
 | Revisi OrgSpace W1: menu bawah Beranda · Website · + · Template · Profil, logo + nama singkat di app bar, pemilih ruang kerja (buat/gabung/ruang pribadi), tab Profil dengan "Ruang kerja saya", pilihan **Rakit sendiri** ("Segera hadir"), tamu diminta masuk sebelum membuat website | Sudah (Fase W1, diuji di HP) |
+| Revisi OrgSpace W2: website disimpan di server per ruang kerja (status Draft/Online/ada perubahan/Dimatikan/Ditangguhkan dihitung server), tab Website (cari, chip + jumlah, urutan, cache offline), halaman kelola website (kerangka), ganti nama/duplikat/hapus, **Minta diterbitkan** | Sudah (Fase W2, diuji di HP). Terbitkan, Ringkasan, Riwayat versi, Domain, Pengaturan situs, dan editor cloud masih "Segera hadir" (fase T & P) |
 
 > 🏷️ **Nama app: OrgSpace** (sebelumnya "Rakit"). Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
 
@@ -367,6 +368,8 @@ python3 tools/buat-zip-uji.py
 
 **Folder upload.** ZIP yang diupload provider, salinan bernomor (`work.zip`), thumbnail, dan paket template tayang (`package.zip`) disimpan di `backend/uploads/` (sudah di `.gitignore`). Ganti lokasinya dengan `UPLOAD_STORAGE_DIR` di `.env` jika perlu. Batas ukuran, daftar CDN, dan library yang diizinkan ada di `application.yml` bagian `app.upload`.
 
+**Alamat website.** Kartu website yang pernah terbit menampilkan alamat `http://{nama}.sites.localhost:8081` di laptop. Atur dengan `SITES_DOMAIN` dan `SITES_URL_SCHEME`; batas website beralamat per ruang kerja dengan `SITES_MAX_PER_ORG` / `SITES_MAX_PER_PERSONAL` (lihat `.env.example`).
+
 **Logo organisasi.** Logo yang diunggah diolah server (dipotong persegi, maks 512 px, PNG) lalu disimpan di `backend/data/org-logos/` (sudah di `.gitignore`). Atur dengan `ORG_LOGO_DIR`, `ORG_LOGO_MAX_KB`, `ORG_MAX_MEMBERS`, dan `ORG_INVITE_TTL_DAYS` di `.env` (lihat `.env.example`).
 
 ### Profile
@@ -506,6 +509,16 @@ Kode undangan untuk mencoba "Gabung organisasi" (berlaku 7 hari sejak seeder jal
 | **`OSIS-7K2P`** | OSIS Smansa | Editor |
 | **`BEM4-HMJ8`** | BEM UNU | Admin |
 | `PRAM-KA26` | Pramuka | sudah kedaluwarsa (untuk mencoba pesan "kode tidak berlaku") |
+
+Website contoh (`WebsiteSeeder`, hanya jika tabel `projects` masih kosong):
+
+| Ruang kerja | Website |
+|---|---|
+| OSIS Smansa | Website OSIS 2026 (online, ada perubahan), Profil OSIS Smansa (online), Pensi 2026 (draft, sedang diedit dummy5), Lomba Kreativitas (draft), Website OSIS 2025 (dimatikan), Pengumuman MPLS (ditangguhkan) |
+| BEM UNU | Website BEM UNU (online, ada perubahan), Dies Natalis (draft) |
+| Pramuka | – (untuk melihat "Belum ada website") |
+
+Isi ulang website contoh (database development): `sudo -u postgres psql -d templateapp -c "TRUNCATE projects CASCADE;"` lalu jalankan ulang backend.
 
 Cara mencoba di HP:
 

@@ -420,6 +420,14 @@ GITHUB_REDIRECT_URI=http://localhost:8080/api/auth/github/callback
 APP_DEEP_LINK=templateapp://auth/callback
 ```
 
+Variabel berikut **opsional**: tanpa ditulis pun backend memakai nilai bawaan yang cocok untuk laptop. Salin dari `.env.example` hanya jika ingin mengubahnya:
+
+| Variabel | Bawaan | Untuk |
+|---|---|---|
+| `ORG_MAX_MEMBERS`, `ORG_INVITE_TTL_DAYS`, `ORG_LOGO_MAX_KB`, `ORG_LOGO_DIR` | 30, 7, 1024, `./data/org-logos` | Ruang kerja organisasi (batas anggota, umur kode undangan, logo) |
+| `SITES_DOMAIN`, `SITES_URL_SCHEME` | `sites.localhost:8081`, `http` | Alamat website organisasi yang tampil di tab Website (di VPS diganti domain situs + `https`) |
+| `SITES_MAX_PER_ORG`, `SITES_MAX_PER_PERSONAL` | 5, 5 | Batas website yang punya alamat per ruang kerja |
+
 > 🪟 Notepad kadang menyimpan dengan encoding "UTF-8 with BOM" dan bisa membuat baris pertama tidak terbaca. Saat *Save As*, pilih **Encoding: UTF-8** (tanpa BOM). Lebih aman lagi edit lewat VS Code.
 
 ---
