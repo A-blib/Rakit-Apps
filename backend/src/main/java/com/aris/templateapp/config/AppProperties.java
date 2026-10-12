@@ -26,7 +26,8 @@ public record AppProperties(
         // Zona waktu untuk mengelompokkan statistik per hari (mis. download per tanggal di Indonesia).
         @NotBlank String timezone,
         @Valid Upload upload,
-        @Valid Org org) {
+        @Valid Org org,
+        @Valid Sites sites) {
 
     public record Jwt(
             // HS256 butuh kunci minimal 256 bit (32 byte).
@@ -55,6 +56,27 @@ public record AppProperties(
             @Min(1) int inviteTtlDays,
             @Min(16) int logoMaxKb,
             @NotBlank String logoDir) {
+    }
+
+    /**
+     * Website organisasi yang diterbitkan (alur-publish-website.md 7.1). Antrean bangun & domain sendiri
+     * menambah properti di sini pada fase publish.
+     *
+     * @param domain         domain khusus website organisasi ({DOMAIN_SITUS}), boleh berisi port untuk development
+     * @param urlScheme      {@code https} di VPS, {@code http} di laptop
+     * @param maxPerOrg      batas website beralamat per organisasi (D1)
+     * @param maxPerPersonal batas website beralamat per ruang pribadi (D1)
+     */
+    public record Sites(
+            @NotBlank String domain,
+            @NotBlank String urlScheme,
+            @Min(1) int maxPerOrg,
+            @Min(1) int maxPerPersonal) {
+
+        /** Alamat lengkap website dari nama subdomainnya, mis. {@code https://osis-smansa.orgspace.site}. */
+        public String urlOf(String slug) {
+            return urlScheme + "://" + slug + "." + domain;
+        }
     }
 
     /**
