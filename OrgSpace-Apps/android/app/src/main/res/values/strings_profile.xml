@@ -5,7 +5,7 @@
     <string name="profile_stat_workspaces">Ruang kerja</string>
     <string name="profile_stat_organizations">Organisasi</string>
     <string name="profile_section_mode">Mode</string>
-    <string name="profile_switch_to_provider_desc">Kelola template yang kamu unggah</string>
+    <string name="profile_switch_to_provider_desc">Kelola template unggahanmu</string>
     <string name="profile_become_provider_desc">Unggah template untuk dipakai organisasi lain</string>
     <string name="profile_switch_to_creator_desc">Buat dan kelola website organisasi</string>
     <string name="profile_linked_methods_desc">Google, GitHub, atau email</string>

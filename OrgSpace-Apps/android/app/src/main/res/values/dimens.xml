@@ -40,8 +40,10 @@
     <!-- Kartu profil (tab Profil pembuat website & kreator template). -->
     <dimen name="profile_cover_height">88dp</dimen>
     <dimen name="profile_avatar_size">80dp</dimen>
-    <!-- Avatar naik setengah tingginya ke atas sampul. -->
-    <dimen name="profile_avatar_overlap">-40dp</dimen>
+    <!-- Jarak avatar dari atas kartu = tinggi sampul - setengah avatar, agar separuhnya menumpuk di sampul. -->
+    <dimen name="profile_avatar_top">48dp</dimen>
+    <!-- Tombol Edit di kanan avatar: tepat di bawah sampul (88dp) + 8dp. -->
+    <dimen name="profile_edit_top">96dp</dimen>
     <dimen name="profile_avatar_ring">4dp</dimen>
     <dimen name="profile_row_icon_box">36dp</dimen>
     <dimen name="app_bar_height">56dp</dimen>
