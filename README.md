@@ -41,7 +41,7 @@
 | Revisi OrgSpace W1: menu bawah Beranda · Website · + · Template · Profil, logo + nama singkat di app bar, pemilih ruang kerja (buat/gabung/ruang pribadi), tab Profil dengan "Ruang kerja saya", pilihan **Rakit sendiri** ("Segera hadir"), tamu diminta masuk sebelum membuat website | Sudah (Fase W1, diuji di HP) |
 | Revisi OrgSpace W2: website disimpan di server per ruang kerja (status Draft/Online/ada perubahan/Dimatikan/Ditangguhkan dihitung server), tab Website (cari, chip + jumlah, urutan, cache offline), halaman kelola website (kerangka), ganti nama/duplikat/hapus, **Minta diterbitkan** | Sudah (Fase W2, diuji di HP). Terbitkan, Ringkasan, Riwayat versi, Domain, Pengaturan situs, dan editor cloud masih "Segera hadir" (fase T & P) |
 | Revisi OrgSpace W3: Beranda baru (sapaan untuk organisasi, Lanjutkan dari server, banner perubahan & permintaan terbit untuk Admin/Pemilik, Template untuk {org}, 6 Panduan baru), tamu bisa memilih Pakai template lalu diminta masuk | Sudah (Fase W3, diuji di HP) |
-| Portal web: fondasi backend (kritik & saran, pusat dokumentasi, statistik pengguna aktif & lalu lintas API, akun admin) + web Next.js di `web/` (landing, `/docs`, dashboard internal) | Sudah (Fase WEB1). Tampilan disempurnakan tim web ([`web/README.md`](web/README.md)) |
+| Portal web: fondasi backend (kritik & saran, pusat dokumentasi, statistik pengguna aktif & lalu lintas API, akun admin) + web Next.js di repo terpisah [OrgSpace Website](https://github.com/A-blib/OrgSpace-Website) (landing, `/docs`, dashboard internal) | Sudah (Fase WEB1). Tampilan disempurnakan tim web |
 | Revisi OrgSpace W4: galeri & upload memakai kategori organisasi (chip sesuai jenjang ruang kerja), "Isi template" (label "Punya: …", wajib saat upload, Peringatan konten Inti), "N kali dipakai", Template untuk {org} per kategori | Sudah (Fase W4, sebagian diuji di HP) |
 
 > 🏷️ **Nama app: OrgSpace** (sebelumnya "Rakit"). Nama ini hanya untuk tampilan. Nama teknis lama tetap dipakai: package `com.aris.templateapp`, deep link `templateapp://`, database `templateapp`, dan email dummy `@templateapp.test`. Mengganti nama teknis berarti membuat ulang OAuth Client Android (package + SHA-1), mengubah callback GitHub, dan memindahkan database, padahal pengguna tidak pernah melihatnya.
@@ -81,7 +81,7 @@ Diambil dari HP asli (realme, Android 13) dengan akun dummy. File lengkap ada di
 ## Struktur repo
 
 ```
-Rakit Apps/
+OrgSpace Apps/
 ├── AGENTS.md             ← instruksi pengembangan untuk agent AI (pengguna Claude Code: salin menjadi CLAUDE.md, tidak di-commit)
 ├── README.md               ← file ini
 ├── docs/
@@ -89,8 +89,15 @@ Rakit Apps/
 │   ├── catatan-belajar/    ← catatan belajar per fase
 │   └── screenshots/        ← tangkapan layar app (terang & gelap)
 ├── backend/                ← Spring Boot (Maven), dibuka di VS Code
-├── android/                ← project Android (Gradle), dibuka di Android Studio
-└── web/                    ← portal web Next.js: landing, dokumentasi, dashboard internal (lihat web/README.md)
+└── android/                ← project Android (Gradle), dibuka di Android Studio
+```
+
+Portal web (Next.js) ada di repo terpisah [OrgSpace Website](https://github.com/A-blib/OrgSpace-Website). Susunan folder yang disarankan:
+
+```
+OrgSpace/
+├── OrgSpace Apps/      ← repo ini (backend + app Android)
+└── OrgSpace Website/   ← portal web (landing, dokumentasi, dashboard internal)
 ```
 
 ---
@@ -659,8 +666,8 @@ cd - && ./gradlew --stop                                                # Gradle
 
 ## Portal web (landing, dokumentasi, dashboard)
 
-Folder [`web/`](web/) berisi portal web Next.js yang memakai REST API backend ini. Cara menjalankan, struktur, dan
-aturan tim ada di [`web/README.md`](web/README.md) dan [`web/AGENTS.md`](web/AGENTS.md); kontrak API di
+Repo [OrgSpace Website](https://github.com/A-blib/OrgSpace-Website) berisi portal web Next.js yang memakai REST API backend ini. Cara menjalankan,
+struktur, dan aturan tim ada di `README.md` dan `AGENTS.md` repo itu; kontrak API (sumber utama) di
 [`docs/rancangan/portal-web.md`](docs/rancangan/portal-web.md).
 
 - Akun admin dashboard (profile dev): `dummy1@templateapp.test` / `password123`. Akun lain dijadikan admin dengan

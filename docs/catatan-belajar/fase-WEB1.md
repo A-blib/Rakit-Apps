@@ -16,14 +16,14 @@
 | `backend/.../security/SecurityConfig.java` | `GET /api/public/**` tanpa login |
 | `backend/.../common/response/PageResponse.java` | Bentuk daftar bernomor halaman untuk web |
 | `backend/src/test/.../portal/PortalIntegrationTest.java` | 6 test: akses admin, percakapan feedback, validasi & batas, docs, monitoring, landing |
-| `web/` | Project Next.js 16: landing, `/docs`, dashboard (login, ringkasan, feedback, pengguna, lalu lintas, docs, sistem) |
-| `web/src/lib/api/*` | Kontrak tipe (`types.ts`) + klien API (`http.ts`, `public.ts`, `admin.ts`) |
-| `web/src/lib/auth/*`, `web/src/proxy.ts` | Sesi cookie httpOnly, refresh token otomatis, `requireAdmin` |
-| `web/AGENTS.md`, `web/README.md` | Aturan tim & agent AI, cara setup Windows/Linux |
+| repo **OrgSpace Website** | Project Next.js 16 (awalnya folder `web/`, dipindah ke repo sendiri atas permintaan Aris): landing, `/docs`, dashboard (login, ringkasan, feedback, pengguna, lalu lintas, docs, sistem) |
+| `src/lib/api/*` (repo website) | Kontrak tipe (`types.ts`) + klien API (`http.ts`, `public.ts`, `admin.ts`) |
+| `src/lib/auth/*`, `src/proxy.ts` (repo website) | Sesi cookie httpOnly, refresh token otomatis, `requireAdmin` |
+| `AGENTS.md`, `README.md` (repo website) | Aturan tim & agent AI, cara setup Windows/Linux |
 | `docs/rancangan/portal-web.md` | Rancangan & kontrak API portal web |
 
 ## Alasan keputusan
-- Web di folder `web/` monorepo → satu `git clone` berisi backend + web, kontrak API dan pemakainya berubah dalam satu pull request (alternatif: repo terpisah — tidak dipilih karena tim web tetap butuh backend untuk development dan perubahan kontrak jadi tersebar di dua repo).
+- Web di repo terpisah **OrgSpace Website**, bersebelahan dengan repo ini (keputusan Aris, agar struktur lebih rapi) → tim web hanya meng-clone apa yang mereka ubah; kontrak API sumber utamanya tetap di repo ini dan disalin ke `docs/kontrak-api.md` repo website (sebelumnya: folder `web/` di monorepo).
 - Statistik dicatat di memori lalu UPSERT tiap 60 detik → beban database kecil (alternatif: INSERT per request — terlalu berat; Spring Boot Actuator + Prometheus — butuh library & server tambahan).
 - Rute dicatat sebagai pola `/api/projects/{id}` → tidak ada data pribadi, jumlah baris kecil (alternatif: path asli — setiap ID jadi baris baru).
 - Admin = flag `users.is_admin` yang dicek ke database setiap request → pencabutan hak langsung berlaku (alternatif: klaim di JWT — baru berlaku setelah token kedaluwarsa).
@@ -60,7 +60,7 @@
 ## Yang perlu Aris lakukan
 - Tidak ada perubahan Gradle (Sync Now tidak perlu).
 - Opsional: isi `PORTAL_ANDROID_DOWNLOAD_URL` di `backend/.env` saat link unduh app sudah ada.
-- Kirim link repo + branch `fitur/orgspace` ke tim web; mereka mulai dari `web/README.md`.
+- Kirim link https://github.com/A-blib/OrgSpace-Website ke tim web; mereka mulai dari `README.md` repo itu (backend: repo ini, branch `fitur/orgspace`).
 - Menu Kritik & saran di app Android (memakai `/api/feedback`) dibuat saat pengembangan app dilanjutkan.
 
 ## Rencana fase berikutnya
