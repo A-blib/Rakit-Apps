@@ -6,6 +6,7 @@ import com.aris.templateapp.provider.StatsPeriod;
 import com.aris.templateapp.provider.dto.ActionItemResponse;
 import com.aris.templateapp.provider.dto.DailyCountResponse;
 import com.aris.templateapp.provider.dto.PopularTemplateResponse;
+import com.aris.templateapp.template.dto.FolderResponse;
 import com.aris.templateapp.template.dto.StatusCountsResponse;
 import com.aris.templateapp.template.dto.TemplateSummaryResponse;
 import lombok.RequiredArgsConstructor;
@@ -84,12 +85,32 @@ public class ProviderTemplateQueries {
         }
     }
 
+    /**
+     * Lokasi yang dibuka di "Template Anda": semua template ({@link #ANY}), hanya yang tanpa folder
+     * ({@link #ROOT}, halaman utama ala Google Drive), atau isi satu folder.
+     */
+    public record FolderScope(UUID folderId, boolean rootOnly) {
+        public static final FolderScope ANY = new FolderScope(null, false);
+        public static final FolderScope ROOT = new FolderScope(null, true);
+
+        public static FolderScope of(UUID folderId) {
+            return new FolderScope(folderId, false);
+        }
+
+        String condition() {
+            if (rootOnly) {
+                return " AND t.folder_id IS NULL";
+            }
+            return folderId == null ? "" : " AND t.folder_id = :folderId";
+        }
+    }
+
     /** Jumlah dilihat & didownload per template (total sejak awal) + jumlah error pengecekan terakhir. */
     private static final String TEMPLATE_WITH_COUNTS = """
             SELECT t.id,
                    -- Upload yang belum mengisi Info template memakai nama file ZIP (alur-fitur-upload.md 6.4).
                    COALESCE(CASE WHEN t.category IS NULL THEN t.source_file_name END, t.name) AS name,
-                   t.category, t.thumbnail_url, t.status, t.warning_count, t.updated_at,
+                   t.category, t.thumbnail_url, t.status, t.warning_count, t.updated_at, t.folder_id,
                    COALESCE(ev.views, 0)     AS views,
                    COALESCE(ev.downloads, 0) AS downloads,
                    (SELECT count(*) FROM template_check_issues i
@@ -108,12 +129,13 @@ public class ProviderTemplateQueries {
 
     // ---------- Template Anda ----------
 
-    public List<TemplateSummaryResponse> list(UUID providerId, StatusFilter status, OrgCategory category,
-                                              String search, SortOrder sort, int page, int size) {
+    public List<TemplateSummaryResponse> list(UUID providerId, FolderScope folder, StatusFilter status,
+                                              OrgCategory category, String search, SortOrder sort, int page, int size) {
         String sql = TEMPLATE_WITH_COUNTS
-                + " WHERE t.provider_id = :providerId AND " + status.condition + commonFilters(category, search)
+                + " WHERE t.provider_id = :providerId AND " + status.condition + folder.condition()
+                + commonFilters(category, search)
                 + " ORDER BY " + sort.orderBy + " LIMIT :limit OFFSET :offset";
-        return withCommonParams(jdbc.sql(sql), providerId, category, search)
+        return withCommonParams(jdbc.sql(sql), providerId, folder, category, search)
                 .param("limit", size)
                 .param("offset", page * size)
                 .query((rs, row) -> new TemplateSummaryResponse(
@@ -126,12 +148,17 @@ public class ProviderTemplateQueries {
                         rs.getInt("warning_count"),
                         rs.getLong("views"),
                         rs.getLong("downloads"),
-                        rs.getTimestamp("updated_at").toInstant()))
+                        rs.getTimestamp("updated_at").toInstant(),
+                        rs.getObject("folder_id", UUID.class)))
                 .list();
     }
 
-    /** Jumlah per chip status. Filter kategori & pencarian ikut berlaku, filter status tidak (agar semua chip terisi). */
-    public StatusCountsResponse countByStatus(UUID providerId, OrgCategory category, String search) {
+    /**
+     * Jumlah per pilihan status. Lokasi folder, kategori & pencarian ikut berlaku, filter status tidak
+     * (agar semua pilihan terisi).
+     */
+    public StatusCountsResponse countByStatus(UUID providerId, FolderScope folder, OrgCategory category,
+                                              String search) {
         String sql = """
                 SELECT count(*) AS all_count,
                        count(*) FILTER (WHERE %s) AS published,
@@ -143,11 +170,45 @@ public class ProviderTemplateQueries {
                  WHERE t.provider_id = :providerId
                 """.formatted(StatusFilter.PUBLISHED.condition, StatusFilter.NEEDS_FIX.condition,
                 StatusFilter.CHECKING.condition, StatusFilter.DRAFT.condition, StatusFilter.DISABLED.condition)
-                + commonFilters(category, search);
-        return withCommonParams(jdbc.sql(sql), providerId, category, search)
+                + folder.condition() + commonFilters(category, search);
+        return withCommonParams(jdbc.sql(sql), providerId, folder, category, search)
                 .query((rs, row) -> new StatusCountsResponse(rs.getLong("all_count"), rs.getLong("published"),
                         rs.getLong("needs_fix"), rs.getLong("checking"), rs.getLong("draft"), rs.getLong("disabled")))
                 .single();
+    }
+
+    /** Folder milik provider, urut nama, beserta jumlah template di dalamnya. */
+    public List<FolderResponse> folders(UUID providerId) {
+        return jdbc.sql("""
+                        SELECT f.id, f.name, f.updated_at, count(t.id) AS template_count
+                          FROM template_folders f LEFT JOIN templates t ON t.folder_id = f.id
+                         WHERE f.provider_id = :providerId
+                         GROUP BY f.id, f.name, f.updated_at
+                         ORDER BY lower(f.name), f.id""")
+                .param("providerId", providerId)
+                .query((rs, row) -> new FolderResponse(rs.getObject("id", UUID.class), rs.getString("name"),
+                        rs.getLong("template_count"), rs.getTimestamp("updated_at").toInstant()))
+                .list();
+    }
+
+    public long countInFolder(UUID folderId) {
+        return jdbc.sql("SELECT count(*) FROM templates WHERE folder_id = :folderId")
+                .param("folderId", folderId)
+                .query(Long.class).single();
+    }
+
+    /**
+     * Memindahkan template ke folder (null = tanpa folder). Lewat SQL langsung, bukan Entity, agar
+     * {@code updated_at} tidak berubah: memindah folder bukan "memperbarui template".
+     *
+     * @return false jika template bukan milik provider ini
+     */
+    public boolean moveToFolder(UUID providerId, UUID templateId, UUID folderId) {
+        return jdbc.sql("UPDATE templates SET folder_id = :folderId WHERE id = :templateId AND provider_id = :providerId")
+                .param("folderId", folderId)
+                .param("templateId", templateId)
+                .param("providerId", providerId)
+                .update() > 0;
     }
 
     /** Total dilihat & didownload satu template (untuk layar detail): [views, downloads]. */
@@ -287,8 +348,11 @@ public class ProviderTemplateQueries {
     }
 
     private static JdbcClient.StatementSpec withCommonParams(JdbcClient.StatementSpec spec, UUID providerId,
-                                                             OrgCategory category, String search) {
+                                                             FolderScope folder, OrgCategory category, String search) {
         spec = spec.param("providerId", providerId);
+        if (folder.folderId() != null) {
+            spec = spec.param("folderId", folder.folderId());
+        }
         if (category != null) {
             spec = spec.param("category", category.value());
         }

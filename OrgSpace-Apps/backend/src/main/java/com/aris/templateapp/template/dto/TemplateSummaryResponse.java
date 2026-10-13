@@ -6,7 +6,11 @@ import com.aris.templateapp.template.TemplateStatus;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Satu kartu di daftar "Template Anda" (bagian 6.2). Angka dilihat/didownload adalah total sejak awal. */
+/**
+ * Satu kartu di daftar "Template Anda" (bagian 6.2). Angka dilihat/didownload adalah total sejak awal.
+ *
+ * @param folderId folder tempat template berada; null = tanpa folder
+ */
 public record TemplateSummaryResponse(
         UUID id,
         String name,
@@ -17,5 +21,6 @@ public record TemplateSummaryResponse(
         int warningCount,
         long views,
         long downloads,
-        Instant updatedAt) {
+        Instant updatedAt,
+        UUID folderId) {
 }

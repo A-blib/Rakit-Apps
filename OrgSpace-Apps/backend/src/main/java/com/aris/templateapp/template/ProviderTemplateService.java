@@ -28,8 +28,10 @@ public class ProviderTemplateService {
     private final ProviderTemplateQueries queries;
     private final TemplateRepository templateRepository;
     private final CheckResponses checkResponses;
+    private final TemplateFolderRepository folderRepository;
 
     /**
+     * @param folder   null/kosong = semua template · "root" = hanya yang tanpa folder (halaman utama) · id folder
      * @param status   all · published · needs_fix · checking · draft · disabled (bawaan all)
      * @param category nilai kategori atau null/"all" untuk semua
      * @param sort     updated · downloads · views · name (bawaan updated)
@@ -37,8 +39,10 @@ public class ProviderTemplateService {
      * @param page     dimulai dari 0
      */
     @Transactional(readOnly = true)
-    public TemplateListResponse list(UUID userId, String status, String category, String sort, String query, int page) {
+    public TemplateListResponse list(UUID userId, String folder, String status, String category, String sort,
+                                     String query, int page) {
         providerAccess.requireActive(userId);
+        ProviderTemplateQueries.FolderScope folderScope = folderScope(userId, folder);
         ProviderTemplateQueries.StatusFilter statusFilter;
         ProviderTemplateQueries.SortOrder sortOrder;
         OrgCategory categoryFilter;
@@ -56,18 +60,42 @@ public class ProviderTemplateService {
         String search = query == null || query.isBlank() ? null : query.trim();
 
         List<TemplateSummaryResponse> items =
-                queries.list(userId, statusFilter, categoryFilter, search, sortOrder, page, PAGE_SIZE);
-        StatusCountsResponse counts = queries.countByStatus(userId, categoryFilter, search);
+                queries.list(userId, folderScope, statusFilter, categoryFilter, search, sortOrder, page, PAGE_SIZE);
+        // Di halaman utama, jumlah per status tetap menghitung SEMUA template (termasuk yang di dalam folder),
+        // karena memilih status di menu + menampilkan template dari semua folder. Jumlah untuk paginasi
+        // tetap mengikuti isi halaman utama saja.
+        boolean root = folderScope.rootOnly();
+        StatusCountsResponse counts = queries.countByStatus(userId,
+                root ? ProviderTemplateQueries.FolderScope.ANY : folderScope, categoryFilter, search);
+        StatusCountsResponse scoped = root ? queries.countByStatus(userId, folderScope, categoryFilter, search) : counts;
         long total = switch (statusFilter) {
-            case ALL -> counts.all();
-            case PUBLISHED -> counts.published();
-            case NEEDS_FIX -> counts.needsFix();
-            case CHECKING -> counts.checking();
-            case DRAFT -> counts.draft();
-            case DISABLED -> counts.disabled();
+            case ALL -> scoped.all();
+            case PUBLISHED -> scoped.published();
+            case NEEDS_FIX -> scoped.needsFix();
+            case CHECKING -> scoped.checking();
+            case DRAFT -> scoped.draft();
+            case DISABLED -> scoped.disabled();
         };
         int totalPages = (int) ((total + PAGE_SIZE - 1) / PAGE_SIZE);
         return new TemplateListResponse(items, page, PAGE_SIZE, total, totalPages, counts);
+    }
+
+    private ProviderTemplateQueries.FolderScope folderScope(UUID userId, String folder) {
+        if (folder == null || folder.isBlank()) {
+            return ProviderTemplateQueries.FolderScope.ANY;
+        }
+        if (folder.equals("root")) {
+            return ProviderTemplateQueries.FolderScope.ROOT;
+        }
+        UUID folderId;
+        try {
+            folderId = UUID.fromString(folder);
+        } catch (IllegalArgumentException e) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Folder tidak dikenal: " + folder);
+        }
+        // Folder milik provider lain diperlakukan seperti tidak ada.
+        folderRepository.findByIdAndProviderId(folderId, userId).orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        return ProviderTemplateQueries.FolderScope.of(folderId);
     }
 
     @Transactional(readOnly = true)

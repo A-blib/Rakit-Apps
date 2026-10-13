@@ -34,6 +34,9 @@ public enum ErrorCode {
     TEMPLATE_NOT_EDITABLE(HttpStatus.CONFLICT, "Template ini tidak bisa diubah pada status sekarang."),
     IMAGE_INVALID(HttpStatus.BAD_REQUEST, "Gambar harus JPG, PNG, atau WebP, maksimal 1 MB."),
     ALREADY_REPORTED(HttpStatus.CONFLICT, "Masalah ini sudah dilaporkan."),
+    // Folder di "Template Anda"
+    FOLDER_NAME_TAKEN(HttpStatus.CONFLICT, "Nama folder ini sudah dipakai. Pilih nama lain."),
+    FOLDER_LIMIT_REACHED(HttpStatus.CONFLICT, "Folder sudah mencapai batas (maks 100)."),
     // Ruang kerja OrgSpace (revisi-fondasi-orgspace.md bagian 4.4)
     ORG_NOT_FOUND(HttpStatus.NOT_FOUND, "Ruang kerja ini tidak ditemukan."),
     NOT_ORG_MEMBER(HttpStatus.FORBIDDEN, "Kamu bukan anggota ruang kerja ini."),
