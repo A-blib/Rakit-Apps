@@ -7,10 +7,13 @@ import androidx.annotation.WorkerThread;
 import com.aris.templateapp.core.network.ApiErrorParser;
 import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.remote.api.ProviderApi;
+import com.aris.templateapp.data.remote.dto.FolderRequestDto;
+import com.aris.templateapp.data.remote.dto.MoveTemplateDto;
 import com.aris.templateapp.data.remote.dto.ProviderDashboardDto;
 import com.aris.templateapp.data.remote.dto.ProviderProfileDto;
 import com.aris.templateapp.data.remote.dto.ProviderProfileUpdateDto;
 import com.aris.templateapp.data.remote.dto.TemplateDetailDto;
+import com.aris.templateapp.data.remote.dto.TemplateFolderDto;
 import com.aris.templateapp.data.remote.dto.TemplateListDto;
 
 import java.io.IOException;
@@ -69,8 +72,35 @@ public class ProviderRepository {
     }
 
     @WorkerThread
-    public Resource<TemplateListDto> templates(String status, String category, String sort, String query, int page) {
-        return execute(api.templates(status, category, sort, query, page));
+    public Resource<TemplateListDto> templates(String folder, String status, String category, String sort,
+                                               String query, int page) {
+        return execute(api.templates(folder, status, category, sort, query, page));
+    }
+
+    @WorkerThread
+    public Resource<List<TemplateFolderDto>> folders() {
+        return execute(api.folders());
+    }
+
+    @WorkerThread
+    public Resource<TemplateFolderDto> createFolder(String name) {
+        return execute(api.createFolder(new FolderRequestDto(name)));
+    }
+
+    @WorkerThread
+    public Resource<TemplateFolderDto> renameFolder(String id, String name) {
+        return execute(api.renameFolder(id, new FolderRequestDto(name)));
+    }
+
+    @WorkerThread
+    public Resource<Boolean> deleteFolder(String id) {
+        return executeNoContent(api.deleteFolder(id));
+    }
+
+    /** @param folderId null = keluarkan dari folder */
+    @WorkerThread
+    public Resource<Boolean> moveTemplate(String templateId, String folderId) {
+        return executeNoContent(api.moveTemplate(templateId, new MoveTemplateDto(folderId)));
     }
 
     @WorkerThread
@@ -87,6 +117,16 @@ public class ProviderRepository {
     public Resource<ProviderProfileDto> updateProfile(String creatorName, String bio, String portfolioUrl,
                                                       List<String> specialties) {
         return execute(api.updateProfile(new ProviderProfileUpdateDto(creatorName, bio, portfolioUrl, specialties)));
+    }
+
+    /** Untuk jawaban 204 tanpa isi: berhasil = {@code Resource.success(true)}. */
+    private Resource<Boolean> executeNoContent(Call<Void> call) {
+        try {
+            Response<Void> response = call.execute();
+            return response.isSuccessful() ? Resource.success(true) : Resource.error(errorParser.parse(response));
+        } catch (IOException e) {
+            return Resource.error(errorParser.parse(e));
+        }
     }
 
     private <T> Resource<T> execute(Call<T> call) {

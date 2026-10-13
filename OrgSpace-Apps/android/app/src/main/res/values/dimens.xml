@@ -59,6 +59,8 @@
     <dimen name="chart_height">180dp</dimen>
     <dimen name="chart_label_text">11sp</dimen>
     <dimen name="thumbnail_size">56dp</dimen>
+    <!-- Ruang kosong di bawah daftar agar kartu terakhir tidak tertutup tombol + (56dp + jarak 16dp × 2). -->
+    <dimen name="fab_list_clearance">88dp</dimen>
     <dimen name="thumbnail_size_large">160dp</dimen>
     <dimen name="new_dot_size">8dp</dimen>
     <dimen name="skeleton_line_height">12dp</dimen>

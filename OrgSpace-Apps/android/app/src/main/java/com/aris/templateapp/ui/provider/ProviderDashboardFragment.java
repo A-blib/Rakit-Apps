@@ -155,9 +155,9 @@ public class ProviderDashboardFragment extends Fragment {
         }
     }
 
-    /** "Lihat semua" di Perlu tindakan: buka Template Anda dengan filter status tertentu. */
+    /** "Lihat semua" di Perlu tindakan: buka Template Anda dengan filter status tertentu (dari semua folder). */
     public void openTemplates(String status) {
-        new ViewModelProvider(requireActivity()).get(ProviderTemplatesViewModel.class).setStatus(status);
+        new ViewModelProvider(requireActivity()).get(ProviderTemplatesViewModel.class).showStatusEverywhere(status);
         selectTab(R.id.tab_templates);
     }
 

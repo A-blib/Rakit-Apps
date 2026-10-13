@@ -65,6 +65,10 @@ public final class ErrorMessages {
                 return context.getString(R.string.error_project_not_found);
             case "ORG_HAS_ONLINE_SITES":
                 return context.getString(R.string.error_org_has_online_sites);
+            case "FOLDER_NAME_TAKEN":
+                return context.getString(R.string.error_folder_name_taken);
+            case "FOLDER_LIMIT_REACHED":
+                return context.getString(R.string.error_folder_limit);
             case "REFRESH_TOKEN_INVALID":
             case "UNAUTHORIZED":
                 return context.getString(R.string.error_session_expired);

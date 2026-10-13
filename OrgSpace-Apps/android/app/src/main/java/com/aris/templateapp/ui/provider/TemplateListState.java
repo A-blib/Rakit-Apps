@@ -1,6 +1,9 @@
 package com.aris.templateapp.ui.provider;
 
+import androidx.annotation.Nullable;
+
 import com.aris.templateapp.data.model.ApiError;
+import com.aris.templateapp.data.remote.dto.TemplateFolderDto;
 import com.aris.templateapp.data.remote.dto.TemplateListDto.StatusCountsDto;
 import com.aris.templateapp.data.remote.dto.TemplateListDto.TemplateSummaryDto;
 
@@ -11,6 +14,11 @@ import java.util.List;
 public final class TemplateListState {
 
     public final List<TemplateSummaryDto> items;
+    /** Folder yang tampil di atas daftar; kosong saat folder disembunyikan (di dalam folder / filter aktif). */
+    public final List<TemplateFolderDto> folders;
+    /** Folder yang sedang dibuka; null = halaman utama. */
+    @Nullable
+    public final TemplateFolderDto currentFolder;
     /** null sampai halaman pertama berhasil dimuat. */
     public final StatusCountsDto counts;
     /** Memuat halaman pertama (tampilkan kerangka/skeleton jika belum ada isi). */
@@ -20,9 +28,12 @@ public final class TemplateListState {
     /** Error halaman pertama (tampilan error penuh); null jika tidak ada. */
     public final ApiError error;
 
-    TemplateListState(List<TemplateSummaryDto> items, StatusCountsDto counts, boolean loadingFirstPage,
+    TemplateListState(List<TemplateSummaryDto> items, List<TemplateFolderDto> folders,
+                      @Nullable TemplateFolderDto currentFolder, StatusCountsDto counts, boolean loadingFirstPage,
                       boolean loadingMore, boolean hasMore, ApiError error) {
         this.items = Collections.unmodifiableList(items);
+        this.folders = Collections.unmodifiableList(folders);
+        this.currentFolder = currentFolder;
         this.counts = counts;
         this.loadingFirstPage = loadingFirstPage;
         this.loadingMore = loadingMore;
@@ -30,8 +41,15 @@ public final class TemplateListState {
         this.error = error;
     }
 
-    /** Jumlah "Semua" bernilai 0. Tanpa filter kategori/pencarian aktif, artinya provider belum punya template. */
+    /**
+     * Jumlah "Semua" bernilai 0 di halaman utama. Tanpa filter kategori/pencarian aktif, artinya provider belum
+     * punya template sama sekali (di halaman utama jumlah ini mencakup isi semua folder).
+     */
     public boolean hasNoTemplates() {
-        return counts != null && counts.all == 0;
+        return currentFolder == null && counts != null && counts.all == 0;
+    }
+
+    public boolean isEmpty() {
+        return items.isEmpty() && folders.isEmpty();
     }
 }

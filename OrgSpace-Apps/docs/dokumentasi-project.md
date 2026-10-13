@@ -185,6 +185,7 @@ users ─┬─< user_identities     (1 user : banyak identitas; maks 1 per prov
        ├─< auth_tickets        (tiket sekali pakai: state GitHub, hasil login, link)
        ├── creator_profiles    (1 : 0..1, primary key = user_id)
        ├── provider_profiles   (1 : 0..1, primary key = user_id)
+       ├─< template_folders ──< templates.folder_id   (folder "Template Anda", V22)
        ├─< templates ──┬─< template_checks ──< template_check_issues
        │               └─< template_events   (dilihat / didownload)
        └─< notifications
@@ -199,6 +200,7 @@ users ─┬─< user_identities     (1 user : banyak identitas; maks 1 per prov
 | `creator_profiles` | Data mode pembuat website | Ada = user punya peran `creator` |
 | `provider_profiles` | Data mode penyedia template + status `active`/`suspended` | Ada = user punya peran `provider` |
 | `templates` | Template milik provider (Fase 11) | `status` draft/checking/published/check_failed/disabled; `warning_count` disimpan agar filter "Perlu perbaikan" cepat |
+| `template_folders` | Folder buatan provider di "Template Anda" (ala Google Drive, V22) | Nama unik per provider via index `lower(name)`; `templates.folder_id` `ON DELETE SET NULL` sehingga hapus folder tidak menghapus template |
 | `template_checks` + `template_check_issues` | Hasil pengecekan otomatis per versi + daftar error/peringatan | Pengecekan terakhir = `version` tertinggi |
 | `template_events` | Kejadian dilihat & didownload | Index unik `(project_id, type)`: satu project dihitung sekali |
 | `notifications` | Notifikasi di dalam app | `resolved_at` diisi saat masalahnya beres |
@@ -457,7 +459,10 @@ Coba semuanya di Swagger UI: http://localhost:8080/swagger-ui.html
 | `PATCH /api/users/me/active-mode` | ✔ | `{mode}` | `UserResponse` / `403 MODE_NOT_ALLOWED` | ✅ Fase 04 |
 | `GET /api/providers/me/dashboard?period=7d\|30d` | ✔ provider | – | Beranda: perlu tindakan, ringkasan, tren, populer | ✅ Fase 11 |
 | `GET /api/providers/me/stats/downloads?period=` | ✔ provider | – | `[{date, count}]` | ✅ Fase 11 |
-| `GET /api/providers/me/templates?status=&category=&sort=&q=&page=` | ✔ provider | – | daftar + jumlah per status | ✅ Fase 11 |
+| `GET /api/providers/me/templates?folder=&status=&category=&sort=&q=&page=` | ✔ provider | – | daftar + jumlah per status; `folder` kosong = semua, `root` = tanpa folder, id = isi folder | ✅ Fase 11, folder 13 Okt 2026 |
+| `GET` / `POST /api/providers/me/template-folders` | ✔ provider | `{name}` | daftar folder (+ jumlah template) / folder baru (201) | ✅ 13 Okt 2026 |
+| `PATCH` / `DELETE /api/providers/me/template-folders/{id}` | ✔ provider | `{name}` | ganti nama / hapus (204, isi kembali ke halaman utama) | ✅ 13 Okt 2026 |
+| `PUT /api/providers/me/templates/{id}/folder` | ✔ provider | `{folderId\|null}` | 204; pindahkan ke folder / keluarkan | ✅ 13 Okt 2026 |
 | `GET /api/providers/me/templates/{id}` | ✔ provider | – | detail + pengecekan terakhir | ✅ Fase 11 |
 | `GET` / `PATCH /api/providers/me/profile` | ✔ provider | `{creatorName, bio?, portfolioUrl?, specialties?}` | profil + ringkasan | ✅ Fase 11 |
 | `POST /api/templates/{id}/events` | – (tamu boleh) | `{type, projectId?, installId, occurredAt}` | `202` | ✅ Fase 11 |

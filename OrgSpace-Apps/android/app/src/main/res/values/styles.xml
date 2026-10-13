@@ -310,6 +310,39 @@
         <item name="android:minHeight">@dimen/touch_target_min</item>
     </style>
 
+    <!-- Radio button satu baris penuh (pilihan status di menu + Template Anda): lingkaran biru utama. -->
+    <style name="Widget.App.RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="buttonTint">@color/color_primary</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Body</item>
+        <item name="android:textColor">@color/color_foreground</item>
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:paddingStart">@dimen/space_3</item>
+    </style>
+
+    <!-- Chip filter yang sedang aktif (mis. status "Tayang"): isi biru muda + ✕ untuk menghapus filter. -->
+    <style name="Widget.App.Chip.Active">
+        <item name="android:checkable">false</item>
+        <item name="chipBackgroundColor">@color/color_primary_container</item>
+        <item name="android:textColor">@color/color_on_primary_container</item>
+        <item name="chipStrokeColor">@color/color_primary</item>
+        <item name="closeIconVisible">true</item>
+        <item name="closeIcon">@drawable/ic_close</item>
+        <item name="closeIconTint">@color/color_on_primary_container</item>
+    </style>
+
+    <!-- Tombol + mengambang (Template Anda, ala Google Drive): kotak bersudut 16dp biru utama, tanpa bayangan. -->
+    <style name="Widget.App.FloatingActionButton" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">@color/color_primary</item>
+        <item name="tint">@color/color_on_primary</item>
+        <item name="rippleColor">@color/color_primary_ripple</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.Medium</item>
+        <item name="elevation">0dp</item>
+        <item name="pressedTranslationZ">0dp</item>
+        <item name="hoveredFocusedTranslationZ">0dp</item>
+    </style>
+
     <!-- Bottom sheet: latar surface, sudut atas 24dp, tanpa bayangan berwarna. -->
     <style name="ThemeOverlay.App.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/Widget.App.BottomSheet</item>

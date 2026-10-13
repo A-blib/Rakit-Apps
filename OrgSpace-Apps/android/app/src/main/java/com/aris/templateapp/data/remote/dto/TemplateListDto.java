@@ -23,6 +23,8 @@ public class TemplateListDto {
         public long downloads;
         /** Waktu ISO-8601. */
         public String updatedAt;
+        /** null = tanpa folder. */
+        public String folderId;
     }
 
     public static class StatusCountsDto {

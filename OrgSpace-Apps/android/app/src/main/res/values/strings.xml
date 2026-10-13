@@ -177,6 +177,50 @@ Template akan muncul di sini.</string>
     <string name="templates_empty">Belum ada template. Upload template pertamamu dari tab Upload.</string>
     <string name="templates_filter_empty">Tidak ada template dengan filter ini.</string>
     <string name="action_clear_filter">Hapus filter</string>
+
+    <!-- Folder di Template Anda (ala Google Drive) -->
+    <string name="cd_templates_fab">Buat folder dan pilih status</string>
+    <string name="cd_folder_back">Kembali ke Template Anda</string>
+    <string name="cd_folder_menu">Menu folder</string>
+    <string name="cd_template_menu">Menu template</string>
+    <string name="cd_status_chip_clear">Tampilkan semua status</string>
+    <string name="templates_menu_create">Buat baru</string>
+    <string name="templates_menu_show">Tampilkan</string>
+    <!-- %1$s = nama folder -->
+    <string name="templates_menu_show_in_folder">Tampilkan di %1$s</string>
+    <string name="templates_section_folders">Folder</string>
+    <string name="templates_section_templates">Template</string>
+    <string name="folder_new">Folder baru</string>
+    <string name="folder_name_hint">Nama folder</string>
+    <string name="folder_create">Buat</string>
+    <string name="folder_rename">Ganti nama</string>
+    <string name="folder_delete">Hapus folder</string>
+    <!-- %1$s = nama folder -->
+    <string name="folder_delete_title">Hapus folder “%1$s”?</string>
+    <string name="folder_delete_body">Template di dalamnya tidak ikut terhapus. Semuanya kembali ke halaman utama Template Anda.</string>
+    <string name="folder_delete_confirm">Hapus</string>
+    <plurals name="folder_template_count">
+        <item quantity="one">%d template</item>
+        <item quantity="other">%d template</item>
+    </plurals>
+    <string name="folder_empty_count">Kosong</string>
+    <string name="folder_move">Pindahkan ke folder</string>
+    <string name="folder_move_out">Keluarkan dari folder</string>
+    <string name="folder_move_title">Pindahkan ke</string>
+    <string name="folder_move_root">Tanpa folder (halaman utama)</string>
+    <string name="folder_move_action">Pindahkan</string>
+    <!-- %1$s = nama folder -->
+    <string name="folder_created">Folder “%1$s” dibuat.</string>
+    <string name="folder_moved_to">Dipindahkan ke “%1$s”.</string>
+    <string name="folder_moved_out">Dikeluarkan dari folder.</string>
+    <string name="folder_renamed">Nama folder diganti.</string>
+    <string name="folder_deleted">Folder “%1$s” dihapus.</string>
+    <string name="folder_empty">Folder ini masih kosong. Pindahkan template ke sini lewat menu ⋮ di kartu template.</string>
+    <string name="folder_filter_empty">Tidak ada template dengan filter ini di folder ini.</string>
+    <string name="error_folder_name_required">Nama folder wajib diisi.</string>
+    <string name="error_folder_name_too_long">Nama folder maksimal 60 karakter.</string>
+    <string name="error_folder_name_taken">Nama folder ini sudah dipakai. Pilih nama lain.</string>
+    <string name="error_folder_limit">Folder sudah mencapai batas (maks 100). Hapus folder yang tidak dipakai dulu.</string>
     <!-- %1$s = kategori, %2$d = dilihat, %3$d = didownload, %4$s = "Diperbarui 2 hari lalu" -->
     <string name="template_card_meta" tools:ignore="PluralsCandidate">%1$s · %2$d dilihat · %3$d download · %4$s</string>
     <!-- Untuk template yang belum tayang (tanpa angka) -->

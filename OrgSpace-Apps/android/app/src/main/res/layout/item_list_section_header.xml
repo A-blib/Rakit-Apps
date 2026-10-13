@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Judul kelompok di dalam daftar (mis. "FOLDER", "TEMPLATE"). Teks diisi dari kode. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.App.SectionTitle"
+    android:layout_width="match_parent"
+    android:paddingTop="@dimen/space_2"
+    android:paddingBottom="@dimen/space_2"
+    android:textColor="@color/color_muted" />

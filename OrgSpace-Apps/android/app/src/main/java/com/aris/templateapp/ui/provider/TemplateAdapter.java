@@ -17,6 +17,7 @@ import com.aris.templateapp.data.remote.dto.TemplateListDto.TemplateSummaryDto;
 import com.aris.templateapp.databinding.ItemTemplateBinding;
 
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -27,11 +28,15 @@ public class TemplateAdapter extends ListAdapter<TemplateSummaryDto, TemplateAda
 
     private final ThumbnailLoader thumbnails;
     private final Consumer<TemplateSummaryDto> onClick;
+    /** Menu ⋮ kartu (atau tekan lama): menerima template dan view jangkar menu. */
+    private final BiConsumer<TemplateSummaryDto, View> onMenu;
 
-    public TemplateAdapter(ThumbnailLoader thumbnails, Consumer<TemplateSummaryDto> onClick) {
+    public TemplateAdapter(ThumbnailLoader thumbnails, Consumer<TemplateSummaryDto> onClick,
+                           BiConsumer<TemplateSummaryDto, View> onMenu) {
         super(DIFF);
         this.thumbnails = thumbnails;
         this.onClick = onClick;
+        this.onMenu = onMenu;
     }
 
     @NonNull
@@ -59,6 +64,11 @@ public class TemplateAdapter extends ListAdapter<TemplateSummaryDto, TemplateAda
                 ? context.getString(R.string.template_card_meta, category, item.views, item.downloads, updated)
                 : context.getString(R.string.template_card_meta_short, category, updated));
         b.getRoot().setOnClickListener(v -> onClick.accept(item));
+        b.getRoot().setOnLongClickListener(v -> {
+            onMenu.accept(item, b.menuButton);
+            return true;
+        });
+        b.menuButton.setOnClickListener(v -> onMenu.accept(item, v));
     }
 
     private static int statusColor(TemplateSummaryDto item) {
@@ -91,7 +101,7 @@ public class TemplateAdapter extends ListAdapter<TemplateSummaryDto, TemplateAda
             return Objects.equals(a.name, b.name) && Objects.equals(a.status, b.status)
                     && Objects.equals(a.category, b.category) && Objects.equals(a.updatedAt, b.updatedAt)
                     && a.errorCount == b.errorCount && a.warningCount == b.warningCount
-                    && a.views == b.views && a.downloads == b.downloads;
+                    && a.views == b.views && a.downloads == b.downloads && Objects.equals(a.folderId, b.folderId);
         }
     };
 }
