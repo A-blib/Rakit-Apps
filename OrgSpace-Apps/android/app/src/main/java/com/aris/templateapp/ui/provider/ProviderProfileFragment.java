@@ -13,17 +13,20 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.BuildConfig;
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.model.UserRole;
 import com.aris.templateapp.data.remote.dto.ProviderProfileDto;
 import com.aris.templateapp.databinding.FragmentProviderProfileBinding;
-import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.common.HomeNavigator;
+import com.aris.templateapp.ui.profile.AvatarViews;
 import com.aris.templateapp.ui.profile.ProfileRow;
 import com.aris.templateapp.ui.profile.ProfileViewModel;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.snackbar.Snackbar;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -33,6 +36,9 @@ import dagger.hilt.android.AndroidEntryPoint;
  */
 @AndroidEntryPoint
 public class ProviderProfileFragment extends Fragment {
+
+    @Inject
+    ThumbnailLoader thumbnailLoader;
 
     private FragmentProviderProfileBinding binding;
     private ProviderProfileViewModel viewModel;
@@ -132,7 +138,7 @@ public class ProviderProfileFragment extends Fragment {
     }
 
     private void bind(ProviderProfileDto profile) {
-        binding.avatar.setText(AppBarAccount.initialOf(profile.creatorName));
+        AvatarViews.bind(binding.avatar, binding.avatarPhoto, thumbnailLoader, profile.creatorName, profile.avatarUrl);
         binding.avatar.setContentDescription(getString(R.string.cd_profile_avatar, profile.creatorName));
         binding.creatorName.setText(profile.creatorName);
         boolean hasBio = profile.bio != null && !profile.bio.trim().isEmpty();

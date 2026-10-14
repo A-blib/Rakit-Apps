@@ -30,7 +30,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
  * (alur-provider.md bagian 6).
  * <p>
  * Cara kerja folder: halaman utama menampilkan daftar folder + template yang belum masuk folder. Begitu filter
- * status/kategori atau pencarian aktif di halaman utama, folder disembunyikan dan template dari SEMUA folder
+ * status atau pencarian aktif di halaman utama, folder disembunyikan dan template dari SEMUA folder
  * ditampilkan (seperti hasil pencarian Drive). Di dalam folder, filter hanya berlaku untuk isi folder itu.
  * <p>
  * Diambil dengan {@code new ViewModelProvider(requireActivity())} sehingga hidup selama Activity hidup:
@@ -67,11 +67,12 @@ public class ProviderTemplatesViewModel extends ViewModel {
     private final MutableLiveData<Event<Notice>> notice = new MutableLiveData<>();
 
     private String status = ALL;
-    private String category = ALL;
     private String sort = SORT_UPDATED;
     private String query = "";
     @Nullable
     private TemplateFolderDto folder;
+    /** Tampilan kisi (2 kolom) atau baris; diingat selama app terbuka, seperti filter. */
+    private boolean gridMode;
 
     private final List<TemplateSummaryDto> items = new ArrayList<>();
     private List<TemplateFolderDto> folders = Collections.emptyList();
@@ -109,10 +110,6 @@ public class ProviderTemplatesViewModel extends ViewModel {
         return status;
     }
 
-    public String getCategory() {
-        return category;
-    }
-
     public String getSort() {
         return sort;
     }
@@ -136,8 +133,16 @@ public class ProviderTemplatesViewModel extends ViewModel {
         return counts;
     }
 
+    public boolean isGridMode() {
+        return gridMode;
+    }
+
+    public void setGridMode(boolean gridMode) {
+        this.gridMode = gridMode;
+    }
+
     public boolean hasActiveFilter() {
-        return !ALL.equals(status) || !ALL.equals(category) || !query.isEmpty();
+        return !ALL.equals(status) || !query.isEmpty();
     }
 
     public void setStatus(String status) {
@@ -157,13 +162,6 @@ public class ProviderTemplatesViewModel extends ViewModel {
         refresh();
     }
 
-    public void setCategory(String category) {
-        if (!category.equals(this.category)) {
-            this.category = category;
-            refresh();
-        }
-    }
-
     public void setSort(String sort) {
         if (!sort.equals(this.sort)) {
             this.sort = sort;
@@ -179,10 +177,9 @@ public class ProviderTemplatesViewModel extends ViewModel {
         }
     }
 
-    /** Tombol "Hapus filter": kembali ke semua status & kategori, tanpa pencarian (urutan & folder tetap). */
+    /** Tombol "Hapus filter": kembali ke semua status, tanpa pencarian (urutan & folder tetap). */
     public void clearFilters() {
         status = ALL;
-        category = ALL;
         query = "";
         refresh();
     }
@@ -299,7 +296,7 @@ public class ProviderTemplatesViewModel extends ViewModel {
         loadingFirstPage = true;
         loadingMore = false;
         publish(null);
-        String f = folderParam(), s = status, c = category, o = sort, q = query.isEmpty() ? null : query;
+        String f = folderParam(), s = status, c = ALL, o = sort, q = query.isEmpty() ? null : query;
         executors.networkIO().execute(() -> {
             // Daftar folder selalu ikut diambil: dipakai baris folder di halaman utama dan dialog "Pindahkan".
             Resource<List<TemplateFolderDto>> folderResult = repository.folders();
@@ -355,7 +352,7 @@ public class ProviderTemplatesViewModel extends ViewModel {
         loadingMore = true;
         publish(null);
         int next = page + 1;
-        String f = folderParam(), s = status, c = category, o = sort, q = query.isEmpty() ? null : query;
+        String f = folderParam(), s = status, c = ALL, o = sort, q = query.isEmpty() ? null : query;
         executors.networkIO().execute(() -> {
             Resource<TemplateListDto> result = repository.templates(f, s, c, o, q, next);
             executors.mainThread().execute(() -> {

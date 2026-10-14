@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Halaman awal tab Upload (alur-fitur-upload.md bagian 3.1). Kondisi A (empty_group): belum ada draft/upload gagal.
+    Halaman awal tab Upload (alur-fitur-upload.md bagian 3.1).
+    Kondisi A (empty_group): layout pilih file hampir penuh halaman + banner deskripsi requirement dengan teks highlight panduan lengkap.
     Kondisi B (list_group): Perlu diperbaiki → Sedang dicek → Lanjutkan draft → tombol Upload template baru.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -12,6 +13,7 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fillViewport="true"
         android:visibility="gone">
 
         <LinearLayout
@@ -19,15 +21,17 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="@dimen/screen_padding_horizontal"
-            android:paddingVertical="@dimen/space_6">
+            android:paddingTop="@dimen/space_4"
+            android:paddingBottom="@dimen/space_6">
 
-            <!-- Kondisi A -->
+            <!-- Kondisi A: Belum ada draft / upload -->
             <LinearLayout
                 android:id="@+id/empty_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <!-- Header Halaman Ringkas -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -37,65 +41,138 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_2"
+                    android:layout_marginTop="@dimen/space_1"
                     android:text="@string/upload_new_body"
-                    android:textAppearance="@style/TextAppearance.App.Body"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
                     android:textColor="@color/color_muted" />
 
+                <!-- Layout Pilih File: Dibuat hampir penuh halaman (Hero Card) -->
                 <LinearLayout
                     android:id="@+id/drop_zone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_6"
+                    android:layout_marginTop="@dimen/space_4"
                     android:background="@drawable/bg_dashed_drop"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"
                     android:gravity="center"
+                    android:minHeight="380dp"
                     android:orientation="vertical"
+                    android:paddingHorizontal="@dimen/space_4"
                     android:paddingVertical="@dimen/space_8">
 
-                    <ImageView
-                        android:layout_width="@dimen/icon_size"
-                        android:layout_height="@dimen/icon_size"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/ic_folder" />
+                    <!-- Container Ikon Bulat Besar -->
+                    <FrameLayout
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:background="@drawable/bg_profile_row_icon">
 
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_upload"
+                            app:tint="@color/color_on_primary_container" />
+                    </FrameLayout>
+
+                    <!-- Judul Pilih File -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/space_2"
-                        android:fontFamily="@font/plus_jakarta_sans_semibold"
+                        android:layout_marginTop="@dimen/space_4"
+                        android:fontFamily="@font/plus_jakarta_sans_bold"
                         android:text="@string/upload_pick_zip"
-                        android:textAppearance="@style/TextAppearance.App.Body" />
+                        android:textAppearance="@style/TextAppearance.App.Title" />
 
+                    <!-- Keterangan Hint -->
                     <TextView
-                        android:id="@+id/drop_limit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/space_1"
-                        android:fontFamily="@font/plus_jakarta_sans_regular"
+                        android:gravity="center"
+                        android:maxLines="2"
+                        android:paddingHorizontal="@dimen/space_2"
+                        android:text="@string/upload_drop_hint"
                         android:textAppearance="@style/TextAppearance.App.BodySmall"
                         android:textColor="@color/color_muted" />
+
+                    <!-- Badge Batas Ukuran ZIP -->
+                    <TextView
+                        android:id="@+id/drop_limit"
+                        style="@style/Widget.App.Badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_3"
+                        android:fontFamily="@font/plus_jakarta_sans_medium" />
+
+                    <!-- Tombol Visual Jelajahi File -->
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.App.Button.Outlined.Compact"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_4"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:text="@string/upload_browse_button"
+                        app:icon="@drawable/ic_folder_filled"
+                        app:iconGravity="textStart" />
                 </LinearLayout>
 
-                <TextView
+                <!-- Deskripsi Requirement System dengan Teks Highlight "panduan lengkap" -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/requirements_card"
+                    style="@style/Widget.App.Card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_2"
-                    android:text="@string/upload_zip_help"
-                    android:textAppearance="@style/TextAppearance.App.BodySmall"
-                    android:textColor="@color/color_muted" />
+                    android:layout_marginTop="@dimen/space_4"
+                    android:clickable="true"
+                    android:focusable="true">
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/space_3">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_info"
+                            app:tint="@color/color_primary" />
+
+                        <TextView
+                            android:id="@+id/requirements_text"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="@dimen/space_2"
+                            android:layout_weight="1"
+                            android:lineSpacingExtra="2dp"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_arrow_forward"
+                            app:tint="@color/color_primary" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Hidden view_before_upload untuk kompatibilitas referensi lama jika diperlukan -->
                 <include
                     android:id="@+id/before_upload"
                     layout="@layout/view_before_upload"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_6" />
+                    android:visibility="gone" />
             </LinearLayout>
 
-            <!-- Kondisi B -->
+            <!-- Kondisi B: Ada draft / upload perlu perbaikan -->
             <LinearLayout
                 android:id="@+id/list_group"
                 android:layout_width="match_parent"

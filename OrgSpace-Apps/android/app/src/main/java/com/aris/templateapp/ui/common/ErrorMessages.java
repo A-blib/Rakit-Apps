@@ -57,6 +57,8 @@ public final class ErrorMessages {
                 return context.getString(R.string.error_role_not_allowed);
             case "TOO_MANY_ATTEMPTS":
                 return context.getString(R.string.error_too_many_attempts);
+            case "AVATAR_INVALID":
+                return context.getString(R.string.error_avatar_invalid);
             case "LOGO_INVALID":
                 return context.getString(R.string.error_logo_invalid);
             case "CONFIRM_NAME_MISMATCH":

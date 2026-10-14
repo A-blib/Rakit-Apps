@@ -1,5 +1,6 @@
 package com.aris.templateapp.ui.provider;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,6 +10,9 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.PopupMenu;
@@ -21,18 +25,19 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ConcatAdapter;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.aris.templateapp.R;
 import com.aris.templateapp.core.network.ThumbnailLoader;
-import com.aris.templateapp.data.model.CategoryLabels;
-import com.aris.templateapp.data.model.OrgCategories;
 import com.aris.templateapp.data.remote.dto.TemplateFolderDto;
+import com.aris.templateapp.data.remote.dto.TemplateListDto.StatusCountsDto;
 import com.aris.templateapp.data.remote.dto.TemplateListDto.TemplateSummaryDto;
 import com.aris.templateapp.databinding.FragmentProviderTemplatesBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.guide.Guide;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
@@ -86,6 +91,19 @@ public class ProviderTemplatesFragment extends Fragment {
         }
     };
 
+    private boolean isSpeedDialOpen = false;
+    private boolean isGridMode = false;
+
+    /**
+     * Tombol Back HP saat speed dial terbuka: tutup menu melayang dulu sebelum aksi kembali lainnya.
+     */
+    private final OnBackPressedCallback closeSpeedDialOnBack = new OnBackPressedCallback(false) {
+        @Override
+        public void handleOnBackPressed() {
+            closeSpeedDial();
+        }
+    };
+
     /**
      * Tombol Back HP saat folder terbuka: kembali ke halaman utama Template Anda dulu (seperti Drive).
      * Hanya aktif saat tab ini yang tampil; tab lain di ViewPager2 tetap hidup (STARTED) di belakang layar.
@@ -115,8 +133,63 @@ public class ProviderTemplatesFragment extends Fragment {
                 this::showTemplateMenu);
         footer = new LoadingFooterAdapter();
         ConcatAdapter concat = new ConcatAdapter(folderHeader, folderAdapter, templateHeader, adapter, footer);
-        binding.list.setLayoutManager(new LinearLayoutManager(requireContext()));
+        GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), 2);
+        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                if (!isGridMode) {
+                    return 2;
+                }
+                int folderHeaderCount = folderHeader.getItemCount();
+                if (position < folderHeaderCount) {
+                    return 2;
+                }
+                position -= folderHeaderCount;
+                int folderCount = folderAdapter.getItemCount();
+                if (position < folderCount) {
+                    return 1;
+                }
+                position -= folderCount;
+                int templateHeaderCount = templateHeader.getItemCount();
+                if (position < templateHeaderCount) {
+                    return 2;
+                }
+                position -= templateHeaderCount;
+                int templateCount = adapter.getItemCount();
+                if (position < templateCount) {
+                    return 1;
+                }
+                return 2;
+            }
+        });
+        binding.list.setLayoutManager(layoutManager);
         binding.list.setAdapter(concat);
+        binding.list.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
+                                       @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                if (!isGridMode) {
+                    outRect.setEmpty();
+                    return;
+                }
+                RecyclerView.LayoutParams lp = (RecyclerView.LayoutParams) view.getLayoutParams();
+                if (lp instanceof GridLayoutManager.LayoutParams) {
+                    GridLayoutManager.LayoutParams glp = (GridLayoutManager.LayoutParams) lp;
+                    if (glp.getSpanSize() == 1) {
+                        int halfGap = getResources().getDimensionPixelSize(R.dimen.space_1);
+                        if (glp.getSpanIndex() == 0) {
+                            outRect.left = 0;
+                            outRect.right = halfGap;
+                        } else {
+                            outRect.left = halfGap;
+                            outRect.right = 0;
+                        }
+                        return;
+                    }
+                }
+                outRect.setEmpty();
+            }
+        });
         binding.list.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -128,15 +201,42 @@ public class ProviderTemplatesFragment extends Fragment {
             }
         });
 
+        // Satu tombol ala Google Drive: ikonnya menunjukkan tampilan TUJUAN (kisi saat sedang baris, dan sebaliknya).
+        binding.viewToggle.setOnClickListener(v -> {
+            viewModel.setGridMode(!viewModel.isGridMode());
+            setViewMode(viewModel.isGridMode());
+        });
+        setViewMode(viewModel.isGridMode());
+
         setUpSearch();
-        binding.fab.setOnClickListener(v -> showMenuSheet());
-        binding.statusChip.setOnClickListener(v -> showMenuSheet());
+        binding.fab.setOnClickListener(v -> openSpeedDial());
+        binding.fabClose.setOnClickListener(v -> closeSpeedDial());
+        binding.speedDialScrim.setOnClickListener(v -> closeSpeedDial());
+        binding.statusChip.setOnClickListener(v -> openSpeedDial());
         binding.statusChip.setCloseIconContentDescription(getString(R.string.cd_status_chip_clear));
         binding.statusChip.setOnCloseIconClickListener(v -> {
             viewModel.setStatus(ProviderTemplatesViewModel.ALL);
             syncControls();
         });
-        binding.categoryButton.setOnClickListener(this::showCategoryMenu);
+
+        // Aksi pembuatan di speed dial (paling dekat dengan jempol)
+        binding.speedDialActionFolder.setOnClickListener(v -> {
+            closeSpeedDial();
+            showCreateFolderDialog(null);
+        });
+        binding.speedDialActionUpload.setOnClickListener(v -> {
+            closeSpeedDial();
+            navigateToUploadTab();
+        });
+
+        // Filter status di speed dial
+        binding.speedDialStatusAll.setOnClickListener(v -> applyStatusFromSpeedDial(ProviderTemplatesViewModel.ALL));
+        binding.speedDialStatusPublished.setOnClickListener(v -> applyStatusFromSpeedDial(ProviderTemplatesViewModel.STATUS_PUBLISHED));
+        binding.speedDialStatusNeedsFix.setOnClickListener(v -> applyStatusFromSpeedDial(ProviderTemplatesViewModel.STATUS_NEEDS_FIX));
+        binding.speedDialStatusChecking.setOnClickListener(v -> applyStatusFromSpeedDial("checking"));
+        binding.speedDialStatusDraft.setOnClickListener(v -> applyStatusFromSpeedDial("draft"));
+        binding.speedDialStatusDisabled.setOnClickListener(v -> applyStatusFromSpeedDial("disabled"));
+
         binding.sortButton.setOnClickListener(this::showSortMenu);
         binding.folderBack.setOnClickListener(v -> viewModel.closeFolder());
         binding.folderMenu.setOnClickListener(v -> {
@@ -145,6 +245,7 @@ public class ProviderTemplatesFragment extends Fragment {
                 showFolderMenu(folder, v);
             }
         });
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), closeSpeedDialOnBack);
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), closeFolderOnBack);
         syncControls();
 
@@ -233,9 +334,6 @@ public class ProviderTemplatesFragment extends Fragment {
             binding.statusChip.setText(label);
         }
 
-        String category = viewModel.getCategory();
-        binding.categoryButton.setText(ProviderTemplatesViewModel.ALL.equals(category)
-                ? getString(R.string.filter_category_all) : TemplateUi.categoryLabel(category));
         for (int i = 0; i < SORTS.length; i++) {
             if (SORTS[i].equals(viewModel.getSort())) {
                 binding.sortButton.setText(SORT_LABELS[i]);
@@ -252,10 +350,199 @@ public class ProviderTemplatesFragment extends Fragment {
         }
     }
 
-    private void showMenuSheet() {
+    private View[] getSpeedDialPills() {
+        if (binding == null) {
+            return new View[0];
+        }
+        // Urutan dari bawah ke atas (paling dekat dengan jempol/FAB adalah index 0)
+        return new View[]{
+                binding.speedDialActionFolder,
+                binding.speedDialActionUpload,
+                binding.speedDialStatusAll,
+                binding.speedDialStatusPublished,
+                binding.speedDialStatusNeedsFix,
+                binding.speedDialStatusChecking,
+                binding.speedDialStatusDraft,
+                binding.speedDialStatusDisabled
+        };
+    }
+
+    private void openSpeedDial() {
+        if (isSpeedDialOpen || binding == null) {
+            return;
+        }
         hideKeyboard();
-        if (getChildFragmentManager().findFragmentByTag(TemplatesMenuSheet.TAG) == null) {
-            new TemplatesMenuSheet().show(getChildFragmentManager(), TemplatesMenuSheet.TAG);
+        isSpeedDialOpen = true;
+        closeSpeedDialOnBack.setEnabled(true);
+
+        updateSpeedDialCounts();
+
+        // 1. Scrim meredup halus
+        binding.speedDialScrim.animate().cancel();
+        binding.speedDialScrim.setVisibility(View.VISIBLE);
+        binding.speedDialScrim.setAlpha(0f);
+        binding.speedDialScrim.animate()
+                .alpha(1f)
+                .setDuration(240)
+                .start();
+
+        // 2. Transisi FAB utama (+) ke tombol Tutup (✕) dengan putaran & skala
+        binding.fab.setVisibility(View.GONE);
+        binding.fabClose.animate().cancel();
+        binding.fabClose.setVisibility(View.VISIBLE);
+        binding.fabClose.setAlpha(0f);
+        binding.fabClose.setScaleX(0.7f);
+        binding.fabClose.setScaleY(0.7f);
+        binding.fabClose.setRotation(-90f);
+        binding.fabClose.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .rotation(0f)
+                .setDuration(220)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
+
+        // 3. Animasi bertingkat (staggered cascade) tiap pil melayang dari bawah ke atas
+        View[] pills = getSpeedDialPills();
+        for (View pill : pills) {
+            pill.animate().cancel();
+            pill.setAlpha(0f);
+            pill.setTranslationY(48f);
+            pill.setScaleX(0.65f);
+            pill.setScaleY(0.65f);
+        }
+
+        binding.speedDialScroll.setVisibility(View.VISIBLE);
+        binding.speedDialScroll.setAlpha(1f);
+        binding.speedDialScroll.setTranslationY(0f);
+
+        // Tunggu satu siklus agar dimensi view terukur presisi untuk titik tumpu (pivot)
+        binding.speedDialContainer.post(() -> {
+            if (!isSpeedDialOpen || binding == null) {
+                return;
+            }
+            for (int i = 0; i < pills.length; i++) {
+                View pill = pills[i];
+                float pivotX = pill.getWidth() > 0 ? pill.getWidth() : 200f;
+                float pivotY = pill.getHeight() > 0 ? (pill.getHeight() / 2f) : 24f;
+                pill.setPivotX(pivotX);
+                pill.setPivotY(pivotY);
+
+                pill.animate()
+                        .alpha(1f)
+                        .translationY(0f)
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(260)
+                        .setStartDelay((long) i * 28) // Stagger dari bawah ke atas
+                        .setInterpolator(new OvershootInterpolator(1.1f))
+                        .start();
+            }
+        });
+    }
+
+    private void closeSpeedDial() {
+        if (!isSpeedDialOpen || binding == null) {
+            return;
+        }
+        isSpeedDialOpen = false;
+        closeSpeedDialOnBack.setEnabled(false);
+
+        // 1. Scrim memudar
+        binding.speedDialScrim.animate().cancel();
+        binding.speedDialScrim.animate()
+                .alpha(0f)
+                .setDuration(160)
+                .withEndAction(() -> {
+                    if (binding != null) {
+                        binding.speedDialScrim.setVisibility(View.GONE);
+                    }
+                }).start();
+
+        // 2. Tombol Tutup (✕) berputar balik dan kembali ke FAB (+)
+        binding.fabClose.animate().cancel();
+        binding.fabClose.animate()
+                .alpha(0f)
+                .scaleX(0.7f)
+                .scaleY(0.7f)
+                .rotation(-90f)
+                .setDuration(160)
+                .withEndAction(() -> {
+                    if (binding != null) {
+                        binding.fabClose.setVisibility(View.GONE);
+                        binding.fab.setVisibility(View.VISIBLE);
+                        binding.fab.setAlpha(1f);
+                        binding.fab.setScaleX(1f);
+                        binding.fab.setScaleY(1f);
+                        binding.fab.setRotation(0f);
+                    }
+                }).start();
+
+        // 3. Pil-pil melayang runtuh ke bawah secara berurutan (reverse cascade)
+        View[] pills = getSpeedDialPills();
+        for (int i = 0; i < pills.length; i++) {
+            View pill = pills[i];
+            pill.animate().cancel();
+            long delay = (long) (pills.length - 1 - i) * 16;
+            final boolean isLast = (i == 0);
+
+            pill.animate()
+                    .alpha(0f)
+                    .translationY(36f)
+                    .scaleX(0.7f)
+                    .scaleY(0.7f)
+                    .setDuration(140)
+                    .setStartDelay(delay)
+                    .setInterpolator(new AccelerateInterpolator())
+                    .withEndAction(() -> {
+                        if (isLast && binding != null) {
+                            binding.speedDialScroll.setVisibility(View.GONE);
+                        }
+                    })
+                    .start();
+        }
+    }
+
+    private void applyStatusFromSpeedDial(String status) {
+        closeSpeedDial();
+        viewModel.setStatus(status);
+        syncControls();
+    }
+
+    private void navigateToUploadTab() {
+        Fragment parent = getParentFragment();
+        if (parent instanceof ProviderDashboardFragment) {
+            ((ProviderDashboardFragment) parent).selectTab(R.id.tab_upload);
+        }
+    }
+
+    private void updateSpeedDialCounts() {
+        if (binding == null) {
+            return;
+        }
+        StatusCountsDto counts = viewModel.getCounts();
+        setFilterPillText(binding.speedDialStatusAll, R.string.filter_all, counts == null ? null : counts.all);
+        setFilterPillText(binding.speedDialStatusPublished, R.string.filter_published,
+                counts == null ? null : counts.published);
+        setFilterPillText(binding.speedDialStatusNeedsFix, R.string.filter_needs_fix,
+                counts == null ? null : counts.needsFix);
+        setFilterPillText(binding.speedDialStatusChecking, R.string.filter_checking,
+                counts == null ? null : counts.checking);
+        setFilterPillText(binding.speedDialStatusDraft, R.string.filter_draft,
+                counts == null ? null : counts.draft);
+        setFilterPillText(binding.speedDialStatusDisabled, R.string.filter_disabled,
+                counts == null ? null : counts.disabled);
+    }
+
+    private void setFilterPillText(MaterialButton button, @StringRes int labelRes, @Nullable Long count) {
+        if (button == null) {
+            return;
+        }
+        if (count != null && count > 0) {
+            button.setText(getString(R.string.chip_with_count, getString(labelRes), count));
+        } else {
+            button.setText(labelRes);
         }
     }
 
@@ -303,31 +590,6 @@ public class ProviderTemplatesFragment extends Fragment {
     }
 
     // ---------- dropdown ----------
-
-    private void showCategoryMenu(View anchor) {
-        hideKeyboard();
-        PopupMenu popup = new PopupMenu(requireContext(), anchor);
-        // Daftar kategori dari server (salinan terakhir di HP); "Semua kategori" selalu paling atas.
-        List<String> values = new ArrayList<>();
-        values.add(ProviderTemplatesViewModel.ALL);
-        OrgCategories categories = CategoryLabels.current();
-        if (categories != null) {
-            for (OrgCategories.Category category : categories.getCategories()) {
-                values.add(category.value);
-            }
-        }
-        for (int i = 0; i < values.size(); i++) {
-            String value = values.get(i);
-            popup.getMenu().add(Menu.NONE, i, i, ProviderTemplatesViewModel.ALL.equals(value)
-                    ? getString(R.string.filter_category_all) : TemplateUi.categoryLabel(value));
-        }
-        popup.setOnMenuItemClickListener(item -> {
-            viewModel.setCategory(values.get(item.getItemId()));
-            syncControls();
-            return true;
-        });
-        popup.show();
-    }
 
     private void showSortMenu(View anchor) {
         hideKeyboard();
@@ -386,7 +648,7 @@ public class ProviderTemplatesFragment extends Fragment {
         } else if (state.currentFolder != null) {
             showFilterEmpty(R.string.folder_filter_empty);
         } else if (state.hasNoTemplates() && !viewModel.hasActiveFilter()) {
-            // Jumlah dari server ikut tersaring kategori & pencarian, jadi "belum punya template" hanya
+            // Jumlah dari server ikut tersaring pencarian, jadi "belum punya template" hanya
             // bisa dipastikan saat tidak ada filter yang aktif.
             binding.state.showEmpty(getString(R.string.templates_empty), getString(R.string.action_open_guide),
                     () -> ProviderNav.openGuide(this, Guide.PREPARE_TEMPLATE));
@@ -408,9 +670,28 @@ public class ProviderTemplatesFragment extends Fragment {
         syncControls();
     }
 
+    private void setViewMode(boolean grid) {
+        if (binding != null) {
+            binding.viewToggle.setImageResource(grid ? R.drawable.ic_list : R.drawable.ic_grid_view);
+            binding.viewToggle.setContentDescription(getString(grid ? R.string.cd_view_line : R.string.cd_view_grid));
+        }
+        // Tanpa "return jika sama": objek Fragment bisa dipakai ulang dengan view & adapter baru (mis. kembali dari
+        // detail template), sehingga field ini masih true padahal adapter baru masih mode baris. Adapter sendiri
+        // mengabaikan pemanggilan yang tidak mengubah apa-apa.
+        this.isGridMode = grid;
+        folderAdapter.setGridMode(grid);
+        adapter.setGridMode(grid);
+        if (binding != null) {
+            binding.list.invalidateItemDecorations();
+            binding.list.requestLayout();
+        }
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        isSpeedDialOpen = false;
+        closeSpeedDialOnBack.setEnabled(false);
         handler.removeCallbacks(applySearch);
         binding = null;
     }

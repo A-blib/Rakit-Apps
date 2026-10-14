@@ -41,16 +41,31 @@
                             android:layout_height="@dimen/profile_cover_height"
                             android:background="@drawable/bg_profile_cover" />
 
-                        <TextView
-                            android:id="@+id/avatar"
+                        <!-- Avatar: huruf depan nama di lingkaran kuning bercincin; foto profil (bila ada) digambar di atasnya. -->
+                        <FrameLayout
                             android:layout_width="@dimen/profile_avatar_size"
                             android:layout_height="@dimen/profile_avatar_size"
                             android:layout_marginStart="@dimen/space_4"
                             android:layout_marginTop="@dimen/profile_avatar_top"
                             android:background="@drawable/bg_profile_avatar"
-                            android:gravity="center"
-                            android:textAppearance="@style/TextAppearance.App.Headline"
-                            android:textColor="@color/color_on_accent" />
+                            android:padding="@dimen/profile_avatar_ring">
+
+                            <TextView
+                                android:id="@+id/avatar"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:textAppearance="@style/TextAppearance.App.Headline"
+                                android:textColor="@color/color_on_accent" />
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/avatar_photo"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:importantForAccessibility="no"
+                                android:scaleType="centerCrop"
+                                app:shapeAppearanceOverlay="@style/ShapeAppearance.App.Circle" />
+                        </FrameLayout>
 
                         <!-- Tombol Edit di kanan avatar, tepat di bawah sampul. -->
                         <Button

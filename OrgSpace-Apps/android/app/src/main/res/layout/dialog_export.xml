@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Layar Export (alur-buat-website-via-template.md bagian 8): ringkasan project, nama file, isi ZIP, opsi kompres
-    foto, lalu Simpan ke HP / Bagikan. Progres pembuatan ZIP tampil di kotak yang sama.
+    Layar Selesai / Export: dua opsi utama (Publish Langsung ke server lokal & masuk ruang pribadi,
+    atau Download as ZIP File untuk disimpan ke HP).
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -16,7 +16,7 @@
         android:layout_height="@dimen/app_bar_height"
         app:navigationContentDescription="@string/cd_close"
         app:navigationIcon="@drawable/ic_close"
-        app:title="@string/export_title" />
+        app:title="@string/export_options_title" />
 
     <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"
@@ -34,6 +34,7 @@
             android:paddingHorizontal="@dimen/screen_padding_horizontal"
             android:paddingVertical="@dimen/space_6">
 
+            <!-- Ringkasan Project -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -101,44 +102,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/file_name_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_6"
-                android:hint="@string/export_file_name">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/file_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:importantForAutofill="no"
-                    android:inputType="text"
-                    android:maxLines="1" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <TextView
-                style="@style/Widget.App.SectionTitle"
-                android:layout_marginTop="@dimen/space_6"
-                android:text="@string/export_contents" />
-
-            <TextView
-                android:id="@+id/contents"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_2"
-                android:fontFamily="@font/plus_jakarta_sans_regular"
-                android:textAppearance="@style/TextAppearance.App.BodySmall"
-                tools:text="index.html, tentang.html, kontak.html\ncss/ · img/ · vendor/\ncustom.css · ± 3,8 MB" />
-
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/compress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_4"
-                android:checked="true"
-                android:text="@string/export_compress" />
-
+            <!-- Kotak Progress (Publish atau Export) -->
             <LinearLayout
                 android:id="@+id/progress_box"
                 android:layout_width="match_parent"
@@ -161,35 +125,194 @@
                     android:textAppearance="@style/TextAppearance.App.BodySmall"
                     android:textColor="@color/color_muted" />
             </LinearLayout>
+
+            <!-- OPSI 1: PUBLISH LANGSUNG -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_publish_direct"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                app:cardCornerRadius="@dimen/radius_medium"
+                app:strokeColor="@color/color_primary"
+                app:strokeWidth="1.5dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_4">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size"
+                            android:layout_height="@dimen/icon_size"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_web"
+                            app:tint="@color/color_primary" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_2"
+                            android:layout_weight="1"
+                            android:text="@string/publish_direct_title"
+                            android:textAppearance="@style/TextAppearance.App.Title" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2"
+                        android:text="@string/publish_direct_desc"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall"
+                        android:textColor="@color/color_muted" />
+
+                    <Button
+                        android:id="@+id/publish_button"
+                        style="@style/Widget.App.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_4"
+                        android:text="@string/publish_direct_button"
+                        app:icon="@drawable/ic_web" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- PEMISAH -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/space_3"
+                    android:text="ATAU SIMPAN KE HP"
+                    android:textAppearance="@style/TextAppearance.App.Label"
+                    android:textColor="@color/color_muted" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <!-- OPSI 2: DOWNLOAD AS ZIP FILE -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_download_zip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                app:cardCornerRadius="@dimen/radius_medium"
+                app:strokeColor="@color/color_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_4">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size"
+                            android:layout_height="@dimen/icon_size"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_download"
+                            app:tint="@color/color_foreground" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/space_2"
+                            android:layout_weight="1"
+                            android:text="@string/download_zip_title"
+                            android:textAppearance="@style/TextAppearance.App.Title" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_1"
+                        android:text="@string/download_zip_desc"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall"
+                        android:textColor="@color/color_muted" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/file_name_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_3"
+                        android:hint="@string/export_file_name">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/file_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:importantForAutofill="no"
+                            android:inputType="text"
+                            android:maxLines="1" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        style="@style/Widget.App.SectionTitle"
+                        android:layout_marginTop="@dimen/space_3"
+                        android:text="@string/export_contents" />
+
+                    <TextView
+                        android:id="@+id/contents"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_1"
+                        android:fontFamily="@font/plus_jakarta_sans_regular"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall"
+                        tools:text="index.html, tentang.html, kontak.html\ncss/ · img/ · vendor/\ncustom.css · ± 3,8 MB" />
+
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/compress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2"
+                        android:checked="true"
+                        android:text="@string/export_compress" />
+
+                    <Button
+                        android:id="@+id/save_button"
+                        style="@style/Widget.App.Button.Outlined"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_3"
+                        android:text="@string/download_zip_button"
+                        app:icon="@drawable/ic_download" />
+
+                    <Button
+                        android:id="@+id/share_button"
+                        style="@style/Widget.App.Button.Outlined"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_2"
+                        android:text="@string/export_share"
+                        app:icon="@drawable/ic_share" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
-    <com.google.android.material.divider.MaterialDivider
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/screen_padding_horizontal"
-        android:paddingVertical="@dimen/space_4">
-
-        <Button
-            android:id="@+id/save_button"
-            style="@style/Widget.App.Button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/export_save"
-            app:icon="@drawable/ic_download" />
-
-        <Button
-            android:id="@+id/share_button"
-            style="@style/Widget.App.Button.Outlined"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_2"
-            android:text="@string/export_share"
-            app:icon="@drawable/ic_share" />
-    </LinearLayout>
 </LinearLayout>

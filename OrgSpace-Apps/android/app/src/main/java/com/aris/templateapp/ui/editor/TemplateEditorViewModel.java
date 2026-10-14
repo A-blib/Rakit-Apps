@@ -26,9 +26,13 @@ import com.aris.templateapp.data.model.ProjectMode;
 import com.aris.templateapp.data.model.ProjectStatus;
 import com.aris.templateapp.data.model.ProjectValues;
 import com.aris.templateapp.data.model.TemplateManifest;
+import com.aris.templateapp.data.remote.dto.DirectPublishRequestDto;
+import com.aris.templateapp.data.remote.dto.DirectPublishResponseDto;
 import com.aris.templateapp.data.repository.ProjectRepository;
 import com.aris.templateapp.data.repository.TemplateEventRepository;
 import com.aris.templateapp.data.repository.TemplatePackageRepository;
+import com.aris.templateapp.data.repository.WebsiteRepository;
+import com.aris.templateapp.data.repository.WorkspaceRepository;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,6 +40,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -117,6 +122,8 @@ public class TemplateEditorViewModel extends ViewModel {
     private final ProjectStore store;
     private final TemplateEventRepository events;
     private final AppExecutors executors;
+    private final WebsiteRepository websiteRepository;
+    private final WorkspaceRepository workspaceRepository;
     private final File exportDir;
     private final Handler main = new Handler(Looper.getMainLooper());
 
@@ -126,6 +133,7 @@ public class TemplateEditorViewModel extends ViewModel {
     private final MutableLiveData<Event<Integer>> messages = new MutableLiveData<>();
     private final MutableLiveData<Event<Boolean>> closed = new MutableLiveData<>();
     private final MutableLiveData<ExportState> export = new MutableLiveData<>(ExportState.idle());
+    private final MutableLiveData<PublishState> publish = new MutableLiveData<>(PublishState.idle());
 
     private Loaded data;
     private ProjectValues values = new ProjectValues();
@@ -152,12 +160,15 @@ public class TemplateEditorViewModel extends ViewModel {
     @Inject
     public TemplateEditorViewModel(ProjectRepository projects, TemplatePackageRepository packages, ProjectStore store,
                                    TemplateEventRepository events, AppExecutors executors,
+                                   WebsiteRepository websiteRepository, WorkspaceRepository workspaceRepository,
                                    @ApplicationContext Context context) {
         this.projects = projects;
         this.packages = packages;
         this.store = store;
         this.events = events;
         this.executors = executors;
+        this.websiteRepository = websiteRepository;
+        this.workspaceRepository = workspaceRepository;
         // Hanya folder ini yang dibagikan FileProvider (res/xml/file_paths.xml).
         this.exportDir = new File(context.getCacheDir(), "exports");
     }
@@ -610,6 +621,103 @@ public class TemplateEditorViewModel extends ViewModel {
                 //noinspection ResultOfMethodCallIgnored
                 zip.delete();
                 export.postValue(new ExportState(ExportPhase.FAILED, 0, 0, null, 0));
+            }
+        });
+    }
+
+    // ---------- publikasi langsung (publish direct ke ruang pribadi) ----------
+
+    public enum PublishPhase { IDLE, PUBLISHING, SUCCESS, FAILED }
+
+    public static final class PublishState {
+        public final PublishPhase phase;
+        @Nullable
+        public final DirectPublishResponseDto result;
+        @Nullable
+        public final String errorMessage;
+
+        private PublishState(PublishPhase phase, @Nullable DirectPublishResponseDto result, @Nullable String errorMessage) {
+            this.phase = phase;
+            this.result = result;
+            this.errorMessage = errorMessage;
+        }
+
+        public static PublishState idle() {
+            return new PublishState(PublishPhase.IDLE, null, null);
+        }
+
+        public static PublishState publishing() {
+            return new PublishState(PublishPhase.PUBLISHING, null, null);
+        }
+
+        public static PublishState success(DirectPublishResponseDto res) {
+            return new PublishState(PublishPhase.SUCCESS, res, null);
+        }
+
+        public static PublishState failed(String error) {
+            return new PublishState(PublishPhase.FAILED, null, error);
+        }
+    }
+
+    LiveData<PublishState> getPublish() {
+        return publish;
+    }
+
+    void resetPublish() {
+        publish.setValue(PublishState.idle());
+    }
+
+    /**
+     * Menerbitkan website langsung ke server lokal (port 8080) dan menyimpannya di Ruang Pribadi user.
+     */
+    void publishDirect() {
+        if (data == null) {
+            return;
+        }
+        flush();
+        ProjectValues snapshot = values.copy();
+        CompletenessChecker.Result completeness = CompletenessChecker.check(data.manifest, snapshot);
+        Loaded loadedData = data;
+        String name = projectName != null && !projectName.isBlank() ? projectName : "Website Saya";
+
+        Map<String, Object> contentMap = new HashMap<>();
+        Map<String, Object> fieldsMap = new HashMap<>();
+        for (Map.Entry<String, ProjectValues.FieldValue> entry : snapshot.fields.entrySet()) {
+            Map<String, Object> valMap = new HashMap<>();
+            if (entry.getValue().text != null) {
+                valMap.put("text", entry.getValue().text);
+            }
+            if (entry.getValue().href != null) {
+                valMap.put("href", entry.getValue().href);
+            }
+            if (entry.getValue().image != null) {
+                valMap.put("image", entry.getValue().image);
+            }
+            fieldsMap.put(entry.getKey(), valMap);
+        }
+        contentMap.put("fields", fieldsMap);
+        contentMap.put("styles", new HashMap<>(snapshot.styles));
+        contentMap.put("theme", new HashMap<>(snapshot.theme));
+
+        DirectPublishRequestDto request = new DirectPublishRequestDto(
+                name,
+                loadedData.templateId,
+                loadedData.templateVersion,
+                contentMap,
+                completeness != null ? completeness.missingCount() : 0,
+                null
+        );
+
+        publish.setValue(PublishState.publishing());
+        executors.networkIO().execute(() -> {
+            Resource<DirectPublishResponseDto> res = websiteRepository.publishDirect(request);
+            if (res.getStatus() == Resource.Status.SUCCESS && res.getData() != null) {
+                workspaceRepository.refresh(null);
+                publish.postValue(PublishState.success(res.getData()));
+            } else {
+                String errorMsg = res.getError() != null && res.getError().getMessage() != null
+                        ? res.getError().getMessage() : "Gagal menerbitkan website ke server.";
+                publish.postValue(PublishState.failed(errorMsg));
             }
         });
     }

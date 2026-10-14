@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Shell Dashboard Provider (alur-provider.md bagian 2 & 3.3): app bar (nama app + badge MODE PROVIDER + avatar),
+    Shell Dashboard Provider (alur-provider.md bagian 2 & 3.3): app bar (nama app + badge MODE PROVIDER),
     ViewPager2 berisi 4 tab (bisa digeser ke samping), dan bottom navigation. Isi tiap tab adalah Fragment anak.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -33,9 +33,6 @@
                 android:text="@string/provider_mode_badge" />
         </LinearLayout>
 
-        <include
-            android:id="@+id/account"
-            layout="@layout/view_app_bar_account" />
     </com.google.android.material.appbar.MaterialToolbar>
 
     <!-- Halaman tab; bisa digeser ke samping atau dipilih lewat bottom navigation. -->

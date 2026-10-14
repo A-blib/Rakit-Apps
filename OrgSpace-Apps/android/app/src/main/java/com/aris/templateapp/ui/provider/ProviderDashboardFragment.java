@@ -18,7 +18,6 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.aris.templateapp.R;
 import com.aris.templateapp.databinding.FragmentProviderDashboardBinding;
-import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.HomeNavigator;
 import com.aris.templateapp.ui.common.KeyboardAwareBottomBar;
@@ -75,10 +74,7 @@ public class ProviderDashboardFragment extends Fragment {
         userViewModel = new ViewModelProvider(this).get(CurrentUserViewModel.class);
         ProviderDashboardViewModel dashboardViewModel = new ViewModelProvider(this).get(ProviderDashboardViewModel.class);
 
-        // Avatar membuka tab Profil (menggantikan bottom sheet menu profil, keputusan Aris).
-        binding.account.avatarContainer.setOnClickListener(v -> selectTab(R.id.tab_profile));
         userViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
-            AppBarAccount.bind(binding.account, user);
             // Ditangguhkan saat app terbuka (data /users/me terbaru): mode provider dikunci (bagian 3.2).
             if (user != null && user.isProviderSuspended()) {
                 HomeNavigator.navigateHome(this, user);

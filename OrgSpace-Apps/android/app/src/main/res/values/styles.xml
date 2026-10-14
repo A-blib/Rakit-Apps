@@ -174,6 +174,24 @@
         <item name="strokeColor">@color/selector_chip_stroke</item>
     </style>
 
+    <!-- Tombol urutan di judul daftar (ala Google Drive): teks tanpa garis + panah kecil di kanan,
+         lebar mengikuti teks; teks panjang dipotong "…" alih-alih menimpa tombol tampilan. -->
+    <style name="Widget.App.Button.Sort" parent="Widget.App.Button.Text">
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:paddingStart">@dimen/space_2</item>
+        <item name="android:paddingEnd">@dimen/space_2</item>
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="icon">@drawable/ic_expand_more</item>
+        <item name="iconGravity">textEnd</item>
+        <item name="iconSize">@dimen/icon_size_small</item>
+        <item name="iconPadding">@dimen/space_1</item>
+        <item name="iconTint">@color/color_foreground</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.BodySmall</item>
+        <item name="android:textColor">@color/color_foreground</item>
+    </style>
+
     <!-- Tombol kecil bergaris untuk dropdown filter (Kategori, Urutkan): ikon panah di kanan teks. -->
     <style name="Widget.App.Button.Dropdown" parent="Widget.App.Button.Outlined">
         <item name="android:minHeight">@dimen/touch_target_min</item>
@@ -361,6 +379,42 @@
         <item name="buttonBarNegativeButtonStyle">@style/Widget.App.Button.Text</item>
     </style>
 
+    <!-- Tombol FAB tutup (Speed Dial ala Google Drive): bulat penuh dengan warna container dan ikon kontras -->
+    <style name="Widget.App.FloatingActionButton.Close" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">@color/color_primary_container</item>
+        <item name="tint">@color/color_on_primary_container</item>
+        <item name="rippleColor">@color/color_primary_ripple</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.Pill</item>
+        <item name="elevation">2dp</item>
+        <item name="pressedTranslationZ">2dp</item>
+        <item name="hoveredFocusedTranslationZ">2dp</item>
+    </style>
+
+    <!-- Tombol pil melayang di Speed Dial (ala Google Drive): pil biru dengan ikon & teks putih, bayangan halus -->
+    <style name="Widget.App.Button.SpeedDial" parent="Widget.Material3.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">46dp</item>
+        <item name="android:paddingStart">@dimen/space_4</item>
+        <item name="android:paddingEnd">@dimen/space_4</item>
+        <item name="android:paddingTop">@dimen/space_2</item>
+        <item name="android:paddingBottom">@dimen/space_2</item>
+        <item name="android:layout_marginTop">@dimen/space_2</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Button</item>
+        <item name="android:textColor">@color/color_speed_dial_text</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="backgroundTint">@color/color_speed_dial_bg</item>
+        <item name="iconTint">@color/color_speed_dial_text</item>
+        <item name="iconSize">20dp</item>
+        <item name="iconPadding">@dimen/space_3</item>
+        <item name="iconGravity">textStart</item>
+        <item name="cornerRadius">@dimen/radius_button</item>
+        <item name="elevation">3dp</item>
+        <item name="android:elevation">3dp</item>
+        <item name="rippleColor">@color/color_primary_ripple</item>
+    </style>
+
     <!-- Logo kecil di app bar: sudut 12dp terlalu bulat untuk kotak 28dp. -->
     <style name="ShapeAppearance.App.ExtraSmall" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerSize">@dimen/radius_extra_small</item>
@@ -376,5 +430,15 @@
 
     <style name="ShapeAppearance.App.Large" parent="ShapeAppearance.Material3.LargeComponent">
         <item name="cornerSize">@dimen/radius_large</item>
+    </style>
+
+    <style name="ShapeAppearance.App.Circle" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="ShapeAppearance.App.Pill" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
     </style>
 </resources>

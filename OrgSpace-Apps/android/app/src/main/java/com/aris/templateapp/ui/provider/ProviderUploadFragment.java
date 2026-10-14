@@ -22,9 +22,15 @@ import com.aris.templateapp.data.remote.dto.UploadOverviewDto;
 import com.aris.templateapp.data.remote.dto.UploadOverviewDto.CheckingDto;
 import com.aris.templateapp.data.remote.dto.UploadOverviewDto.DraftItemDto;
 import com.aris.templateapp.data.remote.dto.UploadOverviewDto.NeedsFixDto;
+import android.graphics.Typeface;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import com.aris.templateapp.databinding.FragmentProviderUploadBinding;
 import com.aris.templateapp.databinding.ItemUploadCardBinding;
 import com.aris.templateapp.databinding.SheetBeforeUploadBinding;
+import com.aris.templateapp.databinding.SheetUploadRequirementsBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.guide.Guide;
 import com.aris.templateapp.ui.upload.MarkingEditor;
@@ -81,6 +87,8 @@ public class ProviderUploadFragment extends Fragment {
                 Snackbar.make(binding.getRoot(), text, Snackbar.LENGTH_SHORT).show();
             }
         });
+        setupRequirementsBanner();
+
         binding.dropZone.setOnClickListener(v -> picker.launch(null));
         binding.beforeUpload.guideButton.setOnClickListener(v -> ProviderNav.openGuide(this, Guide.CHECK_RULES));
         binding.newUploadButton.setOnClickListener(v -> showBeforeUpload());
@@ -252,6 +260,36 @@ public class ProviderUploadFragment extends Fragment {
             sheet.dismiss();
             picker.launch(null);
         });
+        sheet.setContentView(sheetBinding.getRoot());
+        sheet.show();
+    }
+
+    private void setupRequirementsBanner() {
+        if (binding == null) {
+            return;
+        }
+        String highlight = getString(R.string.upload_requirements_highlight);
+        String fullText = getString(R.string.upload_requirements_banner_text, highlight);
+        SpannableString spannable = new SpannableString(fullText);
+        int start = fullText.indexOf(highlight);
+        if (start >= 0) {
+            int end = start + highlight.length();
+            int primaryColor = ContextCompat.getColor(requireContext(), R.color.color_primary);
+            spannable.setSpan(new ForegroundColorSpan(primaryColor), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new StyleSpan(Typeface.BOLD), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        binding.requirementsText.setText(spannable);
+        binding.requirementsCard.setOnClickListener(v -> showRequirementsSheet());
+    }
+
+    private void showRequirementsSheet() {
+        BottomSheetDialog sheet = new BottomSheetDialog(requireContext());
+        SheetUploadRequirementsBinding sheetBinding = SheetUploadRequirementsBinding.inflate(getLayoutInflater());
+        sheetBinding.btnOpenGuide.setOnClickListener(v -> {
+            sheet.dismiss();
+            ProviderNav.openGuide(this, Guide.CHECK_RULES);
+        });
+        sheetBinding.btnCloseSheet.setOnClickListener(v -> sheet.dismiss());
         sheet.setContentView(sheetBinding.getRoot());
         sheet.show();
     }

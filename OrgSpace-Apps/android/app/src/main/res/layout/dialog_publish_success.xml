@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/screen_padding_horizontal"
+            android:paddingTop="@dimen/space_12"
+            android:paddingBottom="@dimen/space_6">
+
+            <ImageView
+                android:layout_width="@dimen/state_illustration_size"
+                android:layout_height="@dimen/state_illustration_size"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_check_circle"
+                app:tint="@color/color_success" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_4"
+                android:text="@string/publish_success_title"
+                android:textAppearance="@style/TextAppearance.App.Display" />
+
+            <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_2"
+                android:text="@string/publish_success_subtitle"
+                android:textAppearance="@style/TextAppearance.App.Body"
+                android:textColor="@color/color_muted" />
+
+            <!-- Card Informasi Website Live & Port -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_6"
+                app:cardCornerRadius="@dimen/radius_medium"
+                app:strokeColor="@color/color_border"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_4">
+
+                    <!-- Status -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/publish_success_status_label"
+                            android:textAppearance="@style/TextAppearance.App.Label"
+                            android:textColor="@color/color_muted" />
+
+                        <TextView
+                            android:id="@+id/text_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/publish_success_status_online"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/space_2" />
+
+                    <!-- Ruang Kerja -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/publish_success_workspace_label"
+                            android:textAppearance="@style/TextAppearance.App.Label"
+                            android:textColor="@color/color_muted" />
+
+                        <TextView
+                            android:id="@+id/text_workspace"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall"
+                            android:textStyle="bold"
+                            tools:text="Ruang Pribadi" />
+                    </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/space_2" />
+
+                    <!-- Port Server -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/publish_success_port_label"
+                            android:textAppearance="@style/TextAppearance.App.Label"
+                            android:textColor="@color/color_muted" />
+
+                        <TextView
+                            android:id="@+id/text_port"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall"
+                            android:textColor="@color/color_primary"
+                            android:textStyle="bold"
+                            tools:text="8080" />
+                    </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/space_2" />
+
+                    <!-- Alamat URL -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/publish_success_url_label"
+                        android:textAppearance="@style/TextAppearance.App.Label"
+                        android:textColor="@color/color_muted" />
+
+                    <TextView
+                        android:id="@+id/text_url"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_1"
+                        android:textAppearance="@style/TextAppearance.App.Body"
+                        android:textColor="@color/color_primary"
+                        android:textStyle="bold"
+                        tools:text="http://localhost:8080/sites/web-organisasi/" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:paddingVertical="@dimen/space_4">
+
+        <Button
+            android:id="@+id/btn_open_site"
+            style="@style/Widget.App.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/publish_success_open_button"
+            app:icon="@drawable/ic_web" />
+
+        <Button
+            android:id="@+id/btn_copy_link"
+            style="@style/Widget.App.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            android:text="@string/publish_success_copy_button"
+            app:icon="@drawable/ic_link" />
+
+        <Button
+            android:id="@+id/btn_close"
+            style="@style/Widget.App.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            android:text="@string/publish_success_close_button" />
+    </LinearLayout>
+</LinearLayout>

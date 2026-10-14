@@ -8,7 +8,8 @@ import com.aris.templateapp.databinding.ViewAppBarAccountBinding;
 import java.util.Locale;
 
 /**
- * Bagian kanan app bar dashboard: tombol "Masuk" untuk tamu, atau avatar (huruf depan nama) untuk user login.
+ * Bagian kanan app bar dashboard pembuat website: tombol "Masuk" hanya untuk tamu. Avatar di app bar dihapus
+ * (keputusan Aris, 13 Oktober 2026); profil dibuka lewat tab Profil di bottom navigation.
  */
 public final class AppBarAccount {
 
@@ -16,12 +17,7 @@ public final class AppBarAccount {
     }
 
     public static void bind(ViewAppBarAccountBinding binding, User user) {
-        boolean loggedIn = user != null;
-        binding.signInButton.setVisibility(loggedIn ? View.GONE : View.VISIBLE);
-        binding.avatarContainer.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
-        if (loggedIn) {
-            binding.avatarInitial.setText(initialOf(user.getDisplayName()));
-        }
+        binding.signInButton.setVisibility(user != null ? View.GONE : View.VISIBLE);
     }
 
     public static String initialOf(String name) {

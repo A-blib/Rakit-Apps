@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Tab Template Anda (alur-provider.md bagian 6), bergaya Google Drive: judul folder (saat folder dibuka),
-    pencarian, chip status aktif + dropdown kategori dan urutan, lalu daftar folder dan kartu template dengan
+    pencarian, chip status aktif, urutan + tombol tampilan baris/kisi, lalu daftar folder dan kartu template dengan
     pemuatan lanjutan saat di-scroll. Tombol + di kanan bawah membuka menu Folder baru & pilihan status.
     Kerangka (skeleton) tampil saat memuat halaman pertama; StateView untuk kosong / filter kosong / error.
 -->
@@ -81,47 +81,45 @@
                 android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Geseran ke samping menggulir baris filter dulu, baru pindah tab saat baris sudah mentok. -->
-        <com.aris.templateapp.ui.common.PagerAwareHorizontalScrollView
+        <!-- Status terpilih dari menu +; ✕ kembali ke Semua. Disembunyikan saat status = Semua. -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/status_chip"
+            style="@style/Widget.App.Chip.Active"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/screen_padding_horizontal"
+            android:layout_marginTop="@dimen/space_2"
+            android:visibility="gone" />
+
+        <!--
+            Judul daftar ala Google Drive: urutan di kiri, satu tombol pengubah tampilan (baris ↔ kisi) di kanan.
+            Dipisah dari baris filter agar keduanya punya ruang sendiri dan tidak saling menimpa di layar sempit
+            atau saat ukuran huruf HP diperbesar. Padding 12dp + padding tombol 8dp = sejajar tepi layar 20dp.
+        -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_2"
-            android:clipToPadding="false"
-            android:paddingHorizontal="@dimen/screen_padding_horizontal"
-            android:scrollbars="none">
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/space_3"
+            android:paddingEnd="@dimen/space_2">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
+            <Button
+                android:id="@+id/sort_button"
+                style="@style/Widget.App.Button.Sort"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_weight="1" />
 
-                <!-- Status terpilih dari menu +; ✕ kembali ke Semua. Disembunyikan saat status = Semua. -->
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/status_chip"
-                    style="@style/Widget.App.Chip.Active"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/space_2"
-                    android:visibility="gone" />
-
-                <Button
-                    android:id="@+id/category_button"
-                    style="@style/Widget.App.Button.Dropdown"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-                <Space
-                    android:layout_width="@dimen/space_2"
-                    android:layout_height="0dp" />
-
-                <Button
-                    android:id="@+id/sort_button"
-                    style="@style/Widget.App.Button.Dropdown"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-        </com.aris.templateapp.ui.common.PagerAwareHorizontalScrollView>
+            <ImageButton
+                android:id="@+id/view_toggle"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/cd_view_grid"
+                android:src="@drawable/ic_grid_view"
+                app:tint="@color/color_foreground" />
+        </LinearLayout>
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -161,6 +159,102 @@
         </FrameLayout>
     </LinearLayout>
 
+    <!-- Scrim / latar redup saat Speed Dial terbuka (ala Google Drive) -->
+    <View
+        android:id="@+id/speed_dial_scrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/color_scrim_overlay"
+        android:clickable="true"
+        android:focusable="true"
+        android:importantForAccessibility="no"
+        android:visibility="gone" />
+
+    <!-- Wadah menu tombol pil melayang Speed Dial (ala Google Drive) -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/speed_dial_scroll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="@dimen/space_4"
+        android:layout_marginBottom="@dimen/fab_list_clearance"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/speed_dial_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="vertical">
+
+            <!-- Filter Status Template -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/speed_dial_status_disabled"
+                style="@style/Widget.App.Button.SpeedDial"
+                android:text="@string/filter_disabled"
+                app:icon="@drawable/ic_block" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/speed_dial_status_draft"
+                style="@style/Widget.App.Button.SpeedDial"
+                android:text="@string/filter_draft"
+                app:icon="@drawable/ic_edit" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/speed_dial_status_checking"
+                style="@style/Widget.App.Button.SpeedDial"
+                android:text="@string/filter_checking"
+                app:icon="@drawable/ic_schedule" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/speed_dial_status_needs_fix"
+                style="@style/Widget.App.Button.SpeedDial"
+                android:text="@string/filter_needs_fix"
+                app:icon="@drawable/ic_warning" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/speed_dial_status_published"
+                style="@style/Widget.App.Button.SpeedDial"
+                android:text="@string/filter_published"
+                app:icon="@drawable/ic_check_circle" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/speed_dial_status_all"
+                style="@style/Widget.App.Button.SpeedDial"
+                android:text="@string/filter_all"
+                app:icon="@drawable/ic_grid_view" />
+
+            <!-- Aksi Utama (Paling dekat dengan posisi jempol / FAB) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/speed_dial_action_upload"
+                style="@style/Widget.App.Button.SpeedDial"
+                android:text="@string/speed_dial_upload_template"
+                app:icon="@drawable/ic_upload" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/speed_dial_action_folder"
+                style="@style/Widget.App.Button.SpeedDial"
+                android:text="@string/folder_new"
+                app:icon="@drawable/ic_folder" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Tombol Tutup (✕) saat Speed Dial terbuka -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_close"
+        style="@style/Widget.App.FloatingActionButton.Close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/space_4"
+        android:contentDescription="@string/cd_close"
+        android:visibility="gone"
+        app:srcCompat="@drawable/ic_close" />
+
+    <!-- FAB utama (+) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         style="@style/Widget.App.FloatingActionButton"

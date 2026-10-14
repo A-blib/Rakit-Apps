@@ -169,7 +169,6 @@ Template akan muncul di sini.</string>
     <string name="filter_checking">Sedang dicek</string>
     <string name="filter_draft">Draft</string>
     <string name="filter_disabled">Dinonaktifkan</string>
-    <string name="filter_category_all">Semua kategori</string>
     <string name="sort_updated">Terbaru diperbarui</string>
     <string name="sort_downloads">Download terbanyak</string>
     <string name="sort_views">Dilihat terbanyak</string>
@@ -190,6 +189,8 @@ Template akan muncul di sini.</string>
     <string name="templates_menu_show_in_folder">Tampilkan di %1$s</string>
     <string name="templates_section_folders">Folder</string>
     <string name="templates_section_templates">Template</string>
+    <string name="cd_view_line">Ganti ke tampilan baris</string>
+    <string name="cd_view_grid">Ganti ke tampilan kisi</string>
     <string name="folder_new">Folder baru</string>
     <string name="folder_name_hint">Nama folder</string>
     <string name="folder_create">Buat</string>
@@ -467,5 +468,5 @@ Grafik jumlah Didownload per hari. Hari tanpa download tetap tampil sebagai 0. K
 
     <!-- Aksesibilitas (contentDescription ikon) -->
     <string name="cd_back">Kembali</string>
-    <string name="cd_profile_menu">Menu profil</string>
+    <string name="speed_dial_upload_template">Upload template</string>
 </resources>

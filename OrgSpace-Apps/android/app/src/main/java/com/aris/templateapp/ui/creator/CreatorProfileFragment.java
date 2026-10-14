@@ -18,10 +18,10 @@ import com.aris.templateapp.data.model.User;
 import com.aris.templateapp.data.model.UserRole;
 import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.databinding.FragmentCreatorProfileBinding;
-import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.common.HomeNavigator;
+import com.aris.templateapp.ui.profile.AvatarViews;
 import com.aris.templateapp.ui.profile.ProfileRow;
 import com.aris.templateapp.ui.profile.ProfileViewModel;
 import com.aris.templateapp.ui.workspace.WorkspaceRows;
@@ -163,7 +163,8 @@ public class CreatorProfileFragment extends Fragment {
         if (!loggedIn) {
             return;
         }
-        binding.avatar.setText(AppBarAccount.initialOf(user.getDisplayName()));
+        AvatarViews.bind(binding.avatar, binding.avatarPhoto, thumbnailLoader, user.getDisplayName(),
+                user.getAvatarUrl());
         binding.avatar.setContentDescription(getString(R.string.cd_profile_avatar, user.getDisplayName()));
         binding.name.setText(user.getDisplayName());
         binding.email.setText(user.getEmail());
