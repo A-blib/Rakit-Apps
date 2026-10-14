@@ -27,6 +27,7 @@ public record AppProperties(
         @NotBlank String timezone,
         @Valid Upload upload,
         @Valid Org org,
+        @Valid Users users,
         @Valid Sites sites,
         @Valid Projects projects,
         @Valid Portal portal) {
@@ -58,6 +59,17 @@ public record AppProperties(
             @Min(1) int inviteTtlDays,
             @Min(16) int logoMaxKb,
             @NotBlank String logoDir) {
+    }
+
+    /**
+     * Akun user.
+     *
+     * @param avatarMaxKb ukuran maksimal file foto profil yang diunggah
+     * @param avatarDir   folder foto profil hasil olahan server (relatif ke folder kerja backend)
+     */
+    public record Users(
+            @Min(16) int avatarMaxKb,
+            @NotBlank String avatarDir) {
     }
 
     /**
@@ -101,10 +113,56 @@ public record AppProperties(
             @NotBlank String domain,
             @NotBlank String urlScheme,
             @Min(1) int maxPerOrg,
-            @Min(1) int maxPerPersonal) {
+            @Min(1) int maxPerPersonal,
+            String rootDir,
+            Integer buildTimeoutSeconds,
+            Integer maxOutputMb,
+            Integer maxFiles,
+            Integer keepReleases) {
+
+        public Sites {
+            if (rootDir == null || rootDir.isBlank()) {
+                rootDir = "./data/sites";
+            }
+            if (buildTimeoutSeconds == null || buildTimeoutSeconds <= 0) {
+                buildTimeoutSeconds = 120;
+            }
+            if (maxOutputMb == null || maxOutputMb <= 0) {
+                maxOutputMb = 50;
+            }
+            if (maxFiles == null || maxFiles <= 0) {
+                maxFiles = 500;
+            }
+            if (keepReleases == null || keepReleases <= 0) {
+                keepReleases = 3;
+            }
+        }
+
+        public String storageRootDir() {
+            return rootDir != null && !rootDir.isBlank() ? rootDir : "./data/sites";
+        }
+
+        public int timeoutSeconds() {
+            return buildTimeoutSeconds != null && buildTimeoutSeconds > 0 ? buildTimeoutSeconds : 120;
+        }
+
+        public int outputMaxMb() {
+            return maxOutputMb != null && maxOutputMb > 0 ? maxOutputMb : 50;
+        }
+
+        public int filesMax() {
+            return maxFiles != null && maxFiles > 0 ? maxFiles : 500;
+        }
+
+        public int releasesToKeep() {
+            return keepReleases != null && keepReleases > 0 ? keepReleases : 3;
+        }
 
         /** Alamat lengkap website dari nama subdomainnya, mis. {@code https://osis-smansa.orgspace.site}. */
         public String urlOf(String slug) {
+            if (domain != null && domain.contains("localhost")) {
+                return urlScheme + "://" + domain + "/sites/" + slug + "/";
+            }
             return urlScheme + "://" + slug + "." + domain;
         }
     }

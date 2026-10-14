@@ -16,6 +16,8 @@ import com.aris.templateapp.data.model.WebsitePage;
 import com.aris.templateapp.data.model.WebsiteQuery;
 import com.aris.templateapp.data.remote.api.WebsiteApi;
 import com.aris.templateapp.data.remote.dto.ConfirmNameRequestDto;
+import com.aris.templateapp.data.remote.dto.DirectPublishRequestDto;
+import com.aris.templateapp.data.remote.dto.DirectPublishResponseDto;
 import com.aris.templateapp.data.remote.dto.PublishRequestDto;
 import com.aris.templateapp.data.remote.dto.PublishRequestNoteDto;
 import com.aris.templateapp.data.remote.dto.WebsiteListDto;
@@ -131,6 +133,11 @@ public class WebsiteRepository {
         } catch (IOException e) {
             return Resource.error(errorParser.parse(e));
         }
+    }
+
+    @WorkerThread
+    public Resource<DirectPublishResponseDto> publishDirect(DirectPublishRequestDto request) {
+        return execute(() -> api.publishDirect(request).execute(), dto -> dto);
     }
 
     /** Keluar akun: cache website akun lama tidak boleh terlihat akun berikutnya. */

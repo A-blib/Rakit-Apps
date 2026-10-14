@@ -25,4 +25,12 @@
     <color name="color_error_tint">#1AFF6166</color>
     <color name="color_link_tint">#1A6FAEFF</color>
     <color name="color_primary_ripple">#334C9AFF</color>
+
+    <!-- Speed Dial (ala Google Drive) mode malam: pil biru tua kontras tinggi & teks putih -->
+    <color name="color_speed_dial_bg">#004A77</color>
+    <color name="color_speed_dial_text">#FFFFFF</color>
+    <color name="color_scrim_overlay">#B307111F</color>
+
+    <!-- Ilustrasi gambar folder besar (ala Google Drive) di kartu mode kisi -->
+    <color name="color_folder_illustration">#BFC4D3</color>
 </resources>

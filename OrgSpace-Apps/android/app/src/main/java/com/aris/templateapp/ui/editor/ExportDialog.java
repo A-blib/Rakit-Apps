@@ -92,6 +92,7 @@ public class ExportDialog extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         viewModel = new ViewModelProvider(requireParentFragment()).get(TemplateEditorViewModel.class);
         viewModel.resetExport();
+        viewModel.resetPublish();
         binding.toolbar.setNavigationOnClickListener(v -> dismiss());
         TemplateEditorViewModel.Loaded data = viewModel.data();
         if (data == null) {
@@ -109,6 +110,8 @@ public class ExportDialog extends DialogFragment {
             }
         });
         viewModel.getExport().observe(getViewLifecycleOwner(), this::renderExport);
+        viewModel.getPublish().observe(getViewLifecycleOwner(), this::renderPublish);
+        binding.publishButton.setOnClickListener(v -> viewModel.publishDirect());
         binding.saveButton.setOnClickListener(v -> build(true));
         binding.shareButton.setOnClickListener(v -> build(false));
     }
@@ -181,10 +184,14 @@ public class ExportDialog extends DialogFragment {
             return;
         }
         boolean building = state.phase == TemplateEditorViewModel.ExportPhase.BUILDING;
+        binding.publishButton.setEnabled(!building);
         binding.saveButton.setEnabled(!building);
         binding.shareButton.setEnabled(!building);
         binding.progressBox.setVisibility(state.phase == TemplateEditorViewModel.ExportPhase.IDLE ? View.GONE : View.VISIBLE);
         binding.progress.setVisibility(building ? View.VISIBLE : View.GONE);
+        if (building) {
+            binding.progress.setIndeterminate(false);
+        }
         binding.progressText.setTextColor(requireContext().getColor(
                 state.phase == TemplateEditorViewModel.ExportPhase.FAILED ? R.color.color_error : R.color.color_muted));
         switch (state.phase) {
@@ -207,6 +214,34 @@ public class ExportDialog extends DialogFragment {
             case IDLE:
             default:
                 break;
+        }
+    }
+
+    private void renderPublish(@Nullable TemplateEditorViewModel.PublishState state) {
+        if (state == null) {
+            return;
+        }
+        boolean publishing = state.phase == TemplateEditorViewModel.PublishPhase.PUBLISHING;
+        binding.publishButton.setEnabled(!publishing);
+        binding.saveButton.setEnabled(!publishing);
+        binding.shareButton.setEnabled(!publishing);
+
+        if (state.phase == TemplateEditorViewModel.PublishPhase.PUBLISHING) {
+            binding.progressBox.setVisibility(View.VISIBLE);
+            binding.progress.setIndeterminate(true);
+            binding.progress.setVisibility(View.VISIBLE);
+            binding.progressText.setText(R.string.publish_direct_loading);
+            binding.progressText.setTextColor(requireContext().getColor(R.color.color_muted));
+        } else if (state.phase == TemplateEditorViewModel.PublishPhase.FAILED) {
+            binding.progressBox.setVisibility(View.VISIBLE);
+            binding.progress.setVisibility(View.GONE);
+            binding.progressText.setText(getString(R.string.publish_direct_failed,
+                    state.errorMessage != null ? state.errorMessage : ""));
+            binding.progressText.setTextColor(requireContext().getColor(R.color.color_error));
+        } else if (state.phase == TemplateEditorViewModel.PublishPhase.SUCCESS && state.result != null) {
+            Fragment editor = requireParentFragment();
+            dismiss();
+            PublishSuccessDialog.show(editor, state.result);
         }
     }
 

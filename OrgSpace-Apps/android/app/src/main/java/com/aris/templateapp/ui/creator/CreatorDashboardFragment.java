@@ -34,7 +34,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 /**
  * Shell Dashboard Pembuat Website (alur-pembuatan-website.md bagian 2), untuk tamu maupun user login:
- * app bar (Masuk / avatar → tab Profil) + ViewPager2 berisi 4 tab + bottom navigation dengan tombol + di tengah.
+ * app bar (tombol Masuk untuk tamu; profil lewat tab Profil) + ViewPager2 berisi 4 tab + bottom navigation dengan tombol + di tengah.
  * Tab bisa dipilih lewat bottom navigation atau digeser ke samping, sama seperti Dashboard Provider.
  */
 @AndroidEntryPoint
@@ -119,8 +119,6 @@ public class CreatorDashboardFragment extends Fragment {
         });
         binding.account.signInButton.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.action_creator_dashboard_to_login));
-        // Avatar membuka tab Profil (menggantikan bottom sheet menu profil, keputusan Aris).
-        binding.account.avatarContainer.setOnClickListener(v -> selectTab(R.id.tab_creator_profile));
 
         keyboardAware = KeyboardAwareBottomBar.attach(binding.getRoot(), binding.bottomBar, binding.bottomNavDivider);
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), backToHome);

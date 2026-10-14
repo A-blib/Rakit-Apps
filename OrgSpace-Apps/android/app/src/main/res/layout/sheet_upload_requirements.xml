@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bottom Sheet "Persyaratan Sistem Template" (detail requirement lengkap saat teks panduan lengkap diketuk). -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:paddingTop="@dimen/space_3"
+        android:paddingBottom="@dimen/space_6">
+
+        <!-- Drag handle pill indicator -->
+        <View
+            android:layout_width="36dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="@dimen/space_4"
+            android:background="@drawable/bg_badge"
+            android:backgroundTint="@color/color_border_strong" />
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="@dimen/profile_row_icon_box"
+                android:layout_height="@dimen/profile_row_icon_box"
+                android:background="@drawable/bg_profile_row_icon"
+                android:importantForAccessibility="no"
+                android:padding="@dimen/space_2"
+                android:src="@drawable/ic_info"
+                app:tint="@color/color_on_primary_container" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_3"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/upload_requirements_sheet_title"
+                    android:textAppearance="@style/TextAppearance.App.Title" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:text="@string/upload_requirements_sheet_subtitle"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.google.android.material.divider.MaterialDivider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="@dimen/space_4" />
+
+        <!-- Syarat 1: index.html -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="2dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_check_small"
+                app:tint="@color/color_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_2"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/upload_requirements_rule_index_title"
+                    android:textAppearance="@style/TextAppearance.App.Body.SemiBold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:text="@string/upload_requirements_rule_index_desc"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Syarat 2: Konten di HTML -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_3"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="2dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_check_small"
+                app:tint="@color/color_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_2"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/upload_requirements_rule_content_title"
+                    android:textAppearance="@style/TextAppearance.App.Body.SemiBold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:text="@string/upload_requirements_rule_content_desc"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Syarat 3: Library Resmi -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_3"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="2dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_check_small"
+                app:tint="@color/color_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_2"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/upload_requirements_rule_library_title"
+                    android:textAppearance="@style/TextAppearance.App.Body.SemiBold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:text="@string/upload_requirements_rule_library_desc"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Syarat 4: Vite / Bundler -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_3"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="2dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_check_small"
+                app:tint="@color/color_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_2"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/upload_requirements_rule_dist_title"
+                    android:textAppearance="@style/TextAppearance.App.Body.SemiBold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:text="@string/upload_requirements_rule_dist_desc"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Syarat 5: Format & Ukuran -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_3"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="2dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_check_small"
+                app:tint="@color/color_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_2"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/upload_requirements_rule_size_title"
+                    android:textAppearance="@style/TextAppearance.App.Body.SemiBold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:text="@string/upload_requirements_rule_size_desc"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Alur 6 Langkah -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_4">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/space_3">
+
+                <TextView
+                    style="@style/Widget.App.SectionTitle"
+                    android:text="@string/upload_flow_title" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_1"
+                    android:fontFamily="@font/plus_jakarta_sans_medium"
+                    android:text="@string/upload_flow_steps"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_primary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Tombol Aksi -->
+        <Button
+            android:id="@+id/btn_open_guide"
+            style="@style/Widget.App.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_4"
+            android:text="@string/upload_see_guide"
+            app:icon="@drawable/ic_arrow_forward"
+            app:iconGravity="textEnd" />
+
+        <Button
+            android:id="@+id/btn_close_sheet"
+            style="@style/Widget.App.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            android:text="@string/upload_requirements_action_understand" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

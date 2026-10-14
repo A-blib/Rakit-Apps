@@ -17,6 +17,15 @@ app:
   org:
     # Logo test ditulis ke folder build, bukan ke backend/data/ milik backend dev.
     logo-dir: target/test-org-logos
+  users:
+    # Foto profil test ditulis ke folder build, bukan ke backend/data/ milik backend dev.
+    avatar-dir: target/test-user-avatars
   projects:
     # Gambar website test ditulis ke folder build, bukan ke backend/data/ milik backend dev.
     assets-dir: target/test-project-assets
+  sites:
+    domain: localhost:8080
+    url-scheme: http
+    max-per-org: 5
+    max-per-personal: 5
+    root-dir: target/test-sites

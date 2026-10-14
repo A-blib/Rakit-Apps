@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Tab Profil pembuat website = akun pribadi (alur-pembuatan-website.md bagian 8). Dua versi dalam satu layout:
-    tamu (ajakan masuk) dan user login (kepala profil, ruang kerja saya, menu). Data organisasi ada di Profil
-    organisasi, bukan di sini.
+    Tab Profil pembuat website = akun pribadi (alur-pembuatan-website.md bagian 8), desain ulang 12 Okt 2026:
+    kartu identitas (sampul biru, avatar, nama, badge mode, statistik ruang kerja) lalu menu berkelompok dalam kartu.
+    Dua versi dalam satu layout: tamu (ajakan masuk) dan user login. Data organisasi ada di Profil organisasi.
 -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -13,33 +13,57 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="@dimen/space_6">
+        android:paddingHorizontal="@dimen/screen_padding_horizontal"
+        android:paddingTop="@dimen/space_4"
+        android:paddingBottom="@dimen/space_8">
 
         <!-- TAMU -->
-        <LinearLayout
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/guest_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="@dimen/screen_padding_horizontal"
-            android:paddingTop="@dimen/space_6"
             android:visibility="gone">
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Sampul + avatar dalam satu FrameLayout: avatar digambar di atas sampul, separuhnya menumpuk. -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/profile_cover_height"
+                        android:background="@drawable/bg_profile_cover" />
+
+                    <ImageView
+                        android:layout_marginStart="@dimen/space_4"
+                        android:layout_marginTop="@dimen/profile_avatar_top"
+                        android:layout_width="@dimen/profile_avatar_size"
+                        android:layout_height="@dimen/profile_avatar_size"
+                        android:background="@drawable/bg_profile_avatar_guest"
+                        android:importantForAccessibility="no"
+                        android:padding="@dimen/space_4"
+                        android:src="@drawable/ic_person"
+                        app:tint="@color/color_on_primary_container" />
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="@dimen/space_4">
+                    android:paddingHorizontal="@dimen/space_4"
+                    android:paddingBottom="@dimen/space_4">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_3"
                         android:text="@string/profile_guest_title"
-                        android:textAppearance="@style/TextAppearance.App.Title" />
+                        android:textAppearance="@style/TextAppearance.App.Headline" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -55,109 +79,260 @@
                         android:layout_marginTop="@dimen/space_4"
                         android:text="@string/action_sign_in" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-</LinearLayout>
-
-        <!-- USER LOGIN -->
-        <LinearLayout
+        <!-- USER LOGIN: kartu identitas -->
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/user_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="@dimen/screen_padding_horizontal"
-                android:paddingTop="@dimen/space_6">
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/avatar"
-                    android:layout_width="@dimen/space_12"
-                    android:layout_height="@dimen/space_12"
-                    android:background="@drawable/bg_avatar"
-                    android:gravity="center"
-                    android:importantForAccessibility="no"
-                    android:textAppearance="@style/TextAppearance.App.Title"
-                    android:textColor="@color/color_on_accent" />
+                <!-- Sampul + avatar dalam satu FrameLayout: avatar digambar di atas sampul, separuhnya menumpuk. -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/name"
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/profile_cover_height"
+                        android:background="@drawable/bg_profile_cover" />
+
+                    <!-- Avatar: huruf depan nama di lingkaran kuning bercincin; foto profil (bila ada) digambar di atasnya. -->
+                    <FrameLayout
+                        android:layout_width="@dimen/profile_avatar_size"
+                        android:layout_height="@dimen/profile_avatar_size"
+                        android:layout_marginStart="@dimen/space_4"
+                        android:layout_marginTop="@dimen/profile_avatar_top"
+                        android:background="@drawable/bg_profile_avatar"
+                        android:padding="@dimen/profile_avatar_ring">
+
+                        <TextView
+                            android:id="@+id/avatar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textAppearance="@style/TextAppearance.App.Headline"
+                            android:textColor="@color/color_on_accent" />
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/avatar_photo"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:importantForAccessibility="no"
+                            android:scaleType="centerCrop"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearance.App.Circle" />
+                    </FrameLayout>
+
+                    <!-- Tombol Edit di kanan avatar, tepat di bawah sampul. -->
+                    <Button
+                        android:id="@+id/edit_button"
+                        style="@style/Widget.App.Button.Outlined.Compact"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginTop="@dimen/profile_edit_top"
+                        android:layout_marginEnd="@dimen/space_4"
+                        android:text="@string/profile_edit"
+                        app:icon="@drawable/ic_edit_small"
+                        app:iconGravity="textStart" />
+                </FrameLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_3"
-                    android:textAppearance="@style/TextAppearance.App.Headline" />
+                    android:orientation="vertical"
+                    android:paddingHorizontal="@dimen/space_4"
+                    android:paddingBottom="@dimen/space_4">
 
-                <TextView
-                    android:id="@+id/email"
+                    <TextView
+                        android:id="@+id/name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_3"
+                        android:textAppearance="@style/TextAppearance.App.Headline" />
+
+                    <TextView
+                        android:id="@+id/email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_1"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall" />
+
+                    <TextView
+                        style="@style/Widget.App.Badge"
+                        android:layout_marginTop="@dimen/space_3"
+                        android:text="@string/profile_badge_creator" />
+                </LinearLayout>
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <!-- Statistik singkat: ruang kerja yang diikuti. -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_1"
-                    android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:paddingVertical="@dimen/space_3">
 
-                <TextView
-                    style="@style/Widget.App.Badge"
-                    android:layout_marginTop="@dimen/space_3"
-                    android:text="@string/profile_badge_creator" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/edit_button"
-                    style="@style/Widget.App.Button.Outlined"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_4"
-                    android:text="@string/profile_edit_name"
-                    app:icon="@drawable/ic_edit"
-                    app:iconGravity="textStart" />
+                        <TextView
+                            android:id="@+id/stat_workspaces"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.App.Stat" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_stat_workspaces"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                    </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="@dimen/border_width"
+                        android:layout_height="match_parent" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/stat_organizations"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.App.Stat" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_stat_organizations"
+                            android:textAppearance="@style/TextAppearance.App.BodySmall" />
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-            <!-- Ketuk satu ruang kerja = pindah ruang kerja aktif (sama seperti pemilih di app bar). -->
+        <!-- Ruang kerja saya: ketuk satu = pindah ruang kerja aktif (sama seperti pemilih di app bar). -->
+        <LinearLayout
+            android:id="@+id/workspaces_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
             <TextView
-                style="@style/Widget.App.ListGroupTitle"
+                style="@style/Widget.App.ProfileSectionTitle"
                 android:text="@string/profile_group_workspaces" />
 
-            <LinearLayout
-                android:id="@+id/workspace_list"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
+                android:layout_height="wrap_content">
 
-            <TextView
-                style="@style/Widget.App.ListGroupTitle"
-                android:text="@string/profile_group_actions" />
-
-            <TextView
-                android:id="@+id/switch_mode_item"
-                style="@style/Widget.App.ListItem.Text"
-                android:text="@string/profile_switch_to_provider"
-                app:drawableStartCompat="@drawable/ic_swap_horiz" />
-
-            <TextView
-                android:id="@+id/become_provider_item"
-                style="@style/Widget.App.ListItem.Text"
-                android:text="@string/profile_become_provider"
-                app:drawableStartCompat="@drawable/ic_storefront" />
+                <LinearLayout
+                    android:id="@+id/workspace_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
-        <!-- Untuk tamu maupun user login -->
-        <TextView
-            android:id="@+id/settings_item"
-            style="@style/Widget.App.ListItem.Text"
-            android:text="@string/profile_settings"
-            app:drawableStartCompat="@drawable/ic_settings" />
-
-        <com.google.android.material.divider.MaterialDivider
-            android:id="@+id/sign_out_divider"
+        <!-- Mode: beralih ke kreator / jadi kreator template -->
+        <LinearLayout
+            android:id="@+id/mode_section"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/Widget.App.ProfileSectionTitle"
+                android:text="@string/profile_section_mode" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <include
+                        android:id="@+id/switch_mode_item"
+                        layout="@layout/item_profile_row" />
+
+                    <include
+                        android:id="@+id/become_provider_item"
+                        layout="@layout/item_profile_row" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- Akun (tamu hanya melihat Pengaturan) -->
+        <TextView
+            style="@style/Widget.App.ProfileSectionTitle"
+            android:text="@string/profile_group_account" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/linked_methods_item"
+                    layout="@layout/item_profile_row" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:id="@+id/linked_methods_divider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:dividerInsetStart="@dimen/space_12" />
+
+                <include
+                    android:id="@+id/settings_item"
+                    layout="@layout/item_profile_row" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/sign_out_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_6">
+
+            <include
+                android:id="@+id/sign_out_item"
+                layout="@layout/item_profile_row" />
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
-            android:id="@+id/sign_out_item"
-            style="@style/Widget.App.ListItem.Text"
-            android:text="@string/profile_sign_out"
-            app:drawableStartCompat="@drawable/ic_logout" />
+            android:id="@+id/version"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_6"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.App.BodySmall" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

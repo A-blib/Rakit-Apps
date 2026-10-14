@@ -11,6 +11,23 @@
     <string name="upload_pick_zip">Pilih file ZIP</string>
     <string name="upload_pick_limit">ZIP · maks %1$s</string>
     <string name="upload_zip_help">Cara membuat ZIP di Windows: klik kanan folder → Kirim ke → Folder terkompresi (zip).</string>
+    <string name="upload_drop_hint">Ketuk di area ini untuk memilih file ZIP project website Anda</string>
+    <string name="upload_browse_button">Jelajahi File ZIP</string>
+    <string name="upload_requirements_banner_text">Pastikan file ZIP memenuhi persyaratan sistem template. Baca %1$s</string>
+    <string name="upload_requirements_highlight">panduan lengkap</string>
+    <string name="upload_requirements_sheet_title">Persyaratan Sistem Template</string>
+    <string name="upload_requirements_sheet_subtitle">Pastikan file project website Anda memenuhi ketentuan berikut sebelum diunggah:</string>
+    <string name="upload_requirements_rule_index_title">File index.html Wajib Ada</string>
+    <string name="upload_requirements_rule_index_desc">Harus terletak langsung di root direktori utama file ZIP (bukan di dalam subfolder bersarang).</string>
+    <string name="upload_requirements_rule_content_title">Konten Ditulis di HTML</string>
+    <string name="upload_requirements_rule_content_desc">Teks, gambar, dan section ditulis langsung di HTML agar sistem dapat mendeteksi variabel yang bisa diedit pembuat website.</string>
+    <string name="upload_requirements_rule_library_title">Library Resmi yang Didukung</string>
+    <string name="upload_requirements_rule_library_desc">Gunakan CSS/JS dari pustaka resmi (Bootstrap, Tailwind, FontAwesome). Skrip pihak ketiga acak akan dibatasi.</string>
+    <string name="upload_requirements_rule_dist_title">Build Output untuk Vite / Bundler</string>
+    <string name="upload_requirements_rule_dist_desc">Jika menggunakan framework modern (React, Vue, Vite), jalankan perintah build lalu arsipkan isi folder dist/.</string>
+    <string name="upload_requirements_rule_size_title">Format &amp; Batasan Ukuran</string>
+    <string name="upload_requirements_rule_size_desc">Format berkas harus .zip dengan batas ukuran maksimal 20 MB.</string>
+    <string name="upload_requirements_action_understand">Mengerti</string>
     <string name="upload_before_title">Sebelum upload</string>
     <string name="upload_before_index">Ada index.html</string>
     <string name="upload_before_html">Konten ditulis di HTML</string>
@@ -224,6 +241,7 @@
     <string name="cd_mark_help">Bantuan menandai</string>
     <string name="cd_page_select">Pilih halaman</string>
     <string name="cd_slide">Section %1$d: %2$s</string>
+    <string name="mark_tools_title">Alat editor</string>
 
     <!-- Bottom sheet Tandai elemen (bagian 7.3) -->
     <string name="mark_sheet_title">Tandai elemen</string>

@@ -94,7 +94,7 @@ public class TemplateChecker {
         List<String> libraries = new ArrayList<>(ctx.libraries);
         libraries.sort(String.CASE_INSENSITIVE_ORDER);
         return new TechInfo(ctx.files.pages(), libraries.stream().distinct().toList(),
-                ctx.files.totalSize(), ctx.responsive && viewport, variables);
+                ctx.files.totalSize(), ctx.responsive && viewport, variables, new ArrayList<>(ctx.dynamicModules));
     }
 
     /** "toko-kue.zip" → "Toko Kue": nama awal template (bagian 6.1), bisa diganti provider. */

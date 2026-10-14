@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Baris folder di "Template Anda" (ala Google Drive): ikon folder, nama, jumlah template, menu ⋮. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_2"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/list_item_min_height"
+        android:orientation="horizontal"
+        android:paddingVertical="@dimen/space_2"
+        android:paddingStart="@dimen/space_3"
+        android:paddingEnd="@dimen/space_1">
+
+        <ImageView
+            android:layout_width="@dimen/profile_row_icon_box"
+            android:layout_height="@dimen/profile_row_icon_box"
+            android:background="@drawable/bg_profile_row_icon"
+            android:importantForAccessibility="no"
+            android:padding="@dimen/space_2"
+            android:src="@drawable/ic_folder_filled"
+            app:tint="@color/color_on_primary_container" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_3"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAppearance="@style/TextAppearance.App.Body.SemiBold" />
+
+            <TextView
+                android:id="@+id/count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.App.BodySmall" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/menu_button"
+            android:layout_width="@dimen/touch_target_min"
+            android:layout_height="@dimen/touch_target_min"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/cd_folder_menu"
+            android:src="@drawable/ic_more_vert"
+            app:tint="@color/color_muted" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

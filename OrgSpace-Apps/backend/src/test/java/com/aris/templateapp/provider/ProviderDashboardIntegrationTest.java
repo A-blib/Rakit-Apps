@@ -25,9 +25,11 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -201,6 +203,68 @@ class ProviderDashboardIntegrationTest {
         send(get("/api/providers/me/templates?status=apa"), null)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void foldersGroupTemplatesLikeDrive() throws Exception {
+        UUID sekolah = template("Profil Sekolah", "osis_mpk", "published", 0);
+        UUID kuliner = template("UMKM Kuliner", "ukm", "check_failed", 0);
+        template("Landing Event", "lainnya", "published", 0);
+
+        String created = send(post("/api/providers/me/template-folders"), "{\"name\":\" Sekolah \"}")
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Sekolah"))
+                .andExpect(jsonPath("$.templateCount").value(0))
+                .andReturn().getResponse().getContentAsString();
+        String folderId = JsonPath.read(created, "$.id");
+
+        // Nama unik tanpa membedakan huruf besar/kecil.
+        send(post("/api/providers/me/template-folders"), "{\"name\":\"SEKOLAH\"}")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("FOLDER_NAME_TAKEN"));
+        send(post("/api/providers/me/template-folders"), "{\"name\":\" \"}")
+                .andExpect(status().isBadRequest());
+
+        send(put("/api/providers/me/templates/" + sekolah + "/folder"), "{\"folderId\":\"" + folderId + "\"}")
+                .andExpect(status().isNoContent());
+        send(put("/api/providers/me/templates/" + kuliner + "/folder"), "{\"folderId\":\"" + folderId + "\"}")
+                .andExpect(status().isNoContent());
+
+        send(get("/api/providers/me/template-folders"), null)
+                .andExpect(jsonPath("$[0].templateCount").value(2));
+
+        // Halaman utama hanya berisi template tanpa folder, tetapi jumlah per status tetap menghitung semuanya.
+        send(get("/api/providers/me/templates?folder=root"), null)
+                .andExpect(jsonPath("$.items[*].name", contains("Landing Event")))
+                .andExpect(jsonPath("$.totalItems").value(1))
+                .andExpect(jsonPath("$.counts.all").value(3));
+        send(get("/api/providers/me/templates?folder=" + folderId + "&sort=name"), null)
+                .andExpect(jsonPath("$.items[*].name", contains("Profil Sekolah", "UMKM Kuliner")))
+                .andExpect(jsonPath("$.items[0].folderId").value(folderId))
+                .andExpect(jsonPath("$.counts.all").value(2))
+                .andExpect(jsonPath("$.counts.needsFix").value(1));
+        // Tanpa parameter folder = semua template (dipakai filter status lintas folder).
+        send(get("/api/providers/me/templates?status=published"), null)
+                .andExpect(jsonPath("$.totalItems").value(2));
+
+        send(patch("/api/providers/me/template-folders/" + folderId), "{\"name\":\"Sekolah & OSIS\"}")
+                .andExpect(jsonPath("$.name").value("Sekolah & OSIS"))
+                .andExpect(jsonPath("$.templateCount").value(2));
+
+        // Folder & template milik provider lain diperlakukan seperti tidak ada.
+        String otherToken = token;
+        registerProvider();
+        send(get("/api/providers/me/templates?folder=" + folderId), null).andExpect(status().isNotFound());
+        send(put("/api/providers/me/templates/" + sekolah + "/folder"), "{\"folderId\":null}")
+                .andExpect(status().isNotFound());
+        send(delete("/api/providers/me/template-folders/" + folderId), null).andExpect(status().isNotFound());
+        token = otherToken;
+
+        // Hapus folder: template di dalamnya kembali ke halaman utama, tidak ikut terhapus.
+        send(delete("/api/providers/me/template-folders/" + folderId), null).andExpect(status().isNoContent());
+        send(get("/api/providers/me/templates?folder=root"), null)
+                .andExpect(jsonPath("$.totalItems").value(3));
+        send(get("/api/providers/me/template-folders"), null).andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test

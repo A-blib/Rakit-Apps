@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Path;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ public class UserService {
     private final CreatorProfileRepository creatorProfileRepository;
     private final ProviderProfileRepository providerProfileRepository;
     private final OrganizationMemberRepository memberRepository;
+    private final AvatarStorage avatarStorage;
     private final Clock clock;
 
     @Transactional(readOnly = true)
@@ -59,6 +61,37 @@ public class UserService {
         User user = findUser(userId);
         user.setDisplayName(request.displayName().trim());
         return toResponse(user);
+    }
+
+    /**
+     * Ganti foto profil (Edit profil, kedua mode). Foto Google/GitHub yang tersimpan saat daftar ikut tergantikan.
+     * {@code ?v=} berubah setiap foto diganti, sehingga cache gambar di HP tidak menampilkan foto lama.
+     */
+    @Transactional
+    public UserResponse uploadAvatar(UUID userId, byte[] bytes) {
+        User user = findUser(userId);
+        avatarStorage.save(userId, bytes);
+        user.setAvatarUrl("/api/users/" + userId + "/avatar?v=" + clock.millis());
+        return toResponse(user);
+    }
+
+    /** Hapus foto profil: app kembali menampilkan huruf depan nama. */
+    @Transactional
+    public UserResponse removeAvatar(UUID userId) {
+        User user = findUser(userId);
+        avatarStorage.delete(userId);
+        user.setAvatarUrl(null);
+        return toResponse(user);
+    }
+
+    /** Foto profil boleh dilihat siapa saja (seperti logo organisasi; tampil di daftar anggota dan profil). */
+    @Transactional(readOnly = true)
+    public Path avatarFile(UUID userId) {
+        Path file = userRepository.existsById(userId) ? avatarStorage.file(userId) : null;
+        if (file == null) {
+            throw new ApiException(ErrorCode.NOT_FOUND);
+        }
+        return file;
     }
 
     /**

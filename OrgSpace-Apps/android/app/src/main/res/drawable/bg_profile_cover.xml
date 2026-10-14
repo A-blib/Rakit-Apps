@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pita sampul kartu profil: gradasi biru tipis dari dua token warna (primary → link), sudut atas mengikuti kartu. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="315"
+        android:endColor="@color/color_link"
+        android:startColor="@color/color_primary" />
+    <corners
+        android:topLeftRadius="@dimen/radius_medium"
+        android:topRightRadius="@dimen/radius_medium" />
+</shape>

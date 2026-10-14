@@ -1,6 +1,8 @@
 package com.aris.templateapp.data.remote.api;
 
 import com.aris.templateapp.data.remote.dto.ConfirmNameRequestDto;
+import com.aris.templateapp.data.remote.dto.DirectPublishRequestDto;
+import com.aris.templateapp.data.remote.dto.DirectPublishResponseDto;
 import com.aris.templateapp.data.remote.dto.PublishRequestDto;
 import com.aris.templateapp.data.remote.dto.PublishRequestNoteDto;
 import com.aris.templateapp.data.remote.dto.WebsiteDetailDto;
@@ -51,4 +53,7 @@ public interface WebsiteApi {
 
     @POST("publish-requests/{id}/dismiss")
     Call<Void> dismissRequest(@Path("id") String id);
+
+    @POST("projects/publish-direct")
+    Call<DirectPublishResponseDto> publishDirect(@Body DirectPublishRequestDto body);
 }

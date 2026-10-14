@@ -13,6 +13,7 @@ import java.util.UUID;
  * @param pages            nama halaman, mis. ["Beranda", "Tentang"]
  * @param version          versi paket; HP melewati unduhan jika paket versi ini sudah tersimpan
  * @param packageSizeBytes ukuran paket ZIP; null jika template belum punya paket (template demo lama)
+ * @param dynamicModules   modul dinamis yang didukung template (data-ws-*), mis. ["berita", "struktur"]
  */
 public record TemplateDetailResponse(
         UUID id,
@@ -29,5 +30,15 @@ public record TemplateDetailResponse(
         List<String> libraries,
         boolean responsive,
         int version,
-        Long packageSizeBytes) {
+        Long packageSizeBytes,
+        List<String> dynamicModules) {
+
+    public TemplateDetailResponse(
+            UUID id, String name, OrgCategory category, String description, List<String> keywords,
+            List<String> contentTags, String creatorName, String thumbnailUrl, long downloads,
+            Instant publishedAt, List<String> pages, List<String> libraries, boolean responsive,
+            int version, Long packageSizeBytes) {
+        this(id, name, category, description, keywords, contentTags, creatorName, thumbnailUrl,
+                downloads, publishedAt, pages, libraries, responsive, version, packageSizeBytes, List.of());
+    }
 }

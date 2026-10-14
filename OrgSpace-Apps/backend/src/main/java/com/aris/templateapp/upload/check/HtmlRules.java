@@ -78,6 +78,7 @@ final class HtmlRules {
             checkForbiddenTags(page, doc);
             checkDuplicateIds(page, doc);
             checkHiddenLinks(page, doc);
+            checkDynamicModules(page, doc);
         }
         checkDynamicHtmlInScripts();
         checkEditableCount();
@@ -332,6 +333,163 @@ final class HtmlRules {
             ctx.findings.add(CheckRule.TOO_FEW_EDITABLE, "Seluruh template hanya punya " + count
                             + " teks/gambar yang bisa ditandai, minimal " + ctx.limits().minEditableElements() + ".", null, null,
                     "Tambahkan judul, paragraf, atau gambar langsung di HTML.");
+        }
+    }
+
+    private static final java.util.Set<String> SUPPORTED_LIST_MODULES = java.util.Set.of(
+            "berita", "struktur", "agenda", "galeri", "proker", "pengumuman"
+    );
+    private static final Pattern MODULE_SLUG_PATTERN = Pattern.compile("^[a-z0-9_-]{2,40}$");
+    private static final java.util.Set<String> VALID_AUTH_ACTIONS = java.util.Set.of(
+            "login", "logout", "status", "profile"
+    );
+
+    private void checkDynamicModules(String page, Document doc) {
+        // 1. data-ws-list & data-ws-collection (Modul bawaan maupun koleksi kustom)
+        for (Element listEl : doc.select("[data-ws-list], [data-ws-collection]")) {
+            boolean isList = listEl.hasAttr("data-ws-list");
+            String attrName = isList ? "data-ws-list" : "data-ws-collection";
+            String module = listEl.attr(attrName).strip().toLowerCase(Locale.ROOT);
+
+            if (module.isBlank() || !MODULE_SLUG_PATTERN.matcher(module).matches()) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " nilai " + attrName + "=\"" + module + "\" tidak valid. Harus berupa huruf kecil, angka, atau tanda strip/garis bawah (2–40 karakter).",
+                        page, CheckContext.line(listEl),
+                        "Gunakan modul bawaan (berita, struktur, agenda, galeri, proker, pengumuman) atau nama koleksi kustom Anda (mis. prestasi, alumni).",
+                        listEl.outerHtml());
+                continue;
+            }
+            ctx.dynamicModules.add(module);
+
+            if (listEl.hasAttr("data-ws-limit")) {
+                String limitStr = listEl.attr("data-ws-limit").strip();
+                try {
+                    int limit = Integer.parseInt(limitStr);
+                    if (limit < 1 || limit > 100) {
+                        ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                                page + " nilai data-ws-limit=\"" + limitStr + "\" harus berupa angka positif 1–100.",
+                                page, CheckContext.line(listEl),
+                                "Ganti dengan angka batas item, mis. data-ws-limit=\"6\".",
+                                listEl.outerHtml());
+                    }
+                } catch (NumberFormatException e) {
+                    ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                            page + " nilai data-ws-limit=\"" + limitStr + "\" bukan angka yang valid.",
+                            page, CheckContext.line(listEl),
+                            "Ganti dengan angka batas item, mis. data-ws-limit=\"6\".",
+                            listEl.outerHtml());
+                }
+            }
+
+            Elements items = listEl.select("[data-ws-item]");
+            if (items.isEmpty()) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " bagian " + attrName + "=\"" + module + "\" tidak memiliki elemen data-ws-item.",
+                        page, CheckContext.line(listEl),
+                        "Tandai 1 kartu contoh dengan atribut data-ws-item di dalam bagian ini.",
+                        listEl.outerHtml());
+            } else if (items.size() > 1) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " bagian " + attrName + "=\"" + module + "\" memiliki " + items.size()
+                                + " elemen data-ws-item; hanya 1 kartu contoh yang diizinkan.",
+                        page, CheckContext.line(items.get(1)),
+                        "Sisakan 1 kartu contoh; sistem OrgSpace yang akan mengulang kartu tersebut.",
+                        items.get(1).outerHtml());
+            } else {
+                Element item = items.first();
+                Elements fields = item.select("[data-ws-field]");
+                if (fields.isEmpty()) {
+                    ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                            page + " kartu contoh data-ws-item untuk modul " + module + " belum memiliki pemetaan data-ws-field.",
+                            page, CheckContext.line(item),
+                            "Petakan bagian kartu dengan atribut data-ws-field=\"...\" (mis. judul, foto, tanggal).",
+                            item.outerHtml());
+                }
+            }
+        }
+
+        // 2. data-ws-item di luar data-ws-list / data-ws-collection
+        for (Element item : doc.select("[data-ws-item]")) {
+            if (item.parents().stream().noneMatch(p -> p.hasAttr("data-ws-list") || p.hasAttr("data-ws-collection"))) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " elemen data-ws-item berada di luar elemen data-ws-list / data-ws-collection.",
+                        page, CheckContext.line(item),
+                        "Bungkus elemen data-ws-item di dalam elemen ber-atribut data-ws-list=\"nama-modul\".",
+                        item.outerHtml());
+            }
+        }
+
+        // 3. data-ws-field di luar data-ws-item
+        for (Element field : doc.select("[data-ws-field]")) {
+            if (field.parents().stream().noneMatch(p -> p.hasAttr("data-ws-item"))) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " elemen data-ws-field=\"" + field.attr("data-ws-field") + "\" berada di luar kartu data-ws-item.",
+                        page, CheckContext.line(field),
+                        "Letakkan elemen data-ws-field di dalam kartu contoh data-ws-item.",
+                        field.outerHtml());
+            }
+        }
+
+        // 4. data-ws-link di luar data-ws-item
+        for (Element link : doc.select("[data-ws-link]")) {
+            if (link.parents().stream().noneMatch(p -> p.hasAttr("data-ws-item"))) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " elemen data-ws-link=\"" + link.attr("data-ws-link") + "\" berada di luar kartu data-ws-item.",
+                        page, CheckContext.line(link),
+                        "Letakkan elemen data-ws-link di dalam kartu contoh data-ws-item.",
+                        link.outerHtml());
+            }
+        }
+
+        // 5. data-ws-empty di luar data-ws-list / data-ws-collection
+        for (Element emptyEl : doc.select("[data-ws-empty]")) {
+            if (emptyEl.parents().stream().noneMatch(p -> p.hasAttr("data-ws-list") || p.hasAttr("data-ws-collection"))) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " elemen data-ws-empty berada di luar elemen data-ws-list / data-ws-collection.",
+                        page, CheckContext.line(emptyEl),
+                        "Letakkan elemen data-ws-empty di dalam elemen ber-atribut data-ws-list / data-ws-collection.",
+                        emptyEl.outerHtml());
+            }
+        }
+
+        // 6. data-ws-form
+        for (Element formEl : doc.select("[data-ws-form]")) {
+            String formName = formEl.attr("data-ws-form").strip().toLowerCase(Locale.ROOT);
+            if (formName.isBlank() || !MODULE_SLUG_PATTERN.matcher(formName).matches()) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " atribut data-ws-form=\"" + formName + "\" tidak valid. Harus 2–40 karakter alfanumerik / strip.",
+                        page, CheckContext.line(formEl),
+                        "Tentukan nama formulir yang valid, mis. data-ws-form=\"pendaftaran\" atau data-ws-form=\"aspirasi\".",
+                        formEl.outerHtml());
+            } else {
+                ctx.dynamicModules.add(formName);
+            }
+        }
+
+        // 7. data-ws-auth (Modul Login, Logout, Status Pengurus)
+        for (Element authEl : doc.select("[data-ws-auth]")) {
+            String authAction = authEl.attr("data-ws-auth").strip().toLowerCase(Locale.ROOT);
+            if (!VALID_AUTH_ACTIONS.contains(authAction)) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " nilai data-ws-auth=\"" + authAction + "\" tidak dikenal. Pilihan yang valid: login, logout, status, profile.",
+                        page, CheckContext.line(authEl),
+                        "Gunakan data-ws-auth=\"login\" untuk form/tombol login pengurus.",
+                        authEl.outerHtml());
+            } else {
+                ctx.dynamicModules.add("auth");
+            }
+        }
+
+        // 8. data-ws-role (Pembatasan hak akses tampilan)
+        for (Element roleEl : doc.select("[data-ws-role]")) {
+            String roleVal = roleEl.attr("data-ws-role").strip().toLowerCase(Locale.ROOT);
+            if (roleVal.isBlank()) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " atribut data-ws-role tidak boleh kosong.",
+                        page, CheckContext.line(roleEl),
+                        "Tentukan peran yang diizinkan, mis. data-ws-role=\"admin,editor\".",
+                        roleEl.outerHtml());
+            }
         }
     }
 

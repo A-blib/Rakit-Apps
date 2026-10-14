@@ -544,12 +544,25 @@ Filter terakhir yang dipilih diingat selama app terbuka. Kartu "Perlu tindakan" 
 └──────────────────────────────────┘
 ```
 
+### 6.5a Folder ala Google Drive (keputusan Aris, 13 Oktober 2026)
+
+Menggantikan chip status di 6.3 dan gambaran 6.5:
+
+- **Tombol + mengambang** di kanan bawah membuka bottom sheet: **Folder baru**, lalu bagian **Tampilkan** berisi pilihan status (Semua · Tayang · Perlu perbaikan · Sedang dicek · Draft · Dinonaktifkan) beserta jumlahnya.
+- Status yang dipilih (selain Semua) tampil sebagai **chip aktif dengan ✕** di samping dropdown kategori & urutan.
+- **Halaman utama**: daftar folder (nama + jumlah template), lalu template yang belum masuk folder. Saat filter status/kategori atau pencarian aktif, folder disembunyikan dan template dari **semua folder** ditampilkan (seperti hasil pencarian Drive). Jumlah per status di halaman utama menghitung semua template.
+- **Di dalam folder**: judul folder dengan tombol kembali (tombol Back HP juga kembali ke halaman utama) dan menu ⋮ (Ganti nama, Hapus folder). Filter hanya berlaku untuk isi folder itu.
+- Menu ⋮ / tekan lama pada kartu template: **Pindahkan ke folder** (pilih folder, "Tanpa folder", atau buat folder baru sekaligus) dan **Keluarkan dari folder**.
+- Satu template paling banyak di satu folder. Hapus folder **tidak** menghapus template; isinya kembali ke halaman utama. Nama folder unik per provider (tanpa beda huruf besar/kecil), maks 60 karakter, maks 100 folder.
+- "Lihat semua" di Beranda membuka Template Anda di halaman utama dengan status "Perlu perbaikan" dari semua folder.
+
 ### 6.6 Kebutuhan backend
 
 - Tabel `templates` (minimal): id, provider_id, nama, kategori, thumbnail_url, status, jumlah_peringatan, created_at, updated_at, published_at.
 - Endpoint: `GET /api/providers/me/templates?status=&category=&sort=&q=&page=` → daftar + jumlah per status untuk chip.
 - Endpoint: `GET /api/providers/me/templates/{id}` → detail + hasil pengecekan terakhir.
 - Pakai paginasi (misalnya 20 per halaman) dan RecyclerView dengan pemuatan lanjutan saat scroll.
+- Folder (6.5a): tabel `template_folders` + kolom `templates.folder_id` (V22). Parameter `folder` di daftar: kosong = semua, `root` = tanpa folder, id = isi folder. Endpoint `GET/POST /api/providers/me/template-folders`, `PATCH/DELETE /api/providers/me/template-folders/{id}`, `PUT /api/providers/me/templates/{id}/folder` `{folderId|null}`.
 
 ---
 
