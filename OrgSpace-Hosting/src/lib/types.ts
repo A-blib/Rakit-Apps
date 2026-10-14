@@ -73,5 +73,6 @@ export interface SiteRenderData {
   content: ProjectSnapshot;
   news: NewsItem[];
   forms: FormConfig[];
+  collections?: Record<string, Array<Record<string, any>>>;
   compiledHtml: string | null;
 }
