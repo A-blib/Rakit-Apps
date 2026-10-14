@@ -14,6 +14,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -61,6 +66,20 @@ public class UserController {
     @PatchMapping
     public UserResponse updateMe(@Valid @RequestBody UpdateMeRequest request) {
         return userService.updateMe(currentUser.id(), request);
+    }
+
+    @Operation(summary = "Ganti foto profil (PNG/JPG)",
+            description = "Server memotong persegi dan memperkecil maks 512 px; file asli tidak disimpan. "
+                    + "400 AVATAR_INVALID jika bukan PNG/JPG atau terlalu besar.")
+    @PostMapping(path = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UserResponse uploadAvatar(@RequestPart("file") MultipartFile file) throws IOException {
+        return userService.uploadAvatar(currentUser.id(), file.getBytes());
+    }
+
+    @Operation(summary = "Hapus foto profil (kembali ke huruf depan nama)")
+    @DeleteMapping("/avatar")
+    public UserResponse removeAvatar() {
+        return userService.removeAvatar(currentUser.id());
     }
 
     @Operation(summary = "Simpan ruang kerja terakhir yang dibuka")

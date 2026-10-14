@@ -13,4 +13,14 @@
     <string name="profile_sign_out_desc">Kamu bisa masuk lagi kapan saja</string>
     <string name="profile_version">OrgSpace versi %1$s</string>
     <string name="cd_profile_avatar">Foto profil %1$s</string>
+
+    <!-- Foto profil (Edit profil, kedua mode) -->
+    <string name="avatar_change">Ganti foto</string>
+    <string name="avatar_remove">Hapus foto</string>
+    <string name="avatar_hint">PNG atau JPG. Kami potong persegi &amp; kecilkan otomatis.</string>
+    <string name="avatar_saved">Foto profil diperbarui.</string>
+    <string name="avatar_removed">Foto profil dihapus.</string>
+    <string name="avatar_remove_title">Hapus foto profil?</string>
+    <string name="avatar_remove_body">Profilmu akan menampilkan huruf depan nama sebagai gantinya.</string>
+    <string name="error_avatar_invalid">Foto profil harus gambar PNG atau JPG, maksimal 1 MB.</string>
 </resources>

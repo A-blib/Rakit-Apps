@@ -27,6 +27,9 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -40,6 +43,8 @@ import retrofit2.Response;
 public class UserRepository {
 
     private final UserApi userApi;
+    private static final MediaType PNG = MediaType.get("image/png");
+
     private final SessionStore sessionStore;
     private final TokenStorage tokenStorage;
     private final ApiErrorParser errorParser;
@@ -79,6 +84,19 @@ public class UserRepository {
     @WorkerThread
     public Resource<User> updateDisplayName(String displayName) {
         return executeUser(userApi.updateMe(new CreatorOnboardingRequestDto(displayName)));
+    }
+
+    /** @param png isi file PNG persegi yang sudah diperkecil di HP (ImageProcessor.logoPng) */
+    @WorkerThread
+    public Resource<User> uploadAvatar(byte[] png) {
+        MultipartBody.Part part = MultipartBody.Part.createFormData("file", "avatar.png",
+                RequestBody.create(png, PNG));
+        return executeUser(userApi.uploadAvatar(part));
+    }
+
+    @WorkerThread
+    public Resource<User> removeAvatar() {
+        return executeUser(userApi.removeAvatar());
     }
 
     @WorkerThread

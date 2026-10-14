@@ -5,6 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -12,12 +15,15 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.core.network.ThumbnailLoader;
 import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.remote.dto.ProviderProfileDto;
 import com.aris.templateapp.databinding.FragmentProviderFormBinding;
 import com.aris.templateapp.ui.common.ErrorMessages;
 import com.aris.templateapp.ui.onboarding.OnboardingFormValidator;
 import com.aris.templateapp.ui.onboarding.OnboardingUi;
+import com.aris.templateapp.ui.profile.AvatarEditSection;
+import com.aris.templateapp.ui.profile.AvatarEditViewModel;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -27,14 +33,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 /**
  * "Edit profil" provider (alur-provider.md bagian 7): memakai layout form provider onboarding yang sama,
- * dengan judul "Edit profil", tanpa persetujuan aturan, dan tombol "Simpan".
+ * dengan judul "Edit profil", tanpa persetujuan aturan, dan tombol "Simpan". Bagian foto profil
+ * ({@link AvatarEditSection}) hanya tampil di sini dan langsung menyimpan foto saat dipilih.
  */
 @AndroidEntryPoint
 public class ProviderProfileEditFragment extends Fragment {
+
+    @Inject
+    ThumbnailLoader thumbnailLoader;
+
+    private AvatarEditViewModel avatarViewModel;
+    /** Photo Picker bawaan Android (tanpa izin penyimpanan); didaftarkan saat Fragment dibuat. */
+    private final ActivityResultLauncher<PickVisualMediaRequest> avatarPicker = registerForActivityResult(
+            new ActivityResultContracts.PickVisualMedia(), uri -> {
+                if (uri != null) {
+                    avatarViewModel.upload(uri);
+                }
+            });
 
     private FragmentProviderFormBinding binding;
     private ProviderProfileEditViewModel viewModel;
@@ -56,6 +77,11 @@ public class ProviderProfileEditFragment extends Fragment {
         binding.formSubtitle.setText(R.string.profile_edit_subtitle);
         binding.termsCheckbox.setVisibility(View.GONE);
         binding.submitButton.setText(R.string.action_save);
+        binding.avatarSection.getRoot().setVisibility(View.VISIBLE);
+        avatarViewModel = new ViewModelProvider(this).get(AvatarEditViewModel.class);
+        AvatarEditSection.attach(this, binding.avatarSection, avatarViewModel, thumbnailLoader,
+                () -> avatarPicker.launch(new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE).build()));
 
         viewModel = new ViewModelProvider(this).get(ProviderProfileEditViewModel.class);
         viewModel.getInitial().observe(getViewLifecycleOwner(), this::prefill);

@@ -10,12 +10,15 @@ import com.aris.templateapp.data.remote.dto.UserDto;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 
 /** Endpoint /users/me/* (butuh access token; dipasang otomatis oleh AuthInterceptor). */
@@ -33,6 +36,14 @@ public interface UserApi {
     /** Body-nya sama dengan onboarding pembuat website (hanya nama tampilan), jadi DTO-nya dipakai ulang. */
     @PATCH("users/me")
     Call<UserDto> updateMe(@Body CreatorOnboardingRequestDto body);
+
+    /** Foto profil: PNG persegi yang sudah diperkecil di HP; server memotong & menulis ulang lagi. */
+    @Multipart
+    @POST("users/me/avatar")
+    Call<UserDto> uploadAvatar(@Part MultipartBody.Part file);
+
+    @DELETE("users/me/avatar")
+    Call<UserDto> removeAvatar();
 
     @PATCH("users/me/active-mode")
     Call<UserDto> changeActiveMode(@Body ActiveModeRequestDto body);

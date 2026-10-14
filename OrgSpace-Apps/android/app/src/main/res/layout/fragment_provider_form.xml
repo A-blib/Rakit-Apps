@@ -42,6 +42,15 @@
                 android:textAppearance="@style/TextAppearance.App.Body"
                 android:textColor="@color/color_muted" />
 
+            <!-- Foto profil: hanya tampil di "Edit profil", disembunyikan saat onboarding provider. -->
+            <include
+                android:id="@+id/avatar_section"
+                layout="@layout/view_avatar_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/space_6"
+                android:visibility="gone" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/creator_name_layout"
                 android:layout_width="match_parent"
