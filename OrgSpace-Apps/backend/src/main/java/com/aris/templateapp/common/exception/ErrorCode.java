@@ -58,6 +58,7 @@ public enum ErrorCode {
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "Template tidak ditemukan atau sudah tidak tayang."),
     BACKUP_NOT_FOUND(HttpStatus.NOT_FOUND, "Cadangan tidak ditemukan."),
     LOGO_INVALID(HttpStatus.BAD_REQUEST, "Logo harus gambar PNG atau JPG."),
+    AVATAR_INVALID(HttpStatus.BAD_REQUEST, "Foto profil harus gambar PNG atau JPG."),
     ONBOARDING_NEEDS_SPACE(HttpStatus.CONFLICT, "Buat atau gabung ruang kerja dulu."),
     TOO_MANY_ATTEMPTS(HttpStatus.TOO_MANY_REQUESTS, "Terlalu banyak percobaan. Tunggu sebentar, lalu coba lagi."),
     // Portal web: admin, kritik & saran, dokumentasi (docs/rancangan/portal-web.md)
@@ -66,6 +67,15 @@ public enum ErrorCode {
     FEEDBACK_CLOSED(HttpStatus.CONFLICT, "Percakapan ini sudah ditutup. Kirim kritik & saran baru, ya."),
     DOC_NOT_FOUND(HttpStatus.NOT_FOUND, "Artikel tidak ditemukan."),
     DOC_SLUG_TAKEN(HttpStatus.CONFLICT, "Alamat artikel (slug) sudah dipakai artikel lain."),
+    // Publish & Hosting website (docs/rancangan/alur-publish-website.md bagian 7.3)
+    SITE_NOT_PUBLISHED(HttpStatus.NOT_FOUND, "Website belum diterbitkan atau sedang tidak aktif."),
+    RELEASE_NOT_FOUND(HttpStatus.NOT_FOUND, "Versi rilis website tidak ditemukan."),
+    SITE_LIMIT_REACHED(HttpStatus.CONFLICT, "Batas maksimal website per ruang kerja telah tercapai."),
+    SLUG_TAKEN(HttpStatus.CONFLICT, "Nama subdomain sudah digunakan."),
+    SLUG_INVALID(HttpStatus.BAD_REQUEST, "Format subdomain tidak valid."),
+    SLUG_RESERVED(HttpStatus.BAD_REQUEST, "Nama subdomain dicadangkan oleh sistem."),
+    SITE_CONTENT_INVALID(HttpStatus.BAD_REQUEST, "Konten website tidak valid."),
+    OUTPUT_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "Ukuran website melebihi batas yang diizinkan."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Silakan masuk terlebih dahulu."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Data tidak ditemukan."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan di server.");

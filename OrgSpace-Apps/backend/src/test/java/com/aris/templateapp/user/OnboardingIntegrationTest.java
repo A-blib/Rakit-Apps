@@ -15,11 +15,20 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import org.springframework.mock.web.MockMultipartFile;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -168,6 +177,37 @@ class OnboardingIntegrationTest {
         mockMvc.perform(post("/api/users/me/onboarding/creator").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"displayName\":\"Aris\"}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void avatarCanBeUploadedServedPubliclyAndRemoved() throws Exception {
+        ByteArrayOutputStream png = new ByteArrayOutputStream();
+        ImageIO.write(new BufferedImage(900, 600, BufferedImage.TYPE_INT_RGB), "png", png);
+
+        String avatarUrl = JsonPath.read(mockMvc.perform(multipart("/api/users/me/avatar")
+                        .file(new MockMultipartFile("file", "avatar.png", "image/png", png.toByteArray()))
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(), "$.avatarUrl");
+        assertThat(avatarUrl).startsWith("/api/users/").contains("/avatar?v=");
+
+        // Publik (tanpa token), dipotong persegi dan diperkecil maks 512 px.
+        byte[] served = mockMvc.perform(get(avatarUrl)).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsByteArray();
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(served));
+        assertThat(image.getWidth()).isEqualTo(512);
+        assertThat(image.getHeight()).isEqualTo(512);
+
+        mockMvc.perform(multipart("/api/users/me/avatar")
+                        .file(new MockMultipartFile("file", "avatar.png", "image/png", "<svg onload=alert(1)>".getBytes()))
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("AVATAR_INVALID"));
+
+        send(delete("/api/users/me/avatar"), "")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.avatarUrl").doesNotExist());
+        mockMvc.perform(get(avatarUrl)).andExpect(status().isNotFound());
     }
 
     private void createPersonalSpace() throws Exception {

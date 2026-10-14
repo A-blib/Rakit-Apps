@@ -46,7 +46,8 @@ public class TemplatePackageService {
                 template.getDescription(), template.getKeywords(), template.getContentTags(), provider.getCreatorName(), template.getThumbnailUrl(),
                 galleryQueries.downloads(id), template.getPublishedAt(), pages,
                 tech == null || tech.libraries() == null ? List.of() : tech.libraries(),
-                tech != null && tech.responsive(), template.getPackageVersion(), template.getPackageSize());
+                tech != null && tech.responsive(), template.getPackageVersion(), template.getPackageSize(),
+                tech == null || tech.dynamicModules() == null ? List.of() : tech.dynamicModules());
     }
 
     /** File package.zip template yang tayang. */

@@ -218,6 +218,13 @@ CASES = {
     "BASE64_IMAGE": (
         site({"index.html": with_body('<img alt="Logo" src="data:image/png;base64,' + "A" * 4000 + '">')}),
         site({"index.html": with_body('<img alt="Ikon" src="data:image/svg+xml;base64,PHN2Zy8+">')})),
+    "DYNAMIC_MODULE_INVALID": (
+        site({"index.html": with_body('<section data-ws-list="berita"><p>Tanpa kartu contoh data-ws-item</p></section>')}),
+        site({"index.html": with_body(
+            '<section data-ws-list="berita" data-ws-limit="6">'
+            '<article data-ws-item><h3 data-ws-field="judul">Judul berita</h3></article>'
+            '<p data-ws-empty>Belum ada berita.</p>'
+            '</section>')})),
     # D. File yang dirujuk
     "MISSING_ASSET": (site({"index.html": page(scripts='<script src="js/tidak-ada.js"></script>')}), site()),
     "MISSING_IMAGE": (site({"index.html": with_body('<img src="img/hilang.png" alt="Hilang">')}), site()),

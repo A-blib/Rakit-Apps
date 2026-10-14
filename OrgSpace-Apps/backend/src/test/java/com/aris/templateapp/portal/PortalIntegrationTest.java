@@ -238,7 +238,7 @@ class PortalIntegrationTest {
                 .andExpect(jsonPath("$.lastActiveDay").exists());
         send(admin, get("/api/admin/system"), null)
                 .andExpect(jsonPath("$.databaseOk").value(true))
-                .andExpect(jsonPath("$.schemaVersion").value("22"));
+                .andExpect(jsonPath("$.schemaVersion").value("25"));
     }
 
     @Test

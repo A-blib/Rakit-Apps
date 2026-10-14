@@ -14,10 +14,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.util.List;
+
 /**
- * Aturan akses HTTP: endpoint auth dan Swagger UI terbuka, sisanya wajib membawa access token.
+ * Aturan akses HTTP: endpoint auth, public sites, dan Swagger UI terbuka, sisanya wajib membawa access token.
  */
 @Configuration
 @RequiredArgsConstructor
@@ -41,8 +46,11 @@ public class SecurityConfig {
                 // API dipanggil app Android dengan token, bukan form browser ber-cookie,
                 // jadi proteksi CSRF dan session server tidak diperlukan.
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Izinkan preflight OPTIONS dari browser untuk CORS
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(PUBLIC_PATHS).permitAll()
                         // Event dilihat/didownload juga dikirim tamu (dihitung lewat install_id, alur-provider.md 3.5).
                         .requestMatchers(HttpMethod.POST, "/api/templates/*/events").permitAll()
@@ -57,13 +65,31 @@ public class SecurityConfig {
                         // Daftar kategori organisasi untuk form (juga dibaca sebelum login) dan logo organisasi
                         // (tampil di pratinjau undangan dan nanti di website organisasi).
                         .requestMatchers(HttpMethod.GET, "/api/meta/categories", "/api/organizations/*/logo").permitAll()
+                        // Foto profil user: dimuat ImageView tanpa header login, seperti logo organisasi.
+                        .requestMatchers(HttpMethod.GET, "/api/users/*/avatar").permitAll()
                         // Portal web: landing & pusat dokumentasi dibaca tanpa login (docs/rancangan/portal-web.md).
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
+                        // Website organisasi yang tayang dapat diakses publik tanpa login.
+                        .requestMatchers(HttpMethod.GET, "/sites/**").permitAll()
+                        // Pengiriman formulir publik (data-ws-form: pendaftaran, aspirasi) oleh pengunjung website.
+                        .requestMatchers(HttpMethod.POST, "/api/public/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
                 // Filter JWT dipasang sebelum filter login bawaan Spring agar user sudah dikenali lebih dulu.
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(false);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     /**

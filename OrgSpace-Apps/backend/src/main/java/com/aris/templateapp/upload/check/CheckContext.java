@@ -46,6 +46,8 @@ final class CheckContext {
     final Map<String, Set<String>> cssAssets = new LinkedHashMap<>();
     // Variabel CSS di :root (mis. --primary), bahan tema global di editor tandai (bagian 7.11).
     final Map<String, String> cssVariables = new LinkedHashMap<>();
+    // Modul dinamis yang didukung (data-ws-list, data-ws-form), mis. "berita", "struktur", "pendaftaran".
+    final Set<String> dynamicModules = new LinkedHashSet<>();
     boolean responsive;
     private final Set<String> reportedCaseMismatch = new HashSet<>();
 

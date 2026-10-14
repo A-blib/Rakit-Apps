@@ -16,7 +16,8 @@ spring:
 
   servlet:
     multipart:
-      # Sedikit di atas batas logo (ORG_LOGO_MAX_KB); ukuran sebenarnya diperiksa OrgLogoStorage.
+      # Sedikit di atas batas logo & foto profil (ORG_LOGO_MAX_KB, USER_AVATAR_MAX_KB); ukuran sebenarnya diperiksa
+      # OrgLogoStorage / AvatarStorage.
       max-file-size: 2MB
       max-request-size: 3MB
 
@@ -43,6 +44,11 @@ app:
     logo-max-kb: ${ORG_LOGO_MAX_KB:1024}
     # Folder logo hasil olahan (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/org-logos.
     logo-dir: ${ORG_LOGO_DIR:./data/org-logos}
+  # Foto profil user (Edit profil, kedua mode).
+  users:
+    avatar-max-kb: ${USER_AVATAR_MAX_KB:1024}
+    # Folder foto profil hasil olahan (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/user-avatars.
+    avatar-dir: ${USER_AVATAR_DIR:./data/user-avatars}
   # Website yang diedit di cloud (docs/rancangan/alur-buat-website-via-template.md bagian 3.1 & 12).
   projects:
     # Folder gambar website (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/project-assets.
@@ -52,11 +58,12 @@ app:
     lock-ttl-seconds: ${PROJECT_LOCK_TTL_SECONDS:120}
   # Website organisasi yang diterbitkan (docs/rancangan/alur-publish-website.md bagian 7.1).
   sites:
-    # {DOMAIN_SITUS}. Di laptop, *.sites.localhost:8081 dilayani Caddy lokal (bagian 6.5).
-    domain: ${SITES_DOMAIN:sites.localhost:8081}
+    # {DOMAIN_SITUS}. Di laptop langsung localhost:8080 agar dapat dibuka di HP lewat adb reverse.
+    domain: ${SITES_DOMAIN:localhost:8080}
     url-scheme: ${SITES_URL_SCHEME:http}
     max-per-org: ${SITES_MAX_PER_ORG:5}
     max-per-personal: ${SITES_MAX_PER_PERSONAL:5}
+    root-dir: ${SITES_ROOT:./data/sites}
   # Portal web OrgSpace: landing, docs, monitoring, kritik & saran (docs/rancangan/portal-web.md).
   portal:
     android-download-url: ${PORTAL_ANDROID_DOWNLOAD_URL:}
