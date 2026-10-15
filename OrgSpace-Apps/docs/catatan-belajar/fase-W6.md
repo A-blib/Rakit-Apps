@@ -52,15 +52,25 @@ Sumber rancangan: [`alur-fitur-upload.md`](../rancangan/alur-fitur-upload.md) ba
 - Android Unit Tests:
   - `./gradlew testDebugUnitTest`: **BUILD SUCCESSFUL** (32 actionable tasks sukses).
 - Pengujian GUI & End-to-End pada HP Realme (Android 13):
-  - Berhasil unggah template via ZIP.
-  - Template berhasil dipublikasikan dengan status **Tayang**.
-  - Template tampil di galeri pembuat website lengkap dengan tag modul dinamis.
-  - Template dapat dibuka di editor pembuat website dan dirender dengan WebView.
+  1. **Upload & Publish Template**:
+     - Berhasil unggah template via ZIP.
+     - Template berhasil dipublikasikan dengan status **Tayang**.
+     - Template tampil di galeri pembuat website lengkap dengan tag modul dinamis.
+  2. **Interaktivitas Editor Template**:
+     - Buka template dari galeri langsung membuat draft project baru di Room SQLite.
+     - Pengujian toggle tampilan Desktop dan HP (`view_desktop` & `view_mobile`) merender viewport WebView secara dinamis.
+     - Pengujian pengeditan field `Nama Organisasi *` menjadi "Himpunan Mahasiswa Inovasi Digital" langsung memperbarui DOM WebView secara real-time dan auto-save ke `values.json`.
+     - Pengujian mode pratinjau penuh (`action_preview`) dan lembar cek kelengkapan (`action_completeness`).
+  3. **Publishing Langsung ke Server & Akses Browser**:
+     - Menekan tombol **Publish Langsung Sekarang** pada lembar publikasi berhasil menerbitkan situs ke `http://localhost:8080/sites/web-dinamis-organisasi-inovasi/`.
+     - Dialog sukses menampilkan status `Online 🟢`, port `8080`, dan tombol **Buka Website**.
+     - Menekan **Buka Website** membuka browser Chrome perangkat dan merender situs dinamis secara sempurna (HTTP 200).
 
 ## Konsep yang dipelajari
 - **Dynamic HTML Modules (`data-ws-*`)**: Atribut data HTML khusus yang dijadikan kontrak antara frontend template statis dengan engine hosting dinamis OrgSpace.
 - **Custom Dynamic Collections**: Memungkinkan kreator membuat tipe konten kustom (seperti prestasi, alumni, portofolio) hanya dengan menambahkan atribut `data-ws-collection` dan `data-ws-field` tanpa konfigurasi backend rumit.
 - **Null Safety pada Dynamic View Building**: Pada aplikasi Android Java yang menyusun antarmuka secara dinamis berdasarkan data skema JSON dari backend (seperti `field.styles`), pemeriksaan null eksplisit mutlak diperlukan untuk mencegah `NullPointerException`.
+- **End-to-End Lifecycle Template to Website**: Alur utuh dari ZIP -> Provider Validation -> Template Gallery -> Project Instantiation -> WebView Live Editing -> Local Publishing -> Web Browser.
 
 ## Latihan untuk Aris
 1. Coba buka template "Web Dinamis Organisasi Inovasi" di tab **Website** pembuat website, lalu ubah teks judul dan periksa apakah WebView langsung memperbarui teks tersebut secara real-time.
