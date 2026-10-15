@@ -64,6 +64,18 @@ public class SitePublishController {
         return publishService.getSite(id, currentUser.id());
     }
 
+    @Operation(summary = "Matikan sementara website (unpublish)")
+    @PostMapping("/sites/{id}/unpublish")
+    public SiteResponse unpublish(@PathVariable UUID id) {
+        return publishService.unpublish(id, currentUser.id());
+    }
+
+    @Operation(summary = "Hidupkan lagi website (republish)")
+    @PostMapping("/sites/{id}/republish")
+    public SiteResponse republish(@PathVariable UUID id) {
+        return publishService.republish(id, currentUser.id());
+    }
+
     @Operation(summary = "Detail situs berdasarkan ID project")
     @GetMapping("/projects/{projectId}/site")
     public SiteResponse getSiteByProject(@PathVariable UUID projectId) {

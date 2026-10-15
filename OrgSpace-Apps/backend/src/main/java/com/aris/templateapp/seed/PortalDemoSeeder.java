@@ -1,5 +1,9 @@
 package com.aris.templateapp.seed;
 
+import com.aris.templateapp.auth.UserIdentity;
+import com.aris.templateapp.auth.UserIdentityRepository;
+import com.aris.templateapp.user.User;
+import com.aris.templateapp.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -7,6 +11,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +30,7 @@ import java.util.UUID;
 /**
  * Data contoh untuk tim portal web (docs/rancangan/portal-web.md), HANYA di profile dev:
  * <ul>
- *   <li>{@code dummy1@templateapp.test} dijadikan admin jika belum ada admin sama sekali (login dashboard).</li>
+ *   <li>{@code dummy1@templateapp.test} dan {@code admin@admin.com} dipastikan ada sebagai admin (login dashboard).</li>
  *   <li>Kritik &amp; saran contoh dengan berbagai status dan balasan, jika tabel feedback kosong.</li>
  *   <li>Riwayat pengguna aktif &amp; lalu lintas API 30 hari terakhir, jika tabelnya kosong, agar grafik dashboard
  *       langsung terisi. Angkanya acak tetapi tetap (seed tetap), jadi tampilannya sama di setiap laptop.</li>
@@ -56,6 +61,9 @@ public class PortalDemoSeeder implements ApplicationRunner {
             new Route("POST", "/api/projects/{id}/assets", 2));
 
     private final JdbcClient jdbc;
+    private final UserRepository userRepository;
+    private final UserIdentityRepository identityRepository;
+    private final PasswordEncoder passwordEncoder;
     private final Clock clock;
 
     @Override
@@ -67,10 +75,20 @@ public class PortalDemoSeeder implements ApplicationRunner {
     }
 
     private void makeAdmin() {
-        boolean anyAdmin = jdbc.sql("SELECT EXISTS (SELECT 1 FROM users WHERE is_admin)").query(Boolean.class).single();
-        if (!anyAdmin && jdbc.sql("UPDATE users SET is_admin = true WHERE lower(email) = :email")
-                .param("email", ADMIN_EMAIL).update() > 0) {
-            log.info("Seeder portal: {} dijadikan admin dashboard", ADMIN_EMAIL);
+        // 1. Pastikan dummy1@templateapp.test jadi admin
+        jdbc.sql("UPDATE users SET is_admin = true WHERE lower(email) = :email")
+                .param("email", ADMIN_EMAIL).update();
+
+        // 2. Pastikan admin@admin.com (admin123) dibuat jika belum ada agar sesuai petunjuk login portal web
+        if (userRepository.findByEmailIgnoreCase("admin@admin.com").isEmpty()) {
+            User adminUser = new User("Administrator OrgSpace", "admin@admin.com");
+            adminUser.setAdmin(true);
+            adminUser.setOnboardingCompleted(true);
+            adminUser = userRepository.save(adminUser);
+            identityRepository.save(UserIdentity.local(adminUser, "admin@admin.com", passwordEncoder.encode("admin123")));
+            log.info("Seeder portal: Akun admin@admin.com berhasil dibuat dengan password admin123");
+        } else {
+            jdbc.sql("UPDATE users SET is_admin = true WHERE lower(email) = 'admin@admin.com'").update();
         }
     }
 

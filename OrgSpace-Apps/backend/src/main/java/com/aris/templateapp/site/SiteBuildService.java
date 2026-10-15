@@ -383,77 +383,51 @@ public class SiteBuildService {
         }
 
         // 2. Modul Formulir Dinamis (data-ws-form)
+        // Menghormati kebebasan desain penyedia template: jika provider telah merancang form kustom,
+        // pertahankan 100% struktur HTML, class CSS, dan tata letak asli milik provider.
         Elements formElements = doc.select("[data-ws-form]");
         for (Element formPlaceholder : formElements) {
             String formName = formPlaceholder.attr("data-ws-form");
-            String formTitle = "pendaftaran".equalsIgnoreCase(formName)
-                    ? "Formulir Pendaftaran " + org.getName()
-                    : "Kotak Aspirasi & Pesan";
+            Element formEl = "form".equalsIgnoreCase(formPlaceholder.tagName())
+                    ? formPlaceholder
+                    : formPlaceholder.selectFirst("form");
 
-            String formHtml = String.format("""
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; max-width: 600px; margin: 24px auto; font-family: inherit;">
-                      <h3 style="margin-top: 0; font-size: 1.25rem; color: #1e293b;">%s</h3>
-                      <div id="orgspace-form-alert-%s" style="display: none; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 0.9rem;"></div>
-                      <form id="orgspace-dynamic-form-%s">
-                        <div style="margin-bottom: 14px;">
-                          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #475569; margin-bottom: 4px;">Nama Lengkap *</label>
-                          <input type="text" name="nama" required placeholder="Masukkan nama lengkap Anda" style="width: 100%%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box;">
-                        </div>
-                        <div style="margin-bottom: 14px;">
-                          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #475569; margin-bottom: 4px;">Kelas / Departemen *</label>
-                          <input type="text" name="kelas" required placeholder="Contoh: XII MIPA 1 / Divisi Humas" style="width: 100%%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box;">
-                        </div>
-                        <div style="margin-bottom: 14px;">
-                          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #475569; margin-bottom: 4px;">WhatsApp / Nomor HP *</label>
-                          <input type="tel" name="whatsapp" required placeholder="08xxxxxxxxxx" style="width: 100%%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box;">
-                        </div>
-                        <div style="margin-bottom: 18px;">
-                          <label style="display: block; font-size: 0.875rem; font-weight: 600; color: #475569; margin-bottom: 4px;">Alasan / Catatan *</label>
-                          <textarea name="pesan" required rows="3" placeholder="Tuliskan motivasi atau pesan Anda..." style="width: 100%%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box;"></textarea>
-                        </div>
-                        <button type="submit" style="background: #2563eb; color: #ffffff; padding: 12px 24px; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; width: 100%%;">Kirim Data</button>
-                      </form>
-                      <script>
-                        (function() {
-                          const form = document.getElementById('orgspace-dynamic-form-%s');
-                          if (!form) return;
-                          form.addEventListener('submit', async function(e) {
-                            e.preventDefault();
-                            const btn = form.querySelector('button[type="submit"]');
-                            const alertBox = document.getElementById('orgspace-form-alert-%s');
-                            btn.disabled = true;
-                            btn.innerText = 'Mengirim...';
-                            const formData = new FormData(form);
-                            const payload = {};
-                            formData.forEach((val, key) => payload[key] = val);
-                            try {
-                              const res = await fetch('/api/public/sites/%s/forms/%s', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(payload)
-                              });
-                              const json = await res.json();
-                              alertBox.style.display = 'block';
-                              alertBox.style.background = '#dcfce7';
-                              alertBox.style.color = '#166534';
-                              alertBox.innerText = json.message || 'Pendaftaran berhasil dikirim!';
-                              form.reset();
-                            } catch(err) {
-                              alertBox.style.display = 'block';
-                              alertBox.style.background = '#fee2e2';
-                              alertBox.style.color = '#991b1b';
-                              alertBox.innerText = 'Gagal mengirim data. Silakan coba lagi.';
-                            } finally {
-                              btn.disabled = false;
-                              btn.innerText = 'Kirim Data';
-                            }
-                          });
-                        })();
-                      </script>
-                    </div>
-                    """, formTitle, formName, formName, formName, formName, site.getSlug(), formName);
+            if (formEl != null) {
+                // Provider sudah mendesain formulir & kelas CSS sendiri: JANGAN timpa tata letak aslinya!
+                formEl.attr("action", "/api/public/sites/" + site.getSlug() + "/forms/" + formName);
+                formEl.attr("method", "POST");
+            } else {
+                // Hanya sediakan fallback jika provider meletakkan kontainer kosong tanpa <form>
+                String formTitle = "pendaftaran".equalsIgnoreCase(formName)
+                        ? "Formulir Pendaftaran " + org.getName()
+                        : "Kotak Aspirasi & Pesan";
 
-            formPlaceholder.html(formHtml);
+                String formHtml = String.format("""
+                        <form id="orgspace-dynamic-form-%s" action="/api/public/sites/%s/forms/%s" method="POST" class="orgspace-auto-form">
+                          <h3>%s</h3>
+                          <div id="orgspace-form-alert-%s" style="display: none; padding: 10px; margin-bottom: 12px; border-radius: 6px;"></div>
+                          <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 4px;">Nama Lengkap *</label>
+                            <input type="text" name="nama" required placeholder="Masukkan nama lengkap Anda" style="width: 100%%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+                          </div>
+                          <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 4px;">Kelas / Departemen *</label>
+                            <input type="text" name="kelas" required placeholder="Contoh: XII MIPA 1 / Divisi Humas" style="width: 100%%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+                          </div>
+                          <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 4px;">WhatsApp / Nomor HP *</label>
+                            <input type="tel" name="whatsapp" required placeholder="08xxxxxxxxxx" style="width: 100%%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;">
+                          </div>
+                          <div style="margin-bottom: 14px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 4px;">Alasan / Catatan *</label>
+                            <textarea name="pesan" required rows="3" placeholder="Tuliskan motivasi atau pesan Anda..." style="width: 100%%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box;"></textarea>
+                          </div>
+                          <button type="submit" style="padding: 10px 20px; cursor: pointer; border-radius: 6px; font-weight: 600;">Kirim Data</button>
+                        </form>
+                        """, formName, site.getSlug(), formName, formTitle, formName);
+
+                formPlaceholder.html(formHtml);
+            }
         }
     }
 
@@ -463,13 +437,11 @@ public class SiteBuildService {
             el.removeAttr("data-edit");
             el.removeAttr("data-label");
             el.removeAttr("data-tpl-id");
-            el.removeAttr("data-ws-list");
-            el.removeAttr("data-ws-item");
-            el.removeAttr("data-ws-field");
-            el.removeAttr("data-ws-link");
-            el.removeAttr("data-ws-empty");
-            el.removeAttr("data-ws-limit");
-            el.removeAttr("data-ws-form");
+            for (org.jsoup.nodes.Attribute attr : new java.util.ArrayList<>(el.attributes().asList())) {
+                if (attr.getKey().toLowerCase(Locale.ROOT).startsWith("data-ws-")) {
+                    el.removeAttr(attr.getKey());
+                }
+            }
         }
     }
 

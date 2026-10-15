@@ -69,6 +69,7 @@ public enum ErrorCode {
     DOC_SLUG_TAKEN(HttpStatus.CONFLICT, "Alamat artikel (slug) sudah dipakai artikel lain."),
     // Publish & Hosting website (docs/rancangan/alur-publish-website.md bagian 7.3)
     SITE_NOT_PUBLISHED(HttpStatus.NOT_FOUND, "Website belum diterbitkan atau sedang tidak aktif."),
+    SITE_SUSPENDED(HttpStatus.FORBIDDEN, "Website ini sedang ditangguhkan oleh sistem."),
     RELEASE_NOT_FOUND(HttpStatus.NOT_FOUND, "Versi rilis website tidak ditemukan."),
     SITE_LIMIT_REACHED(HttpStatus.CONFLICT, "Batas maksimal website per ruang kerja telah tercapai."),
     SLUG_TAKEN(HttpStatus.CONFLICT, "Nama subdomain sudah digunakan."),

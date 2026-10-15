@@ -17,6 +17,9 @@ import {
   User,
   ShieldCheck,
   RefreshCw,
+  Users,
+  UserPlus,
+  Shield,
 } from "lucide-react";
 
 interface AdminUser {
@@ -48,6 +51,15 @@ interface NewsItem {
   publishedAt?: string;
 }
 
+interface Member {
+  userId: string;
+  name: string;
+  email: string;
+  role: "owner" | "admin" | "editor";
+  positionTitle?: string;
+  joinedAt: string;
+}
+
 export default function AdminPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
@@ -65,7 +77,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
   const [loggingIn, setLoggingIn] = useState(false);
 
   // Dashboard states
-  const [activeTab, setActiveTab] = useState<"overview" | "submissions" | "news" | "collections">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "submissions" | "news" | "collections" | "members">("overview");
   const [siteName, setSiteName] = useState<string>("");
   const [orgName, setOrgName] = useState<string>("");
   const [stats, setStats] = useState<Stats>({ submissionsCount: 0, newsCount: 0, customItemsCount: 0 });
@@ -94,6 +106,16 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
     { key: "tingkat", value: "Nasional" },
   ]);
   const [submittingColItem, setSubmittingColItem] = useState(false);
+
+  // Members & Access Control state
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [newMemberName, setNewMemberName] = useState("");
+  const [newMemberPosition, setNewMemberPosition] = useState("");
+  const [newMemberRole, setNewMemberRole] = useState<"admin" | "editor">("editor");
+  const [newMemberPassword, setNewMemberPassword] = useState("password123");
+  const [submittingMember, setSubmittingMember] = useState(false);
 
   // Success / error alerts
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -160,6 +182,103 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
     loadSubmissions(jwt);
     loadNews(jwt);
     loadCollections(jwt);
+    loadMembers(jwt);
+  };
+
+  const loadMembers = async (jwt: string) => {
+    setLoadingMembers(true);
+    try {
+      const res = await fetch(`${backendUrl}/api/public/sites/${slug}/admin/members`, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMembers(data);
+      }
+    } catch (e) {
+      console.error("Gagal memuat daftar pengurus", e);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || !newMemberEmail.trim()) return;
+    setSubmittingMember(true);
+    try {
+      const res = await fetch(`${backendUrl}/api/public/sites/${slug}/admin/members`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: newMemberEmail.trim(),
+          name: newMemberName.trim(),
+          role: newMemberRole,
+          positionTitle: newMemberPosition.trim(),
+          password: newMemberPassword.trim() || "password123",
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Pengurus baru berhasil ditambahkan!");
+        setNewMemberEmail("");
+        setNewMemberName("");
+        setNewMemberPosition("");
+        setNewMemberPassword("password123");
+        loadMembers(token);
+      } else {
+        showToast(data.message || "Gagal menambahkan pengurus", "error");
+      }
+    } catch {
+      showToast("Terjadi kesalahan jaringan", "error");
+    } finally {
+      setSubmittingMember(false);
+    }
+  };
+
+  const handleUpdateRole = async (targetUserId: string, newRole: "admin" | "editor") => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${backendUrl}/api/public/sites/${slug}/admin/members/${targetUserId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Peran pengurus berhasil diperbarui!");
+        loadMembers(token);
+      } else {
+        showToast(data.message || "Gagal memperbarui peran", "error");
+      }
+    } catch {
+      showToast("Terjadi kesalahan jaringan", "error");
+    }
+  };
+
+  const handleRemoveMember = async (targetUserId: string, memberName: string) => {
+    if (!token || !confirm(`Yakin ingin mencabut hak akses pengurus ${memberName}?`)) return;
+    try {
+      const res = await fetch(`${backendUrl}/api/public/sites/${slug}/admin/members/${targetUserId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("Hak akses pengurus berhasil dicabut!");
+        loadMembers(token);
+      } else {
+        showToast(data.message || "Gagal mencabut hak akses", "error");
+      }
+    } catch {
+      showToast("Terjadi kesalahan jaringan", "error");
+    }
   };
 
   const loadStats = async (jwt: string) => {
@@ -596,6 +715,12 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
               icon: Boxes,
               badge: stats.customItemsCount,
             },
+            {
+              id: "members",
+              label: "Pengurus & Hak Akses",
+              icon: Users,
+              badge: members.length,
+            },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -631,7 +756,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
         {/* TAB 1: OVERVIEW */}
         {activeTab === "overview" && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <div
                 onClick={() => setActiveTab("submissions")}
                 className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer"
@@ -643,7 +768,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                 <div className="text-3xl font-extrabold text-slate-900">
                   {stats.submissionsCount}
                 </div>
-                <p className="text-xs text-slate-400 mt-1">Data pendaftaran & aspirasi pengunjung</p>
+                <p className="text-xs text-slate-400 mt-1">Data pendaftaran & formulir</p>
               </div>
 
               <div
@@ -671,7 +796,21 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                 <div className="text-3xl font-extrabold text-slate-900">
                   {stats.customItemsCount}
                 </div>
-                <p className="text-xs text-slate-400 mt-1">Data prestasi, alumni, atau galeri</p>
+                <p className="text-xs text-slate-400 mt-1">Data prestasi & galeri kustom</p>
+              </div>
+
+              <div
+                onClick={() => setActiveTab("members")}
+                className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer"
+              >
+                <div className="flex items-center justify-between text-slate-500 text-xs font-semibold mb-2">
+                  <span>PENGURUS & HAK AKSES</span>
+                  <Users className="w-5 h-5 text-amber-500" />
+                </div>
+                <div className="text-3xl font-extrabold text-slate-900">
+                  {members.length}
+                </div>
+                <p className="text-xs text-slate-400 mt-1">Pengelola & izin akses role</p>
               </div>
             </div>
 
@@ -1057,6 +1196,283 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: MEMBERS & ACCESS RIGHTS */}
+        {activeTab === "members" && (
+          <div className="space-y-6">
+            {/* Security Explanation Banner */}
+            <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-6 rounded-2xl border border-slate-800 shadow-md">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-base font-bold text-white">
+                      Pengelolaan Pengurus & Hak Akses (Role-Based Access Control)
+                    </h2>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono uppercase">
+                      Server Security Active
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Sistem ini menerapkan hierarki izin berjenjang: <strong>Pemilik (Owner)</strong> memiliki kontrol organisasi menyeluruh, <strong>Admin</strong> berwenang mengelola konten dan menunjuk pengurus, serta <strong>Editor</strong> berfokus pada penerbitan berita, modul, dan penanganan formulir masuk.
+                  </p>
+                  <div className="pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong>Prinsip Keamanan Sistem:</strong> Fitur hak akses dikunci langsung oleh backend Spring Boot (BCrypt + JWT + DB Authorization). Fitur ini tidak bisa dibuat hanya dengan template modul custom HTML karena memerlukan keamanan kriptografi dan proteksi database di tingkat server.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Form Tambah Pengurus */}
+              <div className="lg:col-span-1">
+                {user.role === "owner" || user.role === "admin" ? (
+                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm sticky top-24">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center font-bold">
+                        <UserPlus className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-900">Tambah Pengurus</h3>
+                        <p className="text-[11px] text-slate-400">Beri hak akses ke akun pengurus</p>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleAddMember} className="space-y-3.5">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                          Email Pengurus *
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="pengurus@organisasi.id"
+                          value={newMemberEmail}
+                          onChange={(e) => setNewMemberEmail(e.target.value)}
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                          Nama Lengkap
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Contoh: Ahmad Rizki"
+                          value={newMemberName}
+                          onChange={(e) => setNewMemberName(e.target.value)}
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                          Jabatan / Posisi
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Contoh: Staff Humas / Divisi Acara"
+                          value={newMemberPosition}
+                          onChange={(e) => setNewMemberPosition(e.target.value)}
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                          Tingkat Hak Akses (Role) *
+                        </label>
+                        <select
+                          value={newMemberRole}
+                          onChange={(e) => setNewMemberRole(e.target.value as any)}
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                        >
+                          <option value="editor">Editor (Kelola Berita, Modul & Formulir)</option>
+                          <option value="admin">Admin (Akses Penuh + Kelola Hak Akses)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                          Password Masuk Sementara *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newMemberPassword}
+                          onChange={(e) => setNewMemberPassword(e.target.value)}
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          Password dapat digunakan pengurus untuk login di portal ini.
+                        </p>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={submittingMember}
+                        className="w-full mt-2 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      >
+                        {submittingMember ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Menyimpan...</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="w-3.5 h-3.5" />
+                            <span>Beri Hak Akses</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-slate-600 space-y-3">
+                    <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
+                      <Shield className="w-4 h-4 text-slate-500" />
+                      <span>Hak Akses Terbatas</span>
+                    </div>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Anda saat ini masuk sebagai <strong>Editor Konten</strong>. Anda memiliki wewenang untuk menambah berita, item modul kustom, dan melihat pesan formulir.
+                    </p>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Penambahan pengurus baru serta pengubahan hak akses hanya dapat dilakukan oleh akun dengan peran <strong>Admin</strong> atau <strong>Pemilik</strong>.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Tabel / Daftar Pengurus */}
+              <div className="lg:col-span-2 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">
+                      Daftar Pengurus Aktif ({members.length})
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Pengguna terdaftar yang memiliki kredensial resmi pada website ini
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => token && loadMembers(token)}
+                    className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 transition"
+                    title="Perbarui data"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${loadingMembers ? "animate-spin" : ""}`} />
+                  </button>
+                </div>
+
+                {loadingMembers ? (
+                  <div className="py-12 text-center text-slate-400">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                    <p className="text-xs">Memuat daftar pengurus...</p>
+                  </div>
+                ) : members.length === 0 ? (
+                  <div className="bg-white p-8 text-center rounded-2xl border border-slate-200 text-slate-400 text-xs">
+                    Belum ada data pengurus yang dimuat.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {members.map((m) => {
+                      const isOwner = m.role === "owner";
+                      const isAdmin = m.role === "admin";
+                      const isCurrentUser = m.userId === user.id;
+                      const canManage = (user.role === "owner" || user.role === "admin") && !isOwner && !isCurrentUser;
+
+                      return (
+                        <div
+                          key={m.userId}
+                          className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition hover:border-slate-300"
+                        >
+                          <div className="flex items-start sm:items-center gap-3">
+                            <div
+                              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${
+                                isOwner
+                                  ? "bg-amber-100 text-amber-800 border border-amber-300"
+                                  : isAdmin
+                                  ? "bg-blue-100 text-blue-800 border border-blue-300"
+                                  : "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                              }`}
+                            >
+                              {(m.name || m.email).substring(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xs font-bold text-slate-900">
+                                  {m.name || "Tanpa Nama"}
+                                </span>
+                                {isCurrentUser && (
+                                  <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded font-mono">
+                                    (Anda)
+                                  </span>
+                                )}
+                                <span
+                                  className={`text-[10px] px-2 py-0.5 rounded-full font-mono uppercase font-semibold border ${
+                                    isOwner
+                                      ? "bg-amber-50 text-amber-700 border-amber-300"
+                                      : isAdmin
+                                      ? "bg-blue-50 text-blue-700 border-blue-300"
+                                      : "bg-emerald-50 text-emerald-700 border-emerald-300"
+                                  }`}
+                                >
+                                  {isOwner ? "👑 Pemilik" : isAdmin ? "🛡️ Admin" : "✍️ Editor"}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                                {m.email}
+                              </div>
+                              {m.positionTitle && (
+                                <div className="text-[11px] text-slate-400 mt-0.5">
+                                  Posisi: <span className="text-slate-600 font-medium">{m.positionTitle}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 self-end sm:self-center border-t sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto justify-end">
+                            {canManage ? (
+                              <>
+                                <select
+                                  value={m.role}
+                                  onChange={(e) => handleUpdateRole(m.userId, e.target.value as any)}
+                                  className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  title="Ganti peran pengurus"
+                                >
+                                  <option value="editor">Role: Editor</option>
+                                  <option value="admin">Role: Admin</option>
+                                </select>
+
+                                <button
+                                  onClick={() => handleRemoveMember(m.userId, m.name || m.email)}
+                                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                                  title="Cabut Hak Akses"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            ) : isOwner ? (
+                              <span className="text-[10px] text-slate-400 italic font-mono px-2 py-1">
+                                Pemilik Utama
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

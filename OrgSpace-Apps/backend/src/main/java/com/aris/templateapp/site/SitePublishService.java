@@ -26,6 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.Normalizer;
 import java.time.Clock;
 import java.time.Instant;
@@ -62,6 +65,7 @@ public class SitePublishService {
     private final UserRepository userRepository;
     private final OrganizationAccess access;
     private final SiteBuildService siteBuildService;
+    private final SiteStorage siteStorage;
     private final AppProperties properties;
     private final Clock clock;
 
@@ -201,6 +205,80 @@ public class SitePublishService {
         Site site = siteRepository.findByProjectId(projectId)
                 .orElseThrow(() -> new ApiException(ErrorCode.SITE_NOT_PUBLISHED));
         access.require(site.getOrganizationId(), userId, OrgAction.VIEW);
+        return toSiteResponse(site);
+    }
+
+    @Transactional
+    public SiteResponse unpublish(UUID siteId, UUID userId) {
+        Site site = siteRepository.findById(siteId)
+                .orElseThrow(() -> new ApiException(ErrorCode.SITE_NOT_PUBLISHED));
+
+        OrganizationAccess.Membership membership = access.require(site.getOrganizationId(), userId, OrgAction.VIEW);
+        if (membership.role() != MemberRole.OWNER && membership.role() != MemberRole.ADMIN) {
+            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Hanya Admin dan Pemilik yang dapat menonaktifkan website.");
+        }
+
+        if ("suspended".equalsIgnoreCase(site.getStatus())) {
+            throw new ApiException(ErrorCode.SITE_SUSPENDED, "Website ini sedang ditangguhkan oleh sistem.");
+        }
+
+        site.setStatus("offline");
+        site.setUpdatedAt(clock.instant());
+        site = siteRepository.save(site);
+
+        // Hapus symlink di direktori hosts jika ada
+        Path hostsDir = Path.of(properties.sites().storageRootDir()).resolve("hosts");
+        Path symlink = hostsDir.resolve(site.getSlug() + "." + properties.sites().domain());
+        try {
+            Files.deleteIfExists(symlink);
+        } catch (IOException ignored) {
+        }
+
+        log.info("Website {} telah dinonaktifkan (unpublish) oleh user {}", site.getSlug(), userId);
+        return toSiteResponse(site);
+    }
+
+    @Transactional
+    public SiteResponse republish(UUID siteId, UUID userId) {
+        Site site = siteRepository.findById(siteId)
+                .orElseThrow(() -> new ApiException(ErrorCode.SITE_NOT_PUBLISHED));
+
+        OrganizationAccess.Membership membership = access.require(site.getOrganizationId(), userId, OrgAction.VIEW);
+        if (membership.role() != MemberRole.OWNER && membership.role() != MemberRole.ADMIN) {
+            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Hanya Admin dan Pemilik yang dapat mengaktifkan kembali website.");
+        }
+
+        if ("suspended".equalsIgnoreCase(site.getStatus())) {
+            throw new ApiException(ErrorCode.SITE_SUSPENDED, "Website ini sedang ditangguhkan oleh sistem.");
+        }
+
+        if (site.getCurrentReleaseId() == null) {
+            throw new ApiException(ErrorCode.SITE_NOT_PUBLISHED, "Website belum memiliki rilis untuk diaktifkan.");
+        }
+
+        SiteRelease release = siteReleaseRepository.findById(site.getCurrentReleaseId())
+                .orElseThrow(() -> new ApiException(ErrorCode.RELEASE_NOT_FOUND, "Rilis aktif tidak ditemukan"));
+
+        site.setStatus("online");
+        site.setPublishedAt(clock.instant());
+        site.setUpdatedAt(clock.instant());
+        site = siteRepository.save(site);
+
+        // Pasang kembali symlink ke rilis aktif
+        Path hostsDir = Path.of(properties.sites().storageRootDir()).resolve("hosts");
+        try {
+            Files.createDirectories(hostsDir);
+            Path symlink = hostsDir.resolve(site.getSlug() + "." + properties.sites().domain());
+            Path target = siteStorage.releasePath(site.getId(), release.getVersion());
+            Files.deleteIfExists(symlink);
+            try {
+                Files.createSymbolicLink(symlink, target);
+            } catch (UnsupportedOperationException | IOException ignored) {
+            }
+        } catch (IOException ignored) {
+        }
+
+        log.info("Website {} telah diaktifkan kembali (republish) oleh user {}", site.getSlug(), userId);
         return toSiteResponse(site);
     }
 

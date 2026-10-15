@@ -5,7 +5,9 @@ import com.aris.templateapp.auth.UserIdentity;
 import com.aris.templateapp.auth.UserIdentityRepository;
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
+import com.aris.templateapp.organization.MemberRole;
 import com.aris.templateapp.organization.Organization;
+import com.aris.templateapp.organization.OrganizationAccess;
 import com.aris.templateapp.organization.OrganizationMember;
 import com.aris.templateapp.organization.OrganizationMemberRepository;
 import com.aris.templateapp.organization.OrganizationRepository;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -40,6 +43,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -258,8 +262,16 @@ public class PublicSiteController {
                 .build();
     }
 
+    @GetMapping(value = {"/sites/{slug}/admin", "/sites/{slug}/admin/**"})
+    public ResponseEntity<Void> redirectToSiteAdmin(@PathVariable String slug) {
+        String target = "http://localhost:3001/" + slug + "/admin";
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(target))
+                .build();
+    }
+
     @GetMapping("/sites/{slug}/**")
-    public ResponseEntity<Resource> serveSiteFile(@PathVariable String slug, HttpServletRequest request) {
+    public ResponseEntity<?> serveSiteFile(@PathVariable String slug, HttpServletRequest request) {
         Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
 
@@ -276,6 +288,13 @@ public class PublicSiteController {
         String subPath = fullPath.startsWith(prefix) ? fullPath.substring(prefix.length()) : "index.html";
         if (subPath.isBlank() || subPath.endsWith("/")) {
             subPath += "index.html";
+        }
+
+        // Jika user mengakses halaman admin atau portal pengurus dari link website statis
+        if ("admin".equalsIgnoreCase(subPath) || subPath.startsWith("admin/") || "admin.html".equalsIgnoreCase(subPath)) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(URI.create("http://localhost:3001/" + slug + "/admin"))
+                    .build();
         }
 
         Path target = releaseDir.resolve(subPath).normalize();
@@ -321,6 +340,21 @@ public class PublicSiteController {
         memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Anda bukan pengurus atau anggota dari organisasi website ini"));
         return userId;
+    }
+
+    private OrganizationMember authenticateSiteAdmin(String authHeader, Site site) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new ApiException(ErrorCode.UNAUTHORIZED, "Token autentikasi pengurus diperlukan");
+        }
+        String token = authHeader.substring(7).trim();
+        UUID userId = jwtService.parseUserId(token)
+                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "Sesi login pengurus tidak valid atau telah berakhir"));
+        OrganizationMember member = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Anda bukan pengurus atau anggota dari organisasi website ini"));
+        if (member.getRole() != MemberRole.OWNER && member.getRole() != MemberRole.ADMIN) {
+            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Hanya Pemilik dan Admin yang berhak mengelola hak akses pengurus");
+        }
+        return member;
     }
 
     @PostMapping("/api/public/sites/{slug}/auth/login")
@@ -442,6 +476,22 @@ public class PublicSiteController {
         return collectionsMap;
     }
 
+    @GetMapping("/api/public/sites/{slug}/admin/collections/{collectionName}")
+    public List<Map<String, Object>> getAdminCollectionItems(@PathVariable String slug,
+                                                             @PathVariable String collectionName,
+                                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        authenticateSiteManager(authHeader, site);
+        String cleanCol = collectionName.toLowerCase(Locale.ROOT).trim();
+        List<SiteCustomItem> items = siteCustomItemRepository.findBySiteIdAndCollectionNameOrderBySortOrderAscCreatedAtDesc(site.getId(), cleanCol);
+        return items.stream().map(item -> {
+            Map<String, Object> row = new HashMap<>(item.getData());
+            row.put("id", item.getId());
+            return row;
+        }).toList();
+    }
+
     @PostMapping("/api/public/sites/{slug}/admin/news")
     public SiteNews createNews(@PathVariable String slug,
                                @RequestBody Map<String, String> payload,
@@ -533,6 +583,135 @@ public class PublicSiteController {
         }
         siteCustomItemRepository.delete(item);
         return Map.of("success", true, "message", "Item berhasil dihapus");
+    }
+
+    // ==========================================
+    // Pengelolaan Pengurus & Hak Akses Organisasi
+    // ==========================================
+
+    @GetMapping("/api/public/sites/{slug}/admin/members")
+    public List<Map<String, Object>> getSiteMembers(@PathVariable String slug,
+                                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        authenticateSiteManager(authHeader, site);
+
+        return memberRepository.findByOrganizationId(site.getOrganizationId())
+                .stream()
+                .map(m -> {
+                    User u = userRepository.findById(m.getUserId()).orElse(null);
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("userId", m.getUserId());
+                    map.put("role", m.getRole().value());
+                    map.put("positionTitle", m.getPositionTitle());
+                    map.put("joinedAt", m.getJoinedAt());
+                    map.put("name", u != null && u.getDisplayName() != null ? u.getDisplayName() : (u != null ? u.getEmail() : "Pengurus"));
+                    map.put("email", u != null ? u.getEmail() : "-");
+                    return map;
+                })
+                .toList();
+    }
+
+    @PostMapping("/api/public/sites/{slug}/admin/members")
+    public Map<String, Object> addSiteMember(@PathVariable String slug,
+                                             @RequestBody Map<String, String> payload,
+                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        OrganizationMember currentAdmin = authenticateSiteAdmin(authHeader, site);
+
+        String email = payload.get("email");
+        String roleStr = payload.get("role");
+        String positionTitle = payload.get("positionTitle");
+        if (email == null || email.isBlank()) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Email pengurus wajib diisi");
+        }
+
+        MemberRole targetRole = "admin".equalsIgnoreCase(roleStr) ? MemberRole.ADMIN : MemberRole.EDITOR;
+        if (!OrganizationAccess.canInvite(currentAdmin.getRole(), targetRole)) {
+            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Anda tidak memiliki wewenang untuk memberikan peran ini");
+        }
+
+        String cleanEmail = email.trim().toLowerCase(Locale.ROOT);
+        User user = userRepository.findByEmailIgnoreCase(cleanEmail)
+                .orElseGet(() -> {
+                    String name = payload.get("name") != null && !payload.get("name").isBlank()
+                            ? payload.get("name").trim()
+                            : cleanEmail.split("@")[0];
+                    User newUser = new User(name, cleanEmail);
+                    newUser.setOnboardingCompleted(true);
+                    User savedUser = userRepository.save(newUser);
+                    String tempPassword = payload.get("password") != null && !payload.get("password").isBlank()
+                            ? payload.get("password")
+                            : "password123";
+                    userIdentityRepository.save(UserIdentity.local(savedUser, cleanEmail, passwordEncoder.encode(tempPassword)));
+                    return savedUser;
+                });
+
+        if (memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), user.getId()).isPresent()) {
+            throw new ApiException(ErrorCode.ALREADY_MEMBER, "Pengguna sudah menjadi pengurus organisasi ini");
+        }
+
+        OrganizationMember newMember = new OrganizationMember(site.getOrganizationId(), user.getId(), targetRole, positionTitle, Instant.now());
+        memberRepository.save(newMember);
+
+        return Map.of(
+                "success", true,
+                "message", "Pengurus berhasil ditambahkan",
+                "member", Map.of(
+                        "userId", user.getId(),
+                        "name", user.getDisplayName() != null ? user.getDisplayName() : user.getEmail(),
+                        "email", user.getEmail(),
+                        "role", targetRole.value()
+                )
+        );
+    }
+
+    @PutMapping("/api/public/sites/{slug}/admin/members/{targetUserId}")
+    public Map<String, Object> updateMemberRole(@PathVariable String slug,
+                                                @PathVariable UUID targetUserId,
+                                                @RequestBody Map<String, String> payload,
+                                                @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        OrganizationMember currentAdmin = authenticateSiteAdmin(authHeader, site);
+
+        OrganizationMember target = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), targetUserId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Pengurus tidak ditemukan"));
+
+        String roleStr = payload.get("role");
+        MemberRole newRole = "admin".equalsIgnoreCase(roleStr) ? MemberRole.ADMIN : MemberRole.EDITOR;
+
+        if (!OrganizationAccess.canChangeRole(currentAdmin.getRole(), target.getRole(), newRole)) {
+            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Anda tidak berhak mengubah peran pengurus ini");
+        }
+
+        target.setRole(newRole);
+        if (payload.get("positionTitle") != null) {
+            target.setPositionTitle(payload.get("positionTitle"));
+        }
+        memberRepository.save(target);
+
+        return Map.of("success", true, "message", "Peran pengurus berhasil diperbarui");
+    }
+
+    @DeleteMapping("/api/public/sites/{slug}/admin/members/{targetUserId}")
+    public Map<String, Object> removeMember(@PathVariable String slug,
+                                            @PathVariable UUID targetUserId,
+                                            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        OrganizationMember currentAdmin = authenticateSiteAdmin(authHeader, site);
+
+        OrganizationMember target = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), targetUserId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Pengurus tidak ditemukan"));
+
+        if (!OrganizationAccess.canRemove(currentAdmin.getRole(), target.getRole())) {
+            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Anda tidak berhak menghapus pengurus ini");
+        }
+
+        memberRepository.delete(target);
+        return Map.of("success", true, "message", "Akses pengurus berhasil dicabut");
     }
 
     private MediaType determineMediaType(Path path) {
