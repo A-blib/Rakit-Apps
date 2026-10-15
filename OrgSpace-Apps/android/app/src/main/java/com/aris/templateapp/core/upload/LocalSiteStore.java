@@ -126,7 +126,10 @@ public class LocalSiteStore {
         }
     }
 
-    private static void deleteRecursively(File file) {
+    private static void deleteRecursively(@Nullable File file) {
+        if (file == null || !file.exists()) {
+            return;
+        }
         File[] children = file.listFiles();
         if (children != null) {
             for (File child : children) {

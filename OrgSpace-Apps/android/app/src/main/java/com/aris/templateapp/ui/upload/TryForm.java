@@ -198,8 +198,10 @@ final class TryForm {
                 addText(row, field, value, originalText, false);
                 break;
         }
-        for (MarkingDto.Style style : field.styles) {
-            addStyle(row, style, value, original);
+        if (field.styles != null) {
+            for (MarkingDto.Style style : field.styles) {
+                addStyle(row, style, value, original);
+            }
         }
         updateContrast(row, value);
     }
