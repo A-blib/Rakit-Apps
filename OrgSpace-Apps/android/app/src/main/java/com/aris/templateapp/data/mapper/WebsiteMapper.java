@@ -49,7 +49,9 @@ public final class WebsiteMapper {
         Instant published = WorkspaceMapper.instant(dto.publishedAt);
         return new WebsiteDetail(toModel(organizationId, dto.website),
                 published == null ? null : published.toEpochMilli(),
-                dto.openRequest == null ? null : toModel(dto.openRequest), dto.suspensionReason);
+                dto.openRequest == null ? null : toModel(dto.openRequest), dto.suspensionReason,
+                dto.website != null ? dto.website.sourceTemplateId : null,
+                dto.templateVersion, dto.content);
     }
 
     public static PublishRequest toModel(PublishRequestDto dto) {

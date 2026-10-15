@@ -120,6 +120,17 @@ public class ProjectRepository {
         return dao.findById(id);
     }
 
+    @WorkerThread
+    @Nullable
+    public ProjectEntity findByNameSync(String name) {
+        return dao.findByName(name);
+    }
+
+    @WorkerThread
+    public List<ProjectEntity> allSync() {
+        return dao.getAll();
+    }
+
     /** "Toko Kue" → "Toko Kue" jika belum dipakai, selain itu "Toko Kue (2)", "Toko Kue (3)", ... */
     @WorkerThread
     public String uniqueName(String base) {

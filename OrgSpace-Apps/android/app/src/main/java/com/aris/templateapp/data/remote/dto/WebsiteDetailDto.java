@@ -10,4 +10,5 @@ public class WebsiteDetailDto {
     public String publishedAt;
     public PublishRequestDto openRequest;
     public String suspensionReason;
+    public Integer templateVersion;
 }

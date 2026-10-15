@@ -26,6 +26,7 @@ import com.aris.templateapp.data.model.ProjectMode;
 import com.aris.templateapp.data.model.ProjectStatus;
 import com.aris.templateapp.data.model.ProjectValues;
 import com.aris.templateapp.data.model.TemplateManifest;
+import com.aris.templateapp.data.model.WebsiteDetail;
 import com.aris.templateapp.data.remote.dto.DirectPublishRequestDto;
 import com.aris.templateapp.data.remote.dto.DirectPublishResponseDto;
 import com.aris.templateapp.data.repository.ProjectRepository;
@@ -210,7 +211,7 @@ public class TemplateEditorViewModel extends ViewModel {
         loaded.setValue(Resource.loading());
         executors.diskIO().execute(() -> {
             if (projectId != null) {
-                loadProject(projectId);
+                loadProject(projectId, templateId, templateVersion, title);
             } else {
                 loadNew(templateId, templateVersion, title);
             }
@@ -218,19 +219,39 @@ public class TemplateEditorViewModel extends ViewModel {
     }
 
     @WorkerThread
-    private void loadProject(String id) {
+    private void loadProject(String id, @Nullable String templateId, int templateVersion, @Nullable String title) {
         ProjectEntity project = projects.findSync(id);
+        if (project == null && templateId != null) {
+            TemplatePackageEntity pkg = templateVersion > 0 ? packages.find(templateId, templateVersion)
+                    : packages.installed(templateId);
+            if (pkg == null) {
+                pkg = packages.installed(templateId);
+            }
+            if (pkg != null) {
+                long now = projects.now();
+                project = new ProjectEntity(id, title != null ? title : pkg.name, ProjectMode.TEMPLATE,
+                        ProjectStatus.READY, now, now);
+                project.sourceTemplateId = templateId;
+                project.templateVersion = pkg.version;
+                project.contentPath = store.dir(id).getAbsolutePath();
+                projects.insertSync(project);
+            }
+        }
         if (project == null) {
             loaded.postValue(Resource.error(ApiError.of(EditorErrors.PROJECT_NOT_FOUND)));
             return;
         }
-        if (project.sourceTemplateId == null) {
+        String sourceTemplateId = project.sourceTemplateId != null ? project.sourceTemplateId : templateId;
+        if (sourceTemplateId == null) {
             // Mis. project contoh dari menu debug: tidak berasal dari paket template mana pun.
             loaded.postValue(Resource.error(ApiError.of(EditorErrors.PACKAGE_MISSING)));
             return;
         }
-        TemplatePackageEntity pkg = project.templateVersion == null ? packages.installed(project.sourceTemplateId)
-                : packages.find(project.sourceTemplateId, project.templateVersion);
+        TemplatePackageEntity pkg = project.templateVersion == null ? packages.installed(sourceTemplateId)
+                : packages.find(sourceTemplateId, project.templateVersion);
+        if (pkg == null) {
+            pkg = packages.installed(sourceTemplateId);
+        }
         TemplateManifest manifest = pkg == null ? null : packages.manifest(pkg);
         if (manifest == null) {
             loaded.postValue(Resource.error(ApiError.of(EditorErrors.PACKAGE_MISSING)));
@@ -238,14 +259,41 @@ public class TemplateEditorViewModel extends ViewModel {
         }
         packages.markUsed(pkg);
         ProjectValues stored = store.read(id);
+        if (stored.fields.isEmpty()) {
+            ProjectEntity existing = projects.findByNameSync(project.name);
+            if (existing != null && !existing.id.equals(id)) {
+                ProjectValues existingValues = store.read(existing.id);
+                if (!existingValues.fields.isEmpty()) {
+                    try {
+                        store.copy(existing.id, id);
+                        stored = store.read(id);
+                    } catch (IOException ignored) {
+                    }
+                }
+            }
+            if (stored.fields.isEmpty()) {
+                Resource<WebsiteDetail> detailRes = websiteRepository.detail(null, id);
+                if (detailRes.getStatus() == Resource.Status.SUCCESS && detailRes.getData() != null
+                        && detailRes.getData().content != null) {
+                    try {
+                        store.writeFromMap(id, detailRes.getData().content);
+                        stored = store.read(id);
+                    } catch (IOException ignored) {
+                    }
+                }
+            }
+        }
+        ProjectEntity finalProject = project;
+        TemplatePackageEntity finalPkg = pkg;
+        ProjectValues finalStored = stored;
         main.post(() -> {
-            projectId = project.id;
-            projectName = project.name;
-            lastExportedAt = project.lastExportedAt;
-            updatedAt = project.updatedAt;
-            values = stored;
+            projectId = finalProject.id;
+            projectName = finalProject.name;
+            lastExportedAt = finalProject.lastExportedAt;
+            updatedAt = finalProject.updatedAt;
+            values = finalStored;
             saveState = SaveState.SAVED;
-            finishLoad(new Loaded(manifest, new File(pkg.path), pkg.templateId, pkg.version));
+            finishLoad(new Loaded(manifest, new File(finalPkg.path), finalPkg.templateId, finalPkg.version));
         });
     }
 

@@ -47,6 +47,12 @@ public interface ProjectDao {
     @Query("SELECT * FROM projects WHERE id = :id")
     ProjectEntity findById(String id);
 
+    @Query("SELECT * FROM projects WHERE name = :name LIMIT 1")
+    ProjectEntity findByName(String name);
+
+    @Query("SELECT * FROM projects")
+    List<ProjectEntity> getAll();
+
     @Insert
     void insert(ProjectEntity project);
 

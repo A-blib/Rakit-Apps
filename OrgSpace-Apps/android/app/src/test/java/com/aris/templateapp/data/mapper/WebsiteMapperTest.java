@@ -57,4 +57,36 @@ public class WebsiteMapperTest {
         assertEquals(0, website.updatedAt);
         assertNull(website.lockedByName);
     }
+
+    @Test
+    public void mapsWebsiteDetailWithTemplateAndContent() {
+        com.aris.templateapp.data.remote.dto.WebsiteDetailDto dto = new com.aris.templateapp.data.remote.dto.WebsiteDetailDto();
+        dto.website = new WebsiteSummaryDto();
+        dto.website.id = "web-1";
+        dto.website.name = "Web Dinamis Organisasi";
+        dto.website.mode = "template";
+        dto.website.status = "online";
+        dto.website.sourceTemplateId = "tpl-123";
+        dto.templateVersion = 2;
+        dto.publishedAt = "2026-10-14T05:00:00Z";
+
+        java.util.Map<String, Object> content = new java.util.HashMap<>();
+        java.util.Map<String, Object> fields = new java.util.HashMap<>();
+        java.util.Map<String, Object> titleField = new java.util.HashMap<>();
+        titleField.put("text", "Halo Dunia");
+        fields.put("judul", titleField);
+        content.put("fields", fields);
+        dto.content = content;
+
+        com.aris.templateapp.data.model.WebsiteDetail detail = WebsiteMapper.toModel("org-1", dto);
+
+        assertEquals("web-1", detail.website.id);
+        assertEquals("Web Dinamis Organisasi", detail.website.name);
+        assertEquals(ProjectMode.TEMPLATE, detail.website.mode);
+        assertEquals(WebsiteStatus.ONLINE, detail.website.status);
+        assertEquals("tpl-123", detail.sourceTemplateId);
+        assertEquals(Integer.valueOf(2), detail.templateVersion);
+        assertEquals(content, detail.content);
+        assertEquals(Long.valueOf(1791954000000L), detail.publishedAt);
+    }
 }

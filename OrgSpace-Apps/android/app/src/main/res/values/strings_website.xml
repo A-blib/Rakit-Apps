@@ -96,4 +96,6 @@
     <string name="request_publish_pending">%1$s minta website ini diterbitkan · %2$s</string>
     <string name="request_publish_pending_me">Permintaan terbit sudah dikirim · %1$s</string>
     <string name="error_publish_note_too_long">Catatan maksimal 200 karakter.</string>
+    <!-- %1$s = alamat website -->
+    <string name="website_open_address">Buka website %1$s</string>
 </resources>

@@ -1,5 +1,8 @@
 package com.aris.templateapp.ui.website;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -133,6 +136,14 @@ public class WebsiteManageFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (viewModel != null) {
+            viewModel.load();
+        }
+    }
+
     private void bind(WebsiteDetail detail) {
         this.detail = detail;
         Website website = detail.website;
@@ -144,9 +155,35 @@ public class WebsiteManageFragment extends Fragment {
         binding.name.setText(website.name);
         WebsiteUi.bindStatusBadge(binding.statusBadge, website.status);
         String address = WebsiteUi.shortAddress(website.siteUrl);
+        boolean hasUrl = WebsiteUi.canOpenWebsite(website);
         binding.address.setText(address == null ? getString(R.string.website_not_published) : address);
         binding.address.setTextColor(ContextCompat.getColor(requireContext(),
-                address == null ? R.color.color_muted : R.color.color_link));
+                hasUrl ? R.color.color_link : R.color.color_muted));
+        if (hasUrl) {
+            binding.address.setClickable(true);
+            binding.address.setFocusable(true);
+            binding.address.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_link_small, 0);
+            binding.address.setCompoundDrawablePadding(getResources().getDimensionPixelSize(R.dimen.space_1));
+            binding.address.setContentDescription(getString(R.string.website_open_address, address));
+            binding.address.setOnClickListener(v -> WebsiteUi.openWebsite(requireContext(), website.siteUrl));
+            binding.address.setOnLongClickListener(v -> {
+                ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                if (clipboard != null && website.siteUrl != null) {
+                    ClipData clip = ClipData.newPlainText("Website URL", website.siteUrl);
+                    clipboard.setPrimaryClip(clip);
+                    Snackbar.make(binding.getRoot(), R.string.publish_success_copied, Snackbar.LENGTH_SHORT).show();
+                    return true;
+                }
+                return false;
+            });
+        } else {
+            binding.address.setClickable(false);
+            binding.address.setFocusable(false);
+            binding.address.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0);
+            binding.address.setContentDescription(null);
+            binding.address.setOnClickListener(null);
+            binding.address.setOnLongClickListener(null);
+        }
         binding.changed.setVisibility(website.isOnlineWithChanges() ? View.VISIBLE : View.GONE);
         binding.updated.setText(getString(R.string.website_updated_mode, WebsiteUi.updatedLine(requireContext(), website),
                 getString(ProjectUi.modeLabel(website.mode))));
@@ -222,12 +259,7 @@ public class WebsiteManageFragment extends Fragment {
         if (detail == null) {
             return;
         }
-        if (detail.website.mode == ProjectMode.CUSTOM) {
-            EditorNav.openCustomEditor(this, detail.website.name);
-        } else {
-            // Editor template yang tersinkron ke cloud dibangun di fase T4.
-            showInfo(R.string.website_edit_appearance, R.string.website_editor_soon);
-        }
+        EditorNav.openWebsiteEditor(this, detail);
     }
 
     private void onMenu(int itemId) {

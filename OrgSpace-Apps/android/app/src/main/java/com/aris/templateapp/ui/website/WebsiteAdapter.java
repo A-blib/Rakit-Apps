@@ -60,8 +60,23 @@ public class WebsiteAdapter extends ListAdapter<Website, WebsiteAdapter.Holder> 
         b.mode.setText(ProjectUi.modeLabel(website.mode));
 
         String address = WebsiteUi.shortAddress(website.siteUrl);
+        boolean hasUrl = WebsiteUi.canOpenWebsite(website);
         b.address.setText(address);
-        b.address.setVisibility(address == null ? View.GONE : View.VISIBLE);
+        b.address.setVisibility(hasUrl ? View.VISIBLE : View.GONE);
+        if (hasUrl) {
+            b.address.setClickable(true);
+            b.address.setFocusable(true);
+            b.address.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_link_small, 0);
+            b.address.setCompoundDrawablePadding(b.getRoot().getContext().getResources().getDimensionPixelSize(R.dimen.space_1));
+            b.address.setContentDescription(b.getRoot().getContext().getString(R.string.website_open_address, address));
+            b.address.setOnClickListener(v -> WebsiteUi.openWebsite(v.getContext(), website.siteUrl));
+        } else {
+            b.address.setClickable(false);
+            b.address.setFocusable(false);
+            b.address.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0, 0);
+            b.address.setContentDescription(null);
+            b.address.setOnClickListener(null);
+        }
         b.changed.setVisibility(website.isOnlineWithChanges() ? View.VISIBLE : View.GONE);
         b.updated.setText(WebsiteUi.updatedLine(b.getRoot().getContext(), website));
 

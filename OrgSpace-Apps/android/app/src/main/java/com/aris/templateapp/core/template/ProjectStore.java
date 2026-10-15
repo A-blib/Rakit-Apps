@@ -1,5 +1,6 @@
 package com.aris.templateapp.core.template;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
 import com.aris.templateapp.data.model.ProjectValues;
@@ -15,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -88,6 +90,18 @@ public class ProjectStore {
         }
         if (!temp.renameTo(new File(folder, VALUES))) {
             throw new IOException("values.json tidak bisa disimpan");
+        }
+    }
+
+    /** Menulis values.json dari peta JSON (mis. data content dari server). */
+    @WorkerThread
+    public void writeFromMap(String projectId, @Nullable Map<String, Object> contentMap) throws IOException {
+        if (contentMap == null || contentMap.isEmpty()) {
+            return;
+        }
+        ProjectValues pv = gson.fromJson(gson.toJsonTree(contentMap), ProjectValues.class);
+        if (pv != null) {
+            write(projectId, pv);
         }
     }
 

@@ -10,6 +10,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.aris.templateapp.R;
 import com.aris.templateapp.data.local.ProjectEntity;
 import com.aris.templateapp.data.model.ProjectMode;
+import com.aris.templateapp.data.model.WebsiteDetail;
 
 /**
  * Pintu masuk ke editor (alur-pembuatan-website.md bagian 2.1). Editor mana yang dibuka ditentukan kolom
@@ -50,6 +51,27 @@ public final class EditorNav {
         args.putInt(ARG_TEMPLATE_VERSION, version);
         NavHostFragment.findNavController(from).navigate(R.id.templateEditorFragment, args,
                 new NavOptions.Builder().setPopUpTo(R.id.templateDownloadFragment, true).build());
+    }
+
+    /**
+     * Buka editor untuk website yang sudah ada di halaman kelola website.
+     * Jika custom mode membuka editor custom; jika template mode membuka editor template.
+     */
+    public static void openWebsiteEditor(Fragment from, WebsiteDetail detail) {
+        if (detail.website.mode == ProjectMode.CUSTOM) {
+            openCustomEditor(from, detail.website.name);
+            return;
+        }
+        Bundle args = new Bundle();
+        args.putString(ARG_TITLE, detail.website.name);
+        args.putString(ARG_PROJECT_ID, detail.website.id);
+        if (detail.sourceTemplateId != null) {
+            args.putString(ARG_TEMPLATE_ID, detail.sourceTemplateId);
+        }
+        if (detail.templateVersion != null) {
+            args.putInt(ARG_TEMPLATE_VERSION, detail.templateVersion);
+        }
+        NavHostFragment.findNavController(from).navigate(R.id.templateEditorFragment, args);
     }
 
     /** @param title nama project; null untuk project custom baru ("Project tanpa nama") */

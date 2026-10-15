@@ -1,10 +1,13 @@
 package com.aris.templateapp.ui.website;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.content.ContextCompat;
 
 import com.aris.templateapp.R;
@@ -139,5 +142,51 @@ public final class WebsiteUi {
             return context.getString(R.string.website_locked_by, website.lockedByName);
         }
         return website.missingCount > 0 ? context.getString(R.string.website_missing, website.missingCount) : null;
+    }
+
+    /**
+     * Memastikan URL memiliki skema http:// atau https:// sebelum dibuka browser.
+     */
+    @Nullable
+    public static String normalizeUrl(@Nullable String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return null;
+        }
+        String trimmed = url.trim();
+        if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+            return "http://" + trimmed;
+        }
+        return trimmed;
+    }
+
+    /**
+     * Mengecek apakah website memiliki alamat URL yang valid untuk dibuka.
+     */
+    public static boolean canOpenWebsite(@Nullable Website website) {
+        return website != null && website.siteUrl != null && !website.siteUrl.trim().isEmpty();
+    }
+
+    /**
+     * Buka alamat website di Custom Tabs (fallback ke Intent ACTION_VIEW browser luar jika Custom Tabs gagal).
+     */
+    public static void openWebsite(Context context, @Nullable String url) {
+        String target = normalizeUrl(url);
+        if (target == null) {
+            return;
+        }
+        Uri uri = Uri.parse(target);
+        try {
+            CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder()
+                    .setShowTitle(true)
+                    .build();
+            customTabsIntent.launchUrl(context, uri);
+        } catch (Exception e) {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            } catch (Exception ignored) {
+            }
+        }
     }
 }
