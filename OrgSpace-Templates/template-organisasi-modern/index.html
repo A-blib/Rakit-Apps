@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organisasi Modern — Website Resmi</title>
+  <meta name="description" content="Website resmi organisasi pelajar, mahasiswa, dan komunitas inovatif bertenaga platform OrgSpace.">
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  
+  <!-- Font Google Resmi: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Berkas Gaya Tampilan Relatif -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       Header & Bilah Navigasi
+       ========================================================================== -->
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href="#" class="brand-link">
+        <img src="img/logo.png" alt="Logo Organisasi" class="brand-logo" data-key="org_logo">
+        <span class="brand-name" data-key="org_name">Organisasi Inovasi</span>
+      </a>
+
+      <!-- Menu Navigasi -->
+      <nav>
+        <ul class="nav-menu">
+          <li><a href="#beranda" class="nav-link">Beranda</a></li>
+          <li><a href="#prestasi" class="nav-link">Prestasi</a></li>
+          <li><a href="#berita" class="nav-link">Kabar Berita</a></li>
+          <li><a href="#pendaftaran" class="nav-link">Pendaftaran</a></li>
+        </ul>
+      </nav>
+
+      <!-- Aksi Header: Modul data-ws-auth (Bilah Status & Portal Pengurus) -->
+      <div class="nav-actions">
+        <!-- Tautan ini otomatis terhubung ke Portal Administrasi Pengurus -->
+        <a href="admin" data-ws-auth="login" class="btn-admin">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>Portal Pengurus</span>
+        </a>
+
+        <!-- Tombol menu untuk tampilan layar ponsel -->
+        <button class="mobile-toggle" aria-label="Buka Menu" aria-expanded="false">
+          &#9776;
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==========================================================================
+         Hero Section
+         ========================================================================== -->
+    <section id="beranda" class="hero-section">
+      <div class="container">
+        <span class="hero-badge" data-key="hero_badge">
+          Organisasi Berprestasi & Berkelanjutan
+        </span>
+        <h1 class="hero-title" data-key="hero_title">
+          Membangun Karakter, Kreativitas, dan Inovasi Bersama
+        </h1>
+        <p class="hero-desc" data-key="hero_desc">
+          Wadah kolaboratif resmi untuk pengembangan minat, kepemimpinan, dan karya nyata generasi muda yang siap berdampak bagi masyarakat.
+        </p>
+        <div class="hero-cta">
+          <a href="#pendaftaran" class="btn-primary">Daftar Anggota Baru</a>
+          <a href="#berita" class="btn-secondary">Lihat Kegiatan Kami</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         Modul Kustom Dinamis (data-ws-collection) - Prestasi
+         ========================================================================== -->
+    <section id="prestasi" class="section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Jejak Langkah</span>
+          <h2 class="section-title">Prestasi & Penghargaan</h2>
+          <p class="section-subtitle">Pencapaian membanggakan yang diraih oleh anggota dan tim organisasi kami.</p>
+        </div>
+
+        <!-- Kontainer Koleksi Dinamis Kustom -->
+        <div class="grid-cards" data-ws-collection="prestasi">
+          <!-- Template Baris (Diulang Otomatis oleh Engine OrgSpace) -->
+          <div class="custom-card" data-ws-item>
+            <div class="badge-row">
+              <span class="badge-tag" data-ws-field="tingkat">Nasional</span>
+              <span class="badge-year" data-ws-field="tahun">2026</span>
+            </div>
+            <h3 class="card-title" data-ws-field="nama_juara">Juara 1 Lomba Inovasi Pemuda</h3>
+            <p class="card-desc" data-ws-field="lomba">Kompetisi Karya Ilmiah dan Teknologi Kreatif Pelajar Tingkat Nasional.</p>
+          </div>
+
+          <!-- Tampilan Cadangan Saat Belum Ada Data -->
+          <div class="empty-state" data-ws-empty>
+            <p>Belum ada data prestasi. Tambahkan melalui Portal Pengurus!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         Modul Berita Bawaan Sistem (data-ws-list="berita")
+         ========================================================================== -->
+    <section id="berita" class="section section-soft">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Warta Organisasi</span>
+          <h2 class="section-title">Kabar & Agenda Terbaru</h2>
+          <p class="section-subtitle">Ikuti perkembangan informasi kegiatan, program kerja, dan pengumuman resmi.</p>
+        </div>
+
+        <!-- Kontainer Daftar Berita Bawaan Sistem -->
+        <div class="news-grid" data-ws-list="berita">
+          <!-- Template Artikel Berita -->
+          <article class="news-card" data-ws-item>
+            <div class="news-thumb-wrapper">
+              <img src="img/berita-default.jpg" alt="Foto Kegiatan" class="news-thumb" data-ws-field="foto">
+            </div>
+            <div class="news-body">
+              <span class="news-date" data-ws-field="tanggal">15 Oktober 2026</span>
+              <h3 class="news-title" data-ws-field="judul">Rapat Kerja dan Pelantikan Pengurus Baru</h3>
+              <p class="news-excerpt" data-ws-field="ringkasan">
+                Jajaran pengurus baru resmi dilantik dan memaparkan arah program strategis untuk satu periode kepengurusan ke depan.
+              </p>
+              <a href="#" class="news-link" data-ws-link="detail">
+                <span>Baca Selengkapnya</span>
+                <span>&rarr;</span>
+              </a>
+            </div>
+          </article>
+
+          <!-- Tampilan Cadangan Saat Belum Ada Berita -->
+          <div class="empty-state" data-ws-empty>
+            <p>Belum ada artikel berita yang dipublikasikan.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         Modul Formulir Pendaftaran Bawaan (data-ws-form="pendaftaran")
+         ========================================================================== -->
+    <section id="pendaftaran" class="section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Penerimaan Anggota</span>
+          <h2 class="section-title">Formulir Pendaftaran</h2>
+          <p class="section-subtitle">Mari bertumbuh dan berkontribusi bersama kami. Silakan lengkapi formulir di bawah ini.</p>
+        </div>
+
+        <div class="form-card">
+          <!-- Tag Form Terhubung Headless ke Endpoint OrgSpace -->
+          <form data-ws-form="pendaftaran" class="interactive-form">
+            <!-- Alert Notifikasi Status Pengiriman -->
+            <div data-ws-form-alert class="form-alert" style="display: none;"></div>
+
+            <div class="form-group">
+              <label for="input-nama" class="form-label">Nama Lengkap *</label>
+              <input type="text" id="input-nama" name="nama" class="form-control" required placeholder="Contoh: Muhammad Budi Pratama">
+            </div>
+
+            <div class="form-group">
+              <label for="input-kelas" class="form-label">Kelas / Asal Departemen *</label>
+              <input type="text" id="input-kelas" name="kelas" class="form-control" required placeholder="Contoh: XII MIPA 2 / Divisi Media">
+            </div>
+
+            <div class="form-group">
+              <label for="input-wa" class="form-label">Nomor WhatsApp Aktif *</label>
+              <input type="tel" id="input-wa" name="whatsapp" class="form-control" required placeholder="08xxxxxxxxxx">
+            </div>
+
+            <div class="form-group">
+              <label for="input-pesan" class="form-label">Alasan & Motivasi Bergabung *</label>
+              <textarea id="input-pesan" name="pesan" rows="4" class="form-control" required placeholder="Tuliskan alasan mengapa Anda ingin bergabung..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%;">
+              Kirim Formulir Pendaftaran
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================================================
+       Footer
+       ========================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4>Organisasi Inovasi</h4>
+          <p>Mencetak insan muda yang berintegritas, mandiri, dan tanggap teknologi demi kemajuan bersama.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Tautan Cepat</h5>
+          <ul class="footer-links">
+            <li><a href="#beranda">Beranda</a></li>
+            <li><a href="#prestasi">Daftar Prestasi</a></li>
+            <li><a href="#berita">Kabar Berita</a></li>
+            <li><a href="#pendaftaran">Pendaftaran Anggota</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Administrasi</h5>
+          <ul class="footer-links">
+            <li><a href="admin" data-ws-auth="login">Portal Pengurus</a></li>
+            <li><a href="https://orgspace.id">Tentang Platform OrgSpace</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 Organisasi Inovasi. Diterbitkan dan di-hosting melalui platform OrgSpace.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script Interaktivitas Relatif -->
+  <script src="js/main.js"></script>
+</body>
+</html>
