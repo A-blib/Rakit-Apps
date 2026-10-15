@@ -63,7 +63,19 @@ set -a; source .env; set +a
 ```
 
 Profile dev otomatis mengisi data contoh: 10 user dummy, kritik & saran, serta statistik 30 hari.
-Akun admin dashboard: **`dummy1@templateapp.test`** / **`password123`**. Swagger UI: http://localhost:8080/swagger-ui.html
+Swagger UI: http://localhost:8080/swagger-ui.html
+
+### Akun admin dashboard
+
+Akun berikut bisa dipakai untuk masuk ke dashboard di http://localhost:3000/dashboard/login.
+
+| Email | Password | Keterangan |
+|---|---|---|
+| `admin@admin.com` | `admin123` | Akun administrator default sistem |
+| `dummy1@templateapp.test` | `password123` | Akun dummy bawaan seeder (otomatis dibuat saat backend pertama kali jalan) |
+
+> **Penting:** salin (copy-paste) email dan password di atas, jangan ketik manual.
+> Kesalahan umum: domain email adalah **`.test`** (bukan `.com`), dan password huruf kecil semua tanpa spasi.
 
 ## 4. Jalankan web
 
@@ -115,6 +127,7 @@ File bertanda **FONDASI** hanya diubah setelah koordinasi dengan Aris (lihat `AG
 | Gejala | Penyebab & solusi |
 |---|---|
 | "Server OrgSpace tidak bisa dihubungi" | Backend belum jalan atau `ORGSPACE_API_URL` salah. Cek http://localhost:8080/swagger-ui.html |
+| "Email atau password salah" | Pastikan email persis `dummy1@templateapp.test` (domain `.test`, bukan `.com`) dan password `password123` (huruf kecil, tanpa spasi). Salin dari README, jangan ketik manual. Cek juga bahwa keyboard tidak auto-capitalize huruf pertama password |
 | Dashboard selalu kembali ke login | Akun bukan admin (`?reason=not-admin`) — pakai `dummy1@templateapp.test`, atau minta Aris menjadikan akunmu admin |
 | "Akun ini memakai login Google/GitHub" | Dashboard baru mendukung email + password |
 | Grafik kosong | Data statistik contoh hanya dibuat di profile `dev` saat tabelnya kosong |
