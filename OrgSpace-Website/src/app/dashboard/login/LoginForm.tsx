@@ -12,7 +12,7 @@ export function LoginForm() {
       {/* Email Field */}
       <div>
         <label
-          className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-300"
+          className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-300"
           htmlFor="email"
         >
           EMAIL ADMIN
@@ -29,7 +29,7 @@ export function LoginForm() {
             autoFocus
           />
           <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-slate-400">
-            <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <svg className="size-4.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
               <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
             </svg>
@@ -40,7 +40,7 @@ export function LoginForm() {
       {/* Password Field */}
       <div>
         <label
-          className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-300"
+          className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-300"
           htmlFor="password"
         >
           PASSWORD
@@ -63,7 +63,7 @@ export function LoginForm() {
           >
             {showPassword ? (
               // Eye Slash Icon
-              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <svg className="size-4.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path
                   fillRule="evenodd"
                   d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.692 1.69a2.5 2.5 0 013.178 3.179l1.63 1.629a4.5 4.5 0 00-6.5-6.5zm-3.23 2.193A11.472 11.472 0 001.664 10.59a1.652 1.652 0 000 1.185A10.004 10.004 0 0010 17a9.958 9.958 0 004.288-.971l-1.536-1.536a8.46 8.46 0 01-2.752.507 8.5 8.5 0 01-7.072-4.41 8.51 8.51 0 011.83-2.348l-1.236-1.237z"
@@ -72,7 +72,7 @@ export function LoginForm() {
               </svg>
             ) : (
               // Eye Icon
-              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <svg className="size-4.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
                 <path
                   fillRule="evenodd"
@@ -105,12 +105,12 @@ export function LoginForm() {
       {/* Submit Button */}
       <button
         type="submit"
-        className="btn-cyber mt-2"
+        className="btn-cyber mt-3"
         disabled={pending}
       >
         {pending ? (
           <>
-            <svg className="size-4 animate-spin text-deep-navy" viewBox="0 0 24 24" fill="none">
+            <svg className="size-4 animate-spin text-[#041021]" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
@@ -122,11 +122,11 @@ export function LoginForm() {
       </button>
 
       {/* Development Account Hint */}
-      <div className="pt-3 border-t border-slate-700/60 text-[11px] text-slate-300 leading-relaxed">
-        <span className="font-semibold text-slate-300">Akun default:</span>{" "}
-        <span className="text-cyan font-mono">admin@admin.com</span>
+      <div className="pt-4 text-center text-xs text-slate-400 leading-relaxed">
+        <span>Akun default:</span>{" "}
+        <span className="text-slate-200 font-medium">admin@admin.com</span>
         {" / "}
-        <span className="text-cyan font-mono">admin123</span>
+        <span className="text-slate-200 font-medium">admin123</span>
       </div>
     </form>
   );

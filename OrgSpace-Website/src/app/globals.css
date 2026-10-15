@@ -229,11 +229,11 @@ body {
 
 /* Card Frosted Glass Cyberpunk/Futuristic untuk Login */
 @utility card-glass {
-  background: rgba(9, 27, 48, 0.78);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 201, 242, 0.32);
-  box-shadow: 0 0 40px -5px rgba(0, 201, 242, 0.22), 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+  background: rgba(11, 24, 43, 0.7);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1.5px solid rgba(56, 189, 248, 0.55);
+  box-shadow: 0 0 35px -5px rgba(0, 201, 242, 0.28), 0 25px 60px -15px rgba(0, 0, 0, 0.85);
 }
 
 /* Input form dengan perubahan border halus saat fokus */
@@ -243,12 +243,12 @@ body {
 
 /* Input cyber transparan dengan border pendar cyan */
 @utility input-cyber {
-  @apply h-11 w-full rounded-xl border border-sky-600/40 bg-[#0d223c]/80 px-3.5 text-xs sm:text-sm text-white placeholder:text-slate-500 transition-all duration-150 focus:border-cyan focus:bg-[#0f2847] focus:ring-2 focus:ring-cyan/30 focus:outline-none;
+  @apply h-12 w-full rounded-xl border border-slate-600/50 bg-[#12233b]/75 px-4 text-sm text-white placeholder:text-slate-400/80 transition-all duration-150 focus:border-cyan focus:bg-[#152a47] focus:ring-2 focus:ring-cyan/30 focus:outline-none;
 }
 
 /* Tombol cyber neon cyan berpendar */
 @utility btn-cyber {
-  @apply inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan via-[#2be3ff] to-cyan px-4 text-xs sm:text-sm font-bold tracking-wide text-deep-navy shadow-[0_0_25px_rgba(0,201,242,0.45)] transition-all duration-150 hover:shadow-[0_0_35px_rgba(0,201,242,0.65)] hover:brightness-105 active:scale-[0.99] cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+  @apply inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00f0ff] via-[#00c8ff] to-[#0088ff] px-4 text-sm font-bold tracking-wide text-[#041021] shadow-[0_0_28px_rgba(0,210,255,0.65)] transition-all duration-200 hover:shadow-[0_0_38px_rgba(0,210,255,0.85)] hover:brightness-105 active:scale-[0.99] cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
 }
 
 @utility textarea {

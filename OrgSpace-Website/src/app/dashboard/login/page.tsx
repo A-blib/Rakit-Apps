@@ -21,51 +21,51 @@ export default async function LoginPage({ searchParams }: PageProps<"/dashboard/
 
   return (
     <main className="relative flex min-h-screen flex-1 flex-col items-center justify-center overflow-hidden bg-[#07152B] px-4 py-12">
-      {/* Background Wallpaper Konstelasi & Jaringan Simpul Cyber */}
+      {/* Background Wallpaper Konstelasi Cyber */}
       <div
         className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-95 transition-opacity"
         style={{ backgroundImage: "url('/login-bg.webp')" }}
       />
 
-      {/* Lapisan Partikel Interaktif Berpendar */}
+      {/* Partikel Interaktif Berpendar */}
       <ConstellationCanvas />
 
       {/* Pendaran Cahaya Ambient Cyan & Biru di Latar Belakang */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[540px] rounded-full bg-cyan/10 blur-[130px]" />
-        <div className="absolute top-1/4 left-1/4 w-[380px] h-[380px] rounded-full bg-blue/10 blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[580px] h-[580px] rounded-full bg-cyan/15 blur-[140px]" />
+        <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] rounded-full bg-blue/10 blur-[110px]" />
       </div>
 
       {/* Konten Utama */}
-      <div className="relative z-10 w-full max-w-[430px] animate-fade-in">
+      <div className="relative z-10 w-full max-w-[450px] animate-fade-in">
         {/* Brand Header */}
-        <div className="mb-6 flex flex-col items-center text-center">
+        <div className="mb-7 flex flex-col items-center text-center">
           <Link
             href="/"
             className="group relative flex flex-col items-center transition-transform hover:scale-105"
             aria-label="Beranda OrgSpace"
           >
-            {/* Pendaran halus di belakang logo */}
-            <div className="absolute -inset-2 rounded-full bg-cyan/25 blur-xl opacity-80 group-hover:opacity-100 transition-opacity" />
+            {/* Pendaran di belakang logo */}
+            <div className="absolute -inset-3 rounded-full bg-cyan/30 blur-2xl opacity-80 group-hover:opacity-100 transition-opacity" />
             <Image
               src="/orgspace-cyber-logo.png"
               alt="OrgSpace"
-              width={96}
-              height={92}
+              width={104}
+              height={100}
               priority
-              className="relative object-contain drop-shadow-[0_0_20px_rgba(0,201,242,0.5)]"
+              className="relative object-contain drop-shadow-[0_0_22px_rgba(0,201,242,0.6)]"
             />
           </Link>
-          <h1 className="mt-4 text-2xl font-bold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+          <h1 className="mt-5 text-2xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)]">
             Dashboard OrgSpace
           </h1>
-          <p className="mt-1 text-xs text-slate-300/80">
+          <p className="mt-1.5 text-xs sm:text-sm text-slate-300/80">
             Khusus tim internal. Masuk dengan akun admin.
           </p>
         </div>
 
-        {/* Card Frosted Glass */}
-        <div className="card-glass rounded-2xl p-7 sm:p-8">
+        {/* Card Frosted Glass Berpendar Cyan */}
+        <div className="card-glass rounded-3xl p-7 sm:p-9">
           {message && (
             <div
               className="mb-5 flex items-start gap-2.5 rounded-xl border border-amber-500/40 bg-amber-950/60 p-3 text-xs text-amber-200 backdrop-blur-md"
