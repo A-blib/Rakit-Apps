@@ -71,6 +71,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
                         // Website organisasi yang tayang dapat diakses publik tanpa login.
                         .requestMatchers(HttpMethod.GET, "/sites/**").permitAll()
+                        .requestMatchers(HttpMethod.HEAD, "/sites/**").permitAll()
                         // Pengiriman formulir publik (data-ws-form: pendaftaran, aspirasi) oleh pengunjung website.
                         .requestMatchers(HttpMethod.POST, "/api/public/**").permitAll()
                         .anyRequest().authenticated())
