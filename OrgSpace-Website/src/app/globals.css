@@ -1,62 +1,146 @@
 @import "tailwindcss";
 
 /*
- * TOKEN DESAIN OrgSpace — sama dengan app Android (../OrgSpace-Apps/docs/rancangan/revisi-fondasi-orgspace.md bagian 7, palet
- * "Biru Semangat", biru murni ±215° — diperbarui 12 Okt 2026). Ubah warna/ukuran HANYA di sini; komponen memakai kelas Tailwind dari token ini
- * (bg-surface, text-muted, border-border, rounded-card, ...), bukan kode warna langsung.
+ * TOKEN DESAIN OrgSpace — Clean Enterprise / Modern Corporate
+ * Warna identitas:
+ * - Navy: #0C2E5B
+ * - Deep Navy: #07152B
+ * - Blue: #009FE3
+ * - Cyan: #00C9F2
+ * - Orange: #FF914D
+ * - Background terang alternatif: #F5F7FA
+ * - Border: #DCE3EC
+ * - Teks utama: #172B4D
+ * - Teks sekunder: #66758A
  */
 :root {
-  --background: #f3f7fd;
-  --surface: #ffffff;
-  --surface-subtle: #e9f1fc;
-  --foreground: #0b1b33;
-  --muted: #4a5d7a;
-  --border: #d3e1f4;
-  --border-strong: #7c95b8;
-  --primary: #0b63f6;
-  --on-primary: #ffffff;
-  --primary-container: #dceaff;
-  --on-primary-container: #003a94;
-  --accent: #ffc531;
-  --on-accent: #3d2a00;
-  --link: #0a58db;
-  --success: #16803c;
-  --warning: #a35200;
-  --error: #c9252d;
+  --background: #F5F7FA;
+  --surface: #FFFFFF;
+  --surface-subtle: #EDF2F7;
+  --surface-hover: #E3EAF2;
+  --foreground: #172B4D;
+  --muted: #66758A;
+  --border: #DCE3EC;
+  --border-strong: #B3C2D8;
+
+  --navy: #0C2E5B;
+  --deep-navy: #07152B;
+  --blue: #009FE3;
+  --cyan: #00C9F2;
+  --orange: #FF914D;
+
+  /* Cyan untuk tombol utama, tautan aktif, dan fokus input */
+  --primary: #00C9F2;
+  --on-primary: #07152B;
+  --primary-hover: #00B5DC;
+  --primary-container: #E2F8FD;
+  --on-primary-container: #0C2E5B;
+
+  /* Orange hanya sebagai aksen kecil yang konsisten dengan logo */
+  --accent: #FF914D;
+  --on-accent: #FFFFFF;
+
+  --link: #009FE3;
+  --link-hover: #0C2E5B;
+
+  --success: #12805C;
+  --warning: #D97706;
+  --error: #DC2626;
+
+  /* Shadow sangat ringan */
+  --shadow-subtle: 0 1px 2px 0 rgba(12, 46, 91, 0.04);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #07111f;
-    --surface: #0e1b2e;
-    --surface-subtle: #15243b;
-    --foreground: #e8f1fd;
-    --muted: #9ab0cc;
-    --border: #22344f;
-    --border-strong: #4b6587;
-    --primary: #4c9aff;
-    --on-primary: #04142b;
-    --primary-container: #0e3f86;
-    --on-primary-container: #dceaff;
-    --accent: #ffd45e;
-    --on-accent: #3d2a00;
-    --link: #6faeff;
-    --success: #4cc38a;
-    --warning: #f5a524;
-    --error: #ff6166;
+  :root:not(.light) {
+    --background: #07152B;
+    --surface: #0C2E5B;
+    --surface-subtle: #102C52;
+    --surface-hover: #153763;
+    --foreground: #F5F7FA;
+    --muted: #94A3B8;
+    --border: #1E3E6B;
+    --border-strong: #2D568D;
+
+    --navy: #0C2E5B;
+    --deep-navy: #07152B;
+    --blue: #009FE3;
+    --cyan: #00C9F2;
+    --orange: #FF914D;
+
+    --primary: #00C9F2;
+    --on-primary: #07152B;
+    --primary-hover: #33D4F5;
+    --primary-container: #0E3661;
+    --on-primary-container: #E2F8FD;
+
+    --accent: #FF914D;
+    --on-accent: #07152B;
+
+    --link: #00C9F2;
+    --link-hover: #FFFFFF;
+
+    --success: #34D399;
+    --warning: #FBBF24;
+    --error: #F87171;
+
+    --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
   }
+}
+
+:root.dark,
+[data-theme="dark"] {
+  --background: #07152B;
+  --surface: #0C2E5B;
+  --surface-subtle: #102C52;
+  --surface-hover: #153763;
+  --foreground: #F5F7FA;
+  --muted: #94A3B8;
+  --border: #1E3E6B;
+  --border-strong: #2D568D;
+
+  --navy: #0C2E5B;
+  --deep-navy: #07152B;
+  --blue: #009FE3;
+  --cyan: #00C9F2;
+  --orange: #FF914D;
+
+  --primary: #00C9F2;
+  --on-primary: #07152B;
+  --primary-hover: #33D4F5;
+  --primary-container: #0E3661;
+  --on-primary-container: #E2F8FD;
+
+  --accent: #FF914D;
+  --on-accent: #07152B;
+
+  --link: #00C9F2;
+  --link-hover: #FFFFFF;
+
+  --success: #34D399;
+  --warning: #FBBF24;
+  --error: #F87171;
+
+  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-subtle: var(--surface-subtle);
+  --color-surface-hover: var(--surface-hover);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
+  --color-navy: var(--navy);
+  --color-deep-navy: var(--deep-navy);
+  --color-blue: var(--blue);
+  --color-cyan: var(--cyan);
+  --color-orange: var(--orange);
   --color-primary: var(--primary);
   --color-on-primary: var(--on-primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-container: var(--primary-container);
   --color-on-primary-container: var(--on-primary-container);
   --color-accent: var(--accent);
@@ -66,9 +150,11 @@
   --color-warning: var(--warning);
   --color-error: var(--error);
   --font-sans: var(--font-jakarta);
-  /* Radius: input & chip 12px, kartu & banner 16px, tombol berbentuk pil. */
-  --radius-field: 12px;
-  --radius-card: 16px;
+
+  /* Radius moderat */
+  --radius-field: 8px;
+  --radius-card: 10px;
+  --radius-badge: 6px;
 }
 
 body {
@@ -76,45 +162,139 @@ body {
   color: var(--foreground);
 }
 
+/* Animasi mikro singkat 150–250 ms */
+@keyframes enterFade {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: enterFade 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .animate-fade-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /*
- * Komponen dasar yang dipakai berulang (kelas: btn-primary, btn-outline, card, input, textarea, label, badge, link,
- * table). Dibuat dengan @utility agar bisa digabung dengan kelas Tailwind lain. Tim desain boleh menyempurnakan
- * tampilannya di sini tanpa mengubah halaman.
+ * Komponen utilitas Clean Enterprise
  */
 @utility btn {
-  @apply inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors disabled:opacity-50;
+  @apply inline-flex h-10 items-center justify-center gap-2 rounded-field px-4 text-xs font-semibold tracking-wide transition-colors duration-150 cursor-pointer select-none disabled:opacity-50 disabled:pointer-events-none;
 }
+
+/* Tombol utama dengan Cyan #00C9F2 */
 @utility btn-primary {
-  @apply btn bg-primary text-on-primary hover:opacity-90;
+  @apply btn bg-cyan text-deep-navy hover:bg-[#00B7DE] active:bg-[#009FE3] active:text-white shadow-2xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan;
 }
+
+/* Tombol aksi sekunder / otoritas Navy */
+@utility btn-navy {
+  @apply btn bg-navy text-white hover:bg-deep-navy active:brightness-95 shadow-2xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy;
+}
+
+/* Tombol outlined */
 @utility btn-outline {
-  @apply btn border border-border-strong text-foreground hover:bg-surface-subtle;
+  @apply btn border border-border bg-surface text-foreground hover:bg-surface-subtle hover:border-border-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan;
 }
+
+@utility btn-ghost {
+  @apply btn text-muted hover:text-foreground hover:bg-surface-subtle;
+}
+
+/* Container dengan border tipis dan shadow sangat ringan */
 @utility card {
   @apply rounded-card border border-border bg-surface p-5;
+  box-shadow: var(--shadow-subtle);
 }
+
+@utility card-hover {
+  @apply card hover:border-border-strong transition-colors duration-150;
+}
+
+/* Card Frosted Glass Cyberpunk/Futuristic untuk Login */
+@utility card-glass {
+  background: rgba(9, 27, 48, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 201, 242, 0.32);
+  box-shadow: 0 0 40px -5px rgba(0, 201, 242, 0.22), 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+}
+
+/* Input form dengan perubahan border halus saat fokus */
 @utility input {
-  @apply h-11 w-full rounded-field border border-border-strong bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30;
+  @apply h-10 w-full rounded-field border border-border bg-surface px-3 text-xs text-foreground placeholder:text-muted/60 outline-none transition-colors duration-150 focus:border-cyan focus:ring-2 focus:ring-cyan/25;
 }
+
+/* Input cyber transparan dengan border pendar cyan */
+@utility input-cyber {
+  @apply h-11 w-full rounded-xl border border-sky-600/40 bg-[#0d223c]/80 px-3.5 text-xs sm:text-sm text-white placeholder:text-slate-500 transition-all duration-150 focus:border-cyan focus:bg-[#0f2847] focus:ring-2 focus:ring-cyan/30 focus:outline-none;
+}
+
+/* Tombol cyber neon cyan berpendar */
+@utility btn-cyber {
+  @apply inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan via-[#2be3ff] to-cyan px-4 text-xs sm:text-sm font-bold tracking-wide text-deep-navy shadow-[0_0_25px_rgba(0,201,242,0.45)] transition-all duration-150 hover:shadow-[0_0_35px_rgba(0,201,242,0.65)] hover:brightness-105 active:scale-[0.99] cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+}
+
 @utility textarea {
-  @apply input h-auto min-h-32 py-2;
+  @apply input h-auto min-h-28 py-2.5;
 }
+
 @utility label {
-  @apply mb-1 block text-sm font-medium;
+  @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted;
 }
+
+/* Badge status yang natural */
 @utility badge {
-  @apply inline-flex items-center rounded-full bg-primary-container px-2.5 py-0.5 text-xs font-semibold text-on-primary-container;
+  @apply inline-flex items-center gap-1 rounded-badge bg-primary-container px-2 py-0.5 text-[11px] font-semibold text-on-primary-container;
 }
+
+@utility badge-neutral {
+  @apply inline-flex items-center gap-1 rounded-badge bg-surface-subtle px-2 py-0.5 text-[11px] font-medium text-muted border border-border;
+}
+
+@utility badge-success {
+  @apply inline-flex items-center gap-1 rounded-badge bg-emerald-50 text-emerald-700 px-2 py-0.5 text-[11px] font-medium border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800;
+}
+
+@utility badge-warning {
+  @apply inline-flex items-center gap-1 rounded-badge bg-amber-50 text-amber-800 px-2 py-0.5 text-[11px] font-medium border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800;
+}
+
+@utility badge-error {
+  @apply inline-flex items-center gap-1 rounded-badge bg-rose-50 text-rose-700 px-2 py-0.5 text-[11px] font-medium border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800;
+}
+
 @utility link {
-  @apply text-link hover:underline;
+  @apply text-blue font-medium hover:text-navy hover:underline dark:hover:text-cyan transition-colors duration-150;
 }
+
+/* Tabel data bersih tanpa card redundant */
 @utility table {
-  @apply w-full text-left text-sm;
+  @apply w-full text-left text-xs;
 
   & th {
-    @apply border-b border-border px-3 py-2 font-semibold text-muted;
+    @apply border-b border-border bg-surface-subtle/60 px-3.5 py-2.5 font-semibold text-muted tracking-wider uppercase text-[11px];
   }
   & td {
-    @apply border-b border-border px-3 py-2 align-top;
+    @apply border-b border-border/70 px-3.5 py-3 align-middle text-foreground;
+  }
+  & tbody tr {
+    @apply transition-colors duration-150 hover:bg-surface-subtle/50;
   }
 }

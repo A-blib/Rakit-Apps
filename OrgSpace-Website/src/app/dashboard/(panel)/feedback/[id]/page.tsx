@@ -23,46 +23,85 @@ export default async function FeedbackDetailPage({ params }: PageProps<"/dashboa
   }
   return (
     <div className="max-w-3xl space-y-6">
-      <Link href="/dashboard/feedback" className="link text-sm">← Kritik & saran</Link>
-      <header>
-        <p className="text-sm text-muted">
-          {FEEDBACK_CATEGORY_LABEL[feedback.category]} · {SENDER_ROLE_LABEL[feedback.senderRole]}
-          {feedback.rating ? ` · Nilai ${feedback.rating}/5` : ""}
-        </p>
-        <h1 className="text-2xl font-bold">{feedback.subject}</h1>
-        <p className="mt-1 text-sm text-muted">
-          {feedback.sender.displayName} ({feedback.sender.email ?? "tanpa email"})
+      <Link href="/dashboard/feedback" className="inline-flex items-center gap-1.5 text-xs font-medium text-muted hover:text-navy transition-colors">
+        ← Kembali ke Kritik & saran
+      </Link>
+      <header className="border-b border-border/80 pb-4">
+        <div className="flex items-center gap-2 flex-wrap mb-2">
+          <span className="badge-neutral text-[10px]">
+            {FEEDBACK_CATEGORY_LABEL[feedback.category]}
+          </span>
+          <span className="badge-neutral text-[10px]">
+            {SENDER_ROLE_LABEL[feedback.senderRole]}
+          </span>
+          {feedback.rating && (
+            <span className="badge-warning text-[10px] font-mono">
+              ★ Nilai {feedback.rating}/5
+            </span>
+          )}
+        </div>
+        <h1 className="text-xl font-bold tracking-tight text-navy dark:text-foreground sm:text-2xl">
+          {feedback.subject}
+        </h1>
+        <p className="mt-1 text-xs text-muted">
+          Dari <span className="font-semibold text-foreground">{feedback.sender.displayName}</span> ({feedback.sender.email ?? "tanpa email"})
           {feedback.organizationName ? ` · ${feedback.organizationName}` : ""} · via {feedback.source}
-          {feedback.appVersion ? ` · app ${feedback.appVersion}` : ""}
+          {feedback.appVersion ? ` · app v${feedback.appVersion}` : ""}
           {feedback.deviceInfo ? ` · ${feedback.deviceInfo}` : ""}
         </p>
       </header>
 
-      <form action={setFeedbackStatus.bind(null, feedback.id)} className="flex items-center gap-2">
-        <label className="text-sm" htmlFor="status">Status</label>
-        <select className="input w-auto" id="status" name="status" defaultValue={feedback.status}>
-          {Object.entries(FEEDBACK_STATUS_LABEL).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
-        <button className="btn-outline">Simpan</button>
-      </form>
+      <div className="flex items-center justify-between card p-3.5 bg-surface-subtle/50">
+        <form action={setFeedbackStatus.bind(null, feedback.id)} className="flex items-center gap-2">
+          <label className="text-xs font-medium text-foreground" htmlFor="status">Ubah Status:</label>
+          <select className="input h-8.5 w-auto text-xs py-1" id="status" name="status" defaultValue={feedback.status}>
+            {Object.entries(FEEDBACK_STATUS_LABEL).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          <button className="btn-outline h-8.5 px-3 text-xs">Simpan Perubahan</button>
+        </form>
+      </div>
 
       <ol className="space-y-3">
         {feedback.messages.map((message) => (
-          <li key={message.id}
-              className={`card ${message.fromStaff ? "ml-8 border-primary/40 bg-primary-container/40" : "mr-8"}`}>
-            <p className="text-xs text-muted">
-              {message.fromStaff ? `${message.authorName} (tim)` : message.authorName} · {formatDateTime(message.createdAt)}
-            </p>
-            <p className="mt-2 whitespace-pre-wrap">{message.body}</p>
+          <li
+            key={message.id}
+            className={`card p-4 ${
+              message.fromStaff
+                ? "ml-6 border-cyan/40 bg-surface-subtle"
+                : "mr-6 bg-surface"
+            }`}
+          >
+            <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-2">
+              <p className="text-xs font-semibold text-foreground">
+                {message.fromStaff ? (
+                  <span className="inline-flex items-center gap-1.5 text-navy dark:text-cyan">
+                    <span className="size-1.5 rounded-full bg-cyan" />
+                    {message.authorName} (Tim Internal)
+                  </span>
+                ) : (
+                  <span>{message.authorName}</span>
+                )}
+              </p>
+              <span className="text-[11px] font-mono text-muted">
+                {formatDateTime(message.createdAt)}
+              </span>
+            </div>
+            <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap">{message.body}</p>
           </li>
         ))}
       </ol>
 
-      {feedback.status === "closed"
-        ? <p className="text-sm text-muted">Percakapan ditutup. Ubah status untuk membalas lagi.</p>
-        : <ReplyForm id={feedback.id} />}
+      {feedback.status === "closed" ? (
+        <div className="rounded-field border border-border bg-surface-subtle p-3.5 text-center text-xs text-muted">
+          Percakapan ditutup. Ubah status untuk membalas kembali.
+        </div>
+      ) : (
+        <div className="card p-5">
+          <ReplyForm id={feedback.id} />
+        </div>
+      )}
     </div>
   );
 }
