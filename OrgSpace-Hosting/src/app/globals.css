@@ -1,23 +1,49 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Token warna OrgSpace (selaras dengan OrgSpace-Apps: palet "Biru Semangat") */
 :root {
-  --background: #f8fafc;
-  --surface: #ffffff;
-  --surface-subtle: #f1f5f9;
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --border-strong: #94a3b8;
-  --primary: #0b63f6;
-  --on-primary: #ffffff;
-  --primary-container: #dceaff;
-  --on-primary-container: #003a94;
-  --accent: #ffc531;
-  --link: #0a58db;
-  --success: #16803c;
-  --error: #c9252d;
+  --background: #F3F7FD;
+  --surface: #FFFFFF;
+  --surface-subtle: #E9F1FC;
+  --foreground: #0B1B33;
+  --muted: #4A5D7A;
+  --border: #D3E1F4;
+  --border-strong: #7C95B8;
+  --primary: #0B63F6;
+  --on-primary: #FFFFFF;
+  --primary-container: #DCEAFF;
+  --on-primary-container: #003A94;
+  --accent: #FFC531;
+  --on-accent: #3D2A00;
+  --link: #0A58DB;
+  --success: #16803C;
+  --warning: #A35200;
+  --error: #C9252D;
   --radius-field: 12px;
   --radius-card: 16px;
+}
+
+/* Token warna Mode Gelap (biru malam / navy selaras dengan OrgSpace-Apps values-night) */
+.dark {
+  --background: #07111F;
+  --surface: #0E1B2E;
+  --surface-subtle: #15243B;
+  --foreground: #E8F1FD;
+  --muted: #9AB0CC;
+  --border: #22344F;
+  --border-strong: #4B6587;
+  --primary: #4C9AFF;
+  --on-primary: #04142B;
+  --primary-container: #0E3F86;
+  --on-primary-container: #DCEAFF;
+  --accent: #FFD45E;
+  --on-accent: #3D2A00;
+  --link: #6FAEFF;
+  --success: #4CC38A;
+  --warning: #F5A524;
+  --error: #FF6166;
 }
 
 @theme inline {
@@ -33,8 +59,10 @@
   --color-primary-container: var(--primary-container);
   --color-on-primary-container: var(--on-primary-container);
   --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
   --color-link: var(--link);
   --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-error: var(--error);
   --radius-field: 12px;
   --radius-card: 16px;
@@ -45,4 +73,5 @@ body {
   color: var(--foreground);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
