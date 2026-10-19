@@ -26,13 +26,18 @@ import com.aris.templateapp.data.remote.dto.PublishRequestNoteDto;
 import com.aris.templateapp.data.remote.dto.WebsiteListDto;
 import com.aris.templateapp.data.remote.dto.WebsiteNameRequestDto;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Response;
 
 /**
@@ -139,8 +144,18 @@ public class WebsiteRepository {
     }
 
     @WorkerThread
-    public Resource<DirectPublishResponseDto> publishDirect(DirectPublishRequestDto request) {
-        return execute(() -> api.publishDirect(request).execute(), dto -> dto);
+    public Resource<DirectPublishResponseDto> publishDirect(DirectPublishRequestDto request, Map<String, File> images) {
+        if (images.isEmpty()) {
+            return execute(() -> api.publishDirect(request).execute(), dto -> dto);
+        }
+        List<MultipartBody.Part> parts = new ArrayList<>();
+        for (Map.Entry<String, File> image : images.entrySet()) {
+            String path = image.getKey();
+            String mime = path.endsWith(".png") ? "image/png" : path.endsWith(".webp") ? "image/webp" : "image/jpeg";
+            parts.add(MultipartBody.Part.createFormData("images", path,
+                    RequestBody.create(image.getValue(), MediaType.get(mime))));
+        }
+        return execute(() -> api.publishDirectWithImages(request, parts).execute(), dto -> dto);
     }
 
     @WorkerThread

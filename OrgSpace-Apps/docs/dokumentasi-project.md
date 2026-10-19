@@ -1744,6 +1744,25 @@ file asli template (`/{slug}/`, `/{slug}/tentang.html`, `css/`, `js/`, `img/`) d
 | CORS hanya di Hosting | `/api/forms/...` ber-CORS `*` (tanpa cookie/token); backend tetap tanpa CORS |
 | Mode rakit sendiri | Pindah ke `/rakit/{slug}`; slug `rakit` dicadangkan |
 
+### Statistik, profil organisasi, foto editor, dan template Sinergi (19 Oktober 2026)
+Target versi awal (keputusan Aris): provider bebas merancang tampilan & interaksi website memakai modul bawaan atau
+modul kustom; pembuat website mengubah teks, foto, dan warna (bukan layout) lalu langsung online, termasuk di domain sendiri.
+
+| Bagian | Cara kerja |
+|---|---|
+| `data-ws-stat` | `SiteRenderResponse.stats`: jumlah item tiap modul kustom, `pengurus` (anggota ruang kerja), `berita`, `form.{nama}` (jumlah isian; isi tetap rahasia). Nama bawaan menang jika bentrok dengan nama modul. |
+| `data-ws-org` | `SiteRenderResponse.org`: nama, singkatan, kategori, institusi, kota, alamat, email, WhatsApp, Instagram, TikTok, YouTube, logo. Ruang pribadi hanya `nama`. Logo disajikan Hosting di `/{slug}/_media/logo`. Profil kosong disembunyikan di website terbit. |
+| Data untuk script | `window.orgspace.data` kini juga berisi `stats` dan `org`. |
+| Cek upload | `HtmlRules`: nilai `data-ws-stat` harus `[a-z0-9_-]{2,40}` (boleh diawali `form.`), `data-ws-org` dari daftar di atas; modul `statistik` terdeteksi. |
+| Foto dari editor HP | Dulu foto yang diganti di editor dikirim sebagai path lokal HP (`images/x.webp`) dan tidak pernah terunggah, jadi rusak di website. Kini Publish Langsung mengirim multipart (`request` + `images`); server menyimpan foto sebagai aset project lalu build menulis `/{slug}/_media/{id}`. Batas `max-request-size` naik ke 25 MB. |
+| Modul di halaman lain | Deteksi modul untuk Portal membaca semua halaman rilis (dulu hanya `index.html`, jadi modul `struktur` di `tentang.html` tidak muncul di Portal). |
+| Runtime Hosting | Perbaikan: regex tanggal & WhatsApp di dalam template string TypeScript butuh `\\d`, bukan `\d` (sebelumnya tanggal tidak pernah diformat). |
+
+Template contoh **Sinergi** (`OrgSpace-Website/contoh-modul-orgspace/template-sinergi/`): 2 halaman, modul program,
+prestasi, agenda, pengumuman, galeri, testimoni, FAQ, struktur, form pendaftaran 2 langkah & aspirasi, statistik dan
+profil organisasi, tema gelap, animasi scroll, tanpa library. Lolos pengecekan tanpa error maupun peringatan; 36 isian
+editor dan 3 variabel tema (`--primary`, `--accent`, `--radius`).
+
 ### Template demo lama dihapus (19 Oktober 2026)
 Template statis tanpa modul `data-ws-*` (Profil Sekolah, UMKM Kuliner, Portofolio Minimal dari seeder) tidak dibuat lagi oleh
 `DemoTemplateSeeder`; seeder hanya membuat 4 template status wizard Upload. `DemoPackages` + paketnya pindah ke scope test

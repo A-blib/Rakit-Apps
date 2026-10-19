@@ -192,8 +192,62 @@ public class PublicSiteController {
                 forms,
                 collectionsMap,
                 compiledHtml,
-                templateModules(compiledHtml)
+                templateModules(allPagesHtml(releaseDir, compiledHtml)),
+                siteStats(site, org, dbNews.size(), collectionsMap),
+                orgProfile(site, org, owner)
         );
+    }
+
+    /** Semua halaman rilis digabung, agar modul di halaman selain beranda (mis. struktur di tentang.html) ikut terbaca. */
+    private static String allPagesHtml(Path releaseDir, String indexHtml) {
+        StringBuilder html = new StringBuilder(indexHtml == null ? "" : indexHtml);
+        try (var files = Files.walk(releaseDir)) {
+            Path index = releaseDir.resolve("index.html");
+            for (Path page : files.filter(f -> f.toString().endsWith(".html") && !f.equals(index)).sorted().toList()) {
+                html.append(Files.readString(page, StandardCharsets.UTF_8));
+            }
+        } catch (IOException e) {
+            log.warn("Gagal membaca halaman rilis {}", releaseDir, e);
+        }
+        return html.toString();
+    }
+
+    /**
+     * Angka untuk data-ws-stat. Nama bawaan (pengurus, berita, form.{nama}) menang jika modul kustom memakai nama
+     * yang sama, agar arti angkanya selalu jelas.
+     */
+    private Map<String, Long> siteStats(Site site, Organization org, int newsCount,
+                                        Map<String, List<Map<String, Object>>> collections) {
+        Map<String, Long> stats = new LinkedHashMap<>();
+        collections.forEach((name, items) -> stats.put(name, (long) items.size()));
+        stats.put("pengurus", memberRepository.countByOrganizationId(org.getId()));
+        stats.put("berita", (long) newsCount);
+        for (Object[] row : formSubmissionRepository.countByFormName(site.getId())) {
+            stats.put("form." + row[0], (Long) row[1]);
+        }
+        return stats;
+    }
+
+    /** Profil umum organisasi untuk data-ws-org (isinya sudah publik di profil organisasi). */
+    private static Map<String, String> orgProfile(Site site, Organization org, String owner) {
+        Map<String, String> profile = new LinkedHashMap<>();
+        profile.put("nama", owner);
+        if (!org.isPersonal()) {
+            profile.put("singkatan", org.getShortName());
+            profile.put("kategori", org.getCategory() != null ? org.getCategory().label() : null);
+            profile.put("institusi", org.getInstitutionName());
+            profile.put("kota", org.getCity());
+            profile.put("alamat", org.getAddress());
+            profile.put("email", org.getEmail());
+            profile.put("whatsapp", org.getWhatsapp());
+            profile.put("instagram", org.getInstagram());
+            profile.put("tiktok", org.getTiktok());
+            profile.put("youtube", org.getYoutube());
+            // Logo disajikan Hosting di alamat website sendiri, karena halaman sandbox tidak memanggil backend.
+            profile.put("logo", org.getLogoUrl() != null ? "/" + site.getSlug() + "/_media/logo" : null);
+        }
+        profile.values().removeIf(v -> v == null || v.isBlank());
+        return profile;
     }
 
     /**

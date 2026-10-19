@@ -21,7 +21,7 @@ export const STORAGE_SHIM = `(function(){
 
 /**
  * Disisipkan sebelum </body>. Mengisi modul data-ws-* dari data yang ditanam server di #orgspace-data, lalu
- * mengirim event "orgspace:siap" dan membuka window.orgspace = { siap, data: { slug, news, collections } } untuk
+ * mengirim event "orgspace:siap" dan membuka window.orgspace = { siap, data: { slug, news, collections, stats, org } } untuk
  * script provider. Juga mengirim form data-ws-form. Halaman publik selalu tampil sebagai tamu.
  */
 export const MODULE_RUNTIME = `(function(){
@@ -35,7 +35,7 @@ export const MODULE_RUNTIME = `(function(){
       var v=item[f.getAttribute("data-ws-field")]; if(v===undefined||v===null||v==="") return; v=String(v);
       var t=(f.getAttribute("data-ws-type")||"").toLowerCase();
       // Portal menyimpan tanggal sebagai 2026-10-19; pengunjung melihat "19 Oktober 2026".
-      if(t==="tanggal"&&/^\d{4}-\d{2}-\d{2}$/.test(v)){ var dt=new Date(v+"T00:00:00");
+      if(t==="tanggal"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(v)){ var dt=new Date(v+"T00:00:00");
         if(!isNaN(dt)) v=dt.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }
       if(t==="paragraf") f.style.whiteSpace="pre-line";
       if(f.tagName==="IMG"){ if(safeSrc(v)) f.setAttribute("src",v); } else { f.textContent=v; }
@@ -58,6 +58,21 @@ export const MODULE_RUNTIME = `(function(){
       var c=i===0?card:blank.cloneNode(true); fill(c,item);
       if(i>0){ last.parentNode.insertBefore(c,last.nextSibling); last=c; }
     });
+  });
+  // Angka ringkasan & profil organisasi. Profil yang belum diisi disembunyikan agar teks contoh template (mis.
+  // "Alamat organisasi") tidak tampil di website asli; logo tetap memakai logo template.
+  document.querySelectorAll("[data-ws-stat]").forEach(function(x){
+    var v=d.stats[(x.getAttribute("data-ws-stat")||"").toLowerCase()];
+    x.textContent=String(v===undefined?0:v);
+  });
+  document.querySelectorAll("[data-ws-org]").forEach(function(x){
+    var k=(x.getAttribute("data-ws-org")||"").toLowerCase(), v=d.org[k];
+    if(!v){ if(k!=="logo") x.style.display="none"; return; }
+    if(x.tagName==="IMG"){ if(safeSrc(v)) x.setAttribute("src",v); }
+    else if(x.tagName==="A"&&(k==="email"||k==="whatsapp"||k==="instagram")){
+      x.textContent=v;
+      x.setAttribute("href",k==="email"?"mailto:"+v:k==="whatsapp"?"https://wa.me/"+v.replace(/\\D/g,"").replace(/^0/,"62"):"https://instagram.com/"+v.replace(/^@/,""));
+    } else x.textContent=v;
   });
   // Script provider berjalan sebelum script ini, jadi diberi tahu lewat event setelah modul terisi.
   // Data modul juga dibuka (salinan) agar provider bisa membuat filter, grafik, atau peta sendiri.

@@ -28,7 +28,11 @@ public record SiteRenderResponse(
         String compiledHtml,
         // Modul koleksi di template (nama → field → jenis: teks/paragraf/angka/tanggal/link/gambar),
         // agar Portal Pengurus menyiapkan form isiannya sendiri.
-        Map<String, Map<String, String>> modules
+        Map<String, Map<String, String>> modules,
+        // Angka ringkasan untuk data-ws-stat (pengurus, berita, form.{nama}, {modul kustom}) dan profil umum
+        // organisasi untuk data-ws-org. Tanpa nama/email anggota dan tanpa isi form.
+        Map<String, Long> stats,
+        Map<String, String> org
 ) {
     public record SeoMeta(
             String title,

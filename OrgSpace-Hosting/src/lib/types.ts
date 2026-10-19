@@ -80,4 +80,7 @@ export interface SiteRenderData {
   compiledHtml: string | null;
   // Nama modul → field → jenis isian (teks, paragraf, angka, tanggal, link, gambar).
   modules?: Record<string, Record<string, FieldType>>;
+  // Angka untuk data-ws-stat (pengurus, berita, form.{nama}, {modul}) dan profil umum organisasi untuk data-ws-org.
+  stats?: Record<string, number>;
+  org?: Record<string, string>;
 }

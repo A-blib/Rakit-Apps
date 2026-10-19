@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.text.Normalizer;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -71,13 +72,14 @@ public class SitePublishService {
     private final UserRepository userRepository;
     private final OrganizationAccess access;
     private final SiteBuildService siteBuildService;
+    private final com.aris.templateapp.project.ProjectService projectService;
     private final SiteStorage siteStorage;
     private final SiteDomainRepository siteDomainRepository;
     private final AppProperties properties;
     private final Clock clock;
 
     @Transactional
-    public DirectPublishResponse publishDirect(UUID userId, DirectPublishRequest request) {
+    public DirectPublishResponse publishDirect(UUID userId, DirectPublishRequest request, Map<String, byte[]> images) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED));
 
@@ -117,6 +119,10 @@ public class SitePublishService {
         project.setContentUpdatedAt(clock.instant());
         project.touch(userId);
         project = projectRepository.saveAndFlush(project);
+        if (!images.isEmpty()) {
+            project.setContent(withUploadedImages(project.getContent(), project.getId(), userId, images));
+            project = projectRepository.saveAndFlush(project);
+        }
 
         // 3. Cari atau buat Site di ruang kerja yang dipilih
         Site site = siteRepository.findByProjectId(project.getId()).orElse(null);
@@ -165,6 +171,32 @@ public class SitePublishService {
                 site.getStatus(),
                 version
         );
+    }
+
+    /**
+     * Foto yang diganti di editor HP masih berupa path lokal HP ("images/x.webp"). Filenya disimpan sebagai aset
+     * website, lalu path di isian diganti "asset:{id}" yang dipetakan build ke /{slug}/_media/{id}.
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> withUploadedImages(Map<String, Object> content, UUID projectId, UUID userId,
+                                                   Map<String, byte[]> images) {
+        Map<String, String> refs = new HashMap<>();
+        images.forEach((path, bytes) -> refs.put(path, "asset:" + projectService.saveSiteMedia(projectId, userId, bytes).assetId()));
+        Map<String, Object> copy = new HashMap<>(content);
+        if (copy.get("fields") instanceof Map<?, ?> fields) {
+            Map<String, Object> newFields = new HashMap<>();
+            ((Map<String, Object>) fields).forEach((key, value) -> {
+                if (value instanceof Map<?, ?> v && v.get("image") instanceof String image && refs.containsKey(image)) {
+                    Map<String, Object> field = new HashMap<>((Map<String, Object>) v);
+                    field.put("image", refs.get(image));
+                    newFields.put(key, field);
+                } else {
+                    newFields.put(key, value);
+                }
+            });
+            copy.put("fields", newFields);
+        }
+        return copy;
     }
 
     /**

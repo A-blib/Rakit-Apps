@@ -770,6 +770,9 @@ public class TemplateEditorViewModel extends ViewModel {
 
         Map<String, Object> contentMap = new HashMap<>();
         Map<String, Object> fieldsMap = new HashMap<>();
+        // Foto yang diganti masih berupa file di HP; ikut dikirim agar server bisa menampilkannya di website.
+        Map<String, File> images = new HashMap<>();
+        File dir = projectDir();
         for (Map.Entry<String, ProjectValues.FieldValue> entry : snapshot.fields.entrySet()) {
             Map<String, Object> valMap = new HashMap<>();
             if (entry.getValue().text != null) {
@@ -780,6 +783,10 @@ public class TemplateEditorViewModel extends ViewModel {
             }
             if (entry.getValue().image != null) {
                 valMap.put("image", entry.getValue().image);
+                File file = new File(dir, entry.getValue().image);
+                if (file.isFile()) {
+                    images.put(entry.getValue().image, file);
+                }
             }
             fieldsMap.put(entry.getKey(), valMap);
         }
@@ -803,7 +810,7 @@ public class TemplateEditorViewModel extends ViewModel {
 
         publish.setValue(PublishState.publishing());
         executors.networkIO().execute(() -> {
-            Resource<DirectPublishResponseDto> res = websiteRepository.publishDirect(request);
+            Resource<DirectPublishResponseDto> res = websiteRepository.publishDirect(request, images);
             if (res.getStatus() == Resource.Status.SUCCESS && res.getData() != null) {
                 DirectPublishResponseDto done = res.getData();
                 // Terbit berikutnya dari editor ini memperbarui website yang sama di ruang kerja yang sama.

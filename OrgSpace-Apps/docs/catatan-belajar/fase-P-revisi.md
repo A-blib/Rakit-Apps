@@ -90,6 +90,25 @@
 - Tes: `SiteModulesTest` (jenis field, pembersihan isian) dan `SitePublishIntegrationTest.portalEditsReordersAndUploadsPhotoForCustomModule` lulus. Uji manual lewat curl di `osis-modul-api`: foto 200 lewat Hosting, edit & urutan tersimpan dan tampil di data halaman.
 - Latihan: tambahkan `data-ws-type="paragraf"` pada field cerita prestasi di template contoh, unggah ulang, lalu lihat isian Portal berubah menjadi kotak teks panjang.
 
+## Lanjutan: versi awal selesai (statistik, foto editor, template Sinergi, uji HP)
+| File | Fungsi |
+|---|---|
+| `backend/.../site/PublicSiteController.java` | `stats`, `org`, modul dari semua halaman rilis |
+| `backend/.../site/SitePublishService.java`, `SitePublishController.java` | Publish Langsung multipart: foto editor disimpan & dirujuk `asset:{id}` |
+| `backend/.../site/SiteBuildService.java` | `asset:{id}` → `/{slug}/_media/{id}` (publik) |
+| `backend/.../upload/check/HtmlRules.java` | Validasi `data-ws-stat` & `data-ws-org` |
+| `android/.../ui/editor/TemplateEditorViewModel.java`, `WebsiteRepository.java`, `WebsiteApi.java` | Kirim file foto editor saat Publish Langsung |
+| `OrgSpace-Hosting/src/lib/site-runtime.ts`, `site-page.ts` | Isi `data-ws-stat`/`data-ws-org`, logo `_media/logo`, perbaikan regex |
+| `OrgSpace-Website/contoh-modul-orgspace/template-sinergi/**` | Template contoh lengkap & interaktif |
+
+- Keputusan: statistik hanya angka (jumlah isian form, bukan isinya) → aman tampil publik tanpa pengaturan tambahan (alternatif: saklar per angka di Portal, ditunda karena versi awal untuk tugas kuliah).
+- Keputusan: `pengurus` = anggota ruang kerja OrgSpace; jumlah anggota organisasi yang lebih besar dibuat sebagai modul kustom (mis. `anggota`) dan dihitung lewat `data-ws-stat="anggota"`.
+- Tes: `./mvnw test` 349 lulus; `./gradlew testDebugUnitTest` lulus.
+- Uji HP (Realme RMX3151, 19 Oktober 2026): galeri menampilkan Sinergi → editor: ganti judul, foto (dari Photo Picker), warna utama ungu → Publish Langsung `sinergi-osis` → website di Chrome HP: judul, foto, warna, statistik dari database, chip filter dari data, agenda urut per tanggal + "Berikutnya" + hitung mundur, lightbox, form 2 langkah terkirim (statistik pendaftar naik), pencarian pengurus, halaman Tentang. Batas 5 website per ruang kerja muncul dengan pesan jelas (uji memakai `SITES_MAX_PER_PERSONAL=20`).
+- Domain kustom `osis-sinergi.my.id` (aktivasi bypass DNS dev, header Host): beranda, tentang, admin, foto → 200; Caddy ask 200, domain asing 404.
+- Belum diuji di HP: UI Portal Pengurus (edit, urutkan, unggah foto) — HP sedang dipakai; API-nya lulus integration test.
+- Latihan: tambahkan kartu `<b data-ws-stat="galeri">0</b> foto` di template Sinergi, unggah ulang, lalu tambah foto galeri di Portal dan lihat angkanya naik.
+
 ## Rencana fase berikutnya
 - `organizationName` di data render masih "Ruang Pribadi X" untuk ruang pribadi (dipakai Open Graph `siteName`).
 - `CustomRenderer` (mode rakit sendiri) masih berisi teks contoh; menunggu rancangan editor custom mode.

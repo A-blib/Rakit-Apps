@@ -54,6 +54,7 @@ class SitePublishIntegrationTest {
     private String creatorEmail;
     private UUID orgId;
     private UUID projectId;
+    private UUID templateId;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -90,6 +91,7 @@ class SitePublishIntegrationTest {
         template.setPackageVersion(1);
         template.setPackageSize((long) zipBytes.length);
         template = templateRepository.save(template);
+        templateId = template.getId();
         uploadStorage.writePackage(template.getId(), zipBytes);
 
         // Buat project website
@@ -214,6 +216,44 @@ class SitePublishIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void directPublishUploadsEditorPhotosAndExposesStats() throws Exception {
+        byte[] png = java.util.Base64.getDecoder().decode(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+        String request = """
+                {"name":"Web Foto OSIS","sourceTemplateId":"%s","templateVersion":1,"slug":"osis-foto","organizationId":"%s",
+                 "content":{"fields":{"foto_hero":{"image":"images/foto_hero-1.png"}}},"missingCount":0}"""
+                .formatted(templateId, orgId);
+        mockMvc.perform(multipart("/api/projects/publish-direct")
+                        .file(new org.springframework.mock.web.MockMultipartFile("request", "", "application/json",
+                                request.getBytes(StandardCharsets.UTF_8)))
+                        .file(new org.springframework.mock.web.MockMultipartFile("images", "images/foto_hero-1.png", "image/png", png))
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken))
+                .andExpect(status().isAccepted());
+
+        // Path lokal HP diganti foto yang tersimpan di server, disajikan di alamat website sendiri.
+        String html = mockMvc.perform(get("/sites/osis-foto/index.html"))
+                .andReturn().getResponse().getContentAsString();
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("src=\"/osis-foto/_media/([0-9a-f-]{36})\"").matcher(html);
+        assertThat(m.find()).as(html).isTrue();
+        mockMvc.perform(get("/api/public/sites/osis-foto/media/" + m.group(1)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/public/sites/osis-foto/forms/pendaftaran").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nama\":\"Rina\"}"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/public/sites/render/osis-foto"))
+                .andExpect(jsonPath("$.stats.pengurus").value(1))
+                .andExpect(jsonPath("$.stats.berita").value(0))
+                .andExpect(jsonPath("$.stats['form.pendaftaran']").value(1))
+                .andExpect(jsonPath("$.org.nama").value("OSIS SMAN 1 Bandung"))
+                .andExpect(jsonPath("$.org.kategori").exists())
+                .andExpect(jsonPath("$.org.email").doesNotExist())
+                // Modul di halaman selain beranda ikut terbaca untuk form Portal Pengurus.
+                .andExpect(jsonPath("$.modules.struktur.foto").value("gambar"))
+                .andExpect(jsonPath("$.modules.struktur.nama").value("teks"));
+    }
+
     private String add(String base, String portal, String json) throws Exception {
         String res = mockMvc.perform(post(base).header(HttpHeaders.AUTHORIZATION, portal)
                         .contentType(MediaType.APPLICATION_JSON).content(json))
@@ -235,7 +275,8 @@ class SitePublishIntegrationTest {
                       <link rel="stylesheet" href="css/style.css">
                     </head>
                     <body>
-                      <header><h1>OSIS Website</h1></header>
+                      <header><h1>OSIS Website</h1><img data-edit="image" data-key="foto_hero" src="img/hero.png" alt="Hero">
+                        <b data-ws-stat="pengurus">0</b> <span data-ws-org="nama">Nama</span></header>
                       <main>
                         <section data-ws-list="berita">
                           <h2>Berita Terbaru</h2>
@@ -255,6 +296,13 @@ class SitePublishIntegrationTest {
                       <footer><p>&copy; 2026 OSIS</p></footer>
                     </body>
                     </html>""".getBytes(StandardCharsets.UTF_8));
+            zos.closeEntry();
+
+            zos.putNextEntry(new ZipEntry("tentang.html"));
+            zos.write("""
+                    <!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><title>Tentang</title></head><body>
+                    <div data-ws-collection="struktur"><div data-ws-item><img data-ws-field="foto" src="a.png" alt="">
+                    <b data-ws-field="nama">Nama</b></div></div></body></html>""".getBytes(StandardCharsets.UTF_8));
             zos.closeEntry();
 
             zos.putNextEntry(new ZipEntry("css/style.css"));

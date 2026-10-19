@@ -19,7 +19,8 @@ spring:
       # Sedikit di atas batas logo & foto profil (ORG_LOGO_MAX_KB, USER_AVATAR_MAX_KB); ukuran sebenarnya diperiksa
       # OrgLogoStorage / AvatarStorage.
       max-file-size: 2MB
-      max-request-size: 3MB
+      # Terbit langsung dari HP membawa semua foto yang diganti di editor (masing-masing maks PROJECT_ASSET_MAX_KB).
+      max-request-size: 25MB
 
 server:
   port: 8080

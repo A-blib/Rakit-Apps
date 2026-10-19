@@ -14,13 +14,16 @@ import com.aris.templateapp.data.remote.dto.WebsiteNameRequestDto;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.HTTP;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -60,6 +63,12 @@ public interface WebsiteApi {
 
     @POST("projects/publish-direct")
     Call<DirectPublishResponseDto> publishDirect(@Body DirectPublishRequestDto body);
+
+    /** Sama dengan {@link #publishDirect}, ditambah foto yang diganti di editor (nama file = path di isian). */
+    @Multipart
+    @POST("projects/publish-direct")
+    Call<DirectPublishResponseDto> publishDirectWithImages(@Part("request") DirectPublishRequestDto body,
+                                                           @Part List<MultipartBody.Part> images);
 
     /** {@code slug} null = minta saran dari nama project. */
     @GET("projects/publish-direct/slug")

@@ -205,7 +205,7 @@ public class SiteBuildService {
             for (Path htmlFile : htmlFiles) {
                 Document doc = Jsoup.parse(htmlFile.toFile(), "UTF-8");
                 applySeoAndMeta(doc, org, site);
-                applyFieldValues(doc, snapshot);
+                applyFieldValues(doc, snapshot, site.getSlug());
                 injectDynamicModules(doc, org, site);
                 stripMarkingAttributes(doc);
                 Files.writeString(htmlFile, doc.outerHtml(), StandardCharsets.UTF_8);
@@ -235,7 +235,7 @@ public class SiteBuildService {
     }
 
     @SuppressWarnings("unchecked")
-    private void applyFieldValues(Document doc, Map<String, Object> snapshot) {
+    private void applyFieldValues(Document doc, Map<String, Object> snapshot, String slug) {
         Map<String, Object> fields = (Map<String, Object>) snapshot.get("fields");
         if (fields != null) {
             for (Map.Entry<String, Object> entry : fields.entrySet()) {
@@ -255,7 +255,8 @@ public class SiteBuildService {
                     if (val.containsKey("image")) {
                         String imgVal = String.valueOf(val.get("image"));
                         if (imgVal.startsWith("asset:")) {
-                            imgVal = "/api/assets/" + imgVal.substring("asset:".length());
+                            // Alamat publik di website itu sendiri (/api/assets butuh login anggota ruang kerja).
+                            imgVal = "/" + slug + "/_media/" + imgVal.substring("asset:".length());
                         }
                         if ("img".equalsIgnoreCase(el.tagName())) {
                             el.attr("src", imgVal);
