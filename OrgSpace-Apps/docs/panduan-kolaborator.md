@@ -491,8 +491,8 @@ Hasil yang benar: `BUILD SUCCESS` dan semua test lulus.
 
 - Di Android Studio klik **Sync Now** setelah menarik perubahan ini, karena ada library baru **WorkManager** dan **jsoup**.
 - Database HP naik ke versi 2 secara otomatis (project lama tetap ada).
-- Agar 3 template demo di galeri bisa dipakai di editor, jalankan backend dengan seeder demo (`--app.seed.demo-templates=true`). Akun demo yang sudah ada otomatis dilengkapi paket contohnya saat backend start; tidak perlu menghapus data.
-- Gambar contoh paket demo dibuat dengan Python 3 (🪟 `py tools\buat-gambar-demo.py`  🐧 `python3 tools/buat-gambar-demo.py`, dari folder `backend`), hanya jika gambarnya ingin diubah. Butuh library Pillow.
+- Seeder demo tidak lagi membuat template tayang (Profil Sekolah, UMKM Kuliner, Portofolio Minimal dihapus 19 Oktober 2026 karena tanpa modul `data-ws-*`). Untuk mencoba editor, upload template sungguhan, mis. `contoh-template/` dari `OrgSpace-Website/contoh-modul-orgspace/`. Database lama: template itu boleh dihapus manual (lihat `docs/dokumentasi-project.md` bagian 33a).
+- Paket statis itu kini hanya fixture test (`backend/src/test/resources/seed/template-packages/`). Gambarnya dibuat dengan Python 3 (🪟 `py tools\buat-gambar-demo.py`  🐧 `python3 tools/buat-gambar-demo.py`, dari folder `backend`), hanya jika gambarnya ingin diubah. Butuh library Pillow.
 
 ---
 

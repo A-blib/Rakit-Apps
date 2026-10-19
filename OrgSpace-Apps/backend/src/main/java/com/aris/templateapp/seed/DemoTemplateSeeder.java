@@ -8,14 +8,11 @@ import com.aris.templateapp.organization.OrgCategory;
 import com.aris.templateapp.provider.ProviderProfile;
 import com.aris.templateapp.provider.ProviderProfileRepository;
 import com.aris.templateapp.template.CheckStatus;
-import com.aris.templateapp.template.IssueSeverity;
-import com.aris.templateapp.template.ProviderTemplateQueries;
 import com.aris.templateapp.template.Template;
 import com.aris.templateapp.template.TemplateCheck;
 import com.aris.templateapp.template.TemplateCheckIssue;
 import com.aris.templateapp.template.TemplateCheckIssueRepository;
 import com.aris.templateapp.template.TemplateCheckRepository;
-import com.aris.templateapp.template.TemplateEventType;
 import com.aris.templateapp.template.TemplateRepository;
 import com.aris.templateapp.template.TemplateStatus;
 import com.aris.templateapp.upload.UploadCompletedEvent;
@@ -44,16 +41,13 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 
 /**
- * Seeder demo Dashboard Provider (alur-provider.md bagian 5.0): satu akun provider demo dengan template
- * berbagai status, hasil pengecekan (error & peringatan), notifikasi, serta event dilihat/didownload
- * tersebar di 30 hari terakhir. Tiga template yang tayang membawa paket contoh ({@link DemoPackages}) untuk editor
- * pembuat website. Gunanya untuk melihat grafik, template populer, dan daftar di HP
- * selama fitur Upload belum ada.
+ * Seeder demo Dashboard Provider (alur-provider.md bagian 5.0): satu akun provider demo dengan template berbagai
+ * status di wizard Upload (gagal cek, sedang dicek, draft, dinonaktifkan) beserta notifikasinya.
+ * Template tayang demo (statis, tanpa modul data-ws) sudah dihapus karena tidak sesuai aturan modul terbaru;
+ * template tayang dibuat lewat Upload sungguhan, mis. paket contoh-modul-orgspace di OrgSpace-Website.
  * <p>
  * Hanya profile dev dan MATI secara bawaan: nyalakan dengan {@code --app.seed.demo-templates=true}.
  * Akun provider lain tetap kosong karena data demo hanya milik akun demo. Hapus lewat
@@ -69,7 +63,6 @@ import java.util.UUID;
 public class DemoTemplateSeeder implements ApplicationRunner {
 
     public static final String DEMO_EMAIL = "demo-provider@templateapp.test";
-    private static final int DAYS = 30;
 
     private final UserRepository userRepository;
     private final UserIdentityRepository identityRepository;
@@ -78,32 +71,21 @@ public class DemoTemplateSeeder implements ApplicationRunner {
     private final TemplateRepository templateRepository;
     private final TemplateCheckRepository checkRepository;
     private final TemplateCheckIssueRepository issueRepository;
-    private final ProviderTemplateQueries queries;
     private final NotificationService notificationService;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
     private final UploadStorage storage;
     private final TemplateChecker checker;
     private final ApplicationEventPublisher events;
-    private final DemoPackages demoPackages;
-
-    /** "Isi template" template demo yang tayang (label "Punya: ..." di galeri, alur-fitur-upload.md 15.1). */
-    private static final Map<String, List<String>> CONTENT_TAGS = Map.of(
-            "Profil Sekolah", List.of("profil", "struktur", "kontak", "galeri"),
-            "UMKM Kuliner", List.of("profil", "galeri", "kontak"),
-            "Portofolio Minimal", List.of("profil", "galeri"));
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        User existing = userRepository.findByEmailIgnoreCase(DEMO_EMAIL).orElse(null);
-        if (existing != null) {
-            attachMissingPackages(existing.getId());
+        if (userRepository.findByEmailIgnoreCase(DEMO_EMAIL).isPresent()) {
             log.info("Seeder demo provider dilewati: akun demo sudah ada");
             return;
         }
         Instant now = clock.instant();
-        Random random = new Random(7);
 
         User user = new User("Studio Demo", DEMO_EMAIL);
         user.setOnboardingCompleted(true);
@@ -117,71 +99,18 @@ public class DemoTemplateSeeder implements ApplicationRunner {
         providerProfileRepository.save(provider);
 
         UUID owner = user.getId();
-        Template sekolah = template(owner, "Profil Sekolah", OrgCategory.OSIS_MPK, TemplateStatus.PUBLISHED, 3, now, 25, 2);
-        Template kuliner = template(owner, "UMKM Kuliner", OrgCategory.UKM, TemplateStatus.PUBLISHED, 0, now, 20, 5);
-        Template portofolio = template(owner, "Portofolio Minimal", OrgCategory.LAINNYA, TemplateStatus.PUBLISHED, 0, now, 15, 9);
-        for (Template published : List.of(sekolah, kuliner, portofolio)) {
-            published.setContentTags(CONTENT_TAGS.get(published.getName()));
-        }
-        // Template tayang diberi paket sungguhan agar bisa dipakai di editor pembuat website.
-        demoPackages.attach(sekolah, DemoPackages.SEKOLAH, now);
-        demoPackages.attach(kuliner, DemoPackages.KULINER, now);
-        demoPackages.attach(portofolio, DemoPackages.PORTOFOLIO, now);
         Template event = template(owner, "Landing Event", OrgCategory.LAINNYA, TemplateStatus.CHECK_FAILED, 1, now, 10, 7);
         Template organisasi = template(owner, "Organisasi Pemuda", OrgCategory.BEM_DEMA_DPM, TemplateStatus.CHECKING, 0, now, 1, 0);
         Template instansi = template(owner, "Instansi Desa", OrgCategory.PRAMUKA, TemplateStatus.DRAFT, 0, now, 3, 3);
         template(owner, "Undangan Lama", OrgCategory.LAINNYA, TemplateStatus.DISABLED, 0, now, 60, 30);
 
-        TemplateCheck sekolahCheck = checkRepository.save(new TemplateCheck(sekolah.getId(), 2, CheckStatus.PASSED, now.minus(Duration.ofDays(2))));
-        issue(sekolahCheck, IssueSeverity.WARNING, "IMAGE_TOO_LARGE", "Gambar hero terlalu besar (4,2 MB)", "assets/hero.jpg", null,
-                "Kompres gambar menjadi di bawah 500 KB agar website lebih cepat dibuka.");
-        issue(sekolahCheck, IssueSeverity.WARNING, "IMAGE_MISSING_ALT", "Gambar tanpa teks alternatif", "index.html", 40,
-                "Tambahkan atribut alt yang menjelaskan isi gambar.");
-        issue(sekolahCheck, IssueSeverity.WARNING, "MISSING_VIEWPORT", "Tidak ada meta viewport", "index.html", 4,
-                "Tambahkan <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> di <head>.");
-        checkRepository.save(new TemplateCheck(kuliner.getId(), 1, CheckStatus.PASSED, now.minus(Duration.ofDays(5))));
-        checkRepository.save(new TemplateCheck(portofolio.getId(), 1, CheckStatus.PASSED, now.minus(Duration.ofDays(9))));
         TemplateCheck eventCheck = checkRepository.save(new TemplateCheck(event.getId(), 1, CheckStatus.FAILED, now.minus(Duration.ofDays(7))));
         TemplateCheck organisasiCheck = checkRepository.save(new TemplateCheck(organisasi.getId(), 1, CheckStatus.RUNNING, null));
         attachDemoZips(event, eventCheck, organisasi, organisasiCheck, instansi);
 
-        // Event ditulis lewat SQL langsung (bukan JPA), jadi template yang masih tertahan di memori Hibernate
-        // harus ditulis ke database dulu; tanpa flush, foreign key template_id belum dikenal database.
-        templateRepository.flush();
-        // Template populer: Profil Sekolah paling banyak, lalu UMKM Kuliner, lalu Portofolio Minimal.
-        events(sekolah, now, random, 12, 3);
-        events(kuliner, now, random, 8, 2);
-        events(portofolio, now, random, 5, 1);
-
         notificationService.create(owner, NotificationType.TEMPLATE_CHECK_FAILED, event.getId(),
                 "Landing Event tidak lolos pengecekan", "Ada 2 error yang perlu diperbaiki sebelum template bisa tayang.");
-        notificationService.create(owner, NotificationType.TEMPLATE_CHECK_WARNING, sekolah.getId(),
-                "Profil Sekolah tayang dengan 3 peringatan", "Perbaiki supaya template lebih nyaman dipakai.");
-        notificationService.create(owner, NotificationType.TEMPLATE_PUBLISHED, kuliner.getId(),
-                "UMKM Kuliner tayang", "Template sudah tampil di galeri.");
         log.info("Seeder demo provider selesai: login {} / password {}", DEMO_EMAIL, DummyDataSeeder.PASSWORD);
-    }
-
-    /**
-     * Akun demo yang dibuat sebelum paket contoh ada: template demo yang tayang dilengkapi paketnya tanpa menghapus
-     * data lain (mis. template hasil uji Upload milik akun demo).
-     */
-    private void attachMissingPackages(UUID owner) {
-        Map<String, String> slugs = Map.of("Profil Sekolah", DemoPackages.SEKOLAH, "UMKM Kuliner", DemoPackages.KULINER,
-                "Portofolio Minimal", DemoPackages.PORTOFOLIO);
-        Instant now = clock.instant();
-        for (Template template : templateRepository.findByProviderId(owner)) {
-            // Database lama (sebelum revisi OrgSpace): template demo belum punya Isi template.
-            List<String> tags = CONTENT_TAGS.get(template.getName());
-            if (tags != null && template.getContentTags().isEmpty()) {
-                template.setContentTags(tags);
-            }
-            String slug = slugs.get(template.getName());
-            if (slug != null && template.getStatus() == TemplateStatus.PUBLISHED && template.getPackageSize() == null) {
-                demoPackages.attach(template, slug, now);
-                log.info("Paket contoh {} dipasang ke template demo {}", slug, template.getId());
-            }
-        }
     }
 
     private Template template(UUID owner, String name, OrgCategory category, TemplateStatus status, int warnings,
@@ -231,27 +160,5 @@ public class DemoTemplateSeeder implements ApplicationRunner {
         draft.setSourceSize((long) draftZip.length);
         draft.setWizardStep(3);
         draft.setTechInfo(checker.check(draftZip, "instansi-desa.zip", stage -> { }).techInfo());
-    }
-
-    private void issue(TemplateCheck check, IssueSeverity severity, String code, String message, String file,
-                       Integer line, String suggestion) {
-        issueRepository.save(new TemplateCheckIssue(check.getId(), severity, code, message, file, line, suggestion));
-    }
-
-    /** Event acak per hari (seed tetap, jadi hasil selalu sama). Sebagian hari sengaja tanpa download. */
-    private void events(Template template, Instant now, Random random, int maxViewsPerDay, int maxDownloadsPerDay) {
-        for (int day = 0; day < DAYS; day++) {
-            Instant dayTime = now.minus(Duration.ofDays(day)).minus(Duration.ofHours(random.nextInt(6)));
-            int views = random.nextInt(maxViewsPerDay + 1);
-            for (int i = 0; i < views; i++) {
-                queries.insertEvent(template.getId(), TemplateEventType.VIEW, null, "demo-" + random.nextInt(500),
-                        null, dayTime);
-            }
-            int downloads = random.nextInt(maxDownloadsPerDay + 1);
-            for (int i = 0; i < downloads; i++) {
-                queries.insertEvent(template.getId(), TemplateEventType.DOWNLOAD, UUID.randomUUID().toString(),
-                        "demo-" + random.nextInt(500), null, dayTime);
-            }
-        }
     }
 }

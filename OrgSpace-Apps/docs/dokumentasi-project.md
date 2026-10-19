@@ -1412,7 +1412,7 @@ Aturan tampilnya sama dengan galeri: hanya template `published` milik provider `
 ### Paket lama dan paket contoh
 
 - `PackageManifestBackfill` berjalan setiap backend start: template tayang yang `package_size`-nya masih kosong dilengkapi manifest. Setelah itu tidak disentuh lagi.
-- `DemoPackages` membuat paket contoh dari `resources/seed/template-packages/{slug}/` (`site/` + `marking.json`). Elemen di `marking.json` ditunjuk dengan **selector CSS**, lalu diubah menjadi nomor `data-tpl-id`, kemudian diproses `PackageBuilder` + `ManifestBuilder` yang sama dengan Kirim sungguhan. Gambar contohnya dibuat `tools/buat-gambar-demo.py`.
+- `DemoPackages` (kini **hanya di test**, `src/test/...`) membuat paket contoh dari `resources/seed/template-packages/{slug}/` (`site/` + `marking.json`). Elemen di `marking.json` ditunjuk dengan **selector CSS**, lalu diubah menjadi nomor `data-tpl-id`, kemudian diproses `PackageBuilder` + `ManifestBuilder` yang sama dengan Kirim sungguhan. Gambar contohnya dibuat `tools/buat-gambar-demo.py`.
 
 ## 30. Editor template mode di Android
 
@@ -1743,6 +1743,20 @@ file asli template (`/{slug}/`, `/{slug}/tentang.html`, `css/`, `js/`, `img/`) d
 | Halaman publik selalu tamu | `data-ws-auth="logout"/"status"` dan `data-ws-role` tidak lagi menampilkan sesi pengurus |
 | CORS hanya di Hosting | `/api/forms/...` ber-CORS `*` (tanpa cookie/token); backend tetap tanpa CORS |
 | Mode rakit sendiri | Pindah ke `/rakit/{slug}`; slug `rakit` dicadangkan |
+
+### Template demo lama dihapus (19 Oktober 2026)
+Template statis tanpa modul `data-ws-*` (Profil Sekolah, UMKM Kuliner, Portofolio Minimal dari seeder) tidak dibuat lagi oleh
+`DemoTemplateSeeder`; seeder hanya membuat 4 template status wizard Upload. `DemoPackages` + paketnya pindah ke scope test
+(dipakai test galeri, paket, dan project). `WebsiteSeeder` tidak lagi menghubungkan website contoh ke "Profil Sekolah".
+
+Membersihkan database dev lama (backend dimatikan dulu). Website yang sudah terbit tetap tayang dari file rilisnya, tapi
+project yang memakai template terhapus tidak bisa dibuka di editor lagi (`source_template_id` menjadi kosong):
+```sql
+-- Lihat dulu template yang tidak punya modul / duplikat, lalu hapus per id:
+SELECT id, name, status FROM templates ORDER BY created_at;
+DELETE FROM templates WHERE id IN ('...');   -- pengecekan, event, notifikasi ikut terhapus (ON DELETE CASCADE)
+```
+Lalu hapus folder `backend/uploads/templates/{id}` yang sama.
 
 ### Portal Pengurus: modul kustom lengkap (19 Oktober 2026)
 | Fitur | Cara kerja |

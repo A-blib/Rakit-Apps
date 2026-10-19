@@ -32,8 +32,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Paket template contoh untuk mencoba editor pembuat website tanpa harus upload dulu
- * (alur-buat-website-via-template.md bagian 12). Sumbernya situs biasa di
+ * Paket template contoh untuk test editor, galeri, dan project (dulu juga dipakai seeder dev; template statis ini
+ * tidak ikut aturan modul data-ws terbaru, jadi kini hanya fixture test). Sumbernya situs biasa di
  * {@code resources/seed/template-packages/{slug}/site/} ditambah {@code marking.json}.
  * <p>
  * {@code marking.json} menunjuk elemen dengan selector CSS (mudah dibaca dan diubah manusia), lalu di sini diubah

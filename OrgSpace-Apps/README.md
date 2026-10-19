@@ -564,11 +564,11 @@ cd backend
 ```
 
 Seeder membuat akun **`demo-provider@templateapp.test`** / **`password123`** berisi:
-- 7 template berbagai status (tayang, tayang dengan peringatan, tidak lolos, sedang dicek, draft, dinonaktifkan)
-- hasil pengecekan (error & peringatan) dan notifikasi
+- 4 template berbagai status di wizard Upload (tidak lolos, sedang dicek, draft, dinonaktifkan)
+- hasil pengecekan dan notifikasi
 - ZIP situs contoh sungguhan untuk 3 template yang masih di wizard Upload, jadi tab **Upload** bisa langsung dicoba: "Landing Event" (tidak lolos, bisa diupload ulang), "Organisasi Pemuda" (dicek otomatis saat backend start, lalu menjadi draft), "Instansi Desa" (draft langkah 3)
-- event dilihat/didownload tersebar di 30 hari terakhir
-- **paket template sungguhan** untuk 3 template yang tayang ("Profil Sekolah" 3 halaman, "UMKM Kuliner", "Portofolio Minimal"), sehingga editor pembuat website bisa dicoba dari tab Template
+
+Template tayang demo lama ("Profil Sekolah", "UMKM Kuliner", "Portofolio Minimal") **tidak dibuat lagi** (19 Oktober 2026): situsnya statis, tanpa modul `data-ws-*`, jadi tidak sesuai aturan modul terbaru. Untuk mengisi galeri, upload template sungguhan sebagai provider, mis. `contoh-template/` dari paket `OrgSpace-Website/contoh-modul-orgspace/` (ZIP-kan isinya lalu upload lewat app).
 
 Seeder ini hanya ada di profile `dev`, mati secara bawaan, dan tidak dibuat ulang kalau akun demo sudah ada. Akun provider lain tetap kosong.
 

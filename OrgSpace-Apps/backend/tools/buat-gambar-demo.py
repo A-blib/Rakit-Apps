@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Membuat gambar contoh (JPG) untuk paket template demo di
-src/main/resources/seed/template-packages/*/site/img/.
+src/test/resources/seed/template-packages/*/site/img/.
 
 Gambar dibuat sendiri (bentuk dan gradasi sederhana) agar bebas hak cipta.
 Jalankan dari folder backend:  python3 tools/buat-gambar-demo.py
@@ -9,7 +9,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-ROOT = Path(__file__).resolve().parent.parent / "src/main/resources/seed/template-packages"
+ROOT = Path(__file__).resolve().parent.parent / "src/test/resources/seed/template-packages"
 
 
 def gradient(size, top, bottom):
