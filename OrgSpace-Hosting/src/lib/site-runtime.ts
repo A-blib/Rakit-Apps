@@ -20,8 +20,9 @@ export const STORAGE_SHIM = `(function(){
 })();`;
 
 /**
- * Disisipkan sebelum </body>. Mengisi modul data-ws-* dari data yang ditanam server di #orgspace-data, dan
- * mengirim form data-ws-form. Halaman publik selalu tampil sebagai tamu: sesi pengurus hanya ada di Portal Pengurus.
+ * Disisipkan sebelum </body>. Mengisi modul data-ws-* dari data yang ditanam server di #orgspace-data, lalu
+ * mengirim event "orgspace:siap" dan membuka window.orgspace = { siap, data: { slug, news, collections } } untuk
+ * script provider. Juga mengirim form data-ws-form. Halaman publik selalu tampil sebagai tamu.
  */
 export const MODULE_RUNTIME = `(function(){
   var el=document.getElementById("orgspace-data"); if(!el) return;
@@ -53,6 +54,10 @@ export const MODULE_RUNTIME = `(function(){
       if(i>0){ last.parentNode.insertBefore(c,last.nextSibling); last=c; }
     });
   });
+  // Script provider berjalan sebelum script ini, jadi diberi tahu lewat event setelah modul terisi.
+  // Data modul juga dibuka (salinan) agar provider bisa membuat filter, grafik, atau peta sendiri.
+  window.orgspace={siap:true,data:JSON.parse(el.textContent)};
+  document.dispatchEvent(new CustomEvent("orgspace:siap",{detail:window.orgspace.data}));
   document.querySelectorAll('a[data-ws-auth="login"]').forEach(function(a){a.setAttribute("href","/"+d.slug+"/admin")});
   document.querySelectorAll('[data-ws-auth="logout"],[data-ws-role]').forEach(function(x){x.style.display="none"});
   function notice(form,ok,text){
