@@ -88,12 +88,12 @@ export const FALLBACK_DOC_TREE: DocTree = {
           slug: "modul-sistem-dan-kustom",
           category: "provider",
           audience: "provider",
-          title: "Katalog Modul Sistem & Modul Kustom",
-          summary: "Panduan teknis modul bawaan (data-ws-auth, data-ws-list, data-ws-form) dan modul kustom bebas (data-ws-collection).",
+          title: "Panduan Modul Dinamis",
+          summary: "Login pengurus, pengumuman, formulir, dan modul kustom dengan atribut data-ws-*. Lengkap dengan contoh template siap unduh.",
           sortOrder: 20,
           status: "published",
-          publishedAt: "2026-10-15T00:00:00Z",
-          updatedAt: "2026-10-15T00:00:00Z",
+          publishedAt: "2026-10-19T00:00:00Z",
+          updatedAt: "2026-10-19T00:00:00Z",
         },
         {
           id: "doc-prov-3",
@@ -243,163 +243,201 @@ Jika Anda menggunakan framework atau library dari CDN, pastikan berasal dari dom
     category: "provider",
     categoryLabel: "Penyedia Template (Provider)",
     audience: "provider",
-    title: "Katalog Modul Sistem & Modul Kustom",
-    summary: "Panduan teknis modul bawaan (data-ws-auth, data-ws-list, data-ws-form) dan modul kustom bebas (data-ws-collection).",
+    title: "Panduan Modul Dinamis",
+    summary: "Login pengurus, pengumuman, formulir, dan modul kustom dengan atribut data-ws-*. Lengkap dengan contoh template siap unduh.",
     sortOrder: 20,
     status: "published",
-    publishedAt: "2026-10-15T00:00:00Z",
-    updatedAt: "2026-10-15T00:00:00Z",
-    body: `# Katalog Modul Sistem & Modul Kustom OrgSpace
+    publishedAt: "2026-10-19T00:00:00Z",
+    updatedAt: "2026-10-19T00:00:00Z",
+    body: `Modul dinamis membuat template HTML biasa bisa diisi data oleh pengurus organisasi: pengumuman, prestasi, agenda, formulir pendaftaran, dan tombol login pengurus. Provider **tidak menulis backend, API, atau JavaScript**. Cukup tambahkan atribut \`data-ws-*\` ke elemen HTML.
 
-Platform OrgSpace memiliki mesin dinamis cerdas. Anda **tidak perlu membuat backend, routing server, atau database sendiri**. Cukup sematkan atribut khusus HTML \`data-ws-*\` pada elemen template Anda.
+## Unduh contoh siap pakai
 
----
+[⬇ Unduh contoh-modul-orgspace.zip (11 KB)](/downloads/contoh-modul-orgspace.zip)
 
-## 1. Modul Bawaan Sistem (Built-in Modules)
+Isinya satu template lengkap yang sudah lolos pengecekan upload dan memakai **semua** modul di halaman ini:
 
-### A. Modul Autentikasi Pengurus (\`data-ws-auth\`)
-Modul ini menghubungkan antarmuka website publik dengan sesi kepengurusan organisasi dan Portal Pengurus Mandiri.
+| Bagian di contoh | Modul |
+|---|---|
+| Menu atas: "Halo, Tamu", Masuk Pengurus, Keluar | Login pengurus |
+| Kotak kuning "Mode pengurus aktif" | Khusus pengurus |
+| Pengumuman Terbaru | Pengumuman (bawaan) |
+| Prestasi Anggota | Modul kustom \`prestasi\` |
+| Agenda Kegiatan | Modul kustom \`agenda\` |
+| Pendaftaran Anggota & Kotak Aspirasi | Formulir |
 
-| Atribut HTML | Elemen | Fungsi & Perilaku Sistem |
+Cara memakainya:
+
+1. Ekstrak ZIP, buka \`index.html\` di editor kode, lalu ubah desainnya sesukamu.
+2. Jangan hapus atribut \`data-ws-*\`. Boleh dipindah ke elemen lain asal aturannya tetap terpenuhi.
+3. ZIP **isi** foldernya (\`index.html\` harus ada di paling atas ZIP, bukan di dalam folder), lalu upload dari aplikasi sebagai Penyedia Template.
+
+## Cara kerjanya
+
+1. Provider menandai bagian template dengan \`data-ws-*\`, lalu mengupload template.
+2. Pengecekan upload memeriksa semua atribut. Kesalahan ditampilkan lengkap dengan baris dan cara memperbaikinya.
+3. Pembuat website memakai template itu lalu menerbitkannya ke \`orgspace.app/nama-website\`.
+4. Pengurus mengisi data lewat **Portal Pengurus** di \`orgspace.app/nama-website/admin\`.
+5. Setiap kali halaman dibuka, data terbaru langsung tampil. **Tidak perlu menerbitkan ulang.**
+
+> Modul hanya bekerja di website yang tayang di OrgSpace. Di file ZIP hasil export, bagian modul tetap menampilkan isi contoh dari template.
+
+## Daftar atribut
+
+| Atribut | Dipasang di | Fungsi |
 |---|---|---|
-| \`data-ws-auth="status"\` | \`<span>\`, \`<strong>\` | Menampilkan nama pengguna yang sedang login (misal: "Ahmad Rizky") atau teks fallback "Tamu" jika belum login. |
-| \`data-ws-auth="login"\` | \`<a>\` | Tombol/link yang otomatis mengarahkan pengurus ke halaman login Portal Pengurus (\`/admin\`). |
-| \`data-ws-auth="logout"\` | \`<button>\`, \`<a>\` | Tombol untuk mengakhiri sesi login pengurus dan mereset status kembali menjadi Tamu. |
+| \`data-ws-auth="login"\` | \`<a>\` | Tombol masuk Portal Pengurus. Tersembunyi setelah pengurus masuk. |
+| \`data-ws-auth="logout"\` | \`<button>\` / \`<a>\` | Tombol keluar. Tersembunyi untuk tamu. |
+| \`data-ws-auth="status"\` | \`<span>\` / \`<strong>\` | Diganti nama pengurus yang sedang masuk. Isi aslinya (mis. "Tamu") tampil untuk tamu. |
+| \`data-ws-role="admin,editor"\` | elemen apa saja | Hanya tampil untuk pengurus dengan peran tersebut. |
+| \`data-ws-list="nama"\` | pembungkus daftar | Daftar data. Sama persis dengan \`data-ws-collection\`. |
+| \`data-ws-collection="nama"\` | pembungkus daftar | Daftar data. Sama persis dengan \`data-ws-list\`. |
+| \`data-ws-item\` | 1 kartu contoh | Kartu yang diulang untuk setiap data. |
+| \`data-ws-field="nama_field"\` | elemen di dalam kartu | Diisi teks data. Pada \`<img>\` yang diisi adalah \`src\`. |
+| \`data-ws-link="nama_field"\` | \`<a>\` di dalam kartu | Diisi \`href\` dari data. |
+| \`data-ws-empty\` | di dalam pembungkus | Tampil hanya jika belum ada data. |
+| \`data-ws-limit="6"\` | pembungkus daftar | Batas jumlah kartu yang tampil (1–100). |
+| \`data-ws-form="nama"\` | \`<form>\` | Isian dikirim ke Kotak Masuk Portal Pengurus. |
+| \`data-ws-form-alert\` | elemen di dalam form | Tempat pesan berhasil/gagal setelah form dikirim. |
 
-**Contoh Kode HTML:**
+## 1. Login pengurus
+
 \`\`\`html
-<div class="user-auth-bar">
-  <span>Halo, <strong data-ws-auth="status">Tamu</strong></span>
-  <a href="admin" data-ws-auth="login" class="btn-login">Portal Pengurus</a>
-  <button type="button" data-ws-auth="logout" class="btn-logout">Keluar</button>
+<span>Halo, <strong data-ws-auth="status">Tamu</strong></span>
+<a href="admin" data-ws-auth="login">Masuk Pengurus</a>
+<button type="button" data-ws-auth="logout">Keluar</button>
+
+<div data-ws-role="admin,editor">
+  Mode pengurus aktif. Kelola data di <a href="admin">Portal Pengurus</a>.
 </div>
 \`\`\`
 
----
+- Link \`href="admin"\` otomatis diarahkan ke Portal Pengurus website itu (\`/nama-website/admin\`).
+- Peran yang bisa dipakai di \`data-ws-role\`: \`owner\`, \`admin\`, \`editor\`. Pemilik (\`owner\`) ikut dianggap \`admin\`. Pisahkan beberapa peran dengan koma.
+- \`data-ws-role\` hanya menyembunyikan tampilan. Jangan menaruh informasi rahasia di dalamnya, karena isinya tetap ada di kode halaman.
 
-### B. Modul Daftar Dinamis Berita Kegiatan (\`data-ws-list="berita"\`)
-Modul ini secara otomatis mengambil data artikel kabar atau berita kegiatan dari sistem CMS OrgSpace dan merendernya secara berulang.
+## 2. Pengumuman (modul bawaan)
 
-| Atribut HTML | Peran | Keterangan |
-|---|---|---|
-| \`data-ws-list="berita"\` | Pembungkus Grid/Daftar | Wadah penampung seluruh item berita. |
-| \`data-ws-item\` | Item Berulang | Template kartu berita yang akan digandakan untuk setiap data berita yang ada di server. |
-| \`data-ws-field="judul"\` | Judul Artikel | Mengisi teks judul berita. |
-| \`data-ws-field="ringkasan"\` | Deskripsi Singkat | Mengisi kutipan atau ringkasan isi berita. |
-| \`data-ws-field="tanggal"\` | Tanggal Publikasi | Mengisi format tanggal rilis berita. |
-| \`data-ws-field="gambar"\` | Foto Berita | Otomatis mengisi atribut \`src\` gambar berita. |
-| \`data-ws-field="link"\` | Tautan Selengkapnya | Otomatis mengisi \`href\` ke halaman baca penuh. |
-| \`data-ws-empty\` | Tampilan Kosong | Elemen fallback yang hanya tampil jika belum ada data berita yang dipublikasikan. |
+Nama \`pengumuman\`, \`berita\`, dan \`kegiatan\` memakai data yang sama: yang diisi pengurus di tab **Berita** Portal Pengurus.
 
-**Contoh Kode HTML:**
 \`\`\`html
-<section id="berita">
-  <h2>Kabar & Berita Terkini</h2>
-  
-  <div data-ws-list="berita" class="news-grid">
-    <!-- Template satu kartu berita -->
-    <article data-ws-item class="news-card">
-      <img data-ws-field="gambar" src="img/berita-placeholder.jpg" alt="Foto Kegiatan">
-      <span data-ws-field="tanggal" class="date">15 Oktober 2026</span>
-      <h3 data-ws-field="judul">Rapat Kerja Pengurus Baru</h3>
-      <p data-ws-field="ringkasan">Pengurus resmi dilantik dengan mengusung tema inovasi...</p>
-      <a data-ws-field="link" href="#">Baca Selengkapnya →</a>
-    </article>
-
-    <!-- Tampilan jika belum ada berita -->
-    <div data-ws-empty class="empty-state">
-      <p>Belum ada berita kegiatan yang dipublikasikan saat ini.</p>
-    </div>
-  </div>
-</section>
+<div data-ws-list="pengumuman" data-ws-limit="6">
+  <article data-ws-item>
+    <img src="img/pengumuman.jpg" alt="Foto pengumuman" data-ws-field="foto">
+    <span data-ws-field="tanggal">1 Januari 2026</span>
+    <h3 data-ws-field="judul">Judul pengumuman</h3>
+    <p data-ws-field="ringkasan">Ringkasan singkat isi pengumuman.</p>
+  </article>
+  <div data-ws-empty>Belum ada pengumuman.</div>
+</div>
 \`\`\`
 
----
-
-### C. Modul Formulir Interaktif Pendaftaran (\`data-ws-form="pendaftaran"\`)
-Modul ini memungkinkan pengunjung mengisi formulir pendaftaran anggota atau open recruitment yang datanya langsung masuk ke basis data organisasi.
-
-| Atribut HTML | Peran |
+| Field | Isi |
 |---|---|
-| \`data-ws-form="pendaftaran"\` | Atribut pada tag \`<form>\`. Sistem otomatis menangani submit request via AJAX. |
-| \`name="..."\` | Nama atribut input (misal: \`nama\`, \`email\`, \`whatsapp\`, \`divisi\`, \`alasan\`). |
-| \`<button type="submit">\` | Tombol eksekusi pengiriman formulir. |
+| \`judul\` | Judul pengumuman |
+| \`ringkasan\` | Ringkasan singkat |
+| \`konten\` | Isi lengkap |
+| \`tanggal\` | Tanggal terbit, mis. "19 Oktober 2026" |
+| \`foto\` | Foto pengumuman (jika pengurus mengisinya) |
+| \`detail\` | Link ke pengumuman; pakai dengan \`data-ws-link="detail"\` |
 
-**Contoh Kode HTML:**
+## 3. Modul kustom (buat sendiri)
+
+Nama selain \`pengumuman\`, \`berita\`, dan \`kegiatan\` menjadi **modul kustom**. Nama modul dan nama field bebas: huruf kecil, angka, \`-\` atau \`_\`, 2–40 karakter. Portal Pengurus membaca template dan langsung menyiapkan form isian dengan field yang sama.
+
 \`\`\`html
-<form data-ws-form="pendaftaran" class="registration-form">
-  <div class="form-group">
-    <label>Nama Lengkap</label>
-    <input type="text" name="nama" placeholder="Masukkan nama Anda" required>
+<div data-ws-collection="prestasi" data-ws-limit="9">
+  <div data-ws-item>
+    <img src="img/prestasi.jpg" alt="Foto prestasi" data-ws-field="foto">
+    <span data-ws-field="tingkat">Nasional</span>
+    <h3 data-ws-field="judul">Juara 1 Lomba</h3>
+    <p><span data-ws-field="nama">Nama anggota</span> · <span data-ws-field="tahun">2026</span></p>
   </div>
-  <div class="form-group">
-    <label>Alamat Email</label>
-    <input type="email" name="email" placeholder="nama@email.com" required>
-  </div>
-  <div class="form-group">
-    <label>Nomor WhatsApp</label>
-    <input type="tel" name="whatsapp" placeholder="08xxxxxxxxxx" required>
-  </div>
-  <div class="form-group">
-    <label>Pilihan Divisi</label>
-    <select name="divisi" required>
-      <option value="">Pilih divisi...</option>
-      <option value="Humas">Hubungan Masyarakat</option>
-      <option value="Iptek">Ilmu Pengetahuan & Teknologi</option>
-      <option value="Kaderisasi">Kaderisasi</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label>Motivasi Bergabung</label>
-    <textarea name="alasan" rows="3" placeholder="Tuliskan motivasi Anda..."></textarea>
-  </div>
+  <div data-ws-empty>Belum ada prestasi yang dicatat.</div>
+</div>
 
-  <button type="submit" class="btn-submit">Kirim Formulir Pendaftaran</button>
+<div data-ws-collection="agenda">
+  <div data-ws-item>
+    <h3 data-ws-field="nama_kegiatan">Nama kegiatan</h3>
+    <span data-ws-field="tanggal">Tanggal</span> · <span data-ws-field="lokasi">Lokasi</span>
+    <a href="#daftar" data-ws-link="link_daftar">Ikuti</a>
+  </div>
+  <div data-ws-empty>Belum ada agenda terdekat.</div>
+</div>
+\`\`\`
+
+Contoh di atas membuat dua modul di Portal Pengurus: \`prestasi\` (foto, tingkat, judul, nama, tahun) dan \`agenda\` (nama_kegiatan, tanggal, lokasi, link_daftar).
+
+- Field yang tidak diisi pengurus tetap menampilkan isi contoh dari template. Jadi isi contoh sebaiknya netral, mis. foto default.
+- \`<img data-ws-field>\` hanya menerima alamat gambar \`http://\`, \`https://\`, atau \`/...\`.
+- \`data-ws-link\` hanya menerima \`http://\`, \`https://\`, \`mailto:\`, \`tel:\`, \`/...\`, atau \`#...\`. Alamat lain diabaikan dan \`href\` asli dari template yang dipakai.
+
+## 4. Formulir
+
+\`\`\`html
+<form data-ws-form="pendaftaran">
+  <div data-ws-form-alert></div>
+  <label for="nama">Nama lengkap</label>
+  <input id="nama" name="nama" required>
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" required>
+  <label for="alasan">Alasan bergabung</label>
+  <textarea id="alasan" name="alasan"></textarea>
+  <button type="submit">Kirim pendaftaran</button>
 </form>
 \`\`\`
 
----
+- Setiap \`<input>\`, \`<textarea>\`, dan \`<select>\` wajib punya \`name\`. Nama itulah yang tampil di Kotak Masuk.
+- Satu halaman boleh punya beberapa form dengan nama berbeda, mis. \`pendaftaran\` dan \`aspirasi\`.
+- Hanya form ber-\`data-ws-form\` yang dikirim ke OrgSpace. Form lain (mis. pencarian) tidak disentuh.
+- Atribut seperti \`required\` dan \`type="email"\` tetap diperiksa browser sebelum form dikirim.
+- Batas: maksimal 30 isian per form, masing-masing maksimal 5.000 karakter.
+- Tanpa \`data-ws-form-alert\`, pesan berhasil tampil sebagai notifikasi kecil di pojok layar.
+- Elemen \`data-ws-form\` yang **tidak berisi** \`<form>\` akan diisi form pendaftaran bawaan (nama, kelas, WhatsApp, pesan).
 
-## 2. Modul Kustom Bebas (\`data-ws-collection="[nama]"\`)
+## Portal Pengurus
 
-Selain modul bawaan, OrgSpace mengizinkan provider membuat modul data kustom sesuai kebutuhan organisasi (misal: daftar prestasi mahasiswa, galeri foto, portofolio karya, daftar alumni, dll.).
+Alamat: \`orgspace.app/nama-website/admin\`. Pengurus masuk dengan email dan password akun OrgSpace, dan harus menjadi anggota organisasi pemilik website.
 
-### Aturan Penulisan Modul Kustom:
-1. Bungkus blok daftar dengan \`data-ws-collection="[nama_koleksi_bebas]"\` (contoh: \`data-ws-collection="prestasi"\`).
-2. Tandai elemen kartu perulangan dengan \`data-ws-item\`.
-3. Tandai elemen data di dalam kartu dengan \`data-ws-field="[nama_field]"\` (contoh: \`judul\`, \`peraih\`, \`tahun\`, \`foto\`).
-4. Sertakan penanda \`data-ws-empty\` untuk fallback tampilan ketika data masih kosong.
+| Tab | Isi |
+|---|---|
+| Ringkasan | Jumlah isian form, berita, item modul kustom, dan pengurus |
+| Kotak Masuk Form | Semua isian dari setiap \`data-ws-form\` |
+| Berita & Agenda | Tambah dan hapus pengumuman |
+| Modul Kustom | Daftar modul dari template beserta field-nya; tambah dan hapus data |
+| Pengurus & Hak Akses | Tambah pengurus (hanya akun OrgSpace yang sudah terdaftar) dan atur perannya |
 
-**Contoh Kode HTML Modul Prestasi Kustom:**
-\`\`\`html
-<section id="prestasi">
-  <h2>Prestasi Mahasiswa</h2>
-  
-  <div data-ws-collection="prestasi" class="achievement-grid">
-    <!-- Template item prestasi -->
-    <div data-ws-item class="achievement-card">
-      <span data-ws-field="tahun" class="badge">2026</span>
-      <h3 data-ws-field="judul">Juara 1 Lomba Inovasi Nasional</h3>
-      <p>Diraih oleh: <strong data-ws-field="peraih">Tim Robotika</strong></p>
-    </div>
+Sesi Portal Pengurus berlaku 8 jam dan **hanya untuk satu website itu**.
 
-    <!-- Fallback data kosong -->
-    <div data-ws-empty class="empty-state">
-      <p>Belum ada data prestasi yang ditambahkan.</p>
-    </div>
-  </div>
-</section>
-\`\`\`
+## Aturan keamanan
 
-> **Keunggulan Sistem**: Saat website di-online-kan, backend OrgSpace secara otomatis membuat antarmuka tabel pengisian di Portal Pengurus untuk modul kustom ini tanpa perlu coding tambahan!
+Semua website tayang di satu domain (\`orgspace.app/...\`). Agar template tidak bisa membaca sesi pengurus website lain:
 
----
+- Atribut \`onclick\`, \`onload\`, \`onerror\`, dan semua atribut \`on...\` lain **dihapus** saat website diterbitkan.
+- Link \`javascript:...\` **dihapus** saat website diterbitkan.
+- JavaScript dari template **tidak dijalankan** di website yang tayang. Pakai CSS untuk efek tampilan (\`:hover\`, \`details\`/\`summary\`, animasi CSS).
 
-## 3. Penandaan Isian (*Marking System*)
+## Cek sebelum upload
 
-Agar teks dan banner di template bisa diedit oleh pembuat website melalui aplikasi mobile, gunakan atribut penanda bagian:
-- **\`data-section="[Nama Bagian]"\`**: Mengelompokkan elemen ke section tertentu (misalnya: \`data-section="Hero"\`, \`data-section="Tentang Kami"\`).
-- Pada wizard upload Langkah 4 di aplikasi, provider tinggal menandai elemen judul, deskripsi paragraf, atau gambar banner dengan mudah.
+- [ ] Setiap \`data-ws-list\` / \`data-ws-collection\` punya **tepat satu** \`data-ws-item\`.
+- [ ] Setiap \`data-ws-item\` punya minimal satu \`data-ws-field\`.
+- [ ] \`data-ws-field\`, \`data-ws-link\`, dan \`data-ws-empty\` berada di dalam daftarnya, bukan di luar.
+- [ ] \`data-ws-limit\` berisi angka 1–100.
+- [ ] Setiap isian form punya atribut \`name\`.
+- [ ] \`data-ws-auth\` hanya bernilai \`login\`, \`logout\`, atau \`status\`.
+- [ ] Tidak ada \`onclick=...\` atau \`href="javascript:..."\`.
+
+## Masalah yang sering terjadi
+
+| Gejala | Penyebab & solusi |
+|---|---|
+| Upload gagal: "tidak memiliki elemen data-ws-item" | Tambahkan \`data-ws-item\` pada satu kartu contoh di dalam daftar. |
+| Upload gagal: "hanya 1 kartu contoh yang diizinkan" | Hapus kartu contoh lain; OrgSpace yang mengulang kartunya. |
+| Daftar menampilkan isi contoh, bukan data | Pengurus belum mengisi data, atau nama field di Portal berbeda dengan \`data-ws-field\`. |
+| Foto contoh tetap tampil | Data tidak punya foto, atau alamat fotonya bukan \`http(s)://\`. |
+| Isian form tidak masuk Kotak Masuk | Form belum punya \`data-ws-form\`, atau isiannya tidak punya \`name\`. |
+| Tombol Keluar tidak terlihat | Memang tersembunyi untuk tamu; masuk dulu lewat Portal Pengurus. |
+| Menu atau slider buatan JavaScript tidak jalan | JavaScript template tidak dijalankan; ganti dengan CSS. |
 `,
   },
 
