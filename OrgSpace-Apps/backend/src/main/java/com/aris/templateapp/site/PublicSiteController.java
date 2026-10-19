@@ -67,6 +67,9 @@ import java.util.UUID;
 @Slf4j
 public class PublicSiteController {
 
+    /** Nama modul yang diisi dari tab Berita (tabel site_news), sama dengan TemplateRenderer di Hosting. */
+    private static final java.util.Set<String> NEWS_MODULES = java.util.Set.of("berita", "kegiatan", "pengumuman");
+
     private final SiteRepository siteRepository;
     private final SiteReleaseRepository siteReleaseRepository;
     private final SiteStorage siteStorage;
@@ -126,7 +129,8 @@ public class PublicSiteController {
                         n.getTitle(),
                         n.getSummary(),
                         n.getContent(),
-                        n.getPublishedAt().atZone(ZoneId.of(properties.timezone())).format(fmt)
+                        n.getPublishedAt().atZone(ZoneId.of(properties.timezone())).format(fmt),
+                        n.getImageUrl()
                 )).toList();
 
         // Konfigurasi formulir interaktif
@@ -179,8 +183,32 @@ public class PublicSiteController {
                 newsList,
                 forms,
                 collectionsMap,
-                compiledHtml
+                compiledHtml,
+                templateModules(compiledHtml)
         );
+    }
+
+    /** Koleksi data-ws-list/collection di template beserta field-nya; berita diisi lewat tab Berita, jadi tidak ikut. */
+    static Map<String, List<String>> templateModules(String html) {
+        Map<String, List<String>> modules = new LinkedHashMap<>();
+        if (html == null) {
+            return modules;
+        }
+        for (org.jsoup.nodes.Element list : org.jsoup.Jsoup.parse(html).select("[data-ws-list], [data-ws-collection]")) {
+            String name = (list.hasAttr("data-ws-list") ? list.attr("data-ws-list") : list.attr("data-ws-collection"))
+                    .strip().toLowerCase(Locale.ROOT);
+            if (name.isEmpty() || NEWS_MODULES.contains(name)) {
+                continue;
+            }
+            List<String> fields = modules.computeIfAbsent(name, k -> new ArrayList<>());
+            for (org.jsoup.nodes.Element f : list.select("[data-ws-field], [data-ws-link]")) {
+                String field = f.hasAttr("data-ws-field") ? f.attr("data-ws-field") : f.attr("data-ws-link");
+                if (!field.isBlank() && !fields.contains(field.strip())) {
+                    fields.add(field.strip());
+                }
+            }
+        }
+        return modules;
     }
 
     /**
@@ -346,7 +374,7 @@ public class PublicSiteController {
             throw new ApiException(ErrorCode.UNAUTHORIZED, "Token autentikasi pengurus diperlukan");
         }
         String token = authHeader.substring(7).trim();
-        UUID userId = jwtService.parseUserId(token)
+        UUID userId = jwtService.parseSiteUserId(token, site.getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "Sesi login pengurus tidak valid atau telah berakhir"));
         memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Anda bukan pengurus atau anggota dari organisasi website ini"));
@@ -358,7 +386,7 @@ public class PublicSiteController {
             throw new ApiException(ErrorCode.UNAUTHORIZED, "Token autentikasi pengurus diperlukan");
         }
         String token = authHeader.substring(7).trim();
-        UUID userId = jwtService.parseUserId(token)
+        UUID userId = jwtService.parseSiteUserId(token, site.getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "Sesi login pengurus tidak valid atau telah berakhir"));
         OrganizationMember member = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Anda bukan pengurus atau anggota dari organisasi website ini"));
@@ -390,7 +418,7 @@ public class PublicSiteController {
         OrganizationMember member = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), user.getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Akun ini tidak terdaftar sebagai pengurus organisasi website ini"));
 
-        String token = jwtService.createAccessToken(user.getId());
+        String token = jwtService.createSiteToken(user.getId(), site.getId());
         return Map.of(
                 "success", true,
                 "token", token,
@@ -644,20 +672,11 @@ public class PublicSiteController {
         }
 
         String cleanEmail = email.trim().toLowerCase(Locale.ROOT);
+        // Hanya akun OrgSpace yang sudah ada. Dulu akun baru dibuat dengan password bawaan yang diketahui
+        // orang lain, sehingga pemilik email asli tidak bisa mendaftar dan akunnya bisa dimasuki pihak lain.
         User user = userRepository.findByEmailIgnoreCase(cleanEmail)
-                .orElseGet(() -> {
-                    String name = payload.get("name") != null && !payload.get("name").isBlank()
-                            ? payload.get("name").trim()
-                            : cleanEmail.split("@")[0];
-                    User newUser = new User(name, cleanEmail);
-                    newUser.setOnboardingCompleted(true);
-                    User savedUser = userRepository.save(newUser);
-                    String tempPassword = payload.get("password") != null && !payload.get("password").isBlank()
-                            ? payload.get("password")
-                            : "password123";
-                    userIdentityRepository.save(UserIdentity.local(savedUser, cleanEmail, passwordEncoder.encode(tempPassword)));
-                    return savedUser;
-                });
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND,
+                        "Email ini belum punya akun OrgSpace. Minta dia daftar di aplikasi OrgSpace dulu, atau undang lewat aplikasi."));
 
         if (memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), user.getId()).isPresent()) {
             throw new ApiException(ErrorCode.ALREADY_MEMBER, "Pengguna sudah menjadi pengurus organisasi ini");

@@ -1713,6 +1713,22 @@ jadi backend tidak perlu CORS. Refresh token backend sekali pakai, sehingga refr
 
 Konfigurasi server: `SITES_PUBLIC_IP` (record A) dan `SITES_CUSTOM_TARGET` (CNAME) di `.env`.
 
+### Modul dinamis website (revisi 19 Oktober 2026)
+| Masalah | Perbaikan |
+|---|---|
+| Build menghapus semua `data-ws-*` → Hosting tidak bisa mengisi berita, koleksi, login, role | Build hanya membuang penanda editor; `data-ws-*` tetap ada dan diisi Hosting setiap halaman dibuka |
+| Berita contoh ("Pelantikan Pengurus") ikut tayang di website asli | Tidak ada lagi data contoh; kosong → `data-ws-empty` |
+| Token Portal Pengurus = token app penuh, disimpan di localStorage domain bersama | Token portal punya klaim `site` (8 jam): ditolak API app dan website lain |
+| Template bisa memuat `onerror=`/`javascript:` yang membaca sesi pengurus website lain | Dihapus saat build (`SiteBuildService.stripMarkingAttributes`); `data-ws-link`/foto dari data hanya http(s)/mailto/tel/relatif |
+| "Tambah pengurus" membuat akun baru berpassword `password123` | Hanya akun OrgSpace yang sudah ada |
+| Semua `<form>` ikut dikirim sebagai "pendaftaran" | Hanya `form[data-ws-form]` |
+| `data-ws-limit` dan `data-ws-role` lolos cek upload tapi tidak berfungsi | Diterapkan di `TemplateRenderer` |
+| Modul kustom harus diketik manual di portal | `SiteRenderResponse.modules` (nama → field) mengisi form portal otomatis |
+| Form publik tanpa batas | Maks 30 isian × 5.000 karakter, nama form `[a-z0-9_-]` |
+
+Contoh template semua modul: `docs/contoh-template/portal-organisasi-lengkap/`. Aturan baru untuk provider: migrasi V29
+(artikel `modul-bawaan-orgspace`).
+
 ## 34. Glosarium
 
 | Istilah | Arti singkat |

@@ -124,15 +124,16 @@ class SitePublishIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
-        // Verifikasi konten organisasi dan modul dinamis hadir di HTML
+        // Modul dinamis tidak diisi saat build: atribut data-ws-* tetap ada agar OrgSpace-Hosting mengisinya
+        // dengan data terbaru, dan tidak ada berita contoh yang ikut tayang.
         assertThat(html)
                 .contains("OSIS SMAN 1 Bandung")
-                .contains("Pelantikan Pengurus OSIS SMAN 1 Bandung")
                 .contains("Formulir Pendaftaran OSIS SMAN 1 Bandung")
                 .contains("/api/public/sites/osis-smansa/forms/pendaftaran")
-                .doesNotContain("data-ws-list")
-                .doesNotContain("data-ws-item")
-                .doesNotContain("data-ws-form");
+                .contains("data-ws-list=\"berita\"")
+                .contains("data-ws-item")
+                .contains("data-ws-form")
+                .doesNotContain("Pelantikan Pengurus");
 
         // 4. Pengunjung mengirim formulir pendaftaran secara publik
         mockMvc.perform(post("/api/public/sites/osis-smansa/forms/pendaftaran")

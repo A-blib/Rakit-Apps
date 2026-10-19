@@ -102,7 +102,7 @@ export default function TemplateRenderer({ site }: TemplateRendererProps) {
       el.setAttribute("href", `/${site.slug}/admin`);
     });
 
-    const logoutBtns = root.querySelectorAll('[data-ws-auth="logout"]');
+    const logoutBtns = root.querySelectorAll<HTMLElement>('[data-ws-auth="logout"]');
     logoutBtns.forEach((el) => {
       el.addEventListener("click", () => {
         localStorage.removeItem(`orgspace_site_token_${site.slug}`);
@@ -110,21 +110,41 @@ export default function TemplateRenderer({ site }: TemplateRendererProps) {
       });
     });
 
-    // Cek status sesi login pengurus untuk memperbarui teks label jika ada
-    const savedToken = localStorage.getItem(`orgspace_site_token_${site.slug}`);
+    // Tampilan tamu dulu: tombol keluar & elemen khusus peran disembunyikan sampai sesi pengurus terbukti.
+    const roleEls = root.querySelectorAll<HTMLElement>("[data-ws-role]");
+    const setVisible = (el: HTMLElement, visible: boolean) => {
+      el.style.display = visible ? "" : "none";
+    };
+    logoutBtns.forEach((el) => setVisible(el, false));
+    roleEls.forEach((el) => setVisible(el, false));
+
+    let savedToken: string | null = null;
+    try {
+      savedToken = localStorage.getItem(`orgspace_site_token_${site.slug}`);
+    } catch {
+      savedToken = null;
+    }
     if (savedToken) {
       fetch(`${backendUrl}/api/public/sites/${site.slug}/auth/me`, {
         headers: { Authorization: `Bearer ${savedToken}` },
       })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
-          if (data) {
-            const u = data.user || data;
-            const statusEls = root.querySelectorAll('[data-ws-auth="status"]');
-            statusEls.forEach((el) => {
-              el.textContent = u.name || u.email;
-            });
-          }
+          if (!data) return;
+          const u = data.user || data;
+          root.querySelectorAll('[data-ws-auth="status"]').forEach((el) => {
+            el.textContent = u.name || u.email;
+          });
+          logoutBtns.forEach((el) => setVisible(el, true));
+          loginLinks.forEach((el) => setVisible(el as HTMLElement, false));
+          // Pemilik boleh melihat semua yang boleh dilihat admin.
+          const myRoles = u.role === "owner" ? ["owner", "admin"] : [u.role];
+          roleEls.forEach((el) => {
+            const allowed = (el.getAttribute("data-ws-role") || "")
+              .split(",")
+              .map((r) => r.trim().toLowerCase());
+            setVisible(el, allowed.some((r) => myRoles.includes(r)));
+          });
         })
         .catch(() => {});
     }
@@ -139,18 +159,21 @@ export default function TemplateRenderer({ site }: TemplateRendererProps) {
       ).toLowerCase();
 
       let items: Array<Record<string, any>> = [];
-      if (listName === "berita" || listName === "kegiatan") {
+      if (listName === "berita" || listName === "kegiatan" || listName === "pengumuman") {
         items = (site.news || []).map((n) => ({
           judul: n.title,
           ringkasan: n.summary,
           konten: n.content,
           tanggal: n.publishedAt,
-          foto: `${assetBaseUrl}img/logo.png`,
+          foto: n.imageUrl || undefined,
           detail: `/${site.slug}#berita-${n.id}`,
         }));
       } else if (site.collections && site.collections[listName]) {
         items = site.collections[listName];
       }
+
+      const limit = parseInt(container.getAttribute("data-ws-limit") || "", 10);
+      if (limit > 0) items = items.slice(0, limit);
 
       const itemTemplate = container.querySelector("[data-ws-item]") as HTMLElement | null;
       const emptyElement = container.querySelector("[data-ws-empty]") as HTMLElement | null;
@@ -195,7 +218,7 @@ export default function TemplateRenderer({ site }: TemplateRendererProps) {
         if (fieldName && data[fieldName] !== undefined) {
           const val = String(data[fieldName]);
           if (fieldEl.tagName === "IMG") {
-            fieldEl.setAttribute("src", val);
+            if (/^(https?:|\/)/i.test(val)) fieldEl.setAttribute("src", val);
           } else {
             fieldEl.textContent = val;
           }
@@ -205,15 +228,17 @@ export default function TemplateRenderer({ site }: TemplateRendererProps) {
       const links = el.querySelectorAll("[data-ws-link]");
       links.forEach((linkEl) => {
         const linkName = linkEl.getAttribute("data-ws-link");
-        if (linkName && data[linkName]) {
-          linkEl.setAttribute("href", String(data[linkName]));
+        // Data diisi pengurus: hanya link biasa, bukan javascript: (bisa mencuri sesi pengurus lain).
+        const href = linkName && data[linkName] ? String(data[linkName]).trim() : "";
+        if (href && /^(https?:|mailto:|tel:|\/|#)/i.test(href)) {
+          linkEl.setAttribute("href", href);
         }
       });
     }
 
     // C. Hydrate data-ws-form (Headless Form Submission: 100% Layout Asli Provider)
     const forms = root.querySelectorAll<HTMLFormElement>(
-      "form[data-ws-form], [data-ws-form] form, form.interactive-form, form"
+      "form[data-ws-form], [data-ws-form] form"
     );
 
     forms.forEach((form) => {
@@ -246,7 +271,7 @@ export default function TemplateRenderer({ site }: TemplateRendererProps) {
         const formName =
           formEl.getAttribute("data-ws-form") ||
           formEl.closest("[data-ws-form]")?.getAttribute("data-ws-form") ||
-          "pendaftaran";
+          "";
 
         try {
           const res = await fetch(`${backendUrl}/api/public/sites/${site.slug}/forms/${formName}`, {

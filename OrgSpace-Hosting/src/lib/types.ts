@@ -11,6 +11,7 @@ export interface NewsItem {
   summary: string;
   content: string;
   publishedAt: string;
+  imageUrl: string | null;
 }
 
 export interface FormField {
@@ -75,4 +76,5 @@ export interface SiteRenderData {
   forms: FormConfig[];
   collections?: Record<string, Array<Record<string, any>>>;
   compiledHtml: string | null;
+  modules?: Record<string, string[]>;
 }

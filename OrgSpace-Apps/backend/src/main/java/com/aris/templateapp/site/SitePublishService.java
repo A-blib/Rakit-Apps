@@ -49,6 +49,9 @@ import java.util.regex.Pattern;
 @Slf4j
 public class SitePublishService {
 
+    private static final Pattern FORM_NAME_PATTERN = Pattern.compile("^[a-z0-9_-]{1,50}$");
+    private static final int FORM_MAX_FIELDS = 30;
+    private static final int FORM_MAX_VALUE_CHARS = 5000;
     private static final Pattern SLUG_PATTERN = Pattern.compile("^[a-z0-9]+(-[a-z0-9]+)*$");
     private static final Set<String> RESERVED_SLUGS = Set.of(
             "www", "api", "admin", "dashboard", "app", "mail", "smtp", "ftp", "cdn", "static", "assets",
@@ -336,6 +339,18 @@ public class SitePublishService {
 
     @Transactional
     public void submitForm(String slug, String formName, Map<String, Object> data, String ip, String ua) {
+        // Endpoint publik tanpa login: batasi bentuk dan ukuran agar tidak dipakai mengisi database dengan sampah.
+        if (formName == null || !FORM_NAME_PATTERN.matcher(formName).matches()) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Nama formulir tidak valid.");
+        }
+        if (data == null || data.isEmpty() || data.size() > FORM_MAX_FIELDS) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Isian formulir kosong atau terlalu banyak.");
+        }
+        for (Map.Entry<String, Object> entry : data.entrySet()) {
+            if (entry.getKey().length() > 60 || String.valueOf(entry.getValue()).length() > FORM_MAX_VALUE_CHARS) {
+                throw new ApiException(ErrorCode.VALIDATION_ERROR, "Isian formulir terlalu panjang.");
+            }
+        }
         Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
         if (!"online".equalsIgnoreCase(site.getStatus())) {

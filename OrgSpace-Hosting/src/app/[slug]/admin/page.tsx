@@ -97,14 +97,21 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
   // Collections state
   const [collections, setCollections] = useState<Record<string, Array<Record<string, any>>>>({});
   const [loadingCollections, setLoadingCollections] = useState(false);
-  const [selectedCol, setSelectedCol] = useState<string>("prestasi");
+  const [selectedCol, setSelectedCol] = useState<string>("");
   const [newColName, setNewColName] = useState("");
+  // Modul koleksi yang ada di template (nama → field), dikirim backend lewat data render.
+  const [templateModules, setTemplateModules] = useState<Record<string, string[]>>({});
   const [dynamicFields, setDynamicFields] = useState<Array<{ key: string; value: string }>>([
-    { key: "nama_juara", value: "" },
-    { key: "lomba", value: "" },
-    { key: "tahun", value: "2026" },
-    { key: "tingkat", value: "Nasional" },
+    { key: "", value: "" },
   ]);
+
+  const chooseCollection = (name: string, modules: Record<string, string[]> = templateModules) => {
+    setSelectedCol(name);
+    const fields = modules[name];
+    if (fields && fields.length > 0) {
+      setDynamicFields(fields.map((key) => ({ key, value: "" })));
+    }
+  };
   const [submittingColItem, setSubmittingColItem] = useState(false);
 
   // Members & Access Control state
@@ -171,6 +178,10 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
         const data = await res.json();
         setSiteName(data.name || data.projectName);
         setOrgName(data.organizationName);
+        const modules: Record<string, string[]> = data.modules || {};
+        setTemplateModules(modules);
+        const first = Object.keys(modules)[0];
+        if (first) chooseCollection(first, modules);
       }
     } catch (e) {
       console.error("Gagal memuat info website", e);
@@ -178,6 +189,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
   };
 
   const loadAllDashboardData = async (jwt: string) => {
+    fetchSiteInfo();
     loadStats(jwt);
     loadSubmissions(jwt);
     loadNews(jwt);
@@ -339,8 +351,8 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
         const data = await res.json();
         setCollections(data);
         const colKeys = Object.keys(data);
-        if (colKeys.length > 0 && !colKeys.includes(selectedCol)) {
-          setSelectedCol(colKeys[0]);
+        if (!selectedCol && colKeys.length > 0) {
+          chooseCollection(colKeys[0]);
         }
       }
     } catch (e) {
@@ -1035,13 +1047,10 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                   <div className="flex gap-2">
                     <select
                       value={selectedCol}
-                      onChange={(e) => setSelectedCol(e.target.value)}
+                      onChange={(e) => chooseCollection(e.target.value)}
                       className="w-1/2 px-2.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none"
                     >
-                      {Object.keys(collections).length === 0 && (
-                        <option value="prestasi">prestasi</option>
-                      )}
-                      {Object.keys(collections).map((k) => (
+                      {Array.from(new Set([...Object.keys(templateModules), ...Object.keys(collections)])).map((k) => (
                         <option key={k} value={k}>
                           {k}
                         </option>
@@ -1138,7 +1147,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                   {Object.keys(collections).map((colName) => (
                     <button
                       key={colName}
-                      onClick={() => setSelectedCol(colName)}
+                      onClick={() => chooseCollection(colName)}
                       className={`px-2.5 py-1 text-xs rounded-lg font-mono font-semibold transition ${
                         selectedCol === colName
                           ? "bg-purple-600 text-white"

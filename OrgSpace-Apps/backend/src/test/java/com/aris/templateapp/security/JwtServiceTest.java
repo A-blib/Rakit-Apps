@@ -30,6 +30,21 @@ class JwtServiceTest {
     }
 
     @Test
+    void siteTokenOnlyWorksForItsOwnSite() {
+        JwtService jwt = service(SECRET, NOW);
+        UUID siteId = UUID.randomUUID();
+
+        String siteToken = jwt.createSiteToken(userId, siteId);
+
+        // Token Portal Pengurus tidak boleh dipakai untuk API OrgSpace lain maupun website lain.
+        assertThat(jwt.parseUserId(siteToken)).isEmpty();
+        assertThat(jwt.parseSiteUserId(siteToken, siteId)).contains(userId);
+        assertThat(jwt.parseSiteUserId(siteToken, UUID.randomUUID())).isEmpty();
+        // Token app biasa juga tidak diterima portal.
+        assertThat(jwt.parseSiteUserId(jwt.createAccessToken(userId), siteId)).isEmpty();
+    }
+
+    @Test
     void expiredTokenIsRejected() {
         String token = service(SECRET, NOW).createAccessToken(userId);
 

@@ -46,7 +46,15 @@
 - Uji Hosting di laptop (header Host): `/` dan `/sma-nusantara-uji` di domain kustom → 200; Caddy ask domain aktif 200, domain asing 404; host asing → dialihkan ke portal.
 - Belum diuji: domain sungguhan dengan DNS asli (butuh VPS + domain).
 
+### Modul dinamis (revisi)
+- Template contoh "Portal Organisasi Lengkap" (semua modul + modul kustom `prestasi` & `agenda`) diupload sebagai provider lewat API: cek lolos, 6 modul terdeteksi, terbit di galeri.
+- Di HP: template dipilih dari galeri, nama organisasi diubah, terbit ke `osis-uji-modul`; tamu tidak melihat tombol Keluar & catatan khusus pengurus; pengumuman tampil dari database.
+- Situs uji `osis-modul-api` (akun `pengurus-uji@orgspace.test`): login portal, token portal ditolak API app & website lain, tambah pengumuman/prestasi/agenda, form pendaftaran & aspirasi masuk Kotak Masuk, form terlalu panjang/nama aneh ditolak, tambah pengurus email tak terdaftar ditolak.
+- Di HP: prestasi & agenda tampil; foto/link `javascript:` dari data diabaikan; form pendaftaran dikirim dari Chrome HP dan masuk Kotak Masuk.
+- Belum diuji di HP: tampilan setelah pengurus login (nama di status, tombol Keluar, catatan `data-ws-role`).
+
 ## Konsep yang dipelajari
+- Satu domain untuk banyak website (path) berarti localStorage dipakai bersama: token yang disimpan di sana harus dibatasi untuk satu website saja.
 - Akhiran publik (public suffix): `.sch.id` dan `.my.id` dimiliki pengelola domain, jadi `osis.sch.id` adalah domain utama milik sekolah, bukan subdomain.
 - Debounce: menunda cek ke server sampai user berhenti mengetik, agar tidak memanggil server di setiap huruf.
 - Jawaban basi: jawaban server untuk ketikan lama diabaikan jika isi field sudah berubah.
