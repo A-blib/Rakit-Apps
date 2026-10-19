@@ -89,7 +89,7 @@ export const FALLBACK_DOC_TREE: DocTree = {
           category: "provider",
           audience: "provider",
           title: "Panduan Modul Dinamis",
-          summary: "Login pengurus, pengumuman, formulir, dan modul kustom dengan atribut data-ws-*. Lengkap dengan contoh template siap unduh.",
+          summary: "Login pengurus, pengumuman, formulir, dan modul kustom dengan atribut data-ws-*. Lengkap dengan paket contoh siap unduh untuk kamu atau AI agent.",
           sortOrder: 20,
           status: "published",
           publishedAt: "2026-10-19T00:00:00Z",
@@ -244,18 +244,27 @@ Jika Anda menggunakan framework atau library dari CDN, pastikan berasal dari dom
     categoryLabel: "Penyedia Template (Provider)",
     audience: "provider",
     title: "Panduan Modul Dinamis",
-    summary: "Login pengurus, pengumuman, formulir, dan modul kustom dengan atribut data-ws-*. Lengkap dengan contoh template siap unduh.",
+    summary: "Login pengurus, pengumuman, formulir, dan modul kustom dengan atribut data-ws-*. Lengkap dengan paket contoh siap unduh untuk kamu atau AI agent.",
     sortOrder: 20,
     status: "published",
     publishedAt: "2026-10-19T00:00:00Z",
     updatedAt: "2026-10-19T00:00:00Z",
     body: `Modul dinamis membuat template HTML biasa bisa diisi data oleh pengurus organisasi: pengumuman, prestasi, agenda, formulir pendaftaran, dan tombol login pengurus. Provider **tidak menulis backend, API, atau JavaScript**. Cukup tambahkan atribut \`data-ws-*\` ke elemen HTML.
 
-## Unduh contoh siap pakai
+## Unduh paket contoh
 
-[⬇ Unduh contoh-modul-orgspace.zip (11 KB)](/downloads/contoh-modul-orgspace.zip)
+[⬇ Unduh contoh-modul-orgspace.zip (23 KB)](/downloads/contoh-modul-orgspace.zip)
 
-Isinya satu template lengkap yang sudah lolos pengecekan upload dan memakai **semua** modul di halaman ini:
+Satu paket berisi template contoh, dokumentasi, dan instruksi untuk AI agent:
+
+| Isi paket | Untuk apa |
+|---|---|
+| \`contoh-template/\` | Template yang sudah lolos pengecekan upload dan memakai **semua** modul di halaman ini |
+| \`docs/\` | Dokumentasi ini, aturan wajib template, serta requirement & tools (format Markdown) |
+| \`AGENTS.md\` / \`CLAUDE.md\` | Instruksi untuk AI agent: apa yang dibaca, aturan, checklist, dan cara membuat ZIP |
+| \`BACA-SAYA.md\` | Panduan singkat untuk kamu |
+
+Bagian template contoh dan modul yang dipakainya:
 
 | Bagian di contoh | Modul |
 |---|---|
@@ -266,11 +275,21 @@ Isinya satu template lengkap yang sudah lolos pengecekan upload dan memakai **se
 | Agenda Kegiatan | Modul kustom \`agenda\` |
 | Pendaftaran Anggota & Kotak Aspirasi | Formulir |
 
-Cara memakainya:
+### Dibuatkan AI agent
 
-1. Ekstrak ZIP, buka \`index.html\` di editor kode, lalu ubah desainnya sesukamu.
+1. Ekstrak ZIP, lalu buka foldernya di editor yang punya AI agent (Claude Code, Cursor, Codex, dll.).
+2. Beri perintah, misalnya:
+
+   > Baca AGENTS.md lalu buatkan template website untuk OSIS SMA bergaya modern dan cerah. Pakai modul pengumuman, prestasi, galeri kegiatan, dan formulir pendaftaran anggota.
+
+3. Agent membaca dokumentasi dan contoh, membuat folder \`template/\`, lalu membungkusnya menjadi \`template-saya.zip\`.
+4. Upload \`template-saya.zip\` dari aplikasi: beralih ke mode Penyedia Template, buka tab Upload.
+
+### Membuat sendiri
+
+1. Salin folder \`contoh-template/\`, lalu ubah desainnya.
 2. Jangan hapus atribut \`data-ws-*\`. Boleh dipindah ke elemen lain asal aturannya tetap terpenuhi.
-3. ZIP **isi** foldernya (\`index.html\` harus ada di paling atas ZIP, bukan di dalam folder), lalu upload dari aplikasi sebagai Penyedia Template.
+3. ZIP **isi** foldernya (\`index.html\` harus ada di paling atas ZIP, bukan di dalam folder), lalu upload dari aplikasi.
 
 ## Cara kerjanya
 

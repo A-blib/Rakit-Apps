@@ -133,3 +133,16 @@ File bertanda **FONDASI** hanya diubah setelah koordinasi dengan Aris (lihat `AG
 | Grafik kosong | Data statistik contoh hanya dibuat di profile `dev` saat tabelnya kosong |
 | Editor menandai `PageProps` merah | Jalankan `npx next typegen` (atau `npm run dev` sekali) |
 | Port 3000 dipakai | `npm run dev -- -p 3001` |
+
+## 7. Paket contoh modul (unduhan dokumentasi)
+
+Artikel **Panduan Modul Dinamis** (`/docs/modul-sistem-dan-kustom`, isinya di `src/lib/docs-data.ts`) menautkan
+`public/downloads/contoh-modul-orgspace.zip`. Sumber isi ZIP ada di folder `contoh-modul-orgspace/`
+(template contoh, `docs/`, `AGENTS.md`/`CLAUDE.md` untuk AI agent). Setelah mengubah folder itu, buat ulang ZIP-nya:
+
+```bash
+rm -f public/downloads/contoh-modul-orgspace.zip
+zip -qr public/downloads/contoh-modul-orgspace.zip contoh-modul-orgspace
+```
+
+Pastikan `contoh-modul-orgspace/contoh-template/` tetap lolos pengecekan upload (ZIP isi foldernya lalu upload dari app).

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portal Organisasi Lengkap</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <a class="brand" href="#beranda"><img src="img/logo.png" alt="Logo organisasi"><span>Nama Organisasi</span></a>
+      <nav class="nav">
+        <a href="#pengumuman">Pengumuman</a>
+        <a href="#prestasi">Prestasi</a>
+        <a href="#agenda">Agenda</a>
+        <a href="#daftar">Daftar</a>
+        <span class="session">Halo, <strong data-ws-auth="status">Tamu</strong></span>
+        <a class="btn btn-primary" href="admin" data-ws-auth="login">Masuk Pengurus</a>
+        <button class="btn btn-ghost" type="button" data-ws-auth="logout">Keluar</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="beranda">
+    <div class="container">
+      <div class="admin-note" data-ws-role="admin,editor">
+        Mode pengurus aktif. Kelola pengumuman, prestasi, agenda, dan pendaftar di <a href="admin">Portal Pengurus</a>.
+      </div>
+      <div class="hero">
+        <div>
+          <span class="eyebrow">Selamat datang</span>
+          <h1>Bersama membangun organisasi yang aktif dan berprestasi</h1>
+          <p>Kami wadah bagi anggota untuk berkarya, belajar memimpin, dan memberi manfaat bagi sekitar.</p>
+          <a class="btn btn-accent" href="#daftar">Gabung sekarang</a>
+        </div>
+        <img src="img/hero.jpg" alt="Kegiatan organisasi">
+      </div>
+    </div>
+
+    <section id="pengumuman">
+      <div class="container">
+        <h2>Pengumuman Terbaru</h2>
+        <p class="lead">Informasi resmi dari pengurus, diperbarui langsung lewat Portal Pengurus.</p>
+        <div class="grid" data-ws-list="pengumuman" data-ws-limit="6">
+          <article class="card" data-ws-item>
+            <img src="img/pengumuman.jpg" alt="Foto pengumuman" data-ws-field="foto">
+            <div class="body">
+              <span class="meta" data-ws-field="tanggal">1 Januari 2026</span>
+              <h3 data-ws-field="judul">Judul pengumuman</h3>
+              <p data-ws-field="ringkasan">Ringkasan singkat isi pengumuman.</p>
+            </div>
+          </article>
+          <div class="empty" data-ws-empty>Belum ada pengumuman.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="prestasi">
+      <div class="container">
+        <h2>Prestasi Anggota</h2>
+        <p class="lead">Capaian anggota di berbagai lomba dan kegiatan.</p>
+        <div class="grid" data-ws-collection="prestasi" data-ws-limit="9">
+          <div class="card" data-ws-item>
+            <img src="img/prestasi.jpg" alt="Foto prestasi" data-ws-field="foto">
+            <div class="body">
+              <span class="badge" data-ws-field="tingkat">Nasional</span>
+              <h3 data-ws-field="judul">Juara 1 Lomba</h3>
+              <p class="meta"><span data-ws-field="nama">Nama anggota</span> · <span data-ws-field="tahun">2026</span></p>
+            </div>
+          </div>
+          <div class="empty" data-ws-empty>Belum ada prestasi yang dicatat.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="agenda">
+      <div class="container">
+        <h2>Agenda Kegiatan</h2>
+        <p class="lead">Kegiatan terdekat yang bisa kamu ikuti.</p>
+        <div data-ws-collection="agenda">
+          <div class="agenda" data-ws-item>
+            <div>
+              <h3 data-ws-field="nama_kegiatan">Nama kegiatan</h3>
+              <span class="meta"><span data-ws-field="tanggal">Tanggal</span> · <span data-ws-field="lokasi">Lokasi</span></span>
+            </div>
+            <a class="btn btn-primary" href="#daftar" data-ws-link="link_daftar">Ikuti</a>
+          </div>
+          <div class="empty" data-ws-empty>Belum ada agenda terdekat.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="daftar">
+      <div class="container">
+        <h2>Gabung &amp; Sampaikan Aspirasi</h2>
+        <p class="lead">Isian langsung masuk ke Kotak Masuk Portal Pengurus.</p>
+        <div class="forms">
+          <form data-ws-form="pendaftaran">
+            <h3>Pendaftaran Anggota</h3>
+            <div class="alert" data-ws-form-alert></div>
+            <label for="nama">Nama lengkap</label>
+            <input id="nama" name="nama" required placeholder="Nama lengkap">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required placeholder="email@contoh.com">
+            <label for="whatsapp">WhatsApp</label>
+            <input id="whatsapp" name="whatsapp" type="tel" placeholder="08xxxxxxxxxx">
+            <label for="alasan">Alasan bergabung</label>
+            <textarea id="alasan" name="alasan" rows="3" placeholder="Ceritakan motivasimu"></textarea>
+            <p><button class="btn btn-primary" type="submit">Kirim pendaftaran</button></p>
+          </form>
+          <form data-ws-form="aspirasi">
+            <h3>Kotak Aspirasi</h3>
+            <div class="alert" data-ws-form-alert></div>
+            <label for="nama_aspirasi">Nama (boleh samaran)</label>
+            <input id="nama_aspirasi" name="nama" placeholder="Nama">
+            <label for="pesan">Aspirasi</label>
+            <textarea id="pesan" name="pesan" rows="6" required placeholder="Tulis aspirasi atau saranmu"></textarea>
+            <p><button class="btn btn-accent" type="submit">Kirim aspirasi</button></p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Nama Organisasi · Jl. Contoh No. 1, Kota</p>
+      <p>Kontak: organisasi@contoh.com</p>
+    </div>
+  </footer>
+</body>
+</html>
