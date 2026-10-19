@@ -254,6 +254,37 @@ class SitePublishIntegrationTest {
                 .andExpect(jsonPath("$.modules.struktur.nama").value("teks"));
     }
 
+    @Test
+    void publishingFromAnotherProvidersTemplateCountsAsUsedOnce() throws Exception {
+        String providerRes = mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"displayName\":\"Studio Lain\",\"email\":\"studio-" + UUID.randomUUID().toString().substring(0, 8)
+                                + "@orgspace.test\",\"password\":\"password123\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        UUID providerId = UUID.fromString(JsonPath.read(providerRes, "$.user.id"));
+        providerProfileRepository.save(new com.aris.templateapp.provider.ProviderProfile(
+                providerId, "Studio Lain", java.time.Instant.now()));
+        com.aris.templateapp.template.Template other = new com.aris.templateapp.template.Template(
+                providerId, "Template Studio Lain",
+                com.aris.templateapp.organization.OrgCategory.OSIS_MPK);
+        other.setStatus(com.aris.templateapp.template.TemplateStatus.PUBLISHED);
+        other.setPackageVersion(1);
+        byte[] zipBytes = createTemplateZip();
+        other.setPackageSize((long) zipBytes.length);
+        other = templateRepository.save(other);
+        uploadStorage.writePackage(other.getId(), zipBytes);
+
+        String request = """
+                {"name":"Web Galeri","sourceTemplateId":"%s","templateVersion":1,"slug":"osis-galeri","organizationId":"%s",
+                 "content":{},"missingCount":0}""".formatted(other.getId(), orgId);
+        for (int i = 0; i < 2; i++) { // terbit ulang tidak menambah angka "dipakai"
+            mockMvc.perform(post("/api/projects/publish-direct").header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
+                            .contentType(MediaType.APPLICATION_JSON).content(request))
+                    .andExpect(status().isAccepted());
+        }
+        mockMvc.perform(get("/api/templates/" + other.getId()))
+                .andExpect(jsonPath("$.downloads").value(1));
+    }
+
     private String add(String base, String portal, String json) throws Exception {
         String res = mockMvc.perform(post(base).header(HttpHeaders.AUTHORIZATION, portal)
                         .contentType(MediaType.APPLICATION_JSON).content(json))

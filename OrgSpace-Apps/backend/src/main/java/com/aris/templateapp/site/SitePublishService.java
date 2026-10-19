@@ -20,6 +20,9 @@ import com.aris.templateapp.site.dto.DirectPublishResponse;
 import com.aris.templateapp.site.dto.FormSubmissionResponse;
 import com.aris.templateapp.site.dto.SiteResponse;
 import com.aris.templateapp.site.dto.SlugCheckResponse;
+import com.aris.templateapp.template.TemplateEventService;
+import com.aris.templateapp.template.TemplateEventType;
+import com.aris.templateapp.template.dto.TemplateEventRequest;
 import com.aris.templateapp.user.User;
 import com.aris.templateapp.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -72,11 +75,15 @@ public class SitePublishService {
     private final UserRepository userRepository;
     private final OrganizationAccess access;
     private final SiteBuildService siteBuildService;
+    private final TemplateEventService templateEventService;
     private final com.aris.templateapp.project.ProjectService projectService;
     private final SiteStorage siteStorage;
     private final SiteDomainRepository siteDomainRepository;
     private final AppProperties properties;
     private final Clock clock;
+
+    /** install_id wajib di template_events; terbit dicatat server, bukan dari instalasi app tertentu. */
+    private static final String SERVER_INSTALL_ID = "server-publish";
 
     @Transactional
     public DirectPublishResponse publishDirect(UUID userId, DirectPublishRequest request, Map<String, byte[]> images) {
@@ -141,6 +148,7 @@ public class SitePublishService {
         SiteBuild build = new SiteBuild(project.getId(), site.getId(), "publish", userId);
         build = siteBuildRepository.saveAndFlush(build);
         siteBuildService.build(build.getId());
+        countTemplateUse(project, build.getId(), userId);
 
         // 5. Muat ulang site & bentuk respon
         site = siteRepository.findById(site.getId()).orElse(site);
@@ -268,10 +276,24 @@ public class SitePublishService {
 
         // Jalankan proses build secara sinkron agar hasil terbit langsung selesai
         siteBuildService.build(build.getId());
+        countTemplateUse(project, build.getId(), userId);
 
         // Muat ulang build terbaru
         build = siteBuildRepository.findById(build.getId()).orElse(build);
         return toBuildResponse(build);
+    }
+
+    /**
+     * "Dipakai N kali" di galeri: website yang terbit dari template provider dihitung sekali per project (event
+     * download, sama seperti export ZIP pertama di app). Terbit ulang tidak menambah angka karena event unik per project.
+     */
+    private void countTemplateUse(Project project, UUID buildId, UUID userId) {
+        boolean succeeded = siteBuildRepository.findById(buildId).map(b -> "succeeded".equals(b.getStatus())).orElse(false);
+        if (project.getSourceTemplateId() == null || !succeeded) {
+            return;
+        }
+        templateEventService.record(project.getSourceTemplateId(), new TemplateEventRequest(TemplateEventType.DOWNLOAD,
+                project.getId().toString(), SERVER_INSTALL_ID, clock.instant()), userId);
     }
 
     @Transactional(readOnly = true)
