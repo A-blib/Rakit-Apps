@@ -15,16 +15,12 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get("host") || "";
   const { pathname } = request.nextUrl;
 
-  // Lewati static assets dan API internal Next.js
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.includes(".")
-  ) {
+  // Aset Next.js dan API internal (mis. kiriman form) tidak pernah milik website user.
+  if (pathname.startsWith("/_next") || pathname.startsWith("/api")) {
     return NextResponse.next();
   }
 
-  // Host lain: cek apakah domain kustom milik sebuah website
+  // Host lain: cek apakah domain kustom milik sebuah website. File template (css/, img/) ikut diarahkan.
   if (host && !DEFAULT_HOSTS.has(host.toLowerCase())) {
     const cleanHost = host.toLowerCase().split(":")[0];
     
@@ -40,7 +36,7 @@ export async function middleware(request: NextRequest) {
         if (data.slug) {
           // Link di halaman yang sudah memuat /{slug} tidak boleh jadi /{slug}/{slug}.
           const base = `/${data.slug}`;
-          const target = pathname === base || pathname.startsWith(`${base}/`) ? pathname : `${base}${pathname === "/" ? "" : pathname}`;
+          const target = pathname === base || pathname.startsWith(`${base}/`) ? pathname : `${base}${pathname}`;
           return NextResponse.rewrite(new URL(target, request.url));
         }
       }

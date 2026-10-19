@@ -1,5 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * Halaman website user berjalan di sandbox (origin "null"), jadi form-nya memanggil route ini lintas origin.
+ * Boleh dari mana saja karena tanpa cookie/token: sama dengan form publik biasa.
+ */
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS });
+}
+
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ slug: string; formName: string }> }
@@ -23,12 +37,12 @@ export async function POST(
     );
 
     const json = await res.json();
-    return NextResponse.json(json, { status: res.status });
+    return NextResponse.json(json, { status: res.status, headers: CORS });
   } catch (err: any) {
     console.error("Gagal proxy form submission:", err);
     return NextResponse.json(
       { success: false, message: "Terjadi kesalahan saat memproses formulir." },
-      { status: 500 }
+      { status: 500, headers: CORS }
     );
   }
 }
