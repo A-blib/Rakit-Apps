@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sinergi — Website Organisasi</title>
+  <meta name="description" content="Website resmi organisasi: kegiatan, prestasi, agenda, dan pendaftaran anggota.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#utama">Lewati ke isi</a>
+
+  <header class="topbar" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" data-ws-org="logo">
+        <span class="brand-name" data-ws-org="nama">Nama Organisasi</span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="#tentang">Tentang</a>
+        <a href="#program">Program</a>
+        <a href="#prestasi">Prestasi</a>
+        <a href="#agenda">Agenda</a>
+        <a href="#galeri">Galeri</a>
+        <a href="tentang.html">Pengurus</a>
+        <a class="nav-cta" href="#daftar">Daftar</a>
+      </nav>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="tema" type="button" aria-label="Ganti tema terang/gelap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <button class="icon-btn burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+  </header>
+
+  <main id="utama">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="wrap hero-in">
+        <div class="hero-text reveal">
+          <p class="badge" id="hero-badge">Periode 2026/2027 · Pendaftaran dibuka</p>
+          <h1 id="hero-judul">Bergerak bersama, berkarya untuk sekitar.</h1>
+          <p class="hero-sub">Kami adalah ruang tumbuh untuk <span class="typing" id="typing" data-words="pemimpin muda|kreator|relawan|juara">pemimpin muda</span></p>
+          <p class="lead" id="hero-deskripsi">Organisasi yang menghimpun anggota untuk belajar memimpin, mengadakan kegiatan bermanfaat, dan mengharumkan nama sekolah lewat prestasi.</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" id="hero-tombol" href="#daftar">Gabung sekarang</a>
+            <a class="btn btn-ghost" href="#agenda">Lihat agenda</a>
+          </div>
+          <p class="hero-note"><span class="dot"></span> Agenda terdekat: <strong id="hitung-mundur">segera diumumkan</strong></p>
+        </div>
+        <figure class="hero-media reveal">
+          <img id="hero-foto" src="img/hero.jpg" alt="Kegiatan bersama anggota organisasi" width="1600" height="1000">
+          <figcaption class="floating-card">
+            <strong data-ws-stat="agenda">6</strong>
+            <span>agenda kegiatan tercatat tahun ini</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- DASHBOARD STATISTIK (data langsung dari database OrgSpace) -->
+    <section class="stats-band" aria-label="Statistik organisasi">
+      <div class="wrap stats">
+        <div class="stat reveal">
+          <span class="stat-num" data-ws-stat="pengurus">12</span>
+          <span class="stat-label">Pengurus aktif</span>
+        </div>
+        <div class="stat reveal">
+          <span class="stat-num" data-ws-stat="prestasi">18</span>
+          <span class="stat-label">Prestasi diraih</span>
+        </div>
+        <div class="stat reveal">
+          <span class="stat-num" data-ws-stat="program">8</span>
+          <span class="stat-label">Program kerja</span>
+        </div>
+        <div class="stat reveal">
+          <span class="stat-num" data-ws-stat="form.pendaftaran">40</span>
+          <span class="stat-label">Pendaftar periode ini</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TENTANG -->
+    <section class="section" id="tentang">
+      <div class="wrap split">
+        <figure class="split-media reveal">
+          <img id="tentang-foto" src="img/tentang.jpg" alt="Anggota organisasi berdiskusi" width="1200" height="900">
+        </figure>
+        <div class="reveal">
+          <p class="eyebrow">Tentang kami</p>
+          <h2 id="tentang-judul">Satu tujuan, banyak cara berkontribusi.</h2>
+          <p id="tentang-deskripsi">Sejak berdiri, kami percaya organisasi adalah tempat terbaik untuk belajar bekerja sama. Setiap anggota bebas memilih divisi sesuai minat, lalu membawa ide itu menjadi kegiatan nyata.</p>
+          <ul class="checks">
+            <li id="nilai-1">Kepemimpinan yang terbuka dan bertanggung jawab</li>
+            <li id="nilai-2">Kegiatan yang berdampak bagi sekolah dan masyarakat</li>
+            <li id="nilai-3">Ruang aman untuk mencoba, gagal, dan bangkit</li>
+          </ul>
+          <a class="link-arrow" href="tentang.html">Kenali pengurus kami</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROGRAM (modul kustom + filter kategori) -->
+    <section class="section alt" id="program">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Program kerja</p>
+          <h2 id="program-judul">Apa yang kami kerjakan</h2>
+          <p class="muted">Pilih kategori untuk melihat program yang sesuai minatmu.</p>
+        </div>
+        <div class="chips" data-filter="program" data-filter-field="kategori" role="group" aria-label="Filter kategori program"></div>
+        <div class="grid grid-3" data-ws-collection="program">
+          <article class="card program-card reveal" data-ws-item>
+            <span class="pill" data-ws-field="kategori">Pendidikan</span>
+            <h3 data-ws-field="judul">Kelas Kepemimpinan</h3>
+            <p data-ws-field="deskripsi" data-ws-type="paragraf">Pelatihan rutin setiap bulan tentang public speaking, manajemen acara, dan kerja tim.</p>
+            <p class="meta">Penanggung jawab: <span data-ws-field="divisi">Divisi Pendidikan</span></p>
+          </article>
+          <p class="empty" data-ws-empty>Program kerja akan segera diumumkan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRESTASI (modul kustom + filter tingkat + detail) -->
+    <section class="section" id="prestasi">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Prestasi</p>
+          <h2 id="prestasi-judul">Kebanggaan yang kami raih bersama</h2>
+        </div>
+        <div class="chips" data-filter="prestasi" data-filter-field="tingkat" role="group" aria-label="Filter tingkat prestasi"></div>
+        <div class="grid grid-3" data-ws-collection="prestasi">
+          <article class="card prize-card reveal" data-ws-item tabindex="0">
+            <div class="card-media">
+              <img src="img/prestasi.jpg" alt="Foto prestasi" data-ws-field="foto">
+              <span class="pill pill-on-media" data-ws-field="tingkat">Nasional</span>
+            </div>
+            <div class="card-body">
+              <h3 data-ws-field="judul">Juara 1 Lomba Debat</h3>
+              <p class="meta"><span data-ws-field="nama">Nama peraih</span> · <span data-ws-field="tahun" data-ws-type="angka">2026</span></p>
+              <p class="clamp" data-ws-field="cerita" data-ws-type="paragraf">Cerita singkat perjalanan meraih prestasi ini.</p>
+            </div>
+          </article>
+          <p class="empty" data-ws-empty>Belum ada prestasi yang dicatat.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- AGENDA (modul kustom + hitung mundur + tanda selesai) -->
+    <section class="section alt" id="agenda">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Agenda</p>
+          <h2 id="agenda-judul">Jangan lewatkan kegiatan berikutnya</h2>
+        </div>
+        <ol class="timeline" data-ws-collection="agenda">
+          <li class="timeline-item reveal" data-ws-item>
+            <div class="when">
+              <time data-ws-field="tanggal" data-ws-type="tanggal">1 Januari 2026</time>
+              <span data-ws-field="waktu">08.00 WIB</span>
+            </div>
+            <div class="what card">
+              <h3 data-ws-field="nama_kegiatan">Nama kegiatan</h3>
+              <p class="meta" data-ws-field="lokasi">Lokasi kegiatan</p>
+              <p data-ws-field="deskripsi" data-ws-type="paragraf">Deskripsi singkat kegiatan.</p>
+              <a class="link-arrow" href="#daftar" data-ws-link="link_daftar">Ikuti kegiatan</a>
+            </div>
+          </li>
+          <li class="empty" data-ws-empty>Belum ada agenda terdekat.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- PENGUMUMAN (modul bawaan, diisi tab Berita) -->
+    <section class="section" id="pengumuman">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Kabar terbaru</p>
+          <h2 id="pengumuman-judul">Pengumuman</h2>
+        </div>
+        <div class="grid grid-3" data-ws-list="pengumuman" data-ws-limit="6">
+          <article class="card news-card reveal" data-ws-item>
+            <div class="card-media"><img src="img/pengumuman.jpg" alt="Foto pengumuman" data-ws-field="foto"></div>
+            <div class="card-body">
+              <time class="meta" data-ws-field="tanggal">1 Januari 2026</time>
+              <h3 data-ws-field="judul">Judul pengumuman</h3>
+              <p class="clamp" data-ws-field="ringkasan">Ringkasan singkat isi pengumuman.</p>
+            </div>
+          </article>
+          <p class="empty" data-ws-empty>Belum ada pengumuman.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALERI (modul kustom + lightbox) -->
+    <section class="section alt" id="galeri">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Galeri</p>
+          <h2 id="galeri-judul">Momen yang kami abadikan</h2>
+          <p class="muted">Ketuk foto untuk melihat lebih besar.</p>
+        </div>
+        <div class="gallery" data-ws-collection="galeri">
+          <button class="shot reveal" type="button" data-ws-item>
+            <img src="img/galeri-1.jpg" alt="Foto kegiatan" data-ws-field="foto">
+            <span class="shot-caption" data-ws-field="keterangan">Keterangan foto</span>
+          </button>
+          <p class="empty" data-ws-empty>Galeri foto akan segera diisi.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONI (modul kustom + slider geser) -->
+    <section class="section" id="testimoni">
+      <div class="wrap">
+        <div class="section-head row reveal">
+          <div>
+            <p class="eyebrow">Kata mereka</p>
+            <h2 id="testimoni-judul">Cerita dari anggota</h2>
+          </div>
+          <div class="slider-nav">
+            <button class="icon-btn" type="button" data-slide="-1" aria-label="Testimoni sebelumnya">‹</button>
+            <button class="icon-btn" type="button" data-slide="1" aria-label="Testimoni berikutnya">›</button>
+          </div>
+        </div>
+        <div class="slider" id="slider" data-ws-collection="testimoni">
+          <figure class="quote card" data-ws-item>
+            <blockquote data-ws-field="kutipan" data-ws-type="paragraf">Di sini aku belajar berani bicara di depan banyak orang.</blockquote>
+            <figcaption><strong data-ws-field="nama">Nama anggota</strong> <span data-ws-field="peran">Anggota Divisi Humas</span></figcaption>
+          </figure>
+          <p class="empty" data-ws-empty>Belum ada testimoni.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PENDAFTARAN + ASPIRASI (form bawaan, masuk Kotak Masuk Portal Pengurus) -->
+    <section class="section join" id="daftar">
+      <div class="wrap split">
+        <div class="reveal">
+          <p class="eyebrow">Pendaftaran anggota</p>
+          <h2 id="daftar-judul">Siap jadi bagian dari kami?</h2>
+          <p id="daftar-deskripsi">Isi formulir di samping. Pengurus akan menghubungimu lewat WhatsApp untuk tahap wawancara.</p>
+          <div class="mini-stats">
+            <div><strong data-ws-stat="form.pendaftaran">40</strong><span>sudah mendaftar</span></div>
+            <div><strong data-ws-stat="pengurus">12</strong><span>pengurus siap membimbing</span></div>
+          </div>
+        </div>
+        <form class="card form reveal" data-ws-form="pendaftaran">
+          <div data-ws-form-alert></div>
+          <div class="steps" aria-hidden="true"><span class="on"></span><span></span></div>
+          <fieldset class="step on">
+            <legend>Data diri</legend>
+            <label for="f-nama">Nama lengkap</label>
+            <input id="f-nama" name="nama" required autocomplete="name" placeholder="Nama sesuai kartu pelajar">
+            <label for="f-kelas">Kelas / jurusan</label>
+            <input id="f-kelas" name="kelas" required placeholder="Contoh: XI IPA 2">
+            <label for="f-wa">Nomor WhatsApp</label>
+            <input id="f-wa" name="whatsapp" type="tel" required inputmode="tel" placeholder="08xxxxxxxxxx">
+            <button class="btn btn-primary" type="button" data-next>Lanjut</button>
+          </fieldset>
+          <fieldset class="step">
+            <legend>Minat</legend>
+            <label for="f-divisi">Divisi pilihan</label>
+            <select id="f-divisi" name="divisi" required>
+              <option value="">Pilih divisi</option>
+              <option>Pendidikan</option>
+              <option>Humas &amp; Media</option>
+              <option>Seni &amp; Budaya</option>
+              <option>Olahraga</option>
+              <option>Sosial</option>
+            </select>
+            <label for="f-alasan">Alasan bergabung</label>
+            <textarea id="f-alasan" name="alasan" rows="4" maxlength="600" required placeholder="Ceritakan singkat motivasimu"></textarea>
+            <span class="counter" data-count-for="f-alasan">0/600</span>
+            <div class="row-btn">
+              <button class="btn btn-ghost" type="button" data-prev>Kembali</button>
+              <button class="btn btn-primary" type="submit">Kirim pendaftaran</button>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </section>
+
+    <!-- FAQ (modul kustom, accordion bawaan browser) -->
+    <section class="section" id="faq">
+      <div class="wrap narrow">
+        <div class="section-head center reveal">
+          <p class="eyebrow">FAQ</p>
+          <h2 id="faq-judul">Pertanyaan yang sering diajukan</h2>
+        </div>
+        <div class="faq" data-ws-collection="faq">
+          <details class="card reveal" data-ws-item>
+            <summary data-ws-field="pertanyaan">Siapa saja yang boleh mendaftar?</summary>
+            <p data-ws-field="jawaban" data-ws-type="paragraf">Semua siswa aktif boleh mendaftar, dari kelas mana pun.</p>
+          </details>
+          <p class="empty" data-ws-empty>Belum ada pertanyaan.</p>
+        </div>
+        <form class="card form aspirasi reveal" data-ws-form="aspirasi">
+          <div data-ws-form-alert></div>
+          <label for="a-pesan">Punya pertanyaan lain atau aspirasi?</label>
+          <textarea id="a-pesan" name="pesan" rows="3" required placeholder="Tulis pesanmu untuk pengurus"></textarea>
+          <label for="a-nama">Nama (boleh dikosongkan)</label>
+          <input id="a-nama" name="nama" placeholder="Anonim">
+          <button class="btn btn-primary" type="submit">Kirim aspirasi</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-in">
+      <div>
+        <p class="brand"><img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" data-ws-org="logo"> <span data-ws-org="nama">Nama Organisasi</span></p>
+        <p class="muted" data-ws-org="kategori">Kategori organisasi</p>
+        <p class="muted" data-ws-org="institusi">Nama sekolah / kampus</p>
+        <p class="muted" data-ws-org="alamat">Alamat organisasi</p>
+      </div>
+      <div data-org-group>
+        <p class="footer-title">Hubungi kami</p>
+        <p><a href="#daftar" data-ws-org="email">Email organisasi</a></p>
+        <p><a href="#daftar" data-ws-org="whatsapp">WhatsApp</a></p>
+        <p><a href="#daftar" data-ws-org="instagram">Instagram</a></p>
+      </div>
+      <div>
+        <p class="footer-title">Untuk pengurus</p>
+        <p class="muted">Kelola pengumuman, prestasi, agenda, dan pendaftar dari Portal Pengurus.</p>
+        <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+      </div>
+    </div>
+    <p class="wrap copy"><span id="footer-teks">Dibuat dengan semangat kebersamaan.</span> <a href="#atas">Kembali ke atas ↑</a></p>
+  </footer>
+
+  <dialog class="lightbox" id="lightbox" aria-label="Foto galeri">
+    <button class="icon-btn close" type="button" data-close aria-label="Tutup">✕</button>
+    <img id="lightbox-img" src="img/galeri-1.jpg" alt="">
+    <p id="lightbox-caption"></p>
+  </dialog>
+
+  <button class="to-top icon-btn" id="ke-atas" type="button" aria-label="Kembali ke atas">↑</button>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

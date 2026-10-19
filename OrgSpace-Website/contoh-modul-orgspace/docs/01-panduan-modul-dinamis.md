@@ -28,6 +28,8 @@ Contoh lengkapnya ada di folder `contoh-template/` paket ini.
 | `data-ws-field="nama_field"` | elemen di dalam kartu | Diisi teks data. Pada `<img>` yang diisi adalah `src`. |
 | `data-ws-link="nama_field"` | `<a>` di dalam kartu | Diisi `href` dari data. |
 | `data-ws-type="tanggal"` | elemen `data-ws-field` | Jenis isian di Portal Pengurus: `teks` (bawaan), `paragraf`, `angka`, atau `tanggal` (lihat bagian 3). |
+| `data-ws-stat="prestasi"` | elemen apa saja | Diisi **angka** dari database: jumlah item modul, pengurus, berita, atau isian form (lihat bagian 3a). |
+| `data-ws-org="nama"` | elemen apa saja | Diisi profil organisasi: nama, logo, kontak, alamat (lihat bagian 3a). |
 | `data-ws-empty` | di dalam pembungkus | Tampil hanya jika belum ada data. |
 | `data-ws-limit="6"` | pembungkus daftar | Batas jumlah kartu yang tampil (1–100). |
 | `data-ws-form="nama"` | `<form>` | Isian dikirim ke Kotak Masuk Portal Pengurus. |
@@ -111,6 +113,43 @@ Jenis isian di Portal Pengurus mengikuti elemennya:
 - `<img data-ws-field>` hanya menerima alamat gambar `http://`, `https://`, atau `/...`.
 - `data-ws-link` hanya menerima `http://`, `https://`, `mailto:`, `tel:`, `/...`, atau `#...`. Alamat lain diabaikan dan `href` asli dari template yang dipakai.
 
+## 3a. Statistik & profil organisasi (langsung dari database)
+
+Kartu angka seperti "12 pengurus aktif" atau "40 pendaftar" tidak perlu diketik pengurus: OrgSpace menghitungnya dari
+database setiap kali halaman dibuka.
+
+```html
+<div class="stat"><strong data-ws-stat="pengurus">12</strong> pengurus aktif</div>
+<div class="stat"><strong data-ws-stat="prestasi">18</strong> prestasi</div>
+<div class="stat"><strong data-ws-stat="form.pendaftaran">40</strong> pendaftar</div>
+```
+
+| `data-ws-stat` | Angka |
+|---|---|
+| `pengurus` | Jumlah anggota ruang kerja OrgSpace (pengurus yang punya akun) |
+| `berita` | Jumlah pengumuman/berita |
+| `form.{nama-form}` | Jumlah isian form itu, mis. `form.pendaftaran` (hanya angka, isi form tetap rahasia) |
+| nama modul kustom | Jumlah item modul itu, mis. `prestasi`, `agenda`, `anggota` |
+
+Nama bawaan (`pengurus`, `berita`, `form.*`) dipakai lebih dulu jika modul kustom memakai nama yang sama. Nama yang
+belum punya data tampil `0`.
+
+Profil organisasi diisi dari halaman Profil organisasi di app:
+
+```html
+<img src="img/logo.svg" alt="Logo" data-ws-org="logo">
+<span data-ws-org="nama">Nama Organisasi</span>
+<a href="#" data-ws-org="whatsapp">WhatsApp</a>
+```
+
+Pilihan: `nama`, `singkatan`, `kategori`, `institusi`, `kota`, `alamat`, `email`, `whatsapp`, `instagram`, `tiktok`,
+`youtube`, `logo`.
+
+- Pada `<img>` yang diisi `src`. Pada `<a>`, `email`/`whatsapp`/`instagram` otomatis menjadi link (`mailto:`, `wa.me`, Instagram).
+- Profil yang belum diisi organisasi **disembunyikan** agar teks contoh tidak tampil di website asli. Logo yang belum
+  ada tetap memakai logo template.
+- Di ruang kerja pribadi hanya `nama` yang tersedia.
+
 ## 4. Formulir
 
 ```html
@@ -171,6 +210,8 @@ function mulai() {
   //   .slug          nama website
   //   .news          pengumuman/berita: [{ judul, ringkasan, konten, tanggal, foto, detail }]
   //   .collections   modul kustom: { prestasi: [{ judul, tingkat, ... }], agenda: [...] }
+  //   .stats         angka: { pengurus: 12, berita: 5, prestasi: 18, "form.pendaftaran": 40 }
+  //   .org           profil organisasi: { nama, kategori, kota, whatsapp, logo, ... }
   var prestasi = window.orgspace.data.collections.prestasi || [];
   console.log(prestasi.length + " prestasi");
 }
@@ -180,6 +221,10 @@ else document.addEventListener("orgspace:siap", mulai);
 
 - Setelah event ini, kartu `data-ws-item` sudah terisi dan bisa dipilih dengan `querySelectorAll`.
 - Contoh lengkap: **filter prestasi per tingkat** di `contoh-template/js/main.js` pada paket unduhan.
+- Contoh template lengkap & interaktif: `template-sinergi/` (statistik naik saat di-scroll, chip filter dari data, agenda
+  diurutkan per tanggal + hitung mundur, lightbox galeri, form 2 langkah, pencarian pengurus, tema gelap).
+- Tanggal modul (`data-ws-type="tanggal"`) di data mentah berbentuk `2026-10-19`; teks di kartu sudah diubah menjadi
+  "19 Oktober 2026". Pakai data mentah untuk menghitung atau mengurutkan.
 - Event ini hanya ada di website yang tayang di OrgSpace. Di preview app atau file ZIP export, `window.orgspace` tidak ada, jadi tulis script yang tetap aman tanpa data (mis. filter tidak dibuat).
 
 ## Banyak halaman
@@ -192,6 +237,7 @@ Template boleh punya beberapa halaman (`index.html`, `tentang.html`, `kontak.htm
 - [ ] Setiap `data-ws-item` punya minimal satu `data-ws-field`.
 - [ ] `data-ws-field`, `data-ws-link`, dan `data-ws-empty` berada di dalam daftarnya, bukan di luar.
 - [ ] `data-ws-limit` berisi angka 1–100.
+- [ ] `data-ws-stat` memakai `pengurus`, `berita`, `form.{nama}`, atau nama modul kustom; `data-ws-org` memakai nama dari daftar bagian 3a.
 - [ ] Setiap isian form punya atribut `name`.
 - [ ] Tombol Portal Pengurus memakai `<a href="admin" data-ws-auth="login">`.
 - [ ] Tidak ada `onclick=...` atau `href="javascript:..."`; event dipasang dengan `addEventListener` di file JS.

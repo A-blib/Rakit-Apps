@@ -11,7 +11,8 @@ contoh-modul-orgspace/
 │   ├── 01-panduan-modul-dinamis.md   ← semua modul data-ws-*
 │   ├── 02-aturan-wajib-template.md   ← aturan agar lolos pengecekan upload
 │   └── 03-requirement-dan-tools.md   ← batas ZIP, struktur folder, CDN
-└── contoh-template/   ← template contoh yang memakai SEMUA modul (sudah lolos pengecekan)
+├── contoh-template/   ← template contoh sederhana yang memakai semua modul (sudah lolos pengecekan)
+└── template-sinergi/  ← template lengkap & interaktif: 2 halaman, 8 modul, statistik, animasi (sudah lolos pengecekan)
 ```
 
 ## Cara 1: dibuatkan AI agent
@@ -37,3 +38,10 @@ ZIP isi folder `contoh-template/` lalu upload. Template ini memakai: tombol Port
 kustom `prestasi` dan `agenda`, formulir `pendaftaran` dan `aspirasi`, serta menu HP dengan JavaScript (`js/main.js`).
 
 Dokumentasi terbaru selalu ada di portal OrgSpace: **Dokumentasi → Penyedia template → Panduan Modul Dinamis**.
+
+## Template lengkap: Sinergi
+
+`template-sinergi/` menunjukkan seberapa bebas tampilan template OrgSpace: hero animasi, kartu statistik dari database
+(`data-ws-stat`), profil organisasi (`data-ws-org`), modul program/prestasi/agenda/galeri/testimoni/FAQ/struktur,
+form pendaftaran 2 langkah, kotak aspirasi, tema gelap, dan animasi saat di-scroll, semuanya tanpa library.
+Warna utama, warna aksen, dan sudut diatur lewat variabel `:root` sehingga bisa diganti pembuat website di editor.

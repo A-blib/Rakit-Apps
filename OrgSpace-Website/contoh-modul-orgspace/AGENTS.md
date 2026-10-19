@@ -66,6 +66,8 @@ Jika ada yang bertentangan, `docs/01-panduan-modul-dinamis.md` dan bagian 3 file
 - [ ] Field modul kustom berisi teks panjang, angka, atau tanggal diberi `data-ws-type="paragraf"`, `"angka"`,
       atau `"tanggal"` agar Portal Pengurus menampilkan isian yang tepat; foto memakai `<img data-ws-field>`.
 - [ ] Tombol Portal Pengurus berupa `<a href="admin" data-ws-auth="login">`.
+- [ ] Angka statistik memakai `data-ws-stat` (pengurus, berita, form.{nama}, nama modul) dan profil organisasi
+      memakai `data-ws-org` (nama, logo, kontak) — bukan angka/teks yang diketik mati.
 - [ ] Setiap `<input>`, `<textarea>`, `<select>` di dalam `<form data-ws-form="...">` punya atribut `name`.
 - [ ] Tidak ada `on...=`, `javascript:`, atau path absolut; script tidak butuh data tersimpan permanen di browser.
 - [ ] Halaman tetap rapi di lebar 360px.

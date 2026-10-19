@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tentang &amp; Pengurus — Sinergi</title>
+  <meta name="description" content="Visi, misi, perjalanan, dan susunan pengurus organisasi.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#utama">Lewati ke isi</a>
+
+  <header class="topbar" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" data-ws-org="logo">
+        <span class="brand-name" data-ws-org="nama">Nama Organisasi</span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html">Beranda</a>
+        <a href="#visi">Visi &amp; Misi</a>
+        <a href="#perjalanan">Perjalanan</a>
+        <a href="#pengurus">Pengurus</a>
+        <a class="nav-cta" href="index.html#daftar">Daftar</a>
+      </nav>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="tema" type="button" aria-label="Ganti tema terang/gelap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        </button>
+        <button class="icon-btn burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+  </header>
+
+  <main id="utama">
+    <section class="page-hero">
+      <div class="hero-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="wrap reveal">
+        <p class="eyebrow">Tentang kami</p>
+        <h1 id="tentang-hero-judul">Orang-orang di balik setiap kegiatan.</h1>
+        <p class="lead" id="tentang-hero-deskripsi">Kenali visi kami, perjalanan organisasi dari tahun ke tahun, dan pengurus yang siap membantumu berkembang.</p>
+        <div class="mini-stats light">
+          <div><strong data-ws-stat="pengurus">12</strong><span>pengurus</span></div>
+          <div><strong data-ws-stat="struktur">9</strong><span>jabatan inti</span></div>
+          <div><strong data-ws-stat="prestasi">18</strong><span>prestasi</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="visi">
+      <div class="wrap grid grid-2">
+        <article class="card vm reveal">
+          <p class="eyebrow">Visi</p>
+          <h2 id="visi-teks">Menjadi organisasi yang menumbuhkan pemimpin berkarakter dan peduli sesama.</h2>
+        </article>
+        <article class="card vm reveal">
+          <p class="eyebrow">Misi</p>
+          <ul class="checks">
+            <li id="misi-1">Mengadakan pelatihan kepemimpinan yang rutin dan terbuka.</li>
+            <li id="misi-2">Mewadahi minat dan bakat anggota lewat divisi yang beragam.</li>
+            <li id="misi-3">Menjalin kerja sama dengan sekolah, alumni, dan masyarakat.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section alt" id="perjalanan">
+      <div class="wrap narrow">
+        <div class="section-head center reveal">
+          <p class="eyebrow">Perjalanan</p>
+          <h2>Tumbuh dari tahun ke tahun</h2>
+        </div>
+        <ol class="journey">
+          <li class="reveal"><span class="year" id="tahun-1">2019</span><p id="cerita-1">Organisasi berdiri dengan 15 anggota pertama.</p></li>
+          <li class="reveal"><span class="year" id="tahun-2">2022</span><p id="cerita-2">Program kelas kepemimpinan diikuti lebih dari 100 siswa.</p></li>
+          <li class="reveal"><span class="year" id="tahun-3">2025</span><p id="cerita-3">Meraih penghargaan organisasi siswa terbaik tingkat kota.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- STRUKTUR PENGURUS (modul kustom + pencarian) -->
+    <section class="section" id="pengurus">
+      <div class="wrap">
+        <div class="section-head row reveal">
+          <div>
+            <p class="eyebrow">Struktur pengurus</p>
+            <h2 id="pengurus-judul">Pengurus periode ini</h2>
+          </div>
+          <label class="search">
+            <span class="sr-only">Cari pengurus</span>
+            <input type="search" id="cari-pengurus" placeholder="Cari nama atau jabatan">
+          </label>
+        </div>
+        <div class="chips" data-filter="struktur" data-filter-field="divisi" role="group" aria-label="Filter divisi pengurus"></div>
+        <div class="grid grid-4" data-ws-collection="struktur">
+          <article class="card person reveal" data-ws-item>
+            <img src="img/pengurus-1.jpg" alt="Foto pengurus" data-ws-field="foto" width="480" height="480">
+            <h3 data-ws-field="nama">Nama Pengurus</h3>
+            <p class="role" data-ws-field="jabatan">Ketua Umum</p>
+            <span class="pill" data-ws-field="divisi">Inti</span>
+          </article>
+          <p class="empty" data-ws-empty>Susunan pengurus akan segera diumumkan.</p>
+        </div>
+        <p class="empty" id="tidak-ketemu" hidden>Tidak ada pengurus yang cocok dengan pencarian.</p>
+      </div>
+    </section>
+
+    <section class="section cta-band">
+      <div class="wrap cta-in reveal">
+        <h2 id="cta-judul">Ingin berkembang bersama kami?</h2>
+        <a class="btn btn-light" id="cta-tombol" href="index.html#daftar">Daftar jadi anggota</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-in">
+      <div>
+        <p class="brand"><img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" data-ws-org="logo"> <span data-ws-org="nama">Nama Organisasi</span></p>
+        <p class="muted" data-ws-org="kategori">Kategori organisasi</p>
+        <p class="muted" data-ws-org="kota">Kota</p>
+      </div>
+      <div data-org-group>
+        <p class="footer-title">Hubungi kami</p>
+        <p><a href="index.html#daftar" data-ws-org="email">Email organisasi</a></p>
+        <p><a href="index.html#daftar" data-ws-org="instagram">Instagram</a></p>
+      </div>
+      <div>
+        <p class="footer-title">Untuk pengurus</p>
+        <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+      </div>
+    </div>
+    <p class="wrap copy"><span>Dibuat dengan semangat kebersamaan.</span> <a href="#atas">Kembali ke atas ↑</a></p>
+  </footer>
+
+  <button class="to-top icon-btn" id="ke-atas" type="button" aria-label="Kembali ke atas">↑</button>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
