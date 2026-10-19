@@ -10,23 +10,19 @@
   <header class="topbar">
     <div class="container">
       <a class="brand" href="#beranda"><img src="img/logo.png" alt="Logo organisasi"><span>Nama Organisasi</span></a>
-      <nav class="nav">
+      <button class="btn btn-ghost menu-toggle" type="button" id="menu-toggle" aria-expanded="false" aria-controls="menu">Menu</button>
+      <nav class="nav" id="menu">
         <a href="#pengumuman">Pengumuman</a>
         <a href="#prestasi">Prestasi</a>
         <a href="#agenda">Agenda</a>
         <a href="#daftar">Daftar</a>
-        <span class="session">Halo, <strong data-ws-auth="status">Tamu</strong></span>
         <a class="btn btn-primary" href="admin" data-ws-auth="login">Masuk Pengurus</a>
-        <button class="btn btn-ghost" type="button" data-ws-auth="logout">Keluar</button>
       </nav>
     </div>
   </header>
 
   <main id="beranda">
     <div class="container">
-      <div class="admin-note" data-ws-role="admin,editor">
-        Mode pengurus aktif. Kelola pengumuman, prestasi, agenda, dan pendaftar di <a href="admin">Portal Pengurus</a>.
-      </div>
       <div class="hero">
         <div>
           <span class="eyebrow">Selamat datang</span>
@@ -129,5 +125,6 @@
       <p>Kontak: organisasi@contoh.com</p>
     </div>
   </footer>
+  <script src="js/main.js"></script>
 </body>
 </html>

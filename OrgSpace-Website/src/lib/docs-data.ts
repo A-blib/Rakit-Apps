@@ -89,7 +89,7 @@ export const FALLBACK_DOC_TREE: DocTree = {
           category: "provider",
           audience: "provider",
           title: "Panduan Modul Dinamis",
-          summary: "Login pengurus, pengumuman, formulir, dan modul kustom dengan atribut data-ws-*. Lengkap dengan paket contoh siap unduh untuk kamu atau AI agent.",
+          summary: "Pengumuman, formulir, modul kustom, Portal Pengurus, dan JavaScript template. Lengkap dengan paket contoh siap unduh untuk kamu atau AI agent.",
           sortOrder: 20,
           status: "published",
           publishedAt: "2026-10-19T00:00:00Z",
@@ -244,12 +244,12 @@ Jika Anda menggunakan framework atau library dari CDN, pastikan berasal dari dom
     categoryLabel: "Penyedia Template (Provider)",
     audience: "provider",
     title: "Panduan Modul Dinamis",
-    summary: "Login pengurus, pengumuman, formulir, dan modul kustom dengan atribut data-ws-*. Lengkap dengan paket contoh siap unduh untuk kamu atau AI agent.",
+    summary: "Pengumuman, formulir, modul kustom, Portal Pengurus, dan JavaScript template. Lengkap dengan paket contoh siap unduh untuk kamu atau AI agent.",
     sortOrder: 20,
     status: "published",
     publishedAt: "2026-10-19T00:00:00Z",
     updatedAt: "2026-10-19T00:00:00Z",
-    body: `Modul dinamis membuat template HTML biasa bisa diisi data oleh pengurus organisasi: pengumuman, prestasi, agenda, formulir pendaftaran, dan tombol login pengurus. Provider **tidak menulis backend, API, atau JavaScript**. Cukup tambahkan atribut \`data-ws-*\` ke elemen HTML.
+    body: `Modul dinamis membuat template HTML biasa bisa diisi data oleh pengurus organisasi: pengumuman, prestasi, agenda, formulir pendaftaran, dan tombol ke Portal Pengurus. Provider **tidak perlu menulis backend, API, atau database**. Cukup tambahkan atribut \`data-ws-*\` ke elemen HTML. JavaScript template sendiri (menu, slider, tab, dark mode) tetap boleh dan ikut jalan.
 
 ## Unduh paket contoh
 
@@ -268,8 +268,7 @@ Bagian template contoh dan modul yang dipakainya:
 
 | Bagian di contoh | Modul |
 |---|---|
-| Menu atas: "Halo, Tamu", Masuk Pengurus, Keluar | Login pengurus |
-| Kotak kuning "Mode pengurus aktif" | Khusus pengurus |
+| Menu atas + tombol Menu di HP (JavaScript \`js/main.js\`) | Tombol Portal Pengurus |
 | Pengumuman Terbaru | Pengumuman (bawaan) |
 | Prestasi Anggota | Modul kustom \`prestasi\` |
 | Agenda Kegiatan | Modul kustom \`agenda\` |
@@ -305,10 +304,10 @@ Bagian template contoh dan modul yang dipakainya:
 
 | Atribut | Dipasang di | Fungsi |
 |---|---|---|
-| \`data-ws-auth="login"\` | \`<a>\` | Tombol masuk Portal Pengurus. Tersembunyi setelah pengurus masuk. |
-| \`data-ws-auth="logout"\` | \`<button>\` / \`<a>\` | Tombol keluar. Tersembunyi untuk tamu. |
-| \`data-ws-auth="status"\` | \`<span>\` / \`<strong>\` | Diganti nama pengurus yang sedang masuk. Isi aslinya (mis. "Tamu") tampil untuk tamu. |
-| \`data-ws-role="admin,editor"\` | elemen apa saja | Hanya tampil untuk pengurus dengan peran tersebut. |
+| \`data-ws-auth="login"\` | \`<a>\` | Tombol menuju Portal Pengurus website itu. |
+| \`data-ws-auth="logout"\` | \`<button>\` / \`<a>\` | Disembunyikan di halaman publik (lihat bagian 1). |
+| \`data-ws-auth="status"\` | \`<span>\` / \`<strong>\` | Isi aslinya (mis. "Tamu") yang tampil (lihat bagian 1). |
+| \`data-ws-role="admin,editor"\` | elemen apa saja | Disembunyikan di halaman publik (lihat bagian 1). |
 | \`data-ws-list="nama"\` | pembungkus daftar | Daftar data. Sama persis dengan \`data-ws-collection\`. |
 | \`data-ws-collection="nama"\` | pembungkus daftar | Daftar data. Sama persis dengan \`data-ws-list\`. |
 | \`data-ws-item\` | 1 kartu contoh | Kartu yang diulang untuk setiap data. |
@@ -319,21 +318,15 @@ Bagian template contoh dan modul yang dipakainya:
 | \`data-ws-form="nama"\` | \`<form>\` | Isian dikirim ke Kotak Masuk Portal Pengurus. |
 | \`data-ws-form-alert\` | elemen di dalam form | Tempat pesan berhasil/gagal setelah form dikirim. |
 
-## 1. Login pengurus
+## 1. Tombol Portal Pengurus
 
 \`\`\`html
-<span>Halo, <strong data-ws-auth="status">Tamu</strong></span>
 <a href="admin" data-ws-auth="login">Masuk Pengurus</a>
-<button type="button" data-ws-auth="logout">Keluar</button>
-
-<div data-ws-role="admin,editor">
-  Mode pengurus aktif. Kelola data di <a href="admin">Portal Pengurus</a>.
-</div>
 \`\`\`
 
-- Link \`href="admin"\` otomatis diarahkan ke Portal Pengurus website itu (\`/nama-website/admin\`).
-- Peran yang bisa dipakai di \`data-ws-role\`: \`owner\`, \`admin\`, \`editor\`. Pemilik (\`owner\`) ikut dianggap \`admin\`. Pisahkan beberapa peran dengan koma.
-- \`data-ws-role\` hanya menyembunyikan tampilan. Jangan menaruh informasi rahasia di dalamnya, karena isinya tetap ada di kode halaman.
+- \`href="admin"\` dan \`data-ws-auth="login"\` sama-sama membuka Portal Pengurus website itu (\`/nama-website/admin\`).
+- Pengurus mengelola semua data di Portal Pengurus. **Halaman publik website selalu tampil sebagai tamu**: demi keamanan, halaman template tidak bisa membaca sesi login pengurus.
+- Karena itu \`data-ws-auth="logout"\` dan \`data-ws-role\` disembunyikan di halaman publik, dan \`data-ws-auth="status"\` tetap menampilkan isi aslinya. Atribut ini masih diterima agar template lama tetap lolos pengecekan, tapi tidak perlu dipakai di template baru.
 
 ## 2. Pengumuman (modul bawaan)
 
@@ -428,13 +421,22 @@ Alamat: \`orgspace.app/nama-website/admin\`. Pengurus masuk dengan email dan pas
 
 Sesi Portal Pengurus berlaku 8 jam dan **hanya untuk satu website itu**.
 
-## Aturan keamanan
+## JavaScript template
 
-Semua website tayang di satu domain (\`orgspace.app/...\`). Agar template tidak bisa membaca sesi pengurus website lain:
+JavaScript template **dijalankan**: hamburger menu, dark mode, slider, tab, accordion, Tailwind CDN, Alpine, Swiper, AOS, dan library lain dari CDN yang diizinkan.
 
-- Atribut \`onclick\`, \`onload\`, \`onerror\`, dan semua atribut \`on...\` lain **dihapus** saat website diterbitkan.
-- Link \`javascript:...\` **dihapus** saat website diterbitkan.
-- JavaScript dari template **tidak dijalankan** di website yang tayang. Pakai CSS untuk efek tampilan (\`:hover\`, \`details\`/\`summary\`, animasi CSS).
+Semua website tayang di satu domain (\`orgspace.app/...\`), jadi setiap halaman dijalankan di **sandbox** browser: script template tidak bisa membaca data \`orgspace.app\`, Portal Pengurus, atau website lain. Akibatnya:
+
+| Hal | Perilaku |
+|---|---|
+| \`localStorage\`, \`sessionStorage\`, cookie | Bisa dipakai, tapi **hanya sementara**: hilang saat halaman ditutup atau pindah halaman. Mis. pilihan dark mode tidak diingat. |
+| Status login pengurus di halaman publik | Tidak tersedia (lihat bagian 1). |
+| \`fetch()\` ke API luar | Jalan jika API itu mengizinkan semua origin (CORS \`*\`). |
+| Atribut \`onclick\`, \`onload\`, \`onerror\`, dst. dan link \`javascript:\` | **Dihapus** saat website diterbitkan. Pasang event di file JS dengan \`addEventListener\`. |
+
+## Banyak halaman
+
+Template boleh punya beberapa halaman (\`index.html\`, \`tentang.html\`, \`kontak.html\`). Hubungkan dengan link relatif biasa, mis. \`<a href="tentang.html">\`. Hasilnya \`orgspace.app/nama-website/tentang.html\`. Modul dan formulir bekerja di semua halaman.
 
 ## Cek sebelum upload
 
@@ -443,8 +445,9 @@ Semua website tayang di satu domain (\`orgspace.app/...\`). Agar template tidak 
 - [ ] \`data-ws-field\`, \`data-ws-link\`, dan \`data-ws-empty\` berada di dalam daftarnya, bukan di luar.
 - [ ] \`data-ws-limit\` berisi angka 1–100.
 - [ ] Setiap isian form punya atribut \`name\`.
-- [ ] \`data-ws-auth\` hanya bernilai \`login\`, \`logout\`, atau \`status\`.
-- [ ] Tidak ada \`onclick=...\` atau \`href="javascript:..."\`.
+- [ ] Tombol Portal Pengurus memakai \`<a href="admin" data-ws-auth="login">\`.
+- [ ] Tidak ada \`onclick=...\` atau \`href="javascript:..."\`; event dipasang dengan \`addEventListener\` di file JS.
+- [ ] Script tidak bergantung pada data yang harus tersimpan permanen di \`localStorage\` atau cookie.
 
 ## Masalah yang sering terjadi
 
@@ -455,8 +458,9 @@ Semua website tayang di satu domain (\`orgspace.app/...\`). Agar template tidak 
 | Daftar menampilkan isi contoh, bukan data | Pengurus belum mengisi data, atau nama field di Portal berbeda dengan \`data-ws-field\`. |
 | Foto contoh tetap tampil | Data tidak punya foto, atau alamat fotonya bukan \`http(s)://\`. |
 | Isian form tidak masuk Kotak Masuk | Form belum punya \`data-ws-form\`, atau isiannya tidak punya \`name\`. |
-| Tombol Keluar tidak terlihat | Memang tersembunyi untuk tamu; masuk dulu lewat Portal Pengurus. |
-| Menu atau slider buatan JavaScript tidak jalan | JavaScript template tidak dijalankan; ganti dengan CSS. |
+| Tombol Keluar atau bagian khusus pengurus tidak terlihat | Memang disembunyikan di halaman publik; pengurus bekerja di Portal Pengurus. |
+| Pilihan dark mode hilang setelah halaman ditutup | Penyimpanan browser di website hanya sementara (sandbox). |
+| Tombol dengan \`onclick\` tidak bereaksi | Atribut \`on...\` dihapus saat terbit; pasang event dengan \`addEventListener\` di file JS. |
 `,
   },
 

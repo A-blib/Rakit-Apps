@@ -21,6 +21,7 @@ Jika ada yang bertentangan, `docs/01-panduan-modul-dinamis.md` dan bagian 3 file
    template/
    ├── index.html      ← wajib di sini (akar ZIP nanti)
    ├── css/style.css
+   ├── js/main.js       ← opsional
    └── img/...          ← gambar contoh milik sendiri atau berlisensi bebas
    ```
 3. Pasang modul dinamis sesuai kebutuhan dengan atribut `data-ws-*` dari panduan.
@@ -30,11 +31,14 @@ Jika ada yang bertentangan, `docs/01-panduan-modul-dinamis.md` dan bagian 3 file
 ## 3. Aturan yang wajib dipatuhi
 
 - **HTML + CSS murni.** Jangan membuat hasil build Next.js/React/Vue/Svelte/Angular.
-- **JavaScript template TIDAK dijalankan** di website yang tayang di `orgspace.app`. Jangan membuat konten, menu,
-  slider, tab, atau tampilan apa pun yang bergantung pada JavaScript. Pakai CSS: `:hover`, `:target`,
-  `<details>`/`<summary>`, checkbox hack, `scroll-snap`, animasi CSS.
+- **JavaScript boleh** (menu HP, slider, tab, dark mode) di file `js/*.js` atau library dari CDN yang diizinkan.
+  Website dijalankan di sandbox browser, jadi:
+  - `localStorage`, `sessionStorage`, dan cookie hanya sementara (hilang saat halaman ditutup/pindah halaman);
+  - halaman publik tidak tahu siapa pengurus yang login: jangan pakai `data-ws-auth="logout"`, `"status"`, atau
+    `data-ws-role` di template baru. Cukup tombol `<a href="admin" data-ws-auth="login">` ke Portal Pengurus.
 - **Dilarang** atribut `on...` (`onclick`, `onload`, `onerror`, dst.) dan link `javascript:`. Keduanya dihapus saat
-  website diterbitkan.
+  website diterbitkan. Pasang event dengan `addEventListener` di file JS (lihat `contoh-template/js/main.js`).
+- Boleh beberapa halaman (`index.html`, `tentang.html`, ...) yang saling terhubung dengan link relatif.
 - **Path relatif** untuk aset lokal: `css/style.css`, `img/logo.png` (bukan `/css/...`).
 - Wajib `<meta name="viewport" content="width=device-width, initial-scale=1">` dan desain rapi di layar HP (≤ 400px).
 - CDN hanya dari: `cdn.jsdelivr.net`, `cdnjs.cloudflare.com`, `unpkg.com`, `cdn.tailwindcss.com`,
@@ -56,9 +60,9 @@ Jika ada yang bertentangan, `docs/01-panduan-modul-dinamis.md` dan bagian 3 file
 - [ ] `pengumuman` / `berita` / `kegiatan` hanya memakai field: `judul`, `ringkasan`, `konten`, `tanggal`, `foto`,
       `detail` (pakai `data-ws-link="detail"`).
 - [ ] `data-ws-limit` (jika ada) bernilai 1–100.
-- [ ] `data-ws-auth` hanya `login`, `logout`, atau `status`; tombol login berupa `<a href="admin" data-ws-auth="login">`.
+- [ ] Tombol Portal Pengurus berupa `<a href="admin" data-ws-auth="login">`.
 - [ ] Setiap `<input>`, `<textarea>`, `<select>` di dalam `<form data-ws-form="...">` punya atribut `name`.
-- [ ] Tidak ada `on...=` , `javascript:`, `<script>` yang wajib untuk tampilan, atau path absolut.
+- [ ] Tidak ada `on...=`, `javascript:`, atau path absolut; script tidak butuh data tersimpan permanen di browser.
 - [ ] Halaman tetap rapi di lebar 360px.
 
 ## 5. Membuat ZIP

@@ -33,7 +33,7 @@ contoh-modul-orgspace/
 
 ## Mencoba contoh apa adanya
 
-ZIP isi folder `contoh-template/` lalu upload. Template ini memakai: login pengurus, catatan khusus pengurus,
-pengumuman, modul kustom `prestasi` dan `agenda`, serta formulir `pendaftaran` dan `aspirasi`.
+ZIP isi folder `contoh-template/` lalu upload. Template ini memakai: tombol Portal Pengurus, pengumuman, modul
+kustom `prestasi` dan `agenda`, formulir `pendaftaran` dan `aspirasi`, serta menu HP dengan JavaScript (`js/main.js`).
 
 Dokumentasi terbaru selalu ada di portal OrgSpace: **Dokumentasi → Penyedia template → Panduan Modul Dinamis**.
