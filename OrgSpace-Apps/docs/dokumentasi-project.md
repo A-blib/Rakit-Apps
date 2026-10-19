@@ -1726,8 +1726,23 @@ Konfigurasi server: `SITES_PUBLIC_IP` (record A) dan `SITES_CUSTOM_TARGET` (CNAM
 | Modul kustom harus diketik manual di portal | `SiteRenderResponse.modules` (nama → field) mengisi form portal otomatis |
 | Form publik tanpa batas | Maks 30 isian × 5.000 karakter, nama form `[a-z0-9_-]` |
 
-Contoh template semua modul: `docs/contoh-template/portal-organisasi-lengkap/`. Aturan baru untuk provider: migrasi V29
+Contoh template semua modul (paket unduhan dokumentasi): `../OrgSpace-Website/contoh-modul-orgspace/`. Aturan baru untuk provider: migrasi V29
 (artikel `modul-bawaan-orgspace`).
+
+### Website user dengan JavaScript (sandbox, 19 Oktober 2026)
+Keputusan Aris: JavaScript template harus jalan agar website organisasi interaktif. OrgSpace-Hosting menyajikan
+file asli template (`/{slug}/`, `/{slug}/tentang.html`, `css/`, `js/`, `img/`) dengan header
+`Content-Security-Policy: sandbox allow-scripts ...` tanpa `allow-same-origin`.
+
+| Dampak | Keterangan |
+|---|---|
+| JS template jalan | Menu HP, slider, tab, Tailwind CDN, Alpine, Swiper, AOS |
+| Banyak halaman jalan | Link relatif `tentang.html` → `/{slug}/tentang.html` (alamat beranda diberi "/" di akhir) |
+| Aman antar-website | Halaman berjalan sebagai origin anonim: tidak bisa membaca token Portal Pengurus/website lain |
+| Penyimpanan browser sementara | `localStorage`/cookie diganti versi memori agar script tidak error; hilang saat halaman ditutup |
+| Halaman publik selalu tamu | `data-ws-auth="logout"/"status"` dan `data-ws-role` tidak lagi menampilkan sesi pengurus |
+| CORS hanya di Hosting | `/api/forms/...` ber-CORS `*` (tanpa cookie/token); backend tetap tanpa CORS |
+| Mode rakit sendiri | Pindah ke `/rakit/{slug}`; slug `rakit` dicadangkan |
 
 ## 34. Glosarium
 

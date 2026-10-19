@@ -56,7 +56,9 @@ public class SitePublishService {
     private static final Set<String> RESERVED_SLUGS = Set.of(
             "www", "api", "admin", "dashboard", "app", "mail", "smtp", "ftp", "cdn", "static", "assets",
             "custom", "demo", "tes", "test", "support", "help", "status", "blog", "docs", "login", "auth",
-            "account", "orgspace", "official", "resmi", "pemerintah", "kemdikbud"
+            "account", "orgspace", "official", "resmi", "pemerintah", "kemdikbud",
+            // /rakit/{slug} dipakai OrgSpace-Hosting untuk website mode rakit sendiri.
+            "rakit"
     );
 
     private final ProjectRepository projectRepository;
