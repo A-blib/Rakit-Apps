@@ -40,7 +40,14 @@
 - Bug ruang kerja di HP: terbit dari BEM → masuk BEM; buka website BEM dari tab Website, ganti nama, terbit ulang → tetap project yang sama di BEM (v2, tanpa duplikat); daftar My Organisasi tidak memuatnya.
 - Test baru `existingWebsiteAlwaysPublishesInItsOwnWorkspace`: ruang kerja aktif pindah + nama diganti → tetap di BEM; orang luar ditolak.
 
+### Domain kustom (revisi)
+- Unit test `SiteDomainServiceTest` (8): `.sch.id` utama → A @; `sch.id` saja ditolak; domain aktif di website lain menghalangi; bypass diabaikan tanpa izin server.
+- Uji di HP: `sch.id` ditolak dengan pesan; `osis-nusantara-uji.sch.id` → instruksi `A @ 103.175.216.42` + `TXT _orgspace-verify`; Periksa → DNS belum ada → "Aktifkan Langsung" (debug) → Domain Aktif; halaman website menampilkan domain; Lepas Domain → kembali "Belum Ada".
+- Uji Hosting di laptop (header Host): `/` dan `/sma-nusantara-uji` di domain kustom → 200; Caddy ask domain aktif 200, domain asing 404; host asing → dialihkan ke portal.
+- Belum diuji: domain sungguhan dengan DNS asli (butuh VPS + domain).
+
 ## Konsep yang dipelajari
+- Akhiran publik (public suffix): `.sch.id` dan `.my.id` dimiliki pengelola domain, jadi `osis.sch.id` adalah domain utama milik sekolah, bukan subdomain.
 - Debounce: menunda cek ke server sampai user berhenti mengetik, agar tidak memanggil server di setiap huruf.
 - Jawaban basi: jawaban server untuk ketikan lama diabaikan jika isi field sudah berubah.
 - Path vs subdomain: path dibaca dari URL (`/[slug]`), subdomain dari header `Host`; path tidak butuh DNS tambahan.

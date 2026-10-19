@@ -122,7 +122,9 @@ public record AppProperties(
             String customTarget,
             String publicIp,
             String verifyTxtPrefix,
-            String hostingUrl) {
+            String hostingUrl,
+            // true hanya di profile dev: verifikasi domain kustom boleh dilewati untuk uji di laptop.
+            boolean allowDnsBypass) {
 
         public Sites {
             if (rootDir == null || rootDir.isBlank()) {

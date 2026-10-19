@@ -66,6 +66,9 @@ app:
     root-dir: ${SITES_ROOT:./data/sites}
     # Alamat OrgSpace-Hosting; link website = {hosting-url}/{slug}. HP menjangkau localhost:3001 lewat adb reverse.
     hosting-url: ${SITES_HOSTING_URL:http://localhost:3001}
+    # Domain kustom: tujuan DNS yang ditampilkan ke user (A untuk domain utama, CNAME untuk subdomain).
+    public-ip: ${SITES_PUBLIC_IP:103.175.216.42}
+    custom-target: ${SITES_CUSTOM_TARGET:custom.orgspace.app}
   # Portal web OrgSpace: landing, docs, monitoring, kritik & saran (docs/rancangan/portal-web.md).
   portal:
     android-download-url: ${PORTAL_ANDROID_DOWNLOAD_URL:}

@@ -95,7 +95,7 @@ public class PublishSuccessDialog extends DialogFragment {
             dismiss();
             Fragment parent = getParentFragment();
             if (parent != null) {
-                com.aris.templateapp.ui.website.CustomDomainDialog.show(parent, projectId, orgName, slug, url, null);
+                com.aris.templateapp.ui.website.CustomDomainDialog.show(parent, projectId, "", slug, url, null);
             }
         });
 

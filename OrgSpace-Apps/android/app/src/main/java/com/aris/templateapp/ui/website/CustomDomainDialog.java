@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import com.aris.templateapp.BuildConfig;
 import com.aris.templateapp.R;
 import com.aris.templateapp.core.util.AppExecutors;
 import com.aris.templateapp.core.util.Resource;
@@ -99,8 +100,7 @@ public class CustomDomainDialog extends DialogFragment {
         binding.toolbar.setNavigationOnClickListener(v -> dismiss());
         binding.toolbar.setTitle(websiteName.isEmpty() ? getString(R.string.custom_domain_title) : websiteName);
 
-        String displaySubdomain = defaultSiteUrl.isEmpty() ? "https://" + slug + ".orgspace.site" : defaultSiteUrl;
-        binding.textDefaultSubdomain.setText(displaySubdomain);
+        binding.textDefaultSubdomain.setText(defaultSiteUrl);
 
         binding.btnConnectDomain.setOnClickListener(v -> onConnectDomain());
         binding.btnVerifyDomain.setOnClickListener(v -> onVerifyDomain(false));
@@ -148,6 +148,10 @@ public class CustomDomainDialog extends DialogFragment {
     }
 
     private void renderDomain(@Nullable DomainResponseDto domain) {
+        // Saat domain kustom aktif, link dari halaman website sudah berupa domain kustom; link bawaan dari server.
+        if (domain != null && domain.defaultUrl != null) {
+            binding.textDefaultSubdomain.setText(domain.defaultUrl);
+        }
         if (domain == null) {
             // Belum pasang domain
             binding.badgeCustomStatus.setText("Belum Ada");
@@ -254,9 +258,11 @@ public class CustomDomainDialog extends DialogFragment {
                     renderDomain(currentDomain);
                     Toast.makeText(requireContext(), R.string.custom_domain_success_activated, Toast.LENGTH_LONG).show();
                     notifyChanged();
+                } else if (res.getError() != null && (bypassDns || !BuildConfig.DEBUG)) {
+                    showError(ErrorMessages.forError(requireContext(), res.getError()));
                 } else if (res.getError() != null) {
                     String errorMsg = ErrorMessages.forError(requireContext(), res.getError());
-                    // Tawari aktivasi langsung jika gagal DNS untuk kemudahan dev/testing
+                    // Hanya build debug: tawarkan aktivasi tanpa DNS (server juga hanya mengizinkannya di profile dev).
                     new MaterialAlertDialogBuilder(requireContext())
                             .setTitle("Verifikasi DNS")
                             .setMessage(errorMsg + "\n\nIngin mengaktifkan langsung untuk pengujian (Testing/Dev)?")

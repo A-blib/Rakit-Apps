@@ -18,6 +18,7 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
 import java.io.IOException;
+import com.google.common.net.InternetDomainName;
 import java.net.IDN;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -74,13 +75,9 @@ public class SiteDomainService {
 
         String cleanHost = normalizeHostname(request.hostname());
 
-        // 1. Cek apakah domain sudah dipakai di website lain
-        Optional<SiteDomain> taken = siteDomainRepository.findByHostname(cleanHost);
-        if (taken.isPresent() && !"removed".equalsIgnoreCase(taken.get().getStatus())) {
-            if (!taken.get().getSiteId().equals(site.getId())) {
-                throw new ApiException(ErrorCode.DOMAIN_TAKEN, "Domain '" + cleanHost + "' sudah digunakan oleh website lain.");
-            }
-        }
+        // 1. Hanya domain AKTIF di website lain yang menghalangi. Klaim pending orang lain belum terbukti
+        //    (belum lolos cek DNS), jadi tidak boleh membuat pemilik asli tidak bisa mendaftar.
+        requireNotActiveElsewhere(cleanHost, site.getId());
 
         // 2. Cek apakah website ini sudah punya domain aktif/pending
         Optional<SiteDomain> existing = siteDomainRepository.findFirstBySiteIdAndStatusNot(site.getId(), "removed");
@@ -119,8 +116,10 @@ public class SiteDomainService {
 
         domain.setLastCheckedAt(clock.instant());
 
-        // Verifikasi DNS TXT record atau bypass untuk kebutuhan testing/dev lokal
-        boolean verified = bypassDns || checkDnsTxt(domain.getHostname(), domain.getVerificationToken());
+        // Lewati cek DNS hanya jika server mengizinkan (profile dev). Di server asli parameter ini diabaikan,
+        // agar tidak ada yang bisa mengaktifkan domain milik orang lain tanpa bukti kepemilikan.
+        boolean verified = (bypassDns && properties.sites().allowDnsBypass())
+                || checkDnsTxt(domain.getHostname(), domain.getVerificationToken());
 
         if (!verified) {
             domain.setLastError("Record TXT verifikasi belum terdeteksi di DNS. Tunggu beberapa menit agar propagasi DNS selesai.");
@@ -129,6 +128,7 @@ public class SiteDomainService {
                     "Record TXT verifikasi belum terdeteksi di DNS. Pengaturan DNS biasanya butuh beberapa menit sampai beberapa jam. Coba periksa lagi nanti, ya.");
         }
 
+        requireNotActiveElsewhere(domain.getHostname(), site.getId());
         domain.setStatus("active");
         domain.setActivatedAt(clock.instant());
         domain.setLastError(null);
@@ -159,6 +159,14 @@ public class SiteDomainService {
 
         siteDomainRepository.delete(domain);
         log.info("Domain kustom {} untuk website {} telah dilepas", domain.getHostname(), site.getSlug());
+    }
+
+    private void requireNotActiveElsewhere(String hostname, UUID siteId) {
+        siteDomainRepository.findByHostnameAndStatus(hostname, "active")
+                .filter(active -> !active.getSiteId().equals(siteId))
+                .ifPresent(active -> {
+                    throw new ApiException(ErrorCode.DOMAIN_TAKEN, "Domain '" + hostname + "' sudah aktif di website lain.");
+                });
     }
 
     private void checkAdmin(UUID orgId, UUID userId) {
@@ -201,6 +209,11 @@ public class SiteDomainService {
 
         if (!HOSTNAME_PATTERN.matcher(clean).matches()) {
             throw new ApiException(ErrorCode.DOMAIN_INVALID, "Nama domain mengandung karakter yang tidak diizinkan.");
+        }
+
+        // Domain harus berada di bawah akhiran publik (.id, .sch.id, .my.id, .com, ...), bukan akhirannya sendiri.
+        if (!InternetDomainName.isValid(clean) || !InternetDomainName.from(clean).isUnderPublicSuffix()) {
+            throw new ApiException(ErrorCode.DOMAIN_INVALID, "Masukkan domain lengkap, mis. osis-smansa.sch.id atau www.osis.id.");
         }
 
         String sysDomain = properties.sites().domain().toLowerCase(Locale.ROOT).split(":")[0];
@@ -283,35 +296,25 @@ public class SiteDomainService {
         String aTarget = properties.sites().publicIp();
         String verifyPrefix = properties.sites().verifyTxtPrefix();
 
+        // Nama host ditulis relatif terhadap domain yang dibeli user (zona DNS di panel registrar), mis. untuk
+        // web.osis.sch.id zonanya osis.sch.id → host "web". Akhiran publik (.sch.id, .my.id) dikenali Guava,
+        // jadi osis.sch.id dianggap domain utama, bukan subdomain.
+        String zone = InternetDomainName.from(domain.getHostname()).topPrivateDomain().toString();
+        String sub = domain.getHostname().equals(zone) ? null
+                : domain.getHostname().substring(0, domain.getHostname().length() - zone.length() - 1);
+
         List<DomainInstructionDto> instructions = new ArrayList<>();
-
-        // Periksa apakah hostname memiliki subdomain (mis. www.domain.com atau web.sekolah.sch.id)
-        String[] parts = domain.getHostname().split("\\.");
-        boolean isSubdomain = parts.length > 2;
-
-        if (isSubdomain) {
-            instructions.add(new DomainInstructionDto(
-                    "CNAME",
-                    parts[0],
-                    cnameTarget,
-                    "Arahkan subdomain ke target Cloudflare / server OrgSpace"
-            ));
+        if (sub != null) {
+            instructions.add(new DomainInstructionDto("CNAME", sub, cnameTarget,
+                    "Di pengaturan DNS " + zone + ", arahkan subdomain ke server OrgSpace"));
         } else {
-            instructions.add(new DomainInstructionDto(
-                    "A",
-                    "@",
-                    aTarget,
-                    "Arahkan domain utama ke alamat IP publik server OrgSpace"
-            ));
+            instructions.add(new DomainInstructionDto("A", "@", aTarget,
+                    "Di pengaturan DNS " + zone + ", arahkan domain utama ke IP server OrgSpace"));
         }
+        instructions.add(new DomainInstructionDto("TXT", sub == null ? verifyPrefix : verifyPrefix + "." + sub,
+                domain.getVerificationToken(), "Wajib: bukti bahwa domain ini milikmu"));
 
-        instructions.add(new DomainInstructionDto(
-                "TXT",
-                verifyPrefix + "." + domain.getHostname(),
-                domain.getVerificationToken(),
-                "Wajib: bukti kepemilikan domain untuk verifikasi otomatis"
-        ));
-
+        String slug = siteRepository.findById(domain.getSiteId()).map(Site::getSlug).orElse(null);
         return new DomainResponse(
                 domain.getId(),
                 domain.getSiteId(),
@@ -322,7 +325,8 @@ public class SiteDomainService {
                 aTarget,
                 domain.getActivatedAt(),
                 instructions,
-                domain.getLastError()
+                domain.getLastError(),
+                slug == null ? null : properties.sites().urlOf(slug)
         );
     }
 }

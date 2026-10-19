@@ -13,6 +13,8 @@ public class DomainResponseDto {
     public String activatedAt;
     public List<DomainInstructionDto> instructions;
     public String lastError;
+    /** Link bawaan orgspace.app/{slug}; tetap berlaku walau domain kustom aktif. */
+    public String defaultUrl;
 
     public boolean isActive() {
         return "active".equalsIgnoreCase(status);

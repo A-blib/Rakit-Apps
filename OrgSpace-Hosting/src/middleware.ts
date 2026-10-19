@@ -38,9 +38,10 @@ export async function middleware(request: NextRequest) {
       if (res.ok) {
         const data = await res.json();
         if (data.slug) {
-          return NextResponse.rewrite(
-            new URL(`/${data.slug}${pathname === "/" ? "" : pathname}`, request.url)
-          );
+          // Link di halaman yang sudah memuat /{slug} tidak boleh jadi /{slug}/{slug}.
+          const base = `/${data.slug}`;
+          const target = pathname === base || pathname.startsWith(`${base}/`) ? pathname : `${base}${pathname === "/" ? "" : pathname}`;
+          return NextResponse.rewrite(new URL(target, request.url));
         }
       }
     } catch (e) {

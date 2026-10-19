@@ -14,5 +14,7 @@ public record DomainResponse(
         String targetA,
         Instant activatedAt,
         List<DomainInstructionDto> instructions,
-        String lastError
+        String lastError,
+        // Link bawaan orgspace.app/{slug}; tetap berlaku walau domain kustom aktif.
+        String defaultUrl
 ) {}

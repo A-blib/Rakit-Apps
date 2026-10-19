@@ -59,6 +59,13 @@ class SiteDomainServiceTest {
     @BeforeEach
     void setUp() {
         clock = Clock.fixed(Instant.parse("2026-10-17T12:00:00Z"), ZoneOffset.UTC);
+        service = serviceWith(false);
+
+        site = new Site(UUID.randomUUID(), orgId, "osis-smansa");
+        site.setId(siteId);
+    }
+
+    private SiteDomainService serviceWith(boolean allowDnsBypass) {
         AppProperties.Sites sitesProp = new AppProperties.Sites(
                 "orgspace.site",
                 "https",
@@ -72,13 +79,19 @@ class SiteDomainServiceTest {
                 "custom.orgspace.site",
                 "103.175.216.42",
                 "_orgspace-verify",
-                "https://orgspace.app"
+                "https://orgspace.app",
+                allowDnsBypass
         );
         properties = new AppProperties(null, null, null, "templateapp", "Asia/Jakarta", null, null, null, sitesProp, null, null);
-        service = new SiteDomainService(siteRepository, siteReleaseRepository, siteDomainRepository, access, siteStorage, properties, clock);
+        return new SiteDomainService(siteRepository, siteReleaseRepository, siteDomainRepository, access, siteStorage, properties, clock);
+    }
 
-        site = new Site(UUID.randomUUID(), orgId, "osis-smansa");
-        site.setId(siteId);
+    private void asOwner() {
+        when(siteRepository.findById(siteId)).thenReturn(Optional.of(site));
+        Organization org = new Organization(OrganizationType.ORGANIZATION, "OSIS Smansa", userId);
+        OrganizationMember member = new OrganizationMember(orgId, userId, MemberRole.OWNER, null, clock.instant());
+        when(access.require(eq(orgId), eq(userId), eq(OrgAction.VIEW)))
+                .thenReturn(new OrganizationAccess.Membership(org, member));
     }
 
     @Test
@@ -110,7 +123,6 @@ class SiteDomainServiceTest {
         when(access.require(eq(orgId), eq(userId), eq(OrgAction.VIEW)))
                 .thenReturn(new OrganizationAccess.Membership(org, member));
 
-        when(siteDomainRepository.findByHostname("www.osissmansa.my.id")).thenReturn(Optional.empty());
         when(siteDomainRepository.findFirstBySiteIdAndStatusNot(siteId, "removed")).thenReturn(Optional.empty());
         when(siteDomainRepository.save(any(SiteDomain.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -122,7 +134,56 @@ class SiteDomainServiceTest {
         assertThat(response.instructions().get(0).type()).isEqualTo("CNAME");
         assertThat(response.instructions().get(0).value()).isEqualTo("custom.orgspace.site");
         assertThat(response.instructions().get(1).type()).isEqualTo("TXT");
-        assertThat(response.instructions().get(1).host()).isEqualTo("_orgspace-verify.www.osissmansa.my.id");
+        assertThat(response.instructions().get(0).host()).isEqualTo("www");
+        assertThat(response.instructions().get(1).host()).isEqualTo("_orgspace-verify.www");
+        assertThat(response.defaultUrl()).isEqualTo("https://orgspace.app/osis-smansa");
+    }
+
+    @Test
+    void addDomain_apexUnderIndonesianSuffixGetsARecord() {
+        asOwner();
+        when(siteDomainRepository.findFirstBySiteIdAndStatusNot(siteId, "removed")).thenReturn(Optional.empty());
+        when(siteDomainRepository.save(any(SiteDomain.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // osis-smansa.sch.id adalah domain utama (.sch.id akhiran publik), bukan subdomain "osis-smansa".
+        DomainResponse response = service.addDomain(siteId, userId, new AddDomainRequest("osis-smansa.sch.id"));
+
+        assertThat(response.instructions().get(0).type()).isEqualTo("A");
+        assertThat(response.instructions().get(0).host()).isEqualTo("@");
+        assertThat(response.instructions().get(1).host()).isEqualTo("_orgspace-verify");
+    }
+
+    @Test
+    void normalizeHostname_rejectsBarePublicSuffix() {
+        assertThatThrownBy(() -> service.normalizeHostname("sch.id"))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("domain lengkap");
+    }
+
+    @Test
+    void addDomain_activeDomainOnOtherSiteBlocks() {
+        asOwner();
+        SiteDomain other = new SiteDomain(UUID.randomUUID(), "osis.id", "x");
+        other.setStatus("active");
+        when(siteDomainRepository.findByHostnameAndStatus("osis.id", "active")).thenReturn(Optional.of(other));
+
+        assertThatThrownBy(() -> service.addDomain(siteId, userId, new AddDomainRequest("osis.id")))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("sudah aktif");
+    }
+
+    @Test
+    void verifyDomain_bypassIgnoredWhenServerDoesNotAllowIt() {
+        asOwner();
+        UUID domainId = UUID.randomUUID();
+        SiteDomain domain = new SiteDomain(siteId, "domain-yang-tidak-ada-orgspace-uji.my.id", "token123");
+        domain.setId(domainId);
+        when(siteDomainRepository.findById(domainId)).thenReturn(Optional.of(domain));
+
+        // Tanpa izin server, bypassDns=true tetap wajib lolos cek DNS → gagal, domain tetap pending.
+        assertThatThrownBy(() -> service.verifyDomain(siteId, domainId, userId, true))
+                .isInstanceOf(ApiException.class);
+        assertThat(domain.getStatus()).isEqualTo("pending");
     }
 
     @Test
@@ -139,7 +200,7 @@ class SiteDomainServiceTest {
         when(siteDomainRepository.findById(domainId)).thenReturn(Optional.of(domain));
         when(siteDomainRepository.save(any(SiteDomain.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        DomainResponse response = service.verifyDomain(siteId, domainId, userId, true);
+        DomainResponse response = serviceWith(true).verifyDomain(siteId, domainId, userId, true);
 
         assertThat(response.status()).isEqualTo("active");
         assertThat(response.activatedAt()).isNotNull();

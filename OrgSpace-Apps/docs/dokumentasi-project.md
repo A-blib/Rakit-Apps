@@ -1702,6 +1702,17 @@ jadi backend tidak perlu CORS. Refresh token backend sekali pakai, sehingga refr
   Dengan `projectId`, server memperbarui project itu di ruang kerjanya sendiri (ruang kerja aktif diabaikan), jadi
   website tidak pindah ruang kerja dan tidak terduplikasi walau namanya diganti di editor.
 
+### Domain kustom (revisi 19 Oktober 2026)
+| Masalah | Perbaikan |
+|---|---|
+| `verify?bypassDns=true` bisa dipakai siapa saja → domain orang lain bisa diaktifkan tanpa bukti | Bypass hanya berlaku jika `app.sites.allow-dns-bypass=true` (hanya `application-dev.yml`); tombol "Aktifkan Langsung" hanya di build debug |
+| Klaim pending orang lain membuat pemilik asli tidak bisa mendaftar (hostname UNIQUE) | V28: unik hanya untuk domain aktif; klaim pending tidak menghalangi, yang lolos cek DNS duluan yang aktif |
+| `osis.sch.id`, `nama.my.id` dianggap subdomain ("CNAME osis") | Akhiran publik dikenali (`InternetDomainName` dari Guava, sudah ikut Google API Client): domain utama → `A @ {IP}`, subdomain → `CNAME {sub}`; host TXT relatif ke zona DNS |
+| App menampilkan link bawaan lama `slug.orgspace.site` / domain kustom sebagai link bawaan | `DomainResponse.defaultUrl` dari server |
+| Di domain kustom, link `/{slug}` menjadi `/{slug}/{slug}` (404) | Middleware Hosting tidak menambah slug dua kali |
+
+Konfigurasi server: `SITES_PUBLIC_IP` (record A) dan `SITES_CUSTOM_TARGET` (CNAME) di `.env`.
+
 ## 34. Glosarium
 
 | Istilah | Arti singkat |
