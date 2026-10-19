@@ -192,7 +192,8 @@ public class TemplateEditorFragment extends Fragment implements EditorForm.Liste
         });
         Bundle args = requireArguments();
         viewModel.start(args.getString(EditorNav.ARG_PROJECT_ID), args.getString(EditorNav.ARG_TEMPLATE_ID),
-                args.getInt(EditorNav.ARG_TEMPLATE_VERSION), args.getString(EditorNav.ARG_TITLE));
+                args.getInt(EditorNav.ARG_TEMPLATE_VERSION), args.getString(EditorNav.ARG_TITLE),
+                args.getString(EditorNav.ARG_ORGANIZATION_ID));
     }
 
     private void onLoaded(@Nullable Resource<TemplateEditorViewModel.Loaded> resource) {

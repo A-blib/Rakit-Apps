@@ -28,7 +28,6 @@ public class StateView extends FrameLayout {
     /** Loading diminta tapi belum ditampilkan (masih dalam jeda {@code loading_show_delay_ms}). */
     @Nullable
     private Runnable delayedShow;
-    private final HeroLoading heroLoading;
     /** Waktu (SystemClock.uptimeMillis) saat loading mulai tampil; 0 = loading tidak sedang tampil. */
     private long loadingSince;
     /** Perpindahan keadaan yang sedang ditunda sampai waktu minimal loading habis. */
@@ -44,12 +43,11 @@ public class StateView extends FrameLayout {
         binding = ViewStateBinding.inflate(LayoutInflater.from(context), this);
         showDelayMs = getResources().getInteger(R.integer.loading_show_delay_ms);
         minLoadingMs = getResources().getInteger(R.integer.loading_min_visible_ms);
-        heroLoading = new HeroLoading(binding.animation);
         setVisibility(GONE);
     }
 
     /**
-     * Proses yang cepat tidak perlu animasi (permintaan Aris): loading baru ditampilkan jika data belum datang setelah
+     * Proses yang cepat tidak perlu animasi: loading baru ditampilkan jika data belum datang setelah
      * {@code loading_show_delay_ms}. Selama jeda itu layar dibiarkan kosong (keadaan lama disembunyikan).
      */
     public void showLoading() {
@@ -57,15 +55,16 @@ public class StateView extends FrameLayout {
         if (loadingSince != 0 || delayedShow != null) {
             return;
         }
-        heroLoading.cancel();
+        binding.animation.cancelAnimation();
         setVisibility(GONE);
         delayedShow = () -> {
             delayedShow = null;
             loadingSince = SystemClock.uptimeMillis();
             setVisibility(VISIBLE);
+            binding.progress.setVisibility(VISIBLE);
+            binding.animation.setVisibility(GONE);
             binding.message.setText(R.string.state_loading);
             binding.retryButton.setVisibility(View.GONE);
-            heroLoading.start();
         };
         postDelayed(delayedShow, showDelayMs);
     }
@@ -85,32 +84,19 @@ public class StateView extends FrameLayout {
 
     public void hide() {
         afterLoading(() -> {
-            heroLoading.cancel();
+            binding.animation.cancelAnimation();
             setVisibility(GONE);
         });
     }
 
     /**
      * Data siap: sembunyikan StateView lalu tampilkan {@code content} setelah {@code bind} mengisinya.
-     * Jika loading sedang tampil, urutannya: tunggu waktu minimal → pahlawan melaju ke kanan → isi layar naik dari
-     * bawah. Jika tidak (mis. muat ulang diam-diam), isi langsung ditampilkan tanpa animasi.
      */
     public void hide(View content, Runnable bind) {
         afterLoading(() -> {
-            boolean wasLoading = getVisibility() == VISIBLE && loadingSince != 0;
-            Runnable reveal = () -> {
-                setVisibility(GONE);
-                bind.run();
-                content.setVisibility(VISIBLE);
-                if (wasLoading) {
-                    HeroLoading.slideUpIn(content);
-                }
-            };
-            if (wasLoading) {
-                heroLoading.finish(reveal);
-            } else {
-                reveal.run();
-            }
+            setVisibility(GONE);
+            bind.run();
+            content.setVisibility(VISIBLE);
         });
     }
 
@@ -154,16 +140,17 @@ public class StateView extends FrameLayout {
     protected void onDetachedFromWindow() {
         cancelPending();
         cancelDelayedShow();
-        heroLoading.cancel();
+        binding.animation.cancelAnimation();
         super.onDetachedFromWindow();
     }
 
     private void show(int animation, CharSequence message, @Nullable CharSequence actionText,
                       @Nullable Runnable retry) {
-        heroLoading.cancel();
         setVisibility(VISIBLE);
+        binding.progress.setVisibility(GONE);
+        binding.animation.setVisibility(VISIBLE);
         binding.animation.setAnimation(animation);
-        // Loading memutar sebagian frame saja; animasi lain diputar penuh dan berulang.
+        // Animasi diputar penuh dan berulang.
         binding.animation.setMinAndMaxProgress(0f, 1f);
         binding.animation.setRepeatCount(com.airbnb.lottie.LottieDrawable.INFINITE);
         // Warna dipasang ulang setiap ganti animasi: pengaturan warna Lottie melekat pada animasi yang sedang

@@ -98,4 +98,26 @@
     <string name="error_publish_note_too_long">Catatan maksimal 200 karakter.</string>
     <!-- %1$s = alamat website -->
     <string name="website_open_address">Buka website %1$s</string>
+
+    <!-- Domain kustom (alur-publish-website.md 7.10 & 8.7) -->
+    <string name="custom_domain_title">Domain Website</string>
+    <string name="custom_domain_subtitle">Hubungkan domain milikmu sendiri (mis. webUser.my.id, osis.id, atau organisasi.com) agar website tampil profesional.</string>
+    <string name="custom_domain_default_label">Alamat bawaan gratis</string>
+    <string name="custom_domain_custom_label">Domain sendiri</string>
+    <string name="custom_domain_hint">Domain kamu (mis. webUser.my.id)</string>
+    <string name="custom_domain_connect_btn">Sambungkan Domain</string>
+    <string name="custom_domain_status_pending">Menunggu Verifikasi DNS</string>
+    <string name="custom_domain_status_active">Domain Aktif</string>
+    <string name="custom_domain_dns_setup_header">Pengaturan DNS</string>
+    <string name="custom_domain_dns_setup_desc">Tambahkan record berikut pada panel DNS tempat kamu membeli domain (misal Cloudflare, Niagahoster, Domainesia):</string>
+    <string name="custom_domain_verify_btn">Periksa &amp; Aktifkan DNS</string>
+    <string name="custom_domain_remove_btn">Lepas Domain</string>
+    <string name="custom_domain_copied">Disalin ke clipboard</string>
+    <string name="custom_domain_success_activated">Domain kustom berhasil diverifikasi dan aktif!</string>
+    <string name="custom_domain_open_site">Buka Website</string>
+    <string name="custom_domain_copy_address">Salin Alamat</string>
+    <string name="custom_domain_confirm_remove_title">Lepas domain sendiri?</string>
+    <string name="custom_domain_confirm_remove_msg">Website tidak akan lagi dapat diakses melalui domain ini. Kamu tetap bisa menyambungkannya kembali kapan saja.</string>
+    <string name="custom_domain_publish_success_btn">Atur Domain Sendiri</string>
+    <string name="custom_domain_active_desc">Domain aktif: %1$s</string>
 </resources>

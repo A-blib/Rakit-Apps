@@ -14,5 +14,6 @@ public record SiteResponse(
         String publishedByName,
         boolean hasUnpublishedChanges,
         String seoTitle,
-        String seoDescription) {
+        String seoDescription,
+        String customDomain) {
 }

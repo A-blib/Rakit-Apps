@@ -83,6 +83,7 @@ public class WebsiteQueries {
               LEFT JOIN users u ON u.id = p.updated_by
               LEFT JOIN sites s ON s.project_id = p.id
               LEFT JOIN site_releases r ON r.id = s.current_release_id
+              LEFT JOIN site_domains sd ON sd.site_id = s.id AND sd.status = 'active'
               LEFT JOIN project_locks l ON l.project_id = p.id AND l.expires_at > now()
               LEFT JOIN users lu ON lu.id = l.user_id
             """;
@@ -90,7 +91,7 @@ public class WebsiteQueries {
     private static final String COLUMNS = """
             SELECT p.id, p.name, p.mode, p.missing_count, p.thumbnail_asset_id, p.source_template_id,
                    p.created_at, p.updated_at, u.display_name AS updated_by_name,
-                   s.slug, s.status AS site_status,
+                   s.slug, s.status AS site_status, sd.hostname AS custom_domain,
                    (s.id IS NOT NULL AND r.id IS NOT NULL AND p.content_updated_at > r.created_at) AS changed,
                    l.user_id AS lock_user_id, l.expires_at AS lock_expires_at, lu.display_name AS lock_name
             """;
@@ -199,6 +200,15 @@ public class WebsiteQueries {
 
     private WebsiteSummaryResponse summary(ResultSet rs, UUID viewerId) throws SQLException {
         String slug = rs.getString("slug");
+        String customDomain = rs.getString("custom_domain");
+        String siteUrl;
+        if (customDomain != null && !customDomain.isBlank()) {
+            siteUrl = "https://" + customDomain;
+        } else if (slug != null) {
+            siteUrl = properties.sites().urlOf(slug);
+        } else {
+            siteUrl = null;
+        }
         UUID thumbnail = rs.getObject("thumbnail_asset_id", UUID.class);
         UUID lockUser = rs.getObject("lock_user_id", UUID.class);
         // Kunci milik sendiri tidak ditampilkan sebagai "Sedang diedit oleh ...".
@@ -211,7 +221,7 @@ public class WebsiteQueries {
                 PersistableEnum.fromValue(ProjectMode.class, rs.getString("mode")),
                 WebsiteStatus.fromSiteStatus(rs.getString("site_status")),
                 rs.getBoolean("changed"),
-                slug == null ? null : properties.sites().urlOf(slug),
+                siteUrl,
                 rs.getInt("missing_count"),
                 thumbnail == null ? null : "/api/assets/" + thumbnail,
                 rs.getObject("source_template_id", UUID.class),

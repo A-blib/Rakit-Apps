@@ -22,13 +22,23 @@ public class DirectPublishRequestDto {
     @SerializedName("slug")
     public String slug;
 
+    @SerializedName("organizationId")
+    public String organizationId;
+
     public DirectPublishRequestDto(String name, String sourceTemplateId, Integer templateVersion,
                                    Map<String, Object> content, Integer missingCount, String slug) {
+        this(name, sourceTemplateId, templateVersion, content, missingCount, slug, null);
+    }
+
+    public DirectPublishRequestDto(String name, String sourceTemplateId, Integer templateVersion,
+                                   Map<String, Object> content, Integer missingCount, String slug,
+                                   String organizationId) {
         this.name = name;
         this.sourceTemplateId = sourceTemplateId;
         this.templateVersion = templateVersion;
         this.content = content;
         this.missingCount = missingCount;
         this.slug = slug;
+        this.organizationId = organizationId;
     }
 }

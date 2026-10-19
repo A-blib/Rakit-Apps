@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aura cahaya lembut di belakang kartu logo saat aplikasi dibuka -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:type="radial"
+        android:gradientRadius="75dp"
+        android:startColor="@color/color_primary_container"
+        android:endColor="@android:color/transparent" />
+</shape>

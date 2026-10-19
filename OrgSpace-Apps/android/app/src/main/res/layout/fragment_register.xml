@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Layar Daftar (bagian 9.4): form nama, email, password, tombol Daftar, lalu alternatif Google/GitHub. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
+    <LinearLayout
+        android:id="@+id/register_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/app_bar_height"
         app:navigationContentDescription="@string/cd_back"
@@ -126,4 +131,13 @@
                 android:textAppearance="@style/TextAppearance.App.BodySmall" />
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+    </LinearLayout>
+
+    <include
+        android:id="@+id/auth_transition"
+        layout="@layout/view_auth_transition"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+</FrameLayout>

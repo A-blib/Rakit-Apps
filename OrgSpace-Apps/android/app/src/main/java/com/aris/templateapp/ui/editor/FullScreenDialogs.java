@@ -17,13 +17,13 @@ import androidx.fragment.app.DialogFragment;
  * bar navigasi, warna ikon status bar mengikuti tema terang/gelap, isi tidak tertutup bar sistem.
  * Tanpa ini status bar dialog tampil terang walau app dalam mode gelap.
  */
-final class FullScreenDialogs {
+public final class FullScreenDialogs {
 
     private FullScreenDialogs() {
     }
 
     /** Dipanggil di {@code onStart()}, saat window dialog sudah ada. */
-    static void apply(DialogFragment fragment, View root) {
+    public static void apply(DialogFragment fragment, View root) {
         Window window = fragment.getDialog() == null ? null : fragment.getDialog().getWindow();
         if (window == null) {
             return;

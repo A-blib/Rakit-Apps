@@ -43,6 +43,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class ProviderHomeFragment extends Fragment {
 
     private static final int CHECKLIST_STEPS = 3;
+    private static final int MAX_WARNING_ITEMS = 3;
 
     @Inject
     GuideStore guideStore;
@@ -139,7 +140,15 @@ public class ProviderHomeFragment extends Fragment {
         }
         binding.actionCount.setText(String.valueOf(items.size()));
         boolean anyTemplate = false;
+        int warningsShown = 0;
         for (ActionItemDto item : items) {
+            if (ActionItemDto.WARNING.equals(item.kind)) {
+                if (warningsShown >= MAX_WARNING_ITEMS) {
+                    anyTemplate = true;
+                    continue;
+                }
+                warningsShown++;
+            }
             ItemRowBinding row = addRow(binding.actionList);
             switch (item.kind) {
                 case ActionItemDto.CHECK_FAILED:

@@ -11,6 +11,7 @@ public record DirectPublishRequest(
         Integer templateVersion,
         Map<String, Object> content,
         Integer missingCount,
-        String slug
+        String slug,
+        UUID organizationId
 ) {
 }

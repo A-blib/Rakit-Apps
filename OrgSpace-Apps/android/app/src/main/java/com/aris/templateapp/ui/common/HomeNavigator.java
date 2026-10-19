@@ -23,7 +23,11 @@ public final class HomeNavigator {
     /** @param user null = tamu */
     public static void navigateHome(Fragment fragment, User user) {
         NavController navController = NavHostFragment.findNavController(fragment);
-        NavOptions clearAll = new NavOptions.Builder().setPopUpTo(R.id.nav_graph, true).build();
+        NavOptions clearAll = new NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, true)
+                .setEnterAnim(R.anim.slide_up_in)
+                .setExitAnim(R.anim.fade_out)
+                .build();
         StartupDecision decision = StartupDecision.forUser(user);
         switch (decision.getDestination()) {
             case ROLE_SELECT:

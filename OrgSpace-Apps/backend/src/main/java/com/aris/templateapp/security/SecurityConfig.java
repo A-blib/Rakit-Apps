@@ -34,7 +34,9 @@ public class SecurityConfig {
             "/api/dev/**",
             "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
             // Spring meneruskan error ke /error; tanpa ini error 400/500 berubah menjadi 401.
-            "/error"
+            "/error",
+            // Caddy On-Demand TLS ask endpoint (alur-publish-website.md 7.11)
+            "/internal/caddy/ask"
     };
 
     private final JwtAuthFilter jwtAuthFilter;
