@@ -2,7 +2,7 @@
 
 Modul dinamis membuat template HTML biasa bisa diisi data oleh pengurus organisasi: pengumuman, prestasi, agenda, formulir pendaftaran, dan tombol ke Portal Pengurus. Provider **tidak perlu menulis backend, API, atau database**. Cukup tambahkan atribut `data-ws-*` ke elemen HTML. JavaScript template sendiri (menu, slider, tab, dark mode) tetap boleh dan ikut jalan.
 
-Contoh lengkapnya ada di folder `contoh-template/` paket ini.
+Contoh sederhana ada di folder `contoh-template/`, contoh lengkap & interaktif di `template-sinergi/`. Cara merancang fitur sendiri (agenda, galeri, filter, pencarian) beserta resep JavaScript-nya ada di `docs/04-membuat-fitur-kustom.md`.
 
 ## Cara kerjanya
 
@@ -197,7 +197,7 @@ Semua website tayang di satu domain (`orgspace.app/...`), jadi setiap halaman di
 |---|---|
 | `localStorage`, `sessionStorage`, cookie | Bisa dipakai, tapi **hanya sementara**: hilang saat halaman ditutup atau pindah halaman. Mis. pilihan dark mode tidak diingat. |
 | Status login pengurus di halaman publik | Tidak tersedia (lihat bagian 1). |
-| `fetch()` ke API luar | Jalan jika API itu mengizinkan semua origin (CORS `*`). |
+| `fetch()` / XHR ke situs luar | **Ditolak** saat pengecekan upload (`EXT_FETCH`). Pakai modul `data-ws-*`, atau `fetch` ke file lokal di ZIP (`data/menu.json`). |
 | Atribut `onclick`, `onload`, `onerror`, dst. dan link `javascript:` | **Dihapus** saat website diterbitkan. Pasang event di file JS dengan `addEventListener`. |
 
 ## JavaScript + data modul
@@ -230,6 +230,10 @@ else document.addEventListener("orgspace:siap", mulai);
 ## Banyak halaman
 
 Template boleh punya beberapa halaman (`index.html`, `tentang.html`, `kontak.html`). Hubungkan dengan link relatif biasa, mis. `<a href="tentang.html">`. Hasilnya `orgspace.app/nama-website/tentang.html`. Modul dan formulir bekerja di semua halaman.
+
+- Maksimal 10 halaman HTML, dan setiap halaman harus bisa dibuka dari menu.
+- Modul yang sama boleh dipakai di beberapa halaman dan datanya tetap satu. Mis. beranda menampilkan 3 agenda (`data-ws-limit="3"`) dengan link ke `agenda.html` yang menampilkan semuanya. Portal Pengurus menampilkan gabungan field dari semua halaman.
+- Halaman detail per item (mis. `agenda/123`) tidak tersedia. Pakai kartu yang bisa dibuka (`<details>` atau dialog) atau `data-ws-link` ke link luar.
 
 ## Cek sebelum upload
 

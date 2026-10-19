@@ -12,7 +12,8 @@ Template yang diunggah harus memenuhi kriteria di bawah ini agar lolos tahap pem
 - **Format Arsip**: Berkas harus berformat **ZIP** (`.zip`).
 - **Ukuran Maksimal**: Ukuran berkas ZIP maksimal **20 MB**.
 - **Ekspansi Aman**: Ukuran seluruh berkas setelah diekstrak maksimal **50 MB** (pencegahan *zip-bomb*).
-- **Jumlah Berkas**: Maksimal **500 berkas** di dalam arsip.
+- **Jumlah Berkas**: Maksimal **500 berkas** di dalam arsip, masing-masing maksimal **10 MB**.
+- **Jumlah Halaman**: Maksimal **10 halaman HTML**, saling terhubung lewat link relatif.
 
 ### B. Struktur Berkas Standar
 - **`index.html` Wajib di Root**: Berkas `index.html` **wajib** berada di akar direktori ZIP (tidak boleh terbungkus di dalam folder induk seperti `template/index.html`).
@@ -36,6 +37,7 @@ Aset eksternal hanya boleh dimuat dari CDN resmi terpercaya yang masuk ke daftar
 - **Interaktivitas Ringan**: Alpine.js, jQuery, AOS (Animate on Scroll), Swiper, Splide, GSAP.
 - **Ikonografi & Tipografi**: Google Fonts, Font Awesome, Bootstrap Icons, Lucide Icons, Remix Icon.
 - **CDN Host yang Diizinkan**: `cdn.jsdelivr.net`, `cdnjs.cloudflare.com`, `unpkg.com`, `cdn.tailwindcss.com`, `code.jquery.com`.
+- **Versi Lengkap**: URL library wajib memakai versi pasti (mis. `swiper@11.1.4`), bukan tanpa versi atau `@latest`.
 - **DILARANG**: Memuat script dari CDN tidak dikenal atau menyertakan SDK backend pihak ketiga seperti Firebase, Supabase, AWS Amplify, dll.
 
 ### E. Keamanan Kode & Larangan
@@ -43,6 +45,7 @@ Aset eksternal hanya boleh dimuat dari CDN resmi terpercaya yang masuk ke daftar
 - **Dilarang Skema Tautan Berbahaya**: Hindari atribut `href="javascript:..."`.
 - **Dilarang Script Pelacak (Analytics/Tracker)**: Dilarang menyisipkan Google Tag Manager, Facebook Pixel, Hotjar, atau pelacak analytics lainnya.
 - **Iframe Terbatas**: Hanya iframe dari `youtube.com`, `youtube-nocookie.com`, dan `google.com/maps` yang diizinkan.
+- **Tanpa Permintaan ke Situs Lain**: JavaScript tidak boleh `fetch`/XHR/WebSocket ke situs luar, dan form tidak boleh `action` ke situs lain. Data dinamis memakai modul `data-ws-*`.
 
 ### F. Aturan Penandaan Elemen (*Marking*)
 - **Minimal 3 Elemen Bertanda**: Template harus memiliki minimal 3 elemen yang ditandai untuk dapat diedit oleh pembuat website (misalnya: tag identitas organisasi, judul hero, dan deskripsi singkat).

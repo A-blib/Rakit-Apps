@@ -96,6 +96,18 @@ export const FALLBACK_DOC_TREE: DocTree = {
           updatedAt: "2026-10-19T00:00:00Z",
         },
         {
+          id: "doc-prov-4",
+          slug: "membuat-fitur-kustom",
+          category: "provider",
+          audience: "provider",
+          title: "Membuat Fitur Kustom",
+          summary: "Rancang fitur sendiri (agenda, galeri, filter, pencarian) dari modul + CSS + JavaScript, lengkap dengan resep dan batasnya.",
+          sortOrder: 25,
+          status: "published",
+          publishedAt: "2026-10-19T00:00:00Z",
+          updatedAt: "2026-10-19T00:00:00Z",
+        },
+        {
           id: "doc-prov-3",
           slug: "menjadi-penyedia-template",
           category: "provider",
@@ -160,6 +172,8 @@ Semua template yang diunggah oleh penyedia template (*provider*) ke sistem OrgSp
 | **Ukuran Maksimal ZIP** | **20 MB** | Batas maksimal ukuran arsip ZIP yang diunggah. |
 | **Batas Ekstraksi Aman** | **50 MB** | Batas total ukuran seluruh berkas setelah diekstrak (perlindungan terhadap celah *zip bomb*). |
 | **Batas Jumlah Berkas** | **500 berkas** | Jumlah total file di dalam arsip tidak boleh melebihi 500 item. |
+| **Ukuran per Berkas** | **10 MB** | Satu file di dalam ZIP tidak boleh lebih dari 10 MB. Gambar di atas 1 MB mendapat peringatan. |
+| **Jumlah Halaman** | **10 halaman HTML** | Setiap halaman harus bisa dibuka lewat link dari halaman lain. |
 | **Encoding Karakter** | **UTF-8** | Semua berkas HTML, CSS, dan JS wajib ber-encoding UTF-8 tanpa BOM (*Byte Order Mark*). |
 
 ### B. Struktur Direktori Wajib
@@ -176,7 +190,7 @@ template-anda.zip/
     └── hero.jpg
 \`\`\`
 
-> **PENTING**: Berkas \`index.html\` **wajib berada langsung di akar ZIP**, bukan di dalam subfolder (misal \`template-saya/index.html\` akan ditolak dengan error \`MISSING_INDEX_HTML\`).
+> **PENTING**: Berkas \`index.html\` **wajib berada langsung di akar ZIP**, bukan di dalam subfolder (misal \`template-saya/index.html\` akan ditolak dengan error \`NO_INDEX\`).
 
 ### C. Pemanggilan Aset Internal (Relative Paths)
 - Seluruh tautan ke berkas CSS, JavaScript, gambar, dan font lokal **wajib menggunakan path relatif**.
@@ -189,10 +203,12 @@ OrgSpace dirancang untuk memuat website statis semantik murni.
 - Markup HTML harus memiliki elemen semantik lengkap di dokumen sebelum JavaScript dieksekusi agar ramah SEO dan mudah diproses oleh engine penandaan isian.
 
 ### E. Aturan Keamanan & Pencegahan XSS
-- **Dilarang Inline Event Handlers**: Jangan menyematkan \`onclick="..."\`, \`onload="..."\`, \`onerror="..."\` di HTML. Gunakan \`addEventListener()\` di berkas JavaScript eksternal.
+- **Dilarang Inline Event Handlers**: Jangan gunakan \`onclick="..."\`, \`onload="..."\`, \`onerror="..."\` di HTML. Gunakan \`addEventListener()\` di berkas JavaScript eksternal.
 - **Dilarang Skema Tautan Berbahaya**: Hindari atribut tautan berbahaya seperti \`href="javascript:..."\` atau \`href="data:..."\`.
 - **Dilarang Script Tracker Pihak Ketiga**: Tidak boleh menyisipkan Google Tag Manager, Meta/Facebook Pixel, Hotjar, atau pelacak analitik tanpa izin.
 - **Penggunaan Iframe Dibatasi**: Iframe hanya diizinkan untuk penyematan video YouTube (\`youtube.com\`, \`youtube-nocookie.com\`) dan peta Google Maps (\`google.com/maps\`).
+- **Dilarang Mengambil/Mengirim Data ke Situs Lain dari JavaScript**: \`fetch("https://...")\`, XHR, WebSocket, dan \`sendBeacon\` ke situs luar ditolak (\`EXT_FETCH\`). Data dinamis diambil dari modul \`data-ws-*\`; \`fetch\` ke file lokal di ZIP (mis. \`data/menu.json\`) boleh.
+- **Dilarang Kode JavaScript Diacak (obfuscated), Service Worker, dan \`import\` library dari CDN di dalam file JS.** Muat library dengan \`<script src>\` di HTML.
 
 ---
 
@@ -203,37 +219,31 @@ Penyedia template bebas menggunakan alur kerja modern selama menghasilkan output
 ### A. Code Editor yang Direkomendasikan
 - **Visual Studio Code (VS Code)** (Rekomendasi Utama)
 - **Sublime Text**, **WebStorm**, **Cursor**, atau text editor apa pun.
-- Ekstensi yang membantu: *Live Server*, *Prettier*, *HTML CSS Support*.
 
 ### B. Standar Bahasa Frontend
 - **HTML5 Murni**: Mengutamakan tag semantik seperti \`<header>\`, \`<nav>\`, \`<main>\`, \`<section>\`, \`<article>\`, \`<footer>\`.
 - **CSS3 Modern**: Mendukung Flexbox, CSS Grid, Media Queries (@media), dan CSS Custom Properties (\`:root { --primary-color: #0068D6; }\`).
-- **Vanilla JavaScript (ES6+)**: Menggunakan sintaks modern seperti \`const/let\`, Arrow Functions, Template Literals, \`fetch()\`, dan Async/Await.
+- **Vanilla JavaScript (ES6+)**: Menggunakan sintaks modern seperti \`const/let\`, Arrow Functions, Template Literals, dan Async/Await. \`fetch()\` hanya untuk file lokal di dalam ZIP.
 
 ### C. Framework CSS & Utilitas (Whitelist CDN)
-Jika Anda menggunakan framework atau library dari CDN, pastikan berasal dari domain terpercaya yang diizinkan (*whitelisted*):
-- **Tailwind CSS**: Mendukung standalone script CDN (\`https://cdn.tailwindcss.com\`).
+- **Tailwind CSS**: Standalone script CDN (\`https://cdn.tailwindcss.com\`) diterima dengan peringatan karena lebih berat; file CSS hasil build Tailwind lebih disarankan.
 - **Bootstrap 5**: CSS & JS bundle via jsDelivr atau cdnjs.
 - **Bulma CSS**
-- **Domain CDN yang Diizinkan**:
-  - \`cdn.jsdelivr.net\`
-  - \`cdnjs.cloudflare.com\`
-  - \`unpkg.com\`
-  - \`cdn.tailwindcss.com\`
-  - \`code.jquery.com\`
+- **Domain CDN yang Diizinkan**: \`cdn.jsdelivr.net\`, \`cdnjs.cloudflare.com\`, \`unpkg.com\`, \`cdn.tailwindcss.com\`, \`code.jquery.com\`.
+- **Versi wajib lengkap**: tulis versi pasti di URL, mis. \`https://cdn.jsdelivr.net/npm/swiper@11.1.4/swiper-bundle.min.js\`. URL tanpa versi atau \`@latest\` ditolak (\`CDN_VERSION_UNCLEAR\`). Library di luar daftar ini ditolak (\`CDN_NOT_ALLOWED\`).
 
 ### D. Library Interaktif Ringan yang Didukung
 - **Slider & Carousel**: Swiper.js, Splide.js.
-- **Animasi Ringan**: AOS (*Animate on Scroll*), GSAP (*GreenSock*), Animate.css.
+- **Animasi Ringan**: AOS (*Animate on Scroll*), GSAP (*GreenSock*). Animasi CSS buatan sendiri (\`@keyframes\`, \`transition\`) selalu boleh.
 - **DOM & Reaktivitas Sederhana**: Alpine.js, jQuery.
 
 ### E. Ikonografi & Tipografi
-- **Web Fonts**: Google Fonts (\`fonts.googleapis.com\` / \`fonts.gstatic.com\`), Geist Sans, Plus Jakarta Sans, atau font lokal di folder \`fonts/\` berlisensi terbuka (SIL Open Font License).
+- **Web Fonts**: Google Fonts (\`fonts.googleapis.com\` / \`fonts.gstatic.com\`, diterima dengan peringatan karena butuh internet), atau font lokal berlisensi SIL OFL di dalam ZIP.
 - **Ikon Paket**: Lucide Icons, Font Awesome 6 (via CDN), Bootstrap Icons, Remix Icon.
 
 ### F. Format Aset Media Gambar
 - **Format Didukung**: WebP (Sangat Direkomendasikan), PNG, JPG/JPEG, SVG, ICO, GIF.
-- **Ukuran Ideal**: Di bawah 500 KB per gambar untuk memastikan kecepatan render optimal saat dibuka di HP pembuat website.
+- **Ukuran Ideal**: Di bawah 500 KB per gambar untuk memastikan kecepatan render optimal.
 `,
   },
 
@@ -251,42 +261,35 @@ Jika Anda menggunakan framework atau library dari CDN, pastikan berasal dari dom
     updatedAt: "2026-10-19T00:00:00Z",
     body: `Modul dinamis membuat template HTML biasa bisa diisi data oleh pengurus organisasi: pengumuman, prestasi, agenda, formulir pendaftaran, dan tombol ke Portal Pengurus. Provider **tidak perlu menulis backend, API, atau database**. Cukup tambahkan atribut \`data-ws-*\` ke elemen HTML. JavaScript template sendiri (menu, slider, tab, dark mode) tetap boleh dan ikut jalan.
 
+Contoh sederhana ada di folder \`contoh-template/\`, contoh lengkap & interaktif di \`template-sinergi/\`. Cara merancang fitur sendiri (agenda, galeri, filter, pencarian) beserta resep JavaScript-nya ada di \`docs/04-membuat-fitur-kustom.md\`.
+
 ## Unduh paket contoh
 
-[⬇ Unduh contoh-modul-orgspace.zip (23 KB)](/downloads/contoh-modul-orgspace.zip)
+[⬇ Unduh contoh-modul-orgspace.zip (223 KB)](/downloads/contoh-modul-orgspace.zip)
 
-Satu paket berisi template contoh, dokumentasi, dan instruksi untuk AI agent:
+Satu paket berisi template contoh, dokumentasi, dan instruksi untuk AI agent. Berikan paket ini ke AI agent (Claude Code, Codex, Cursor, dll.) sebagai referensi agar ia bisa membuat template yang langsung lolos pengecekan upload.
 
 | Isi paket | Untuk apa |
 |---|---|
-| \`contoh-template/\` | Template yang sudah lolos pengecekan upload dan memakai **semua** modul di halaman ini |
-| \`docs/\` | Dokumentasi ini, aturan wajib template, serta requirement & tools (format Markdown) |
-| \`AGENTS.md\` / \`CLAUDE.md\` | Instruksi untuk AI agent: apa yang dibaca, aturan, checklist, dan cara membuat ZIP |
+| \`AGENTS.md\` / \`CLAUDE.md\` | Instruksi untuk AI agent: cara kerja produk, apa yang dibaca, aturan, checklist, cara membuat ZIP, dan laporan saran isian Tandai |
+| \`docs/\` | Panduan modul dinamis (halaman ini), aturan wajib, requirement & tools, dan **Membuat Fitur Kustom** (resep JavaScript) |
+| \`template-sinergi/\` | Template **lengkap & interaktif**: 2 halaman, 7 modul kustom, pengumuman, 2 formulir, statistik, profil organisasi, tema gelap |
+| \`contoh-template/\` | Template **sederhana** satu halaman yang memakai semua jenis modul |
 | \`BACA-SAYA.md\` | Panduan singkat untuk kamu |
-
-Bagian template contoh dan modul yang dipakainya:
-
-| Bagian di contoh | Modul |
-|---|---|
-| Menu atas + tombol Menu di HP (JavaScript \`js/main.js\`) | Tombol Portal Pengurus |
-| Pengumuman Terbaru | Pengumuman (bawaan) |
-| Prestasi Anggota + filter per tingkat (JavaScript) | Modul kustom \`prestasi\` + event \`orgspace:siap\` |
-| Agenda Kegiatan | Modul kustom \`agenda\` |
-| Pendaftaran Anggota & Kotak Aspirasi | Formulir |
 
 ### Dibuatkan AI agent
 
-1. Ekstrak ZIP, lalu buka foldernya di editor yang punya AI agent (Claude Code, Cursor, Codex, dll.).
+1. Ekstrak ZIP, lalu buka foldernya di editor yang punya AI agent.
 2. Beri perintah, misalnya:
 
-   > Baca AGENTS.md lalu buatkan template website untuk OSIS SMA bergaya modern dan cerah. Pakai modul pengumuman, prestasi, galeri kegiatan, dan formulir pendaftaran anggota.
+   > Baca AGENTS.md lalu buatkan template website untuk OSIS SMA bergaya modern dan cerah, 3 halaman: Beranda, Agenda, dan Tentang. Pengurus harus bisa mengisi agenda (dengan hitung mundur), prestasi (bisa difilter per tingkat), galeri foto, dan struktur pengurus. Tambahkan formulir pendaftaran anggota dan angka statistik.
 
-3. Agent membaca dokumentasi dan contoh, membuat folder \`template/\`, lalu membungkusnya menjadi \`template-saya.zip\`.
+3. Agent menunjukkan rencana halaman & modul, membuat folder \`template/\` dan \`template-saya.zip\`, lalu memberi daftar elemen yang sebaiknya ditandai.
 4. Upload \`template-saya.zip\` dari aplikasi: beralih ke mode Penyedia Template, buka tab Upload.
 
 ### Membuat sendiri
 
-1. Salin folder \`contoh-template/\`, lalu ubah desainnya.
+1. Salin folder \`contoh-template/\` (sederhana) atau \`template-sinergi/\` (lengkap), lalu ubah desainnya.
 2. Jangan hapus atribut \`data-ws-*\`. Boleh dipindah ke elemen lain asal aturannya tetap terpenuhi.
 3. ZIP **isi** foldernya (\`index.html\` harus ada di paling atas ZIP, bukan di dalam folder), lalu upload dari aplikasi.
 
@@ -483,7 +486,7 @@ Semua website tayang di satu domain (\`orgspace.app/...\`), jadi setiap halaman 
 |---|---|
 | \`localStorage\`, \`sessionStorage\`, cookie | Bisa dipakai, tapi **hanya sementara**: hilang saat halaman ditutup atau pindah halaman. Mis. pilihan dark mode tidak diingat. |
 | Status login pengurus di halaman publik | Tidak tersedia (lihat bagian 1). |
-| \`fetch()\` ke API luar | Jalan jika API itu mengizinkan semua origin (CORS \`*\`). |
+| \`fetch()\` / XHR ke situs luar | **Ditolak** saat pengecekan upload (\`EXT_FETCH\`). Pakai modul \`data-ws-*\`, atau \`fetch\` ke file lokal di ZIP (\`data/menu.json\`). |
 | Atribut \`onclick\`, \`onload\`, \`onerror\`, dst. dan link \`javascript:\` | **Dihapus** saat website diterbitkan. Pasang event di file JS dengan \`addEventListener\`. |
 
 ## JavaScript + data modul
@@ -516,6 +519,10 @@ else document.addEventListener("orgspace:siap", mulai);
 ## Banyak halaman
 
 Template boleh punya beberapa halaman (\`index.html\`, \`tentang.html\`, \`kontak.html\`). Hubungkan dengan link relatif biasa, mis. \`<a href="tentang.html">\`. Hasilnya \`orgspace.app/nama-website/tentang.html\`. Modul dan formulir bekerja di semua halaman.
+
+- Maksimal 10 halaman HTML, dan setiap halaman harus bisa dibuka dari menu.
+- Modul yang sama boleh dipakai di beberapa halaman dan datanya tetap satu. Mis. beranda menampilkan 3 agenda (\`data-ws-limit="3"\`) dengan link ke \`agenda.html\` yang menampilkan semuanya. Portal Pengurus menampilkan gabungan field dari semua halaman.
+- Halaman detail per item (mis. \`agenda/123\`) tidak tersedia. Pakai kartu yang bisa dibuka (\`<details>\` atau dialog) atau \`data-ws-link\` ke link luar.
 
 ## Cek sebelum upload
 
@@ -675,6 +682,371 @@ Halaman ini membahas fitur-fitur yang tersedia di dalam editor template OrgSpace
 `,
   },
 
+  "membuat-fitur-kustom": {
+    id: "doc-prov-4",
+    slug: "membuat-fitur-kustom",
+    category: "provider",
+    categoryLabel: "Penyedia Template (Provider)",
+    audience: "provider",
+    title: "Membuat Fitur Kustom",
+    summary: "Rancang fitur sendiri (agenda, galeri, filter, pencarian) dari modul + CSS + JavaScript, lengkap dengan resep dan batasnya.",
+    sortOrder: 25,
+    status: "published",
+    publishedAt: "2026-10-19T00:00:00Z",
+    updatedAt: "2026-10-19T00:00:00Z",
+    body: `# Membuat Fitur Kustom
+
+OrgSpace tidak punya fitur "agenda", "prestasi", atau "galeri" bawaan. Semua fitur seperti itu **dibuat provider sendiri** di
+dalam template, dari tiga bahan:
+
+| Bahan | Isinya | Ditulis dengan |
+|---|---|---|
+| **Data** | Daftar yang diisi pengurus lewat Portal Pengurus | Atribut \`data-ws-collection\` + \`data-ws-field\` (lihat \`01-panduan-modul-dinamis.md\`) |
+| **Tampilan** | Bentuk kartu, halaman, menu | HTML + CSS |
+| **Perilaku** | Urutkan, filter, cari, hitung mundur, lightbox, slider | JavaScript yang membaca \`window.orgspace.data\` |
+
+OrgSpace hanya menyediakan mesinnya: tempat menyimpan data, form isian di Portal Pengurus, dan pengisian kartu otomatis.
+Contoh nyata semua resep di halaman ini ada di \`template-sinergi/\` (lihat \`js/main.js\`).
+
+## 1. Siapa mengerjakan apa
+
+| Pihak | Yang dikerjakan | Di mana |
+|---|---|---|
+| **Provider** (kamu / AI agent) | Membuat halaman, section, modul, desain, dan JavaScript. Menandai teks/gambar yang boleh diganti | File template + mode Penyedia Template di app |
+| **Pembuat website** | Memilih template, mengganti teks/foto/warna yang ditandai, lalu menerbitkan | Editor di app |
+| **Pengurus organisasi** | Mengisi, mengedit, menghapus, dan mengurutkan data modul; membaca isian form | Portal Pengurus \`nama-website/admin\` |
+| **Pengunjung** | Melihat website dan mengirim form | \`orgspace.app/nama-website\` |
+
+Pembuat website dan pengurus **tidak bisa mengubah layout atau menambah section/modul baru**. Apa pun yang ingin bisa diisi
+mereka harus sudah disiapkan provider di template.
+
+## 2. Pilih jenis isi yang tepat
+
+| Jika isinya... | Pakai | Contoh |
+|---|---|---|
+| Satu teks atau gambar yang jarang berubah | **Isian Tandai** (elemen biasa yang nanti ditandai di app) | Judul hero, visi, foto utama, teks footer |
+| Daftar yang bisa bertambah/berkurang | **Modul kustom** \`data-ws-collection\` | Pengurus, program, prestasi, agenda, galeri, FAQ, alumni |
+| Berita/pengumuman | **Modul bawaan** \`data-ws-list="pengumuman"\` | Kabar terbaru |
+| Kiriman dari pengunjung | **Formulir** \`data-ws-form\` | Pendaftaran, aspirasi, kontak |
+| Angka jumlah data | **Statistik** \`data-ws-stat\` | "12 pengurus", "40 pendaftar" |
+| Nama, logo, kontak organisasi | **Profil organisasi** \`data-ws-org\` | Header, footer, tombol WhatsApp |
+| Warna dan bentuk | **Variabel CSS** di \`:root\` (nanti didaftarkan sebagai tema di app) | \`--primary\`, \`--accent\`, \`--radius\` |
+
+Jangan mengetik daftar pengurus atau angka statistik langsung di HTML. Isi seperti itu harus berupa modul atau statistik
+agar pengurus bisa memperbaruinya tanpa terbit ulang.
+
+## 3. Bisa vs tidak bisa
+
+**Bisa**: fitur apa pun yang bentuknya "daftar item ber-field", ditampilkan semenarik mungkin, plus interaksi di browser.
+Mis. katalog produk koperasi, jadwal piket, kalender lomba, daftar alumni, sponsor, menu kantin, timeline sejarah.
+
+**Tidak bisa** (butuh logika server; hanya OrgSpace yang bisa menambahkannya sebagai modul bawaan):
+
+| Tidak didukung | Alternatif di template |
+|---|---|
+| Halaman detail per item (\`agenda/123\`) | Kartu yang bisa dibuka (accordion/dialog) berisi field \`deskripsi\`, atau \`data-ws-link\` ke link luar |
+| Relasi antar-modul (agenda milik pengurus X) | Simpan sebagai teks biasa, mis. field \`penanggung_jawab\` |
+| Login/akun pengunjung, member area | – |
+| Pembayaran, iuran, tiket | Field link ke formulir/pembayaran luar (\`data-ws-link\`) |
+| Voting, like, komentar | Formulir \`data-ws-form\` (hasilnya dibaca pengurus di Kotak Masuk) |
+| Unggah file oleh pengunjung | Formulir hanya mengirim teks; minta link Google Drive di isian teks |
+| Ambil data dari API luar (\`fetch("https://...")\`) | Ditolak pengecekan upload (\`EXT_FETCH\`). Pakai modul, atau file lokal di ZIP (\`fetch("data/menu.json")\`) |
+
+## 4. Rancang dulu sebelum menulis kode
+
+Buat tabel seperti ini, lalu baru tulis HTML-nya:
+
+| Halaman | Section | Jenis | Modul / field |
+|---|---|---|---|
+| \`index.html\` | Hero | Isian Tandai + statistik | \`data-ws-stat="pengurus"\`, \`data-ws-stat="agenda"\` |
+| \`index.html\` | Agenda terdekat | Modul (3 item) | \`agenda\`: nama_kegiatan, tanggal (\`tanggal\`), lokasi, link_daftar (link) |
+| \`agenda.html\` | Semua agenda | Modul (semua) | \`agenda\` (sama) |
+| \`index.html\` | Kabar terbaru | Modul bawaan | \`pengumuman\` |
+| \`tentang.html\` | Struktur pengurus | Modul | \`struktur\`: foto (gambar), nama, jabatan, divisi |
+| \`index.html\` | Daftar anggota | Formulir | \`pendaftaran\`: nama, kelas, whatsapp, alasan |
+
+Nama modul dan field: huruf kecil, angka, \`-\` atau \`_\`, 2–40 karakter. Nama yang sama = data yang sama di semua halaman.
+
+## 5. Resep
+
+### Resep 1: Fitur di halaman sendiri + ringkasan di beranda
+
+Satu modul boleh dipakai di beberapa halaman. Datanya tetap satu dan diisi sekali di Portal.
+
+\`\`\`html
+<!-- index.html: 3 agenda saja + link ke halaman lengkap -->
+<div data-ws-collection="agenda" data-ws-limit="3">
+  <article class="card" data-ws-item>
+    <h3 data-ws-field="nama_kegiatan">Nama kegiatan</h3>
+    <p data-ws-field="tanggal" data-ws-type="tanggal">1 Januari 2026</p>
+  </article>
+  <p data-ws-empty>Belum ada agenda.</p>
+</div>
+<a href="agenda.html">Lihat semua agenda</a>
+
+<!-- agenda.html: semua agenda, kartu lebih lengkap -->
+<div data-ws-collection="agenda">
+  <article class="card" data-ws-item>
+    <h3 data-ws-field="nama_kegiatan">Nama kegiatan</h3>
+    <p><span data-ws-field="tanggal" data-ws-type="tanggal">1 Januari 2026</span> · <span data-ws-field="lokasi">Lokasi</span></p>
+    <p data-ws-field="deskripsi" data-ws-type="paragraf">Deskripsi kegiatan.</p>
+    <a href="#" data-ws-link="link_daftar">Daftar kegiatan</a>
+  </article>
+  <p data-ws-empty>Belum ada agenda.</p>
+</div>
+\`\`\`
+
+- Maksimal **10 halaman HTML** per template. Setiap halaman harus bisa dibuka dari menu (link relatif \`agenda.html\`).
+- Gabungan field dari semua halaman yang muncul di Portal. Di contoh ini Portal menampilkan nama_kegiatan, tanggal,
+  lokasi, deskripsi, dan link_daftar.
+
+### Pola dasar script yang butuh data
+
+Data modul diisi OrgSpace **setelah** script template jalan. Pakai pola ini di setiap template:
+
+\`\`\`js
+(function () {
+  var started = false;
+  function start() {
+    if (started) return;
+    started = true;
+    var data = window.orgspace && window.orgspace.data ? window.orgspace.data : null; // null di preview/export
+    // ...panggil fitur di sini
+  }
+  document.addEventListener("orgspace:siap", start); // website tayang: setelah modul terisi
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(start, 0); });
+  else setTimeout(start, 0); // preview/laptop: jalan dengan isi contoh
+})();
+\`\`\`
+
+Kartu yang tidak dipakai disembunyikan OrgSpace dengan \`style.display = "none"\`. Saat memilih kartu, lewati yang
+tersembunyi:
+
+\`\`\`js
+function visibleItems(list) {
+  return Array.prototype.filter.call(list.querySelectorAll("[data-ws-item]"), function (item) {
+    return item.style.display !== "none";
+  });
+}
+\`\`\`
+
+### Resep 2: Agenda terurut + "hari lagi"
+
+Tanggal di kartu sudah berupa teks "19 Oktober 2026". Untuk menghitung, pakai data mentah \`2026-10-19\`. Urutan data mentah
+sama dengan urutan kartu.
+
+\`\`\`js
+function markAgenda(data) {
+  var list = document.querySelector('[data-ws-collection="agenda"]');
+  var rows = data && data.collections.agenda ? data.collections.agenda : [];
+  if (!list || !rows.length) return;
+  var items = visibleItems(list), today = new Date();
+  today.setHours(0, 0, 0, 0);
+  var dated = [];
+  rows.forEach(function (row, i) {
+    if (!items[i] || !/^\\d{4}-\\d{2}-\\d{2}$/.test(row.tanggal || "")) return;
+    var date = new Date(row.tanggal + "T00:00:00");
+    items[i].classList.toggle("lewat", date < today);
+    var tag = document.createElement("span");
+    var days = Math.round((date - today) / 86400000);
+    tag.textContent = days < 0 ? "Selesai" : days === 0 ? "Hari ini" : days + " hari lagi";
+    items[i].appendChild(tag);
+    dated.push({ date: date, item: items[i] });
+  });
+  var empty = list.querySelector("[data-ws-empty]");
+  dated.sort(function (a, b) { return a.date - b.date; })
+       .forEach(function (d) { list.insertBefore(d.item, empty); });
+}
+\`\`\`
+
+### Resep 3: Chip filter yang dibuat dari isi data
+
+\`\`\`html
+<div class="chips" data-filter="prestasi" data-filter-field="tingkat"></div>
+<div data-ws-collection="prestasi">
+  <article data-ws-item>
+    <span data-ws-field="tingkat">Nasional</span>
+    <h3 data-ws-field="judul">Juara 1 Lomba</h3>
+  </article>
+</div>
+\`\`\`
+
+\`\`\`js
+function buildFilters() {
+  document.querySelectorAll(".chips[data-filter]").forEach(function (chips) {
+    var list = document.querySelector('[data-ws-collection="' + chips.dataset.filter + '"]');
+    if (!list) return;
+    var items = visibleItems(list), field = chips.dataset.filterField;
+    var valueOf = function (item) {
+      var el = item.querySelector('[data-ws-field="' + field + '"]');
+      return el ? el.textContent.trim() : "";
+    };
+    var values = [];
+    items.forEach(function (it) { var v = valueOf(it); if (v && values.indexOf(v) < 0) values.push(v); });
+    if (values.length < 2) return; // tidak perlu filter
+    ["Semua"].concat(values).forEach(function (v, i) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.textContent = v;
+      chip.setAttribute("aria-pressed", String(i === 0));
+      chip.addEventListener("click", function () {
+        chips.querySelectorAll("button").forEach(function (c) { c.setAttribute("aria-pressed", String(c === chip)); });
+        items.forEach(function (it) { it.hidden = i !== 0 && valueOf(it) !== v; });
+      });
+      chips.appendChild(chip);
+    });
+  });
+}
+\`\`\`
+
+### Resep 4: Pencarian
+
+\`\`\`html
+<input type="search" id="cari" placeholder="Cari nama atau jabatan" aria-label="Cari pengurus">
+<p id="tidak-ketemu" hidden>Tidak ada yang cocok.</p>
+\`\`\`
+
+\`\`\`js
+function setupSearch() {
+  var input = document.getElementById("cari");
+  var list = document.querySelector('[data-ws-collection="struktur"]');
+  if (!input || !list) return;
+  var items = visibleItems(list);
+  input.addEventListener("input", function () {
+    var q = input.value.trim().toLowerCase(), shown = 0;
+    items.forEach(function (it) {
+      it.hidden = it.textContent.toLowerCase().indexOf(q) < 0;
+      if (!it.hidden) shown++;
+    });
+    document.getElementById("tidak-ketemu").hidden = shown > 0;
+  });
+}
+\`\`\`
+
+### Resep 5: Galeri + lightbox tanpa library
+
+\`\`\`html
+<div data-ws-collection="galeri">
+  <button class="shot" type="button" data-ws-item>
+    <img src="img/galeri-1.jpg" alt="Foto kegiatan" data-ws-field="foto">
+    <span data-ws-field="keterangan">Keterangan foto</span>
+  </button>
+</div>
+<dialog id="lightbox">
+  <img id="lightbox-img" alt="">
+  <p id="lightbox-caption"></p>
+  <button type="button" data-close>Tutup</button>
+</dialog>
+\`\`\`
+
+\`\`\`js
+var box = document.getElementById("lightbox");
+document.addEventListener("click", function (e) {
+  var shot = e.target.closest(".shot");
+  if (shot && box.showModal) {
+    var img = shot.querySelector("img");
+    document.getElementById("lightbox-img").src = img.src;
+    document.getElementById("lightbox-img").alt = img.alt;
+    document.getElementById("lightbox-caption").textContent = shot.textContent.trim();
+    box.showModal();
+  }
+  if (e.target === box || e.target.closest("[data-close]")) box.close();
+});
+\`\`\`
+
+\`document.addEventListener\` + \`closest()\` tetap berfungsi untuk kartu yang baru ditambahkan OrgSpace, jadi resep ini
+tidak perlu menunggu \`orgspace:siap\`.
+
+### Resep 6: FAQ / detail yang bisa dibuka tanpa JavaScript
+
+Pengganti "halaman detail per item":
+
+\`\`\`html
+<div data-ws-collection="faq">
+  <details data-ws-item>
+    <summary data-ws-field="pertanyaan">Pertanyaan</summary>
+    <p data-ws-field="jawaban" data-ws-type="paragraf">Jawaban.</p>
+  </details>
+</div>
+\`\`\`
+
+### Resep 7: Statistik dan profil organisasi
+
+\`\`\`html
+<p><strong data-ws-stat="pengurus">12</strong> pengurus ·
+   <strong data-ws-stat="prestasi">18</strong> prestasi ·
+   <strong data-ws-stat="form.pendaftaran">40</strong> pendaftar</p>
+
+<footer>
+  <img src="img/logo.svg" alt="Logo organisasi" data-ws-org="logo">
+  <span data-ws-org="nama">Nama Organisasi</span>
+  <div data-org-group>
+    <a href="#" data-ws-org="whatsapp">WhatsApp</a>
+    <a href="#" data-ws-org="instagram">Instagram</a>
+  </div>
+</footer>
+\`\`\`
+
+Profil yang belum diisi organisasi disembunyikan. Jika semua kontak kosong, sembunyikan juga pembungkusnya:
+
+\`\`\`js
+document.querySelectorAll("[data-org-group]").forEach(function (g) {
+  var items = g.querySelectorAll("[data-ws-org]");
+  g.hidden = items.length > 0 && Array.prototype.every.call(items, function (el) { return el.style.display === "none"; });
+});
+\`\`\`
+
+### Resep 8: Animasi angka statistik
+
+\`\`\`js
+function countUp() {
+  if (!("IntersectionObserver" in window)) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      io.unobserve(entry.target);
+      var el = entry.target, target = parseInt(el.textContent, 10) || 0, t0 = null;
+      requestAnimationFrame(function frame(t) {
+        if (t0 === null) t0 = t;
+        var p = Math.min((t - t0) / 1200, 1);
+        el.textContent = String(Math.round(target * p));
+        if (p < 1) requestAnimationFrame(frame);
+      });
+    });
+  }, { threshold: 0.6 });
+  document.querySelectorAll("[data-ws-stat]").forEach(function (el) { io.observe(el); });
+}
+\`\`\`
+
+Panggil di \`start()\` agar angka yang dihitung adalah angka dari database, bukan angka contoh.
+
+## 6. Siapkan untuk pembuat website
+
+- **Teks dan gambar di luar modul** (judul hero, deskripsi, visi, misi, foto utama, teks tombol, footer) ditulis langsung
+  di HTML. Setelah upload, provider menandainya di mode **Tandai** di app agar pembuat website bisa menggantinya.
+  Beri \`id\` yang jelas (\`hero-judul\`, \`visi-teks\`) agar mudah dikenali saat menandai.
+- **Warna dan bentuk** ditulis sebagai variabel di \`:root\` dan dipakai di seluruh CSS:
+  \`\`\`css
+  :root { --primary: #4f46e5; --accent: #f59e0b; --radius: 16px; }
+  .btn { background: var(--primary); border-radius: var(--radius); }
+  \`\`\`
+  Saat Tandai, variabel ini didaftarkan sebagai tema sehingga pembuat website bisa memilih warnanya sendiri.
+- Teks contoh netral ("Nama Organisasi", "Judul pengumuman"), karena semua akan diganti.
+
+## 7. Setelah ZIP jadi
+
+Di app OrgSpace: mode **Penyedia Template** → tab **Upload**:
+
+1. **Pilih ZIP**. Pengecekan otomatis menampilkan error (wajib diperbaiki) dan peringatan (sebaiknya diperbaiki)
+   lengkap dengan file, baris, dan cara memperbaikinya.
+2. **Info**: nama, kategori organisasi, deskripsi, maksimal 5 kata kunci.
+3. **Thumbnail**: gambar sampul di galeri.
+4. **Tandai**: pilih teks/gambar yang boleh diganti pembuat website (minimal 3), kelompokkan per section, dan daftarkan
+   variabel tema.
+5. **Coba** lalu **Kirim**. Template tayang di galeri setelah lolos pengecekan akhir.
+`,
+  },
+
   "menjadi-penyedia-template": {
     id: "doc-prov-3",
     slug: "menjadi-penyedia-template",
@@ -701,7 +1073,8 @@ Template yang diunggah harus memenuhi kriteria di bawah ini agar lolos tahap pem
 - **Format Arsip**: Berkas harus berformat **ZIP** (\`.zip\`).
 - **Ukuran Maksimal**: Ukuran berkas ZIP maksimal **20 MB**.
 - **Ekspansi Aman**: Ukuran seluruh berkas setelah diekstrak maksimal **50 MB** (pencegahan *zip-bomb*).
-- **Jumlah Berkas**: Maksimal **500 berkas** di dalam arsip.
+- **Jumlah Berkas**: Maksimal **500 berkas** di dalam arsip, masing-masing maksimal **10 MB**.
+- **Jumlah Halaman**: Maksimal **10 halaman HTML**, saling terhubung lewat link relatif.
 
 ### B. Struktur Berkas Standar
 - **\`index.html\` Wajib di Root**: Berkas \`index.html\` **wajib** berada di akar direktori ZIP (tidak boleh terbungkus di dalam folder induk seperti \`template/index.html\`).
@@ -725,6 +1098,7 @@ Aset eksternal hanya boleh dimuat dari CDN resmi terpercaya yang masuk ke daftar
 - **Interaktivitas Ringan**: Alpine.js, jQuery, AOS (Animate on Scroll), Swiper, Splide, GSAP.
 - **Ikonografi & Tipografi**: Google Fonts, Font Awesome, Bootstrap Icons, Lucide Icons, Remix Icon.
 - **CDN Host yang Diizinkan**: \`cdn.jsdelivr.net\`, \`cdnjs.cloudflare.com\`, \`unpkg.com\`, \`cdn.tailwindcss.com\`, \`code.jquery.com\`.
+- **Versi Lengkap**: URL library wajib memakai versi pasti (mis. \`swiper@11.1.4\`), bukan tanpa versi atau \`@latest\`.
 - **DILARANG**: Memuat script dari CDN tidak dikenal atau menyertakan SDK backend pihak ketiga seperti Firebase, Supabase, AWS Amplify, dll.
 
 ### E. Keamanan Kode & Larangan
@@ -732,6 +1106,7 @@ Aset eksternal hanya boleh dimuat dari CDN resmi terpercaya yang masuk ke daftar
 - **Dilarang Skema Tautan Berbahaya**: Hindari atribut \`href="javascript:..."\`.
 - **Dilarang Script Pelacak (Analytics/Tracker)**: Dilarang menyisipkan Google Tag Manager, Facebook Pixel, Hotjar, atau pelacak analytics lainnya.
 - **Iframe Terbatas**: Hanya iframe dari \`youtube.com\`, \`youtube-nocookie.com\`, dan \`google.com/maps\` yang diizinkan.
+- **Tanpa Permintaan ke Situs Lain**: JavaScript tidak boleh \`fetch\`/XHR/WebSocket ke situs luar, dan form tidak boleh \`action\` ke situs lain. Data dinamis memakai modul \`data-ws-*\`.
 
 ### F. Aturan Penandaan Elemen (*Marking*)
 - **Minimal 3 Elemen Bertanda**: Template harus memiliki minimal 3 elemen yang ditandai untuk dapat diedit oleh pembuat website (misalnya: tag identitas organisasi, judul hero, dan deskripsi singkat).
@@ -739,7 +1114,34 @@ Aset eksternal hanya boleh dimuat dari CDN resmi terpercaya yang masuk ke daftar
 
 ---
 
-    // Rekomendasi tambahan
+## 2. Hal Opsional yang Sangat Disarankan
+
+Penerapan poin-poin berikut akan meningkatkan kualitas, kenyamanan, dan nilai adopsi template Anda oleh organisasi:
+
+### A. Desain Responsif & Mobile-First
+- Pastikan template memiliki tag \`<meta name="viewport" content="width=device-width, initial-scale=1.0">\`.
+- Gunakan CSS Media Queries (\`@media (max-width: 768px)\`) agar tata letak tombol, navigasi, dan kartu berita menyesuaikan layar ponsel secara mulus.
+
+### B. Variabel CSS (*CSS Custom Properties*)
+- Definisikan warna utama, warna sekunder, dan font di \`:root\` CSS agar memudahkan penyesuaian tema.
+- Contoh:
+  \`\`\`css
+  :root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-surface: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+  }
+  \`\`\`
+
+### C. Struktur Semantik HTML5
+- Gunakan tag \`<header>\`, \`<nav>\`, \`<main>\`, \`<section>\`, \`<article>\`, dan \`<footer>\`.
+- Struktur yang rapi meningkatkan aksesibilitas dan keramahan mesin pencari (SEO).
+
+### D. Optimasi Gambar
+- Gunakan format modern seperti WebP atau JPG terkompresi dengan resolusi wajar (di bawah 500 KB per gambar).
+- Sertakan teks alternatif (\`alt="..."\`) pada setiap elemen gambar.
 `,
   },
 };

@@ -1763,6 +1763,17 @@ prestasi, agenda, pengumuman, galeri, testimoni, FAQ, struktur, form pendaftaran
 profil organisasi, tema gelap, animasi scroll, tanpa library. Lolos pengecekan tanpa error maupun peringatan; 36 isian
 editor dan 3 variabel tema (`--primary`, `--accent`, `--radius`).
 
+### Dokumentasi provider & paket AI agent dirapikan (19 Oktober 2026)
+Paket unduhan `OrgSpace-Website/public/downloads/contoh-modul-orgspace.zip` (sumber: `OrgSpace-Website/contoh-modul-orgspace/`)
+dicocokkan ulang dengan aturan cek upload di backend (`CheckRule`, `application.yml` `app.upload`):
+
+| Bagian | Perubahan |
+|---|---|
+| `docs/04-membuat-fitur-kustom.md` (baru, juga artikel web `/docs/membuat-fitur-kustom`) | Konsep fitur = modul + CSS + JS, siapa mengisi apa, pilih jenis isi, bisa vs tidak bisa (+ alternatif), rancangan per halaman, resep JS (halaman terpisah, agenda, filter, pencarian, lightbox, FAQ, statistik), persiapan Tandai & tema, langkah upload. |
+| `AGENTS.md` | Bagian konsep produk, Sinergi jadi rujukan utama, rencana halaman/modul sebelum kode, aturan yang dulu tidak tertulis (versi CDN lengkap, daftar library, tanpa `fetch` ke situs luar, tanpa `import` CDN di JS, maks. 10 halaman, 10 MB per file, atribut khusus app), checklist lebih lengkap, laporan saran isian Tandai & variabel tema. |
+| `docs/01–03` | Koreksi: `fetch()` ke API luar ditolak (`EXT_FETCH`, dulu ditulis boleh), Animate.css tidak ada di daftar library, kode error `NO_INDEX` (dulu `MISSING_INDEX_HTML`), Tailwind Play CDN & Google Fonts = peringatan, batas halaman/file, banyak halaman dengan modul yang sama. |
+| Web `/docs` | Salinan dokumentasi panjang yang usang di halaman indeks (field berita `gambar`/`link`, `data-ws-auth="status"/"logout"`) dihapus; diganti kartu unduh paket. Isinya sudah ada di artikel masing-masing. |
+
 ### Template demo lama dihapus (19 Oktober 2026)
 Template statis tanpa modul `data-ws-*` (Profil Sekolah, UMKM Kuliner, Portofolio Minimal dari seeder) tidak dibuat lagi oleh
 `DemoTemplateSeeder`; seeder hanya membuat 4 template status wizard Upload. `DemoPackages` + paketnya pindah ke scope test

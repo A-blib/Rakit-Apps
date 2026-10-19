@@ -15,6 +15,8 @@ Semua template yang diunggah oleh penyedia template (*provider*) ke sistem OrgSp
 | **Ukuran Maksimal ZIP** | **20 MB** | Batas maksimal ukuran arsip ZIP yang diunggah. |
 | **Batas Ekstraksi Aman** | **50 MB** | Batas total ukuran seluruh berkas setelah diekstrak (perlindungan terhadap celah *zip bomb*). |
 | **Batas Jumlah Berkas** | **500 berkas** | Jumlah total file di dalam arsip tidak boleh melebihi 500 item. |
+| **Ukuran per Berkas** | **10 MB** | Satu file di dalam ZIP tidak boleh lebih dari 10 MB. Gambar di atas 1 MB mendapat peringatan. |
+| **Jumlah Halaman** | **10 halaman HTML** | Setiap halaman harus bisa dibuka lewat link dari halaman lain. |
 | **Encoding Karakter** | **UTF-8** | Semua berkas HTML, CSS, dan JS wajib ber-encoding UTF-8 tanpa BOM (*Byte Order Mark*). |
 
 ### B. Struktur Direktori Wajib
@@ -31,7 +33,7 @@ template-anda.zip/
     └── hero.jpg
 ```
 
-> **PENTING**: Berkas `index.html` **wajib berada langsung di akar ZIP**, bukan di dalam subfolder (misal `template-saya/index.html` akan ditolak dengan error `MISSING_INDEX_HTML`).
+> **PENTING**: Berkas `index.html` **wajib berada langsung di akar ZIP**, bukan di dalam subfolder (misal `template-saya/index.html` akan ditolak dengan error `NO_INDEX`).
 
 ### C. Pemanggilan Aset Internal (Relative Paths)
 - Seluruh tautan ke berkas CSS, JavaScript, gambar, dan font lokal **wajib menggunakan path relatif**.
@@ -48,6 +50,8 @@ OrgSpace dirancang untuk memuat website statis semantik murni.
 - **Dilarang Skema Tautan Berbahaya**: Hindari atribut tautan berbahaya seperti `href="javascript:..."` atau `href="data:..."`.
 - **Dilarang Script Tracker Pihak Ketiga**: Tidak boleh menyisipkan Google Tag Manager, Meta/Facebook Pixel, Hotjar, atau pelacak analitik tanpa izin.
 - **Penggunaan Iframe Dibatasi**: Iframe hanya diizinkan untuk penyematan video YouTube (`youtube.com`, `youtube-nocookie.com`) dan peta Google Maps (`google.com/maps`).
+- **Dilarang Mengambil/Mengirim Data ke Situs Lain dari JavaScript**: `fetch("https://...")`, XHR, WebSocket, dan `sendBeacon` ke situs luar ditolak (`EXT_FETCH`). Data dinamis diambil dari modul `data-ws-*`; `fetch` ke file lokal di ZIP (mis. `data/menu.json`) boleh.
+- **Dilarang Kode JavaScript Diacak (obfuscated), Service Worker, dan `import` library dari CDN di dalam file JS.** Muat library dengan `<script src>` di HTML.
 
 ---
 
@@ -62,21 +66,22 @@ Penyedia template bebas menggunakan alur kerja modern selama menghasilkan output
 ### B. Standar Bahasa Frontend
 - **HTML5 Murni**: Mengutamakan tag semantik seperti `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>`.
 - **CSS3 Modern**: Mendukung Flexbox, CSS Grid, Media Queries (@media), dan CSS Custom Properties (`:root { --primary-color: #0068D6; }`).
-- **Vanilla JavaScript (ES6+)**: Menggunakan sintaks modern seperti `const/let`, Arrow Functions, Template Literals, `fetch()`, dan Async/Await.
+- **Vanilla JavaScript (ES6+)**: Menggunakan sintaks modern seperti `const/let`, Arrow Functions, Template Literals, dan Async/Await. `fetch()` hanya untuk file lokal di dalam ZIP.
 
 ### C. Framework CSS & Utilitas (Whitelist CDN)
-- **Tailwind CSS**: Mendukung standalone script CDN (`https://cdn.tailwindcss.com`).
+- **Tailwind CSS**: Standalone script CDN (`https://cdn.tailwindcss.com`) diterima dengan peringatan karena lebih berat; file CSS hasil build Tailwind lebih disarankan.
 - **Bootstrap 5**: CSS & JS bundle via jsDelivr atau cdnjs.
 - **Bulma CSS**
 - **Domain CDN yang Diizinkan**: `cdn.jsdelivr.net`, `cdnjs.cloudflare.com`, `unpkg.com`, `cdn.tailwindcss.com`, `code.jquery.com`.
+- **Versi wajib lengkap**: tulis versi pasti di URL, mis. `https://cdn.jsdelivr.net/npm/swiper@11.1.4/swiper-bundle.min.js`. URL tanpa versi atau `@latest` ditolak (`CDN_VERSION_UNCLEAR`). Library di luar daftar ini ditolak (`CDN_NOT_ALLOWED`).
 
 ### D. Library Interaktif Ringan yang Didukung
 - **Slider & Carousel**: Swiper.js, Splide.js.
-- **Animasi Ringan**: AOS (*Animate on Scroll*), GSAP (*GreenSock*), Animate.css.
+- **Animasi Ringan**: AOS (*Animate on Scroll*), GSAP (*GreenSock*). Animasi CSS buatan sendiri (`@keyframes`, `transition`) selalu boleh.
 - **DOM & Reaktivitas Sederhana**: Alpine.js, jQuery.
 
 ### E. Ikonografi & Tipografi
-- **Web Fonts**: Google Fonts (`fonts.googleapis.com` / `fonts.gstatic.com`), Geist Sans, Plus Jakarta Sans, atau font lokal berlisensi SIL OFL.
+- **Web Fonts**: Google Fonts (`fonts.googleapis.com` / `fonts.gstatic.com`, diterima dengan peringatan karena butuh internet), atau font lokal berlisensi SIL OFL di dalam ZIP.
 - **Ikon Paket**: Lucide Icons, Font Awesome 6 (via CDN), Bootstrap Icons, Remix Icon.
 
 ### F. Format Aset Media Gambar

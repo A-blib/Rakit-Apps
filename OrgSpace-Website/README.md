@@ -145,4 +145,15 @@ rm -f public/downloads/contoh-modul-orgspace.zip
 zip -qr public/downloads/contoh-modul-orgspace.zip contoh-modul-orgspace
 ```
 
-Pastikan `contoh-modul-orgspace/contoh-template/` tetap lolos pengecekan upload (ZIP isi foldernya lalu upload dari app).
+Pastikan `contoh-modul-orgspace/contoh-template/` dan `template-sinergi/` tetap lolos pengecekan upload (ZIP isi foldernya
+lalu upload dari app).
+
+File `contoh-modul-orgspace/docs/*.md` adalah sumber isi artikel provider. Body artikel di `src/lib/docs-data.ts` harus sama
+persis (salin isinya, escape `` ` `` dan `${`):
+
+| File | Artikel |
+|---|---|
+| `01-panduan-modul-dinamis.md` | `modul-sistem-dan-kustom` (ditambah bagian "Unduh paket contoh" khusus web) |
+| `02-aturan-wajib-template.md` | `menjadi-penyedia-template` |
+| `03-requirement-dan-tools.md` | `requirement-project-dan-tools` |
+| `04-membuat-fitur-kustom.md` | `membuat-fitur-kustom` |
