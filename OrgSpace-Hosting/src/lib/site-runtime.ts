@@ -33,6 +33,11 @@ export const MODULE_RUNTIME = `(function(){
   function fill(card,item){
     card.querySelectorAll("[data-ws-field]").forEach(function(f){
       var v=item[f.getAttribute("data-ws-field")]; if(v===undefined||v===null||v==="") return; v=String(v);
+      var t=(f.getAttribute("data-ws-type")||"").toLowerCase();
+      // Portal menyimpan tanggal sebagai 2026-10-19; pengunjung melihat "19 Oktober 2026".
+      if(t==="tanggal"&&/^\d{4}-\d{2}-\d{2}$/.test(v)){ var dt=new Date(v+"T00:00:00");
+        if(!isNaN(dt)) v=dt.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }
+      if(t==="paragraf") f.style.whiteSpace="pre-line";
       if(f.tagName==="IMG"){ if(safeSrc(v)) f.setAttribute("src",v); } else { f.textContent=v; }
     });
     card.querySelectorAll("[data-ws-link]").forEach(function(a){

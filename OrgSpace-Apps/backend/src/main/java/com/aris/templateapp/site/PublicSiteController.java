@@ -14,6 +14,7 @@ import com.aris.templateapp.organization.OrganizationMemberRepository;
 import com.aris.templateapp.organization.OrganizationRepository;
 import com.aris.templateapp.project.Project;
 import com.aris.templateapp.project.ProjectRepository;
+import com.aris.templateapp.project.ProjectService;
 import com.aris.templateapp.security.JwtService;
 import com.aris.templateapp.site.dto.SiteRenderResponse;
 import com.aris.templateapp.user.User;
@@ -37,7 +38,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URI;
@@ -69,12 +72,17 @@ public class PublicSiteController {
 
     /** Nama modul yang diisi dari tab Berita (tabel site_news), sama dengan TemplateRenderer di Hosting. */
     private static final java.util.Set<String> NEWS_MODULES = java.util.Set.of("berita", "kegiatan", "pengumuman");
+    /** Jenis isian yang boleh ditulis provider lewat data-ws-type; gambar & link dikenali dari elemennya. */
+    private static final java.util.Set<String> FIELD_TYPES = java.util.Set.of("teks", "paragraf", "angka", "tanggal");
+    private static final int MAX_FIELDS = 30;
+    private static final int MAX_VALUE_LENGTH = 5000;
 
     private final SiteRepository siteRepository;
     private final SiteReleaseRepository siteReleaseRepository;
     private final SiteStorage siteStorage;
     private final SitePublishService publishService;
     private final ProjectRepository projectRepository;
+    private final ProjectService projectService;
     private final OrganizationRepository organizationRepository;
     private final SiteNewsRepository siteNewsRepository;
     private final FormSubmissionRepository formSubmissionRepository;
@@ -188,9 +196,12 @@ public class PublicSiteController {
         );
     }
 
-    /** Koleksi data-ws-list/collection di template beserta field-nya; berita diisi lewat tab Berita, jadi tidak ikut. */
-    static Map<String, List<String>> templateModules(String html) {
-        Map<String, List<String>> modules = new LinkedHashMap<>();
+    /**
+     * Koleksi data-ws-list/collection di template beserta field dan jenisnya; berita diisi lewat tab Berita,
+     * jadi tidak ikut. Jenis: img = gambar, data-ws-link = link, selain itu data-ws-type atau teks.
+     */
+    static Map<String, Map<String, String>> templateModules(String html) {
+        Map<String, Map<String, String>> modules = new LinkedHashMap<>();
         if (html == null) {
             return modules;
         }
@@ -200,12 +211,18 @@ public class PublicSiteController {
             if (name.isEmpty() || NEWS_MODULES.contains(name)) {
                 continue;
             }
-            List<String> fields = modules.computeIfAbsent(name, k -> new ArrayList<>());
+            Map<String, String> fields = modules.computeIfAbsent(name, k -> new LinkedHashMap<>());
             for (org.jsoup.nodes.Element f : list.select("[data-ws-field], [data-ws-link]")) {
-                String field = f.hasAttr("data-ws-field") ? f.attr("data-ws-field") : f.attr("data-ws-link");
-                if (!field.isBlank() && !fields.contains(field.strip())) {
-                    fields.add(field.strip());
+                boolean isField = f.hasAttr("data-ws-field");
+                String field = (isField ? f.attr("data-ws-field") : f.attr("data-ws-link")).strip();
+                if (field.isEmpty()) {
+                    continue;
                 }
+                String declared = f.attr("data-ws-type").strip().toLowerCase(Locale.ROOT);
+                String type = !isField ? "link"
+                        : f.normalName().equals("img") ? "gambar"
+                        : FIELD_TYPES.contains(declared) ? declared : "teks";
+                fields.putIfAbsent(field, type);
             }
         }
         return modules;
@@ -593,17 +610,119 @@ public class PublicSiteController {
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
         authenticateSiteManager(authHeader, site);
 
-        if (itemData == null || itemData.isEmpty()) {
-            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Data koleksi tidak boleh kosong");
-        }
-
         String cleanCol = collectionName.toLowerCase(Locale.ROOT).trim();
-        SiteCustomItem item = new SiteCustomItem(site.getId(), cleanCol, itemData, 0);
+        SiteCustomItem item = new SiteCustomItem(site.getId(), cleanCol, cleanItemData(itemData), 0);
         SiteCustomItem saved = siteCustomItemRepository.save(item);
 
         Map<String, Object> res = new HashMap<>(saved.getData());
         res.put("id", saved.getId());
         return res;
+    }
+
+    @PutMapping("/api/public/sites/{slug}/admin/collections/{collectionName}/{itemId}")
+    public Map<String, Object> updateCollectionItem(@PathVariable String slug,
+                                                    @PathVariable String collectionName,
+                                                    @PathVariable UUID itemId,
+                                                    @RequestBody Map<String, Object> itemData,
+                                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        authenticateSiteManager(authHeader, site);
+
+        SiteCustomItem item = siteCustomItemRepository.findById(itemId)
+                .filter(i -> i.getSiteId().equals(site.getId()))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Item tidak ditemukan"));
+        item.setData(cleanItemData(itemData));
+        item.setUpdatedAt(Instant.now());
+        SiteCustomItem saved = siteCustomItemRepository.save(item);
+
+        Map<String, Object> res = new HashMap<>(saved.getData());
+        res.put("id", saved.getId());
+        return res;
+    }
+
+    /** Urutan tampil item di website mengikuti urutan id yang dikirim Portal (atas ke bawah). */
+    @PutMapping("/api/public/sites/{slug}/admin/collections/{collectionName}/order")
+    public Map<String, Object> reorderCollection(@PathVariable String slug,
+                                                 @PathVariable String collectionName,
+                                                 @RequestBody Map<String, List<UUID>> payload,
+                                                 @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        authenticateSiteManager(authHeader, site);
+
+        List<UUID> ids = payload == null ? null : payload.get("ids");
+        if (ids == null || ids.isEmpty()) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Urutan item tidak boleh kosong");
+        }
+        String cleanCol = collectionName.toLowerCase(Locale.ROOT).trim();
+        Map<UUID, SiteCustomItem> items = new HashMap<>();
+        siteCustomItemRepository.findBySiteIdAndCollectionNameOrderBySortOrderAscCreatedAtDesc(site.getId(), cleanCol)
+                .forEach(i -> items.put(i.getId(), i));
+        if (ids.size() != items.size() || !items.keySet().containsAll(ids)) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Daftar item sudah berubah. Muat ulang lalu coba lagi.");
+        }
+        for (int i = 0; i < ids.size(); i++) {
+            items.get(ids.get(i)).setSortOrder(i);
+        }
+        siteCustomItemRepository.saveAll(items.values());
+        return Map.of("success", true);
+    }
+
+    /** Foto untuk field gambar modul. Disimpan sebagai aset website, tampil di /{slug}/_media/{id}. */
+    @PostMapping(value = "/api/public/sites/{slug}/admin/media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String, Object> uploadMedia(@PathVariable String slug,
+                                           @RequestPart("file") MultipartFile file,
+                                           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        UUID userId = authenticateSiteManager(authHeader, site);
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException e) {
+            throw new ApiException(ErrorCode.ASSET_INVALID);
+        }
+        UUID assetId = projectService.saveSiteMedia(site.getProjectId(), userId, bytes).assetId();
+        return Map.of("id", assetId, "url", "/" + site.getSlug() + "/_media/" + assetId);
+    }
+
+    @GetMapping("/api/public/sites/{slug}/media/{assetId}")
+    public ResponseEntity<Resource> serveMedia(@PathVariable String slug, @PathVariable UUID assetId) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        ProjectService.StoredAsset asset = projectService.siteMedia(site.getProjectId(), assetId);
+        // Isi aset tidak pernah berubah (foto baru = id baru), jadi aman disimpan lama oleh browser.
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(asset.mimeType()))
+                .cacheControl(org.springframework.http.CacheControl.maxAge(java.time.Duration.ofDays(365)).cachePublic())
+                .body(new FileSystemResource(asset.file()));
+    }
+
+    /** Isian modul dari Portal: hanya teks, kosong dibuang, dibatasi agar satu item tidak membengkak. */
+    static Map<String, Object> cleanItemData(Map<String, Object> itemData) {
+        Map<String, Object> clean = new LinkedHashMap<>();
+        if (itemData != null) {
+            itemData.forEach((key, value) -> {
+                String k = key == null ? "" : key.strip();
+                String v = value == null ? "" : String.valueOf(value).strip();
+                if (k.isEmpty() || k.equals("id") || v.isEmpty()) {
+                    return;
+                }
+                if (k.length() > 60 || v.length() > MAX_VALUE_LENGTH) {
+                    throw new ApiException(ErrorCode.VALIDATION_ERROR,
+                            "Isian \"" + k + "\" terlalu panjang (maks " + MAX_VALUE_LENGTH + " karakter)");
+                }
+                clean.put(k, v);
+            });
+        }
+        if (clean.isEmpty()) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Data koleksi tidak boleh kosong");
+        }
+        if (clean.size() > MAX_FIELDS) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Maksimal " + MAX_FIELDS + " field per item");
+        }
+        return clean;
     }
 
     @DeleteMapping("/api/public/sites/{slug}/admin/collections/{collectionName}/{itemId}")

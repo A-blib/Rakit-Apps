@@ -4,10 +4,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Modul dinamis website: pembersihan HTML saat build dan deteksi modul untuk Portal Pengurus. */
 class SiteModulesTest {
@@ -29,13 +29,34 @@ class SiteModulesTest {
     }
 
     @Test
-    void templateModulesListsCollectionsWithFieldsExceptNews() {
-        Map<String, List<String>> modules = PublicSiteController.templateModules("""
+    void templateModulesListsCollectionsWithFieldTypesExceptNews() {
+        Map<String, Map<String, String>> modules = PublicSiteController.templateModules("""
                 <div data-ws-list="pengumuman"><div data-ws-item><span data-ws-field="judul"></span></div></div>
                 <div data-ws-collection="prestasi"><div data-ws-item>
-                  <img data-ws-field="foto"><b data-ws-field="judul"></b><a data-ws-link="link"></a></div></div>""");
+                  <img data-ws-field="foto"><b data-ws-field="judul"></b><a data-ws-link="link"></a>
+                  <p data-ws-field="cerita" data-ws-type="paragraf"></p><time data-ws-field="tanggal" data-ws-type="Tanggal"></time>
+                  <span data-ws-field="poin" data-ws-type="angka"></span><i data-ws-field="aneh" data-ws-type="warna"></i></div></div>""");
 
         assertThat(modules).containsOnlyKeys("prestasi");
-        assertThat(modules.get("prestasi")).containsExactly("foto", "judul", "link");
+        assertThat(modules.get("prestasi")).containsExactly(
+                Map.entry("foto", "gambar"), Map.entry("judul", "teks"), Map.entry("link", "link"),
+                Map.entry("cerita", "paragraf"), Map.entry("tanggal", "tanggal"), Map.entry("poin", "angka"),
+                Map.entry("aneh", "teks"));
+    }
+
+    @Test
+    void cleanItemDataTrimsDropsBlanksAndRejectsTooLong() {
+        Map<String, Object> raw = new java.util.LinkedHashMap<>();
+        raw.put(" judul ", "  Juara 1  ");
+        raw.put("kosong", "  ");
+        raw.put("id", "palsu");
+        raw.put("tahun", 2026);
+
+        assertThat(PublicSiteController.cleanItemData(raw)).containsExactly(
+                Map.entry("judul", "Juara 1"), Map.entry("tahun", "2026"));
+        assertThatThrownBy(() -> PublicSiteController.cleanItemData(Map.of("kosong", " ")))
+                .isInstanceOf(com.aris.templateapp.common.exception.ApiException.class);
+        assertThatThrownBy(() -> PublicSiteController.cleanItemData(Map.of("cerita", "x".repeat(5001))))
+                .isInstanceOf(com.aris.templateapp.common.exception.ApiException.class);
     }
 }

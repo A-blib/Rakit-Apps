@@ -59,6 +59,8 @@ export interface ProjectSnapshot {
   sections?: CustomSection[];
 }
 
+export type FieldType = "teks" | "paragraf" | "angka" | "tanggal" | "link" | "gambar";
+
 export interface SiteRenderData {
   siteId: string;
   projectId: string;
@@ -76,5 +78,6 @@ export interface SiteRenderData {
   forms: FormConfig[];
   collections?: Record<string, Array<Record<string, any>>>;
   compiledHtml: string | null;
-  modules?: Record<string, string[]>;
+  // Nama modul → field → jenis isian (teks, paragraf, angka, tanggal, link, gambar).
+  modules?: Record<string, Record<string, FieldType>>;
 }

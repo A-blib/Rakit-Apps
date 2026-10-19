@@ -1744,6 +1744,19 @@ file asli template (`/{slug}/`, `/{slug}/tentang.html`, `css/`, `js/`, `img/`) d
 | CORS hanya di Hosting | `/api/forms/...` ber-CORS `*` (tanpa cookie/token); backend tetap tanpa CORS |
 | Mode rakit sendiri | Pindah ke `/rakit/{slug}`; slug `rakit` dicadangkan |
 
+### Portal Pengurus: modul kustom lengkap (19 Oktober 2026)
+| Fitur | Cara kerja |
+|---|---|
+| Jenis field | `SiteRenderResponse.modules` kini `nama → field → jenis`. `<img data-ws-field>` = `gambar`, `data-ws-link` = `link`, `data-ws-type="paragraf"/"angka"/"tanggal"` = jenis itu, selain itu `teks`. Portal menampilkan isian yang sesuai (textarea, angka, pilih tanggal, link, unggah foto). |
+| Edit item | `PUT /api/public/sites/{slug}/admin/collections/{modul}/{itemId}` mengganti seluruh isi item |
+| Urutkan | Tombol naik/turun → `PUT .../collections/{modul}/order` `{ ids: [...] }`; daftar harus lengkap agar urutan tidak kacau saat dua pengurus mengubah bersamaan |
+| Foto | `POST /api/public/sites/{slug}/admin/media` (multipart `file`) disimpan sebagai aset project (`project_assets`, ikut kuota ruang kerja). Foto diperkecil di browser (1600 px, JPEG) karena batas 1 MB. Disajikan publik di `/{slug}/_media/{id}` (Hosting → `GET /api/public/sites/{slug}/media/{id}`, hanya aset project website itu). |
+| Tampil di website | `tanggal` 2026-10-19 → "19 Oktober 2026"; `paragraf` mempertahankan baris baru |
+| Isian dibersihkan | `cleanItemData`: teks di-trim, kosong dibuang, maks 30 field × 5.000 karakter |
+
+Perbaikan ikut: PUT/DELETE `/api/public/sites/**` dulu ditolak filter Security (token portal bukan token app), jadi hapus
+item/berita/pengurus dari Portal gagal 401. Sekarang diizinkan di filter; controller tetap memeriksa token portal.
+
 ## 34. Glosarium
 
 | Istilah | Arti singkat |

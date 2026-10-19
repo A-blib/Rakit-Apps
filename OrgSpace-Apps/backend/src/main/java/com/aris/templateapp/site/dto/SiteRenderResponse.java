@@ -26,8 +26,9 @@ public record SiteRenderResponse(
         List<FormConfig> forms,
         Map<String, List<Map<String, Object>>> collections,
         String compiledHtml,
-        // Modul koleksi di template (nama → nama field), agar Portal Pengurus menyiapkan form isiannya sendiri.
-        java.util.Map<String, java.util.List<String>> modules
+        // Modul koleksi di template (nama → field → jenis: teks/paragraf/angka/tanggal/link/gambar),
+        // agar Portal Pengurus menyiapkan form isiannya sendiri.
+        Map<String, Map<String, String>> modules
 ) {
     public record SeoMeta(
             String title,

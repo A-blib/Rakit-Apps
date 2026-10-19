@@ -170,6 +170,30 @@ public class ProjectService {
     public record StoredAsset(UUID organizationId, Path file, String mimeType) {
     }
 
+    /** Foto modul dari Portal Pengurus; izin sudah diperiksa lewat token portal, jadi tanpa kunci edit. */
+    @Transactional
+    public AssetResponse saveSiteMedia(UUID projectId, UUID userId, byte[] bytes) {
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        return saveAsset(project, userId, bytes);
+    }
+
+    /** Gambar milik website tayang, dibaca pengunjung tanpa login; aset website lain tidak bisa diambil. */
+    @Transactional(readOnly = true)
+    public StoredAsset siteMedia(UUID projectId, UUID assetId) {
+        StoredAsset asset = jdbc.sql("""
+                        SELECT organization_id, storage_path, mime_type FROM project_assets
+                         WHERE id = :id AND project_id = :project""")
+                .param("id", assetId).param("project", projectId)
+                .query((rs, row) -> new StoredAsset(rs.getObject("organization_id", UUID.class),
+                        assetStorage.file(rs.getString("storage_path")), rs.getString("mime_type")))
+                .optional()
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND));
+        if (!Files.isRegularFile(asset.file())) {
+            throw new ApiException(ErrorCode.NOT_FOUND);
+        }
+        return asset;
+    }
+
     @Transactional(readOnly = true)
     public List<BackupResponse> backups(UUID projectId, UUID userId) {
         load(projectId, userId, OrgAction.VIEW);

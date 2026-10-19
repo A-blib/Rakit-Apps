@@ -22,6 +22,8 @@ import java.util.zip.ZipOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -49,12 +51,14 @@ class SitePublishIntegrationTest {
     private com.aris.templateapp.upload.UploadStorage uploadStorage;
 
     private String creatorToken;
+    private String creatorEmail;
     private UUID orgId;
     private UUID projectId;
 
     @BeforeEach
     void setUp() throws Exception {
         String suffix = UUID.randomUUID().toString().substring(0, 8);
+        creatorEmail = "ketua-" + suffix + "@orgspace.test";
         String regRes = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"displayName\":\"Ketua OSIS\",\"email\":\"ketua-" + suffix + "@orgspace.test\",\"password\":\"password123\"}"))
@@ -151,6 +155,70 @@ class SitePublishIntegrationTest {
         assertThat(submissions).hasSize(1);
         assertThat(submissions.get(0).getFormName()).isEqualTo("pendaftaran");
         assertThat(submissions.get(0).getData()).containsEntry("nama", "Ahmad Fauzi");
+    }
+
+    @Test
+    void portalEditsReordersAndUploadsPhotoForCustomModule() throws Exception {
+        mockMvc.perform(post("/api/projects/" + projectId + "/publish")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"slug\":\"osis-portal-modul\"}"))
+                .andExpect(status().isAccepted());
+        String login = mockMvc.perform(post("/api/public/sites/osis-portal-modul/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + creatorEmail + "\",\"password\":\"password123\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String portal = "Bearer " + JsonPath.read(login, "$.token");
+        String base = "/api/public/sites/osis-portal-modul/admin/collections/prestasi";
+
+        String first = add(base, portal, "{\"judul\":\"Juara 1 Debat\"}");
+        String second = add(base, portal, "{\"judul\":\"Juara 2 Futsal\"}");
+
+        // Token app biasa (bukan token portal) ditolak, walau PUT kini tidak dijaga filter Security.
+        mockMvc.perform(put(base + "/" + first).header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"judul\":\"x\"}"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(put(base + "/" + first).header(HttpHeaders.AUTHORIZATION, portal)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"judul\":\"Juara 1 Debat Nasional\",\"tahun\":\"2026\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.judul").value("Juara 1 Debat Nasional"));
+
+        mockMvc.perform(put(base + "/order").header(HttpHeaders.AUTHORIZATION, portal)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"ids\":[\"" + first + "\",\"" + second + "\"]}"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/public/sites/osis-portal-modul/collections/prestasi"))
+                .andExpect(jsonPath("$[0].id").value(first))
+                .andExpect(jsonPath("$[0].tahun").value("2026"))
+                .andExpect(jsonPath("$[1].id").value(second));
+        // Daftar yang tidak lengkap (item lain baru ditambah pengurus lain) ditolak agar urutan tidak kacau.
+        mockMvc.perform(put(base + "/order").header(HttpHeaders.AUTHORIZATION, portal)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"ids\":[\"" + second + "\"]}"))
+                .andExpect(status().isBadRequest());
+
+        byte[] png = java.util.Base64.getDecoder().decode(
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+        String media = mockMvc.perform(multipart("/api/public/sites/osis-portal-modul/admin/media")
+                        .file(new org.springframework.mock.web.MockMultipartFile("file", "foto.png", "image/png", png))
+                        .header(HttpHeaders.AUTHORIZATION, portal))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String mediaId = JsonPath.read(media, "$.id");
+        assertThat((String) JsonPath.read(media, "$.url")).isEqualTo("/osis-portal-modul/_media/" + mediaId);
+        mockMvc.perform(get("/api/public/sites/osis-portal-modul/media/" + mediaId))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "image/png"));
+        mockMvc.perform(get("/api/public/sites/osis-portal-modul/media/" + UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+        // Upload foto tanpa token portal ditolak.
+        mockMvc.perform(multipart("/api/public/sites/osis-portal-modul/admin/media")
+                        .file(new org.springframework.mock.web.MockMultipartFile("file", "foto.png", "image/png", png)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    private String add(String base, String portal, String json) throws Exception {
+        String res = mockMvc.perform(post(base).header(HttpHeaders.AUTHORIZATION, portal)
+                        .contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        return JsonPath.read(res, "$.id");
     }
 
     private static byte[] createTemplateZip() throws Exception {

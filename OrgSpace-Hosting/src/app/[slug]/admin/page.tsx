@@ -20,7 +20,12 @@ import {
   Users,
   UserPlus,
   Shield,
+  Pencil,
+  ArrowUp,
+  ArrowDown,
+  ImagePlus,
 } from "lucide-react";
+import type { FieldType } from "@/lib/types";
 
 interface AdminUser {
   id: string;
@@ -49,6 +54,40 @@ interface NewsItem {
   content: string;
   imageUrl?: string;
   publishedAt?: string;
+}
+
+interface ModuleField {
+  key: string;
+  value: string;
+  type: FieldType;
+  // Field dari template: namanya tetap, karena harus sama dengan data-ws-field di HTML.
+  fixed?: boolean;
+}
+
+const FIELD_TYPE_LABELS: Record<FieldType, string> = {
+  teks: "Teks singkat",
+  paragraf: "Teks panjang",
+  angka: "Angka",
+  tanggal: "Tanggal",
+  link: "Link",
+  gambar: "Foto",
+};
+
+/**
+ * Foto dari HP bisa beberapa MB, sedangkan backend menerima maks 1 MB: diperkecil (sisi terpanjang 1600 px)
+ * dan diubah ke JPEG di browser sebelum dikirim.
+ */
+async function shrinkPhoto(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  return new Promise((resolve, reject) =>
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Foto tidak bisa diproses"))), "image/jpeg", 0.85)
+  );
 }
 
 interface Member {
@@ -99,19 +138,26 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
   const [loadingCollections, setLoadingCollections] = useState(false);
   const [selectedCol, setSelectedCol] = useState<string>("");
   const [newColName, setNewColName] = useState("");
-  // Modul koleksi yang ada di template (nama → field), dikirim backend lewat data render.
-  const [templateModules, setTemplateModules] = useState<Record<string, string[]>>({});
-  const [dynamicFields, setDynamicFields] = useState<Array<{ key: string; value: string }>>([
-    { key: "", value: "" },
-  ]);
+  // Modul koleksi yang ada di template (nama → field → jenis), dikirim backend lewat data render.
+  const [templateModules, setTemplateModules] = useState<Record<string, Record<string, FieldType>>>({});
+  const [dynamicFields, setDynamicFields] = useState<ModuleField[]>([{ key: "", value: "", type: "teks" }]);
+  // Item yang sedang diedit; null = form menambah item baru.
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [uploadingField, setUploadingField] = useState<number | null>(null);
 
-  const chooseCollection = (name: string, modules: Record<string, string[]> = templateModules) => {
+  const templateFields = (name: string, modules = templateModules): ModuleField[] =>
+    Object.entries(modules[name] || {}).map(([key, type]) => ({ key, value: "", type, fixed: true }));
+
+  const chooseCollection = (name: string, modules = templateModules) => {
     setSelectedCol(name);
-    const fields = modules[name];
-    if (fields && fields.length > 0) {
-      setDynamicFields(fields.map((key) => ({ key, value: "" })));
+    setEditingId(null);
+    const fields = templateFields(name, modules);
+    if (fields.length > 0) {
+      setDynamicFields(fields);
     }
   };
+
+  const fieldTypeOf = (colName: string, key: string): FieldType => templateModules[colName]?.[key] || "teks";
   const [submittingColItem, setSubmittingColItem] = useState(false);
 
   // Members & Access Control state
@@ -178,7 +224,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
         const data = await res.json();
         setSiteName(data.name || data.projectName);
         setOrgName(data.organizationName);
-        const modules: Record<string, string[]> = data.modules || {};
+        const modules: Record<string, Record<string, FieldType>> = data.modules || {};
         setTemplateModules(modules);
         const first = Object.keys(modules)[0];
         if (first) chooseCollection(first, modules);
@@ -461,7 +507,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
     e.preventDefault();
     if (!token) return;
 
-    const colName = (newColName.trim() || selectedCol).toLowerCase();
+    const colName = editingId ? selectedCol : (newColName.trim() || selectedCol).toLowerCase();
     if (!colName) {
       showToast("Pilih atau masukkan nama modul koleksi", "error");
       return;
@@ -482,8 +528,9 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
 
     setSubmittingColItem(true);
     try {
-      const res = await fetch(`${backendUrl}/api/public/sites/${slug}/admin/collections/${colName}`, {
-        method: "POST",
+      const itemPath = editingId ? `/${editingId}` : "";
+      const res = await fetch(`${backendUrl}/api/public/sites/${slug}/admin/collections/${colName}${itemPath}`, {
+        method: editingId ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -492,8 +539,9 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
       });
 
       if (res.ok) {
-        showToast(`Item berhasil ditambahkan ke modul '${colName}'!`);
+        showToast(editingId ? "Perubahan item disimpan" : `Item berhasil ditambahkan ke modul '${colName}'!`);
         setNewColName("");
+        setEditingId(null);
         // reset field values while preserving keys
         setDynamicFields(dynamicFields.map((f) => ({ ...f, value: "" })));
         setSelectedCol(colName);
@@ -501,7 +549,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
         loadStats(token);
       } else {
         const err = await res.json();
-        showToast(err.message || "Gagal menambahkan item modul", "error");
+        showToast(err.message || "Gagal menyimpan item modul", "error");
       }
     } catch {
       showToast("Terjadi kesalahan jaringan", "error");
@@ -532,7 +580,79 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
   };
 
   const addDynamicField = () => {
-    setDynamicFields([...dynamicFields, { key: "", value: "" }]);
+    setDynamicFields([...dynamicFields, { key: "", value: "", type: "teks" }]);
+  };
+
+  const updateField = (index: number, change: Partial<ModuleField>) => {
+    setDynamicFields((fields) => fields.map((f, i) => (i === index ? { ...f, ...change } : f)));
+  };
+
+  // Field template tetap tampil walau kosong; isian lain yang pernah disimpan ikut sebagai teks.
+  const startEditItem = (item: Record<string, any>) => {
+    const fields = templateFields(selectedCol).map((f) => ({ ...f, value: item[f.key] != null ? String(item[f.key]) : "" }));
+    Object.entries(item).forEach(([key, value]) => {
+      if (key !== "id" && !fields.some((f) => f.key === key)) {
+        fields.push({ key, value: String(value), type: "teks" });
+      }
+    });
+    setEditingId(item.id);
+    setNewColName("");
+    setDynamicFields(fields);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    const fields = templateFields(selectedCol);
+    setDynamicFields(fields.length > 0 ? fields : dynamicFields.map((f) => ({ ...f, value: "" })));
+  };
+
+  const handleUploadPhoto = async (index: number, file: File | undefined) => {
+    if (!token || !file) return;
+    setUploadingField(index);
+    try {
+      const body = new FormData();
+      body.append("file", await shrinkPhoto(file), "foto.jpg");
+      const res = await fetch(`${backendUrl}/api/public/sites/${slug}/admin/media`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        updateField(index, { value: data.url });
+      } else {
+        showToast(data.message || "Gagal mengunggah foto", "error");
+      }
+    } catch {
+      showToast("Foto gagal diunggah. Pastikan file berupa gambar lalu coba lagi.", "error");
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
+  // Urutan di Portal = urutan tampil di website. Diubah langsung di layar, lalu disimpan ke server.
+  const handleMoveItem = async (index: number, direction: -1 | 1) => {
+    const items = [...(collections[selectedCol] || [])];
+    const target = index + direction;
+    if (!token || target < 0 || target >= items.length) return;
+    [items[index], items[target]] = [items[target], items[index]];
+    setCollections({ ...collections, [selectedCol]: items });
+    try {
+      const res = await fetch(`${backendUrl}/api/public/sites/${slug}/admin/collections/${selectedCol}/order`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ ids: items.map((i) => i.id) }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.message || "Gagal menyimpan urutan", "error");
+        loadCollections(token);
+      }
+    } catch {
+      showToast("Terjadi kesalahan jaringan", "error");
+      loadCollections(token);
+    }
   };
 
   const removeDynamicField = (index: number) => {
@@ -1035,8 +1155,8 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
             {/* Form Tambah Item Modul */}
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm h-fit">
               <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-1.5">
-                <Plus className="w-4 h-4 text-purple-600" />
-                <span>Tambah Data Modul</span>
+                {editingId ? <Pencil className="w-4 h-4 text-purple-600" /> : <Plus className="w-4 h-4 text-purple-600" />}
+                <span>{editingId ? "Edit Data Modul" : "Tambah Data Modul"}</span>
               </h3>
 
               <form onSubmit={handleCreateCollectionItem} className="space-y-3">
@@ -1047,8 +1167,9 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                   <div className="flex gap-2">
                     <select
                       value={selectedCol}
+                      disabled={!!editingId}
                       onChange={(e) => chooseCollection(e.target.value)}
-                      className="w-1/2 px-2.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none"
+                      className="w-1/2 px-2.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none disabled:bg-slate-50"
                     >
                       {Array.from(new Set([...Object.keys(templateModules), ...Object.keys(collections)])).map((k) => (
                         <option key={k} value={k}>
@@ -1059,6 +1180,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                     <input
                       type="text"
                       placeholder="Atau nama baru..."
+                      disabled={!!editingId}
                       value={newColName}
                       onChange={(e) => setNewColName(e.target.value)}
                       className="w-1/2 px-2.5 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none"
@@ -1081,42 +1203,108 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                     </button>
                   </div>
 
-                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                    {dynamicFields.map((field, idx) => (
-                      <div key={idx} className="flex items-center gap-1.5">
-                        <input
-                          type="text"
-                          placeholder="Nama field (mis: nama)"
-                          value={field.key}
-                          onChange={(e) => {
-                            const updated = [...dynamicFields];
-                            updated[idx].key = e.target.value;
-                            setDynamicFields(updated);
-                          }}
-                          className="w-1/3 px-2 py-1.5 text-[11px] rounded-lg border border-slate-300 font-mono"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Isi data..."
-                          value={field.value}
-                          onChange={(e) => {
-                            const updated = [...dynamicFields];
-                            updated[idx].value = e.target.value;
-                            setDynamicFields(updated);
-                          }}
-                          className="w-2/3 px-2 py-1.5 text-[11px] rounded-lg border border-slate-300"
-                        />
-                        {dynamicFields.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeDynamicField(idx)}
-                            className="text-slate-400 hover:text-red-500 p-1"
-                          >
-                            &times;
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                  <div className="space-y-3 max-h-[28rem] overflow-y-auto pr-1">
+                    {dynamicFields.map((field, idx) => {
+                      const inputClass = "w-full px-2 py-1.5 text-[11px] rounded-lg border border-slate-300";
+                      return (
+                        <div key={idx} className="space-y-1">
+                          <div className="flex items-center gap-1.5">
+                            {field.fixed ? (
+                              <span className="flex-1 font-mono text-[11px] font-semibold text-slate-700">{field.key}</span>
+                            ) : (
+                              <input
+                                type="text"
+                                placeholder="Nama field (mis: nama)"
+                                aria-label="Nama field"
+                                value={field.key}
+                                onChange={(e) => updateField(idx, { key: e.target.value })}
+                                className="flex-1 px-2 py-1 text-[11px] rounded-lg border border-slate-300 font-mono"
+                              />
+                            )}
+                            {field.fixed ? (
+                              <span className="text-[10px] text-slate-400">{FIELD_TYPE_LABELS[field.type]}</span>
+                            ) : (
+                              <select
+                                aria-label="Jenis field"
+                                value={field.type}
+                                onChange={(e) => updateField(idx, { type: e.target.value as FieldType })}
+                                className="px-1.5 py-1 text-[10px] rounded-lg border border-slate-300"
+                              >
+                                {Object.entries(FIELD_TYPE_LABELS).map(([type, label]) => (
+                                  <option key={type} value={type}>
+                                    {label}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                            {!field.fixed && dynamicFields.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeDynamicField(idx)}
+                                aria-label={`Hapus field ${field.key}`}
+                                className="text-slate-400 hover:text-red-500 p-1"
+                              >
+                                &times;
+                              </button>
+                            )}
+                          </div>
+
+                          {field.type === "paragraf" ? (
+                            <textarea
+                              rows={4}
+                              placeholder="Isi data..."
+                              value={field.value}
+                              onChange={(e) => updateField(idx, { value: e.target.value })}
+                              className={inputClass}
+                            />
+                          ) : field.type === "gambar" ? (
+                            <div className="flex items-center gap-2">
+                              {field.value ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={field.value} alt={`Foto ${field.key}`} className="w-14 h-14 rounded-lg object-cover border border-slate-200" />
+                              ) : (
+                                <div className="w-14 h-14 rounded-lg border border-dashed border-slate-300 grid place-items-center text-slate-300">
+                                  <ImagePlus className="w-5 h-5" />
+                                </div>
+                              )}
+                              <div className="flex-1 space-y-1">
+                                <label className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold rounded-lg border border-slate-300 cursor-pointer hover:bg-slate-50">
+                                  {uploadingField === idx ? <Loader2 className="w-3 h-3 animate-spin" /> : <ImagePlus className="w-3 h-3" />}
+                                  {uploadingField === idx ? "Mengunggah..." : field.value ? "Ganti foto" : "Pilih foto"}
+                                  <input
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/webp"
+                                    className="sr-only"
+                                    disabled={uploadingField !== null}
+                                    onChange={(e) => {
+                                      handleUploadPhoto(idx, e.target.files?.[0]);
+                                      e.target.value = "";
+                                    }}
+                                  />
+                                </label>
+                                {field.value && (
+                                  <button
+                                    type="button"
+                                    onClick={() => updateField(idx, { value: "" })}
+                                    className="block text-[10px] text-slate-400 hover:text-red-500"
+                                  >
+                                    Hapus foto
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <input
+                              type={field.type === "angka" ? "number" : field.type === "tanggal" ? "date" : field.type === "link" ? "url" : "text"}
+                              placeholder={field.type === "link" ? "https://..." : "Isi data..."}
+                              value={field.value}
+                              onChange={(e) => updateField(idx, { value: e.target.value })}
+                              className={inputClass}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -1125,8 +1313,17 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                   disabled={submittingColItem}
                   className="w-full mt-2 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold shadow-sm transition disabled:opacity-50"
                 >
-                  {submittingColItem ? "Menyimpan..." : "Simpan ke Modul"}
+                  {submittingColItem ? "Menyimpan..." : editingId ? "Simpan Perubahan" : "Simpan ke Modul"}
                 </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="w-full py-2 text-xs font-semibold text-slate-600 rounded-xl border border-slate-200 hover:bg-slate-50"
+                  >
+                    Batal Edit
+                  </button>
+                )}
               </form>
             </div>
 
@@ -1171,35 +1368,70 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                 </div>
               ) : (
                 <div className="space-y-2.5">
-                  {collections[selectedCol].map((item, idx) => (
+                  {collections[selectedCol].map((item, idx, items) => (
                     <div
                       key={item.id || idx}
-                      className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between gap-4"
+                      className={`bg-white p-4 rounded-2xl border shadow-sm flex items-start justify-between gap-4 ${
+                        editingId === item.id ? "border-purple-400" : "border-slate-200"
+                      }`}
                     >
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap gap-2">
-                          {Object.entries(item).map(([k, v]) => {
-                            if (k === "id") return null;
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {Object.entries(item).map(([k, v]) => {
+                          if (k === "id") return null;
+                          if (fieldTypeOf(selectedCol, k) === "gambar") {
                             return (
-                              <div
-                                key={k}
-                                className="inline-flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-xs"
-                              >
-                                <span className="font-mono text-slate-400 text-[10px]">{k}:</span>
-                                <span className="font-semibold text-slate-800">{String(v)}</span>
-                              </div>
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img key={k} src={String(v)} alt={k} className="w-12 h-12 rounded-lg object-cover border border-slate-200" />
                             );
-                          })}
-                        </div>
+                          }
+                          return (
+                            <div
+                              key={k}
+                              className="inline-flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-xs max-w-full"
+                            >
+                              <span className="font-mono text-slate-400 text-[10px]">{k}:</span>
+                              <span className="font-semibold text-slate-800 line-clamp-2 break-words">{String(v)}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                       {item.id && (
-                        <button
-                          onClick={() => handleDeleteCollectionItem(selectedCol, item.id)}
-                          className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
-                          title="Hapus Item"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-0.5 shrink-0">
+                          <button
+                            onClick={() => handleMoveItem(idx, -1)}
+                            disabled={idx === 0}
+                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition disabled:opacity-30"
+                            title="Naikkan"
+                            aria-label="Naikkan urutan"
+                          >
+                            <ArrowUp className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleMoveItem(idx, 1)}
+                            disabled={idx === items.length - 1}
+                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition disabled:opacity-30"
+                            title="Turunkan"
+                            aria-label="Turunkan urutan"
+                          >
+                            <ArrowDown className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => startEditItem(item)}
+                            className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                            title="Edit Item"
+                            aria-label="Edit item"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCollectionItem(selectedCol, item.id)}
+                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                            title="Hapus Item"
+                            aria-label="Hapus item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   ))}

@@ -75,6 +75,21 @@
 - Uji di HP: jalankan Hosting + `adb reverse tcp:3001 tcp:3001`, terbitkan satu website, buka link-nya.
 - Di VPS nanti: isi `SITES_HOSTING_URL=https://orgspace.app` di `.env` backend.
 
+## Lanjutan: Portal Pengurus modul kustom lengkap
+| File | Fungsi |
+|---|---|
+| `backend/.../site/PublicSiteController.java` | Jenis field di `templateModules`, `cleanItemData`, endpoint edit, urutan, unggah & sajikan foto |
+| `backend/.../project/ProjectService.java` | `saveSiteMedia`, `siteMedia` (pakai `saveAsset` yang sudah ada) |
+| `backend/.../security/SecurityConfig.java` | PUT/DELETE `/api/public/sites/**` lewat filter; dicek token portal di controller |
+| `OrgSpace-Hosting/src/app/[slug]/admin/page.tsx` | Form per jenis field, unggah foto, edit, naik/turun |
+| `OrgSpace-Hosting/src/lib/site-page.ts`, `[...path]/route.ts` | `/{slug}/_media/{id}` |
+| `OrgSpace-Hosting/src/lib/site-runtime.ts` | Format `tanggal`, baris baru `paragraf` |
+| `OrgSpace-Website/contoh-modul-orgspace/**`, `src/lib/docs-data.ts`, ZIP unduhan | Dokumentasi `data-ws-type` |
+
+- Keputusan: foto disimpan di `project_assets` (alternatif tabel baru, tidak dipilih: kuota & deduplikasi sudah ada). Urutan memakai `sort_order` yang sudah ada di `site_custom_items` (tanpa migrasi).
+- Tes: `SiteModulesTest` (jenis field, pembersihan isian) dan `SitePublishIntegrationTest.portalEditsReordersAndUploadsPhotoForCustomModule` lulus. Uji manual lewat curl di `osis-modul-api`: foto 200 lewat Hosting, edit & urutan tersimpan dan tampil di data halaman.
+- Latihan: tambahkan `data-ws-type="paragraf"` pada field cerita prestasi di template contoh, unggah ulang, lalu lihat isian Portal berubah menjadi kotak teks panjang.
+
 ## Rencana fase berikutnya
 - `organizationName` di data render masih "Ruang Pribadi X" untuk ruang pribadi (dipakai Open Graph `siteName`).
 - `CustomRenderer` (mode rakit sendiri) masih berisi teks contoh; menunggu rancangan editor custom mode.

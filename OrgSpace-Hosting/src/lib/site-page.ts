@@ -74,6 +74,21 @@ export async function servePage(slug: string, file: string): Promise<Response> {
   });
 }
 
+/** Foto modul yang diunggah lewat Portal Pengurus. Isinya tidak pernah berubah (foto baru = id baru). */
+export async function serveMedia(slug: string, id: string): Promise<Response> {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return notFound();
+  const res = await fetch(`${BACKEND_URL}/api/public/sites/${encodeURIComponent(slug)}/media/${id}`, { cache: "no-store" });
+  if (!res.ok || !res.body) return notFound();
+  return new Response(res.body, {
+    headers: {
+      "Content-Type": res.headers.get("content-type") || "application/octet-stream",
+      "Content-Security-Policy": SANDBOX,
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+
 /** File pendukung template (CSS, JS, gambar, font) apa adanya. SVG bisa berisi script, jadi ikut di-sandbox. */
 export async function serveAsset(slug: string, path: string): Promise<Response> {
   const res = await fetch(assetUrl(slug, path), { cache: "no-store" });
