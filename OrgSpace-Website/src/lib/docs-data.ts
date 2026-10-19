@@ -313,6 +313,7 @@ Bagian template contoh dan modul yang dipakainya:
 | \`data-ws-item\` | 1 kartu contoh | Kartu yang diulang untuk setiap data. |
 | \`data-ws-field="nama_field"\` | elemen di dalam kartu | Diisi teks data. Pada \`<img>\` yang diisi adalah \`src\`. |
 | \`data-ws-link="nama_field"\` | \`<a>\` di dalam kartu | Diisi \`href\` dari data. |
+| \`data-ws-type="tanggal"\` | elemen \`data-ws-field\` | Jenis isian di Portal Pengurus: \`teks\` (bawaan), \`paragraf\`, \`angka\`, atau \`tanggal\` (lihat bagian 3). |
 | \`data-ws-empty\` | di dalam pembungkus | Tampil hanya jika belum ada data. |
 | \`data-ws-limit="6"\` | pembungkus daftar | Batas jumlah kartu yang tampil (1–100). |
 | \`data-ws-form="nama"\` | \`<form>\` | Isian dikirim ke Kotak Masuk Portal Pengurus. |
@@ -371,7 +372,7 @@ Nama selain \`pengumuman\`, \`berita\`, dan \`kegiatan\` menjadi **modul kustom*
 <div data-ws-collection="agenda">
   <div data-ws-item>
     <h3 data-ws-field="nama_kegiatan">Nama kegiatan</h3>
-    <span data-ws-field="tanggal">Tanggal</span> · <span data-ws-field="lokasi">Lokasi</span>
+    <span data-ws-field="tanggal" data-ws-type="tanggal">Tanggal</span> · <span data-ws-field="lokasi">Lokasi</span>
     <a href="#daftar" data-ws-link="link_daftar">Ikuti</a>
   </div>
   <div data-ws-empty>Belum ada agenda terdekat.</div>
@@ -380,6 +381,18 @@ Nama selain \`pengumuman\`, \`berita\`, dan \`kegiatan\` menjadi **modul kustom*
 
 Contoh di atas membuat dua modul di Portal Pengurus: \`prestasi\` (foto, tingkat, judul, nama, tahun) dan \`agenda\` (nama_kegiatan, tanggal, lokasi, link_daftar).
 
+Jenis isian di Portal Pengurus mengikuti elemennya:
+
+| Di template | Isian di Portal | Tampil di website |
+|---|---|---|
+| \`<img data-ws-field>\` | Unggah foto (diperkecil otomatis) | \`src\` gambar |
+| \`data-ws-link\` | Link (\`https://...\`) | \`href\` |
+| \`data-ws-type="paragraf"\` | Teks panjang | Teks, baris baru dipertahankan |
+| \`data-ws-type="angka"\` | Angka | Teks |
+| \`data-ws-type="tanggal"\` | Pilih tanggal | "19 Oktober 2026" |
+| tanpa \`data-ws-type\` | Teks singkat | Teks |
+
+- Pengurus bisa menambah, mengedit, menghapus, dan **mengatur urutan** data. Urutan di Portal sama dengan urutan kartu di website.
 - Field yang tidak diisi pengurus tetap menampilkan isi contoh dari template. Jadi isi contoh sebaiknya netral, mis. foto default.
 - \`<img data-ws-field>\` hanya menerima alamat gambar \`http://\`, \`https://\`, atau \`/...\`.
 - \`data-ws-link\` hanya menerima \`http://\`, \`https://\`, \`mailto:\`, \`tel:\`, \`/...\`, atau \`#...\`. Alamat lain diabaikan dan \`href\` asli dari template yang dipakai.
@@ -416,7 +429,7 @@ Alamat: \`orgspace.app/nama-website/admin\`. Pengurus masuk dengan email dan pas
 | Ringkasan | Jumlah isian form, berita, item modul kustom, dan pengurus |
 | Kotak Masuk Form | Semua isian dari setiap \`data-ws-form\` |
 | Berita & Agenda | Tambah dan hapus pengumuman |
-| Modul Kustom | Daftar modul dari template beserta field-nya; tambah dan hapus data |
+| Modul Kustom | Daftar modul dari template beserta field-nya; tambah, edit, hapus, urutkan data, dan unggah foto |
 | Pengurus & Hak Akses | Tambah pengurus (hanya akun OrgSpace yang sudah terdaftar) dan atur perannya |
 
 Sesi Portal Pengurus berlaku 8 jam dan **hanya untuk satu website itu**.

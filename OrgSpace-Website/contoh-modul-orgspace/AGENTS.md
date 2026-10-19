@@ -63,6 +63,8 @@ Jika ada yang bertentangan, `docs/01-panduan-modul-dinamis.md` dan bagian 3 file
 - [ ] `pengumuman` / `berita` / `kegiatan` hanya memakai field: `judul`, `ringkasan`, `konten`, `tanggal`, `foto`,
       `detail` (pakai `data-ws-link="detail"`).
 - [ ] `data-ws-limit` (jika ada) bernilai 1–100.
+- [ ] Field modul kustom berisi teks panjang, angka, atau tanggal diberi `data-ws-type="paragraf"`, `"angka"`,
+      atau `"tanggal"` agar Portal Pengurus menampilkan isian yang tepat; foto memakai `<img data-ws-field>`.
 - [ ] Tombol Portal Pengurus berupa `<a href="admin" data-ws-auth="login">`.
 - [ ] Setiap `<input>`, `<textarea>`, `<select>` di dalam `<form data-ws-form="...">` punya atribut `name`.
 - [ ] Tidak ada `on...=`, `javascript:`, atau path absolut; script tidak butuh data tersimpan permanen di browser.
