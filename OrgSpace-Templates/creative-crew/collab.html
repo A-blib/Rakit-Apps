@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collab — Creative Crew</title>
+  <meta name="description" content="Ajukan project kolaborasi: video, desain grafis, dan liputan event.">
+  <meta name="theme-color" content="#121212">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#utama">Lewati ke isi</a>
+  <header class="topbar solid" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" width="40" height="40" data-ws-org="logo">
+        <span class="brand-name" data-ws-org="nama">Creative Crew</span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html">Home</a>
+        <a href="works.html">Works</a>
+        <a href="crew.html">Crew</a>
+        <a href="gear.html">Gear</a>
+        <a class="btn btn-primary btn-sm" href="collab.html" aria-current="page">Start a Project</a>
+      </nav>
+      <button class="burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="utama">
+    <section class="page-hero">
+      <div class="wrap reveal">
+        <p class="eyebrow" id="collab-label">Collaboration</p>
+        <h1 id="collab-judul">Let's make <span class="hl">something</span></h1>
+        <p class="lead" id="collab-deskripsi">Untuk organisasi, himpunan, dan panitia kampus. Ajukan brief, kami bantu dari konsep sampai karya jadi.</p>
+      </div>
+      <span class="num" aria-hidden="true">04</span>
+    </section>
+
+    <!-- ALUR KOLABORASI -->
+    <section class="section" id="alur">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="alur-label">How it works</p>
+            <h2 id="alur-judul">Alur kolaborasi</h2>
+          </div>
+        </div>
+        <div class="grid steps">
+          <article class="step reveal"><h3 id="alur-1-judul">Submit brief</h3><p id="alur-1-teks">Isi formulir di bawah: kebutuhan, jenis layanan, dan tenggat waktu.</p></article>
+          <article class="step reveal"><h3 id="alur-2-judul">Review</h3><p id="alur-2-teks">Tim meninjau brief, lalu menghubungi PIC untuk diskusi konsep dan jadwal.</p></article>
+          <article class="step reveal"><h3 id="alur-3-judul">Production</h3><p id="alur-3-teks">Kru yang ditugaskan mulai produksi dengan progres yang bisa kamu pantau.</p></article>
+          <article class="step reveal"><h3 id="alur-4-judul">Handover</h3><p id="alur-4-teks">Karya final diserahkan beserta file mentah yang disepakati.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- LAYANAN -->
+    <section class="section alt" id="layanan">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="layanan-label">Services</p>
+            <h2 id="layanan-judul">Yang bisa kami bantu</h2>
+          </div>
+        </div>
+        <div class="grid services" data-ws-collection="layanan">
+          <article class="service reveal" data-ws-item>
+            <h3 data-ws-field="nama">Nama layanan</h3>
+            <p data-ws-field="deskripsi" data-ws-type="paragraf">Penjelasan singkat layanan ini.</p>
+            <span class="eta">Estimasi · <span data-ws-field="estimasi">1–2 minggu</span></span>
+          </article>
+          <p class="empty" data-ws-empty>Daftar layanan akan segera diperbarui.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORM PENGAJUAN: isian masuk ke Kotak Masuk Portal Pengurus -->
+    <section class="section" id="ajukan">
+      <div class="wrap form-wrap">
+        <div class="form-side reveal">
+          <p class="eyebrow" id="form-label">Project request</p>
+          <h2 id="form-judul">Ajukan <span class="hl">project</span></h2>
+          <p class="lead" id="form-deskripsi">Semakin jelas brief-nya, semakin cepat kami bisa memberi estimasi.</p>
+          <ul class="contact-list">
+            <li><a href="#ajukan" data-ws-org="email">Email organisasi</a></li>
+            <li><a href="#ajukan" data-ws-org="whatsapp">WhatsApp</a></li>
+            <li><a href="#ajukan" data-ws-org="instagram">Instagram</a></li>
+          </ul>
+        </div>
+        <form class="form reveal" data-ws-form="kolaborasi" id="form-kolaborasi">
+          <div class="alert" data-ws-form-alert></div>
+          <div class="form-grid">
+            <div class="field"><label for="k-org">Organisasi / klien</label><input id="k-org" name="organisasi" required placeholder="Mis. BEM Fakultas Teknik"></div>
+            <div class="field"><label for="k-pic">Nama PIC</label><input id="k-pic" name="pic" required autocomplete="name" placeholder="Penanggung jawab"></div>
+            <div class="field"><label for="k-wa">WhatsApp PIC</label><input id="k-wa" name="whatsapp" type="tel" required autocomplete="tel" placeholder="08xxxxxxxxxx"></div>
+            <div class="field"><label for="k-email">Email</label><input id="k-email" name="email" type="email" autocomplete="email" placeholder="nama@kampus.ac.id"></div>
+            <div class="field"><label for="k-layanan">Jenis layanan</label>
+              <select id="k-layanan" name="layanan" required>
+                <option value="">Pilih layanan</option>
+                <option>Video Production</option>
+                <option>Desain Grafis</option>
+                <option>Liputan Event</option>
+                <option>Fotografi</option>
+              </select>
+            </div>
+            <div class="field"><label for="k-deadline">Tenggat waktu</label><input id="k-deadline" name="deadline" type="date" required></div>
+            <div class="field full"><label for="k-brief">Detail kebutuhan (brief)</label><textarea id="k-brief" name="brief" required maxlength="2000" placeholder="Acara apa, target audiens, output yang diharapkan, referensi gaya, dan anggaran (jika ada)."></textarea><span class="hint"><span id="brief-hitung">0</span>/2000 karakter</span></div>
+          </div>
+          <div class="form-foot">
+            <p class="muted" id="form-catatan">Dengan mengirim, kamu setuju dihubungi tim kami lewat WhatsApp atau email.</p>
+            <button class="btn btn-primary" type="submit">Submit brief</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <dialog class="dialog" id="terima-kasih" aria-labelledby="tk-judul">
+      <div class="dialog-in">
+        <div class="dialog-icon" aria-hidden="true">✓</div>
+        <h2 id="tk-judul">Brief diterima!</h2>
+        <p id="tk-teks">Terima kasih sudah mempercayakan project-mu ke kami. Tim akan meninjau brief dan menghubungi PIC.</p>
+        <span class="sla" id="tk-sla">Estimasi balasan: 2×24 jam kerja</span>
+        <button class="btn btn-primary" type="button" data-close>Oke, siap</button>
+      </div>
+    </dialog>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-in">
+        <div>
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" width="40" height="40" data-ws-org="logo">
+            <span class="brand-name" data-ws-org="nama">Creative Crew</span>
+          </a>
+          <p class="muted" id="footer-teks">Rumah produksi kreatif mahasiswa: video, desain, dan dokumentasi event untuk seluruh kampus.</p>
+        </div>
+        <div>
+          <p class="footer-title">Jelajahi</p>
+          <ul>
+            <li><a href="works.html">Works</a></li>
+            <li><a href="crew.html">Crew</a></li>
+            <li><a href="collab.html">Collab</a></li>
+            <li><a href="gear.html">Gear Room</a></li>
+          </ul>
+        </div>
+        <div data-org-group>
+          <p class="footer-title">Kontak</p>
+          <ul>
+            <li><a href="collab.html" data-ws-org="email">Email organisasi</a></li>
+            <li><a href="collab.html" data-ws-org="instagram">Instagram</a></li>
+            <li><a href="collab.html" data-ws-org="whatsapp">WhatsApp</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">Untuk pengurus</p>
+          <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span data-ws-org="institusi">Nama kampus</span> · <span data-ws-org="kota">Kota</span></span>
+        <a href="#atas">Kembali ke atas ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

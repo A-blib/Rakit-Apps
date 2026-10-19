@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crew — Creative Crew</title>
+  <meta name="description" content="Kenalan dengan kru Creative Crew per divisi dan gabung lewat open recruitment.">
+  <meta name="theme-color" content="#121212">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#utama">Lewati ke isi</a>
+  <header class="topbar solid" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" width="40" height="40" data-ws-org="logo">
+        <span class="brand-name" data-ws-org="nama">Creative Crew</span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html">Home</a>
+        <a href="works.html">Works</a>
+        <a href="crew.html" aria-current="page">Crew</a>
+        <a href="gear.html">Gear</a>
+        <a class="btn btn-primary btn-sm" href="collab.html">Start a Project</a>
+      </nav>
+      <button class="burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="utama">
+    <section class="page-hero">
+      <div class="wrap reveal">
+        <p class="eyebrow" id="crew-label">The Crew</p>
+        <h1 id="crew-judul">Meet the <span class="hl">crew</span></h1>
+        <p class="lead" id="crew-deskripsi">Orang-orang di balik kamera, layar desain, dan setiap event yang kami liput. Arahkan kursor ke foto untuk melihat karya mereka.</p>
+      </div>
+      <span class="num" aria-hidden="true">03</span>
+    </section>
+
+    <section class="section" id="roster">
+      <div class="wrap">
+        <div class="chips" data-filter="kru" data-filter-field="divisi" role="group" aria-label="Filter divisi kru"></div>
+        <div class="grid crew-grid" data-ws-collection="kru">
+          <article class="member reveal" data-ws-item>
+            <div class="member-photo">
+              <img src="img/kru-1.jpg" alt="Foto anggota" width="600" height="600" loading="lazy" data-ws-field="foto">
+              <div class="member-links">
+                <a href="#" data-ws-link="link_portofolio">Portofolio</a>
+                <a class="alt" href="#" data-ws-link="instagram">Instagram</a>
+              </div>
+            </div>
+            <div class="member-body">
+              <h3 data-ws-field="nama">Nama Anggota</h3>
+              <p class="role" data-ws-field="peran">Peran / jabatan</p>
+              <span class="tag dark" data-ws-field="divisi">Divisi</span>
+            </div>
+          </article>
+          <p class="empty" data-ws-empty>Roster kru periode ini akan segera diumumkan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- OPEN RECRUITMENT: isian masuk ke Kotak Masuk Portal Pengurus -->
+    <section class="section alt" id="join">
+      <div class="wrap form-wrap">
+        <div class="form-side reveal">
+          <p class="eyebrow" id="oprec-label">Open Recruitment</p>
+          <h2 id="oprec-judul">Join the <span class="hl">crew</span></h2>
+          <p class="lead" id="oprec-deskripsi">Suka bikin video, desain, atau motret? Kirim data dan portofoliomu. Kami akan menghubungimu untuk tahap wawancara.</p>
+          <ul class="contact-list">
+            <li id="oprec-poin-1">Terbuka untuk semua angkatan</li>
+            <li id="oprec-poin-2">Belum punya portofolio? Tetap boleh daftar</li>
+            <li id="oprec-poin-3">Pelatihan rutin setiap bulan</li>
+          </ul>
+        </div>
+        <form class="form reveal" data-ws-form="oprec">
+          <div class="alert" data-ws-form-alert></div>
+          <div class="form-grid">
+            <div class="field"><label for="o-nama">Nama lengkap</label><input id="o-nama" name="nama" required autocomplete="name" placeholder="Nama sesuai KTM"></div>
+            <div class="field"><label for="o-nim">NIM</label><input id="o-nim" name="nim" required inputmode="numeric" placeholder="Nomor induk mahasiswa"></div>
+            <div class="field"><label for="o-divisi">Divisi pilihan</label>
+              <select id="o-divisi" name="divisi" required>
+                <option value="">Pilih divisi</option>
+                <option>Video Production</option>
+                <option>Graphic Design</option>
+                <option>Photography</option>
+                <option>Event Coverage</option>
+              </select>
+            </div>
+            <div class="field"><label for="o-wa">WhatsApp</label><input id="o-wa" name="whatsapp" type="tel" required autocomplete="tel" placeholder="08xxxxxxxxxx"></div>
+            <div class="field full"><label for="o-porto">Link CV / portofolio</label><input id="o-porto" name="portofolio" type="url" placeholder="https://drive.google.com/..."><span class="hint">Google Drive, Behance, Instagram, atau YouTube.</span></div>
+            <div class="field full"><label for="o-motivasi">Kenapa ingin bergabung?</label><textarea id="o-motivasi" name="motivasi" required maxlength="800" placeholder="Ceritakan singkat motivasimu"></textarea></div>
+          </div>
+          <div class="form-foot">
+            <p class="muted" id="oprec-catatan">Data hanya dibaca pengurus untuk proses rekrutmen.</p>
+            <button class="btn btn-primary" type="submit">Kirim pendaftaran</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-in">
+        <div>
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" width="40" height="40" data-ws-org="logo">
+            <span class="brand-name" data-ws-org="nama">Creative Crew</span>
+          </a>
+          <p class="muted" id="footer-teks">Rumah produksi kreatif mahasiswa: video, desain, dan dokumentasi event untuk seluruh kampus.</p>
+        </div>
+        <div>
+          <p class="footer-title">Jelajahi</p>
+          <ul>
+            <li><a href="works.html">Works</a></li>
+            <li><a href="crew.html">Crew</a></li>
+            <li><a href="collab.html">Collab</a></li>
+            <li><a href="gear.html">Gear Room</a></li>
+          </ul>
+        </div>
+        <div data-org-group>
+          <p class="footer-title">Kontak</p>
+          <ul>
+            <li><a href="collab.html" data-ws-org="email">Email organisasi</a></li>
+            <li><a href="collab.html" data-ws-org="instagram">Instagram</a></li>
+            <li><a href="collab.html" data-ws-org="whatsapp">WhatsApp</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">Untuk pengurus</p>
+          <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span data-ws-org="institusi">Nama kampus</span> · <span data-ws-org="kota">Kota</span></span>
+        <a href="#atas">Kembali ke atas ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

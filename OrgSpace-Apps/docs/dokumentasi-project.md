@@ -1763,6 +1763,15 @@ prestasi, agenda, pengumuman, galeri, testimoni, FAQ, struktur, form pendaftaran
 profil organisasi, tema gelap, animasi scroll, tanpa library. Lolos pengecekan tanpa error maupun peringatan; 36 isian
 editor dan 3 variabel tema (`--primary`, `--accent`, `--radius`).
 
+### Template Creative Crew & perbaikan "dipakai N kali" (19 Oktober 2026)
+Template `OrgSpace-Templates/creative-crew/` (6 halaman, modul `karya`/`divisi`/`kru`/`layanan`/`alat`, form `kolaborasi` &
+`oprec`) diupload sebagai provider, diterbitkan ke `creative-crew`, diisi lewat API Portal Pengurus, lalu dicek di browser.
+
+| Temuan | Perbaikan |
+|---|---|
+| Angka "dipakai N kali" di galeri dan statistik provider selalu 0 untuk website yang diterbitkan, karena event `download` hanya dikirim app saat export ZIP | `SitePublishService.countTemplateUse`: setelah build berhasil (Publish Langsung maupun terbit biasa), server mencatat event `download` sekali per project lewat `TemplateEventService.record` (template harus tayang, pemakaian oleh provider sendiri tidak dihitung). Test: `SitePublishIntegrationTest.publishingFromAnotherProvidersTemplateCountsAsUsedOnce`. Batasan: project yang diterbitkan **dan** diexport ZIP dihitung 2 kali karena id project di app (Room) berbeda dengan id di server. |
+| `next dev` Hosting membuat alamat `/{slug}` berputar redirect setelah `next.config.ts` dimuat ulang (mis. saat pindah branch) | Bukan bug kode; restart `next dev`. Build produksi tidak terpengaruh. |
+
 ### Dokumentasi provider & paket AI agent dirapikan (19 Oktober 2026)
 Paket unduhan `OrgSpace-Website/public/downloads/contoh-modul-orgspace.zip` (sumber: `OrgSpace-Website/contoh-modul-orgspace/`)
 dicocokkan ulang dengan aturan cek upload di backend (`CheckRule`, `application.yml` `app.upload`):
