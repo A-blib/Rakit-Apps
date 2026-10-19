@@ -54,7 +54,13 @@
 - Di HP (lanjutan): login Portal Pengurus `osis-modul-api` berhasil; tab Modul Kustom otomatis berisi field prestasi (foto, tingkat, judul, nama, tahun); prestasi baru dari portal langsung tampil di website tanpa terbit ulang; website setelah login menampilkan "Halo, Pengurus Uji", tombol Keluar, dan catatan `data-ws-role`; tombol Masuk tersembunyi; Keluar mengembalikan tampilan tamu.
 - Ditemukan & diperbaiki: link `href="admin"` di template membuka `/admin` (alamat website tidak berakhiran `/`); sekarang diarahkan ke `/{slug}/admin`.
 
+### JavaScript template di sandbox (uji HP, 19 Oktober 2026)
+- Template uji `uji-js` (Tailwind CDN, hamburger, dark mode + localStorage, tab, 2 halaman, modul, form) lolos cek upload dan terbit.
+- Di HP: halaman bergaya Tailwind; teks uji "JavaScript aktif · origin: null" (sandbox aktif); menu terbuka; dark mode berganti tanpa error (pilihan hilang saat pindah halaman, sesuai rancangan); tab berpindah; `/uji-js/tentang.html` terbuka dengan CSS & JS; pengumuman terisi; form aspirasi dari halaman sandbox masuk Kotak Masuk; Masuk Pengurus membuka `/uji-js/admin`.
+- Website lama (`osis-modul-api`) tetap tampil dan modulnya terisi.
+
 ## Konsep yang dipelajari
+- Header `Content-Security-Policy: sandbox` tanpa `allow-same-origin` membuat halaman berjalan sebagai origin "null": JavaScript jalan, tapi tidak bisa membaca cookie/storage situs asal.
 - Satu domain untuk banyak website (path) berarti localStorage dipakai bersama: token yang disimpan di sana harus dibatasi untuk satu website saja.
 - Akhiran publik (public suffix): `.sch.id` dan `.my.id` dimiliki pengelola domain, jadi `osis.sch.id` adalah domain utama milik sekolah, bukan subdomain.
 - Debounce: menunda cek ke server sampai user berhenti mengetik, agar tidak memanggil server di setiap huruf.

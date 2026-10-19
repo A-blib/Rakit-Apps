@@ -362,7 +362,7 @@ public class PublicSiteController {
         String ip = request.getRemoteAddr();
         String ua = request.getHeader(HttpHeaders.USER_AGENT);
         publishService.submitForm(slug, formName, payload, ip, ua);
-        return Map.of("success", true, "message", "Data pendaftaran berhasil diterima!");
+        return Map.of("success", true, "message", "Terima kasih, data berhasil dikirim.");
     }
 
     // ==========================================
