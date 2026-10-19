@@ -76,8 +76,13 @@ public class SitePublishService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED));
 
-        // 1. Tentukan ruang kerja tujuan; buat ruang pribadi bila user belum punya.
-        Organization targetOrg = findTargetOrg(user, request.organizationId()).orElseGet(() -> {
+        // 1. Tentukan ruang kerja tujuan. Website yang sudah ada selalu tetap di ruang kerjanya sendiri, apa pun
+        //    ruang kerja yang sedang aktif di HP. Website baru: ruang kerja pilihan; buat ruang pribadi bila belum ada.
+        Project existing = request.projectId() == null ? null : projectRepository.findById(request.projectId())
+                .orElseThrow(() -> new ApiException(ErrorCode.PROJECT_NOT_FOUND));
+        Organization targetOrg = existing != null
+                ? access.require(existing.getOrganizationId(), userId, OrgAction.PUBLISH).organization()
+                : findTargetOrg(user, request.organizationId()).orElseGet(() -> {
             Organization org = new Organization(OrganizationType.PERSONAL, "Ruang Pribadi " + user.getDisplayName(), userId);
             org = organizationRepository.save(org);
             memberRepository.save(new OrganizationMember(org.getId(), userId, MemberRole.OWNER, null, clock.instant()));
@@ -88,7 +93,7 @@ public class SitePublishService {
 
         // 2. Cari atau buat Project di ruang kerja yang dipilih
         String projectName = request.name() != null && !request.name().isBlank() ? request.name().trim() : "Website Saya";
-        Project project = projectRepository.findByOrganizationIdAndName(chosenOrg.getId(), projectName)
+        Project project = existing != null ? existing : projectRepository.findByOrganizationIdAndName(chosenOrg.getId(), projectName)
                 .orElseGet(() -> {
                     Project p = new Project(chosenOrg.getId(), projectName, ProjectMode.TEMPLATE, userId);
                     p.setSourceTemplateId(request.sourceTemplateId());
@@ -162,13 +167,21 @@ public class SitePublishService {
      * (terkunci, agar link yang sudah dibagikan tidak putus). Tanpa {@code slug}: kembalikan saran dari nama project.
      */
     @Transactional(readOnly = true)
-    public SlugCheckResponse checkSlug(UUID userId, String name, UUID organizationId, String slug) {
+    public SlugCheckResponse checkSlug(UUID userId, String name, UUID organizationId, UUID projectId, String slug) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED));
         String projectName = name != null && !name.isBlank() ? name.trim() : "Website Saya";
-        Optional<Site> existing = findTargetOrg(user, organizationId)
-                .flatMap(org -> projectRepository.findByOrganizationIdAndName(org.getId(), projectName))
-                .flatMap(project -> siteRepository.findByProjectId(project.getId()));
+        Optional<Site> existing;
+        if (projectId != null) {
+            Project project = projectRepository.findById(projectId)
+                    .orElseThrow(() -> new ApiException(ErrorCode.PROJECT_NOT_FOUND));
+            access.require(project.getOrganizationId(), userId, OrgAction.VIEW);
+            existing = siteRepository.findByProjectId(projectId);
+        } else {
+            existing = findTargetOrg(user, organizationId)
+                    .flatMap(org -> projectRepository.findByOrganizationIdAndName(org.getId(), projectName))
+                    .flatMap(project -> siteRepository.findByProjectId(project.getId()));
+        }
         if (existing.isPresent()) {
             String locked = existing.get().getSlug();
             return new SlugCheckResponse(locked, true, true, null, properties.sites().urlOf(locked));

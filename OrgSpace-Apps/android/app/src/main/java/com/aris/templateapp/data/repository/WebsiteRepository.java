@@ -144,8 +144,8 @@ public class WebsiteRepository {
     }
 
     @WorkerThread
-    public Resource<SlugCheckDto> checkSlug(String name, String organizationId, String slug) {
-        return execute(() -> api.checkSlug(name, organizationId, slug).execute(), dto -> dto);
+    public Resource<SlugCheckDto> checkSlug(String name, String organizationId, String projectId, String slug) {
+        return execute(() -> api.checkSlug(name, organizationId, projectId, slug).execute(), dto -> dto);
     }
 
     /** Keluar akun: cache website akun lama tidak boleh terlihat akun berikutnya. */

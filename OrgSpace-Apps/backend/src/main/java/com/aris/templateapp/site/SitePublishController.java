@@ -48,8 +48,9 @@ public class SitePublishController {
     @GetMapping("/projects/publish-direct/slug")
     public SlugCheckResponse checkSlug(@RequestParam String name,
                                        @RequestParam(required = false) UUID organizationId,
+                                       @RequestParam(required = false) UUID projectId,
                                        @RequestParam(required = false) String slug) {
-        return publishService.checkSlug(currentUser.id(), name, organizationId, slug);
+        return publishService.checkSlug(currentUser.id(), name, organizationId, projectId, slug);
     }
 
     @Operation(summary = "Terbitkan website ke alamat publik orgspace.app/{slug}")

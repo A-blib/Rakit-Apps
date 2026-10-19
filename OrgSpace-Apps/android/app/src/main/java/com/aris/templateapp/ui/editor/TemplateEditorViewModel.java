@@ -151,6 +151,8 @@ public class TemplateEditorViewModel extends ViewModel {
     private String projectId;
     @Nullable
     private String targetOrganizationId;
+    /** ID website di server bila editor dibuka dari halaman kelola website; null untuk website baru dari template. */
+    private String serverProjectId;
     private String projectName;
     @Nullable
     private Long lastExportedAt;
@@ -214,6 +216,7 @@ public class TemplateEditorViewModel extends ViewModel {
     void start(@Nullable String projectId, @Nullable String templateId, int templateVersion, @Nullable String title,
                @Nullable String organizationId) {
         this.targetOrganizationId = organizationId;
+        this.serverProjectId = organizationId != null ? projectId : null;
         if (started) {
             return;
         }
@@ -736,7 +739,7 @@ public class TemplateEditorViewModel extends ViewModel {
         String name = publishName();
         String orgId = publishOrganizationId();
         executors.networkIO().execute(() -> {
-            Resource<SlugCheckDto> res = websiteRepository.checkSlug(name, orgId, slug);
+            Resource<SlugCheckDto> res = websiteRepository.checkSlug(name, orgId, serverProjectId, slug);
             if (res.getStatus() == Resource.Status.SUCCESS && res.getData() != null) {
                 slugCheck.postValue(res.getData());
             }
@@ -796,10 +799,18 @@ public class TemplateEditorViewModel extends ViewModel {
                 orgId
         );
 
+        request.projectId = serverProjectId;
+
         publish.setValue(PublishState.publishing());
         executors.networkIO().execute(() -> {
             Resource<DirectPublishResponseDto> res = websiteRepository.publishDirect(request);
             if (res.getStatus() == Resource.Status.SUCCESS && res.getData() != null) {
+                DirectPublishResponseDto done = res.getData();
+                // Terbit berikutnya dari editor ini memperbarui website yang sama di ruang kerja yang sama.
+                main.post(() -> {
+                    serverProjectId = done.projectId;
+                    targetOrganizationId = done.organizationId;
+                });
                 workspaceRepository.refresh(null);
                 publish.postValue(PublishState.success(res.getData()));
             } else {

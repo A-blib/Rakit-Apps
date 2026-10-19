@@ -16,7 +16,11 @@
 | `android/.../data/remote/...` | `SlugCheckDto`, `WebsiteApi.checkSlug`, `WebsiteRepository.checkSlug` |
 | `android/tools/keep-adb-reverse.*` | Ikut meneruskan port 3001 (OrgSpace-Hosting) |
 
+| `backend/.../site/dto/DirectPublishRequest.java` + `SitePublishService.publishDirect` | `projectId` opsional: website yang sudah ada selalu terbit di ruang kerjanya sendiri (perbaikan bug BEM → My Organisasi) |
+| `android/.../ui/editor/TemplateEditorViewModel.java` | Kirim `projectId` bila editor dibuka dari halaman kelola website, dan setelah terbit pertama |
+
 ## Alasan keputusan
+- Website lama dikenali lewat `projectId`, bukan nama → ganti nama di editor tidak membuat project/website baru, dan ruang kerja aktif di HP tidak bisa memindahkannya (alternatif: tetap cari lewat nama di ruang kerja aktif, itulah sumber bug).
 - Alamat path `orgspace.app/{slug}` → satu domain, satu sertifikat HTTPS, tidak butuh wildcard DNS (alternatif: subdomain `{slug}.orgspace.app`, tidak dipilih Aris).
 - Slug terkunci setelah terbit pertama → link yang sudah dibagikan tidak putus (alternatif: boleh ganti nama, tidak dipilih karena link lama mati).
 - Cek nama lewat satu endpoint GET yang juga memberi saran → app cukup satu panggilan saat dialog dibuka (alternatif: dua endpoint terpisah, lebih banyak kode).
@@ -32,7 +36,9 @@
 - `./mvnw test`: 337 test, lulus (setelah memperbaiki `PortalIntegrationTest` yang masih mengharapkan versi skema 26; migrasi V27 domain kustom membuatnya 27).
 - `./gradlew assembleDebug` dan `./gradlew testDebugUnitTest`: berhasil.
 - Uji manual lewat API di laptop: saran `web-osis-uji`; `admin` ditolak "dicadangkan"; terbit → `http://localhost:3001/osis-uji-0425` tampil (HTTP 200, judul "Web OSIS Uji", tanpa data contoh); slug tidak ada → 404.
-- Belum diuji di HP: HP tidak tersambung saat fase ini.
+- Uji di HP (RMX3151): nama `admin` ditolak; terbit `sma-nusantara-uji` lalu terbuka di Chrome HP; nama terkunci saat terbit ulang (v2).
+- Bug ruang kerja di HP: terbit dari BEM → masuk BEM; buka website BEM dari tab Website, ganti nama, terbit ulang → tetap project yang sama di BEM (v2, tanpa duplikat); daftar My Organisasi tidak memuatnya.
+- Test baru `existingWebsiteAlwaysPublishesInItsOwnWorkspace`: ruang kerja aktif pindah + nama diganti → tetap di BEM; orang luar ditolak.
 
 ## Konsep yang dipelajari
 - Debounce: menunda cek ke server sampai user berhenti mengetik, agar tidak memanggil server di setiap huruf.

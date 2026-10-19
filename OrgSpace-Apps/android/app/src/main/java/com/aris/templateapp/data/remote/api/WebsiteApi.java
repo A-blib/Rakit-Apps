@@ -64,7 +64,7 @@ public interface WebsiteApi {
     /** {@code slug} null = minta saran dari nama project. */
     @GET("projects/publish-direct/slug")
     Call<SlugCheckDto> checkSlug(@Query("name") String name, @Query("organizationId") String organizationId,
-                                 @Query("slug") String slug);
+                                 @Query("projectId") String projectId, @Query("slug") String slug);
 
     @GET("projects/{projectId}/domains")
     Call<DomainResponseDto> getDomain(@Path("projectId") String projectId);

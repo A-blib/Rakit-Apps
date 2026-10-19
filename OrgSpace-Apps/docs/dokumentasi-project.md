@@ -1697,6 +1697,10 @@ jadi backend tidak perlu CORS. Refresh token backend sekali pakai, sehingga refr
   domain kustom aktif yang dikenali.
 - Tanggal berita memakai tanggal terbit berita, bukan tanggal hari ini.
 - Judul halaman bawaan memakai nama website, bukan "Ruang Pribadi X — Website Resmi".
+- Bug ruang kerja salah: dulu publish langsung selalu masuk ruang pribadi ("My Organisasi"), walau diterbitkan dari
+  BEM. Sekarang app mengirim ruang kerja aktif untuk website baru, dan `projectId` untuk website yang sudah ada.
+  Dengan `projectId`, server memperbarui project itu di ruang kerjanya sendiri (ruang kerja aktif diabaikan), jadi
+  website tidak pindah ruang kerja dan tidak terduplikasi walau namanya diganti di editor.
 
 ## 34. Glosarium
 

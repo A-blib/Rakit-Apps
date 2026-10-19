@@ -332,4 +332,65 @@ class SitePublishIntegrationTest {
                 .andExpect(jsonPath("$.news").isEmpty())
                 .andExpect(jsonPath("$.collections.prestasi").doesNotExist());
     }
+
+    /**
+     * Bug Aris (19 Oktober 2026): website yang diterbitkan dari ruang kerja BEM malah masuk ke ruang kerja lain.
+     * Website yang sudah ada harus selalu terbit di ruang kerjanya sendiri, walau ruang kerja aktif di HP berbeda
+     * dan walau namanya diganti di editor.
+     */
+    @Test
+    void existingWebsiteAlwaysPublishesInItsOwnWorkspace() throws Exception {
+        String auth = "Bearer " + creatorToken;
+        String bemRes = mockMvc.perform(post("/api/organizations").header(HttpHeaders.AUTHORIZATION, auth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"organization\",\"name\":\"BEM Kampus\",\"category\":\"osis_mpk\",\"level\":\"sma\",\"institutionName\":\"SMA Negeri 1 Bandung\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        String bemId = JsonPath.read(bemRes, "$.id");
+
+        String first = mockMvc.perform(post("/api/projects/publish-direct").header(HttpHeaders.AUTHORIZATION, auth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Web BEM\",\"organizationId\":\"" + bemId + "\",\"content\":{},\"missingCount\":0}"))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.organizationId").value(bemId))
+                .andReturn().getResponse().getContentAsString();
+        String projectId = JsonPath.read(first, "$.projectId");
+        String slug = JsonPath.read(first, "$.slug");
+
+        // Ruang kerja aktif pindah ke organisasi lain, lalu website BEM diedit (nama diganti) dan diterbitkan ulang.
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch("/api/users/me/last-organization")
+                        .header(HttpHeaders.AUTHORIZATION, auth).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"organizationId\":\"" + orgId + "\"}"))
+                .andExpect(status().is2xxSuccessful());
+        mockMvc.perform(post("/api/projects/publish-direct").header(HttpHeaders.AUTHORIZATION, auth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Web BEM Baru\",\"projectId\":\"" + projectId + "\",\"organizationId\":\"" + orgId
+                                + "\",\"content\":{},\"missingCount\":0}"))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.organizationId").value(bemId))
+                .andExpect(jsonPath("$.projectId").value(projectId))
+                .andExpect(jsonPath("$.slug").value(slug))
+                .andExpect(jsonPath("$.version").value(2));
+
+        mockMvc.perform(get("/api/organizations/" + orgId + "/websites").header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(jsonPath("$.items[?(@.name =~ /Web BEM.*/)]").isEmpty());
+        mockMvc.perform(get("/api/organizations/" + bemId + "/websites").header(HttpHeaders.AUTHORIZATION, auth))
+                .andExpect(jsonPath("$.counts.online").value(1));
+
+        // Nama website tetap terkunci walau nama project diganti
+        mockMvc.perform(get("/api/projects/publish-direct/slug").header(HttpHeaders.AUTHORIZATION, auth)
+                        .param("name", "Web BEM Baru").param("projectId", projectId))
+                .andExpect(jsonPath("$.locked").value(true))
+                .andExpect(jsonPath("$.slug").value(slug));
+
+        // Orang luar tidak bisa menerbitkan website BEM lewat projectId
+        String outsider = mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"displayName\":\"Orang Luar\",\"email\":\"luar-" + UUID.randomUUID().toString().substring(0, 8)
+                                + "@orgspace.test\",\"password\":\"password123\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        mockMvc.perform(post("/api/projects/publish-direct")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + JsonPath.read(outsider, "$.accessToken"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Web BEM\",\"projectId\":\"" + projectId + "\",\"content\":{},\"missingCount\":0}"))
+                .andExpect(status().is4xxClientError());
+    }
 }
