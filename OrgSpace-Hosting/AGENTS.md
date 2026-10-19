@@ -12,9 +12,18 @@ Sistem ke-3: **Sistem Hosting Publik ("Tempat Web User Nebeng")**.
      - `GET /api/public/sites/render/{slug}`
      - `GET /api/public/sites/resolve-domain?domain={domain}`
      - `POST /api/public/sites/{slug}/forms/{formName}`
-     - `GET /api/public/sites/{slug}/assets/**`
-3. **Dual Renderer:**
-   - Pertahankan dukungan untuk `TemplateRenderer` (mode `template`) dan `CustomRenderer` (mode `assembled`).
+     - `GET /api/public/sites/{slug}/assets/**` (juga untuk file HTML template)
+3. **Penyajian website (keputusan Aris, 19 Oktober 2026):**
+   - Mode `template`: file asli template disajikan oleh `src/app/[slug]/route.ts` dan `src/app/[slug]/[...path]/route.ts`
+     (`src/lib/site-page.ts`) dengan header `Content-Security-Policy: sandbox ...` tanpa `allow-same-origin`.
+     JavaScript template jalan, tapi tidak bisa membaca data `orgspace.app`, Portal Pengurus, atau website lain.
+     Jangan menambah `allow-same-origin` dan jangan menyajikan halaman template tanpa header ini.
+   - Modul `data-ws-*` diisi oleh script di `src/lib/site-runtime.ts` yang disisipkan ke halaman, lalu event
+     `orgspace:siap` dikirim dan `window.orgspace.data` dibuka untuk script provider (kontrak publik untuk provider:
+     jangan diubah tanpa memperbarui Panduan Modul Dinamis). Halaman publik selalu tampil sebagai tamu; sesi
+     pengurus hanya di `/[slug]/admin`.
+   - Mode `assembled` (rakit sendiri): `CustomRenderer` di `/rakit/[slug]`.
+   - `/api/forms/...` sengaja ber-CORS `*` (dipanggil dari halaman sandbox, tanpa cookie/token).
 4. **Port Default:**
    - Server development berjalan pada port **3001** (`next dev -p 3001`).
 

@@ -10,6 +10,8 @@ while ($true) {
         $parts = $_ -split "\s+"
         if ($parts.Length -ge 2 -and $parts[1] -eq "device") {
             adb -s $parts[0] reverse tcp:8080 tcp:8080 | Out-Null
+            # 3001 = OrgSpace-Hosting: link website terbit (localhost:3001/{slug}).
+            adb -s $parts[0] reverse tcp:3001 tcp:3001 | Out-Null
         }
     }
     Start-Sleep -Seconds 3

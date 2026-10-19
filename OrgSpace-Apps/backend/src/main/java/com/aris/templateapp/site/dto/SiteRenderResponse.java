@@ -25,7 +25,14 @@ public record SiteRenderResponse(
         List<NewsItem> news,
         List<FormConfig> forms,
         Map<String, List<Map<String, Object>>> collections,
-        String compiledHtml
+        String compiledHtml,
+        // Modul koleksi di template (nama → field → jenis: teks/paragraf/angka/tanggal/link/gambar),
+        // agar Portal Pengurus menyiapkan form isiannya sendiri.
+        Map<String, Map<String, String>> modules,
+        // Angka ringkasan untuk data-ws-stat (pengurus, berita, form.{nama}, {modul kustom}) dan profil umum
+        // organisasi untuk data-ws-org. Tanpa nama/email anggota dan tanpa isi form.
+        Map<String, Long> stats,
+        Map<String, String> org
 ) {
     public record SeoMeta(
             String title,
@@ -39,7 +46,8 @@ public record SiteRenderResponse(
             String title,
             String summary,
             String content,
-            String publishedAt
+            String publishedAt,
+            String imageUrl
     ) {}
 
     public record FormConfig(

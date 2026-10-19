@@ -11,6 +11,9 @@ public record DirectPublishRequest(
         Integer templateVersion,
         Map<String, Object> content,
         Integer missingCount,
-        String slug
+        String slug,
+        UUID organizationId,
+        // Website yang sudah ada (dibuka dari halaman kelola): diterbitkan di ruang kerjanya sendiri, organizationId diabaikan.
+        UUID projectId
 ) {
 }

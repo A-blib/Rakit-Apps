@@ -1,22 +1,29 @@
 package com.aris.templateapp.data.remote.api;
 
+import com.aris.templateapp.data.remote.dto.AddDomainRequestDto;
 import com.aris.templateapp.data.remote.dto.ConfirmNameRequestDto;
 import com.aris.templateapp.data.remote.dto.DirectPublishRequestDto;
 import com.aris.templateapp.data.remote.dto.DirectPublishResponseDto;
+import com.aris.templateapp.data.remote.dto.DomainResponseDto;
 import com.aris.templateapp.data.remote.dto.PublishRequestDto;
 import com.aris.templateapp.data.remote.dto.PublishRequestNoteDto;
+import com.aris.templateapp.data.remote.dto.SlugCheckDto;
 import com.aris.templateapp.data.remote.dto.WebsiteDetailDto;
 import com.aris.templateapp.data.remote.dto.WebsiteListDto;
 import com.aris.templateapp.data.remote.dto.WebsiteNameRequestDto;
 
 import java.util.List;
 
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.HTTP;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -56,4 +63,28 @@ public interface WebsiteApi {
 
     @POST("projects/publish-direct")
     Call<DirectPublishResponseDto> publishDirect(@Body DirectPublishRequestDto body);
+
+    /** Sama dengan {@link #publishDirect}, ditambah foto yang diganti di editor (nama file = path di isian). */
+    @Multipart
+    @POST("projects/publish-direct")
+    Call<DirectPublishResponseDto> publishDirectWithImages(@Part("request") DirectPublishRequestDto body,
+                                                           @Part List<MultipartBody.Part> images);
+
+    /** {@code slug} null = minta saran dari nama project. */
+    @GET("projects/publish-direct/slug")
+    Call<SlugCheckDto> checkSlug(@Query("name") String name, @Query("organizationId") String organizationId,
+                                 @Query("projectId") String projectId, @Query("slug") String slug);
+
+    @GET("projects/{projectId}/domains")
+    Call<DomainResponseDto> getDomain(@Path("projectId") String projectId);
+
+    @POST("projects/{projectId}/domains")
+    Call<DomainResponseDto> addDomain(@Path("projectId") String projectId, @Body AddDomainRequestDto body);
+
+    @POST("projects/{projectId}/domains/{domainId}/verify")
+    Call<DomainResponseDto> verifyDomain(@Path("projectId") String projectId, @Path("domainId") String domainId,
+                                         @Query("bypassDns") boolean bypassDns);
+
+    @DELETE("projects/{projectId}/domains/{domainId}")
+    Call<Void> removeDomain(@Path("projectId") String projectId, @Path("domainId") String domainId);
 }

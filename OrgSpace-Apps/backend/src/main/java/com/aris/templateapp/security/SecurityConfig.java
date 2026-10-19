@@ -34,7 +34,9 @@ public class SecurityConfig {
             "/api/dev/**",
             "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
             // Spring meneruskan error ke /error; tanpa ini error 400/500 berubah menjadi 401.
-            "/error"
+            "/error",
+            // Caddy On-Demand TLS ask endpoint (alur-publish-website.md 7.11)
+            "/internal/caddy/ask"
     };
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -74,6 +76,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.HEAD, "/sites/**").permitAll()
                         // Pengiriman formulir publik (data-ws-form: pendaftaran, aspirasi) oleh pengunjung website.
                         .requestMatchers(HttpMethod.POST, "/api/public/**").permitAll()
+                        // Portal Pengurus memakai token portal (bukan token app); controller memeriksanya sendiri.
+                        .requestMatchers(HttpMethod.PUT, "/api/public/sites/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/public/sites/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
                 // Filter JWT dipasang sebelum filter login bawaan Spring agar user sudah dikenali lebih dulu.

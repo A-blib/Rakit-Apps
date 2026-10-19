@@ -1412,7 +1412,7 @@ Aturan tampilnya sama dengan galeri: hanya template `published` milik provider `
 ### Paket lama dan paket contoh
 
 - `PackageManifestBackfill` berjalan setiap backend start: template tayang yang `package_size`-nya masih kosong dilengkapi manifest. Setelah itu tidak disentuh lagi.
-- `DemoPackages` membuat paket contoh dari `resources/seed/template-packages/{slug}/` (`site/` + `marking.json`). Elemen di `marking.json` ditunjuk dengan **selector CSS**, lalu diubah menjadi nomor `data-tpl-id`, kemudian diproses `PackageBuilder` + `ManifestBuilder` yang sama dengan Kirim sungguhan. Gambar contohnya dibuat `tools/buat-gambar-demo.py`.
+- `DemoPackages` (kini **hanya di test**, `src/test/...`) membuat paket contoh dari `resources/seed/template-packages/{slug}/` (`site/` + `marking.json`). Elemen di `marking.json` ditunjuk dengan **selector CSS**, lalu diubah menjadi nomor `data-tpl-id`, kemudian diproses `PackageBuilder` + `ManifestBuilder` yang sama dengan Kirim sungguhan. Gambar contohnya dibuat `tools/buat-gambar-demo.py`.
 
 ## 30. Editor template mode di Android
 
@@ -1674,6 +1674,132 @@ Token di localStorage bisa dibaca script apa pun yang berjalan di halaman (risik
 browser ke server Next.js; server yang memanggil backend. Bonusnya, browser tidak pernah memanggil backend langsung,
 jadi backend tidak perlu CORS. Refresh token backend sekali pakai, sehingga refresh dilakukan di satu tempat
 (`proxy.ts` + `lib/auth/refresh.ts`) dan refresh bersamaan untuk token yang sama dipakai bersama.
+
+## 33a. Revisi terbitkan website: alamat orgspace.app/{nama-website} (19 Oktober 2026)
+
+### Alur
+1. Di editor template, buka **Export → Publish Langsung**. Field **Nama website** langsung terisi saran dari nama project
+   (`GET /api/projects/publish-direct/slug?name=...`).
+2. Saat user mengetik, app menunggu 500 ms lalu mengecek nama itu ke server. Nama yang dipakai website lain, dicadangkan
+   (`admin`, `api`, ...), atau formatnya salah ditolak dengan alasannya. Tombol terbit nonaktif selama nama ditolak.
+3. `POST /api/projects/publish-direct` membangun rilis lalu mengembalikan `url = {SITES_HOSTING_URL}/{slug}`.
+4. OrgSpace-Hosting (`/[slug]`) membaca `GET /api/public/sites/render/{slug}` lalu menampilkan HTML template.
+
+### Keputusan Aris
+| Keputusan | Alasan |
+|---|---|
+| Alamat berbentuk path, bukan subdomain | Satu domain `orgspace.app` cukup satu sertifikat HTTPS; `{slug}.orgspace.app` tidak dipakai lagi |
+| Nama dipilih user, terkunci setelah terbit pertama | Link yang sudah dibagikan (QR, grup WA) tidak boleh putus |
+| Data contoh dihapus dari website asli | Berita "Pelantikan Pengurus" dan prestasi "Budi Santoso" dulu tampil di website sungguhan jika organisasi belum punya data |
+
+### Yang ikut diperbaiki
+- `resolve-domain` dulu memetakan host apa pun ke slug dari awalan host (`osis.sch.id` → slug `osis`). Sekarang hanya
+  domain kustom aktif yang dikenali.
+- Tanggal berita memakai tanggal terbit berita, bukan tanggal hari ini.
+- Judul halaman bawaan memakai nama website, bukan "Ruang Pribadi X — Website Resmi".
+- Bug ruang kerja salah: dulu publish langsung selalu masuk ruang pribadi ("My Organisasi"), walau diterbitkan dari
+  BEM. Sekarang app mengirim ruang kerja aktif untuk website baru, dan `projectId` untuk website yang sudah ada.
+  Dengan `projectId`, server memperbarui project itu di ruang kerjanya sendiri (ruang kerja aktif diabaikan), jadi
+  website tidak pindah ruang kerja dan tidak terduplikasi walau namanya diganti di editor.
+
+### Domain kustom (revisi 19 Oktober 2026)
+| Masalah | Perbaikan |
+|---|---|
+| `verify?bypassDns=true` bisa dipakai siapa saja → domain orang lain bisa diaktifkan tanpa bukti | Bypass hanya berlaku jika `app.sites.allow-dns-bypass=true` (hanya `application-dev.yml`); tombol "Aktifkan Langsung" hanya di build debug |
+| Klaim pending orang lain membuat pemilik asli tidak bisa mendaftar (hostname UNIQUE) | V28: unik hanya untuk domain aktif; klaim pending tidak menghalangi, yang lolos cek DNS duluan yang aktif |
+| `osis.sch.id`, `nama.my.id` dianggap subdomain ("CNAME osis") | Akhiran publik dikenali (`InternetDomainName` dari Guava, sudah ikut Google API Client): domain utama → `A @ {IP}`, subdomain → `CNAME {sub}`; host TXT relatif ke zona DNS |
+| App menampilkan link bawaan lama `slug.orgspace.site` / domain kustom sebagai link bawaan | `DomainResponse.defaultUrl` dari server |
+| Di domain kustom, link `/{slug}` menjadi `/{slug}/{slug}` (404) | Middleware Hosting tidak menambah slug dua kali |
+
+Konfigurasi server: `SITES_PUBLIC_IP` (record A) dan `SITES_CUSTOM_TARGET` (CNAME) di `.env`.
+
+### Modul dinamis website (revisi 19 Oktober 2026)
+| Masalah | Perbaikan |
+|---|---|
+| Build menghapus semua `data-ws-*` → Hosting tidak bisa mengisi berita, koleksi, login, role | Build hanya membuang penanda editor; `data-ws-*` tetap ada dan diisi Hosting setiap halaman dibuka |
+| Berita contoh ("Pelantikan Pengurus") ikut tayang di website asli | Tidak ada lagi data contoh; kosong → `data-ws-empty` |
+| Token Portal Pengurus = token app penuh, disimpan di localStorage domain bersama | Token portal punya klaim `site` (8 jam): ditolak API app dan website lain |
+| Template bisa memuat `onerror=`/`javascript:` yang membaca sesi pengurus website lain | Dihapus saat build (`SiteBuildService.stripMarkingAttributes`); `data-ws-link`/foto dari data hanya http(s)/mailto/tel/relatif |
+| "Tambah pengurus" membuat akun baru berpassword `password123` | Hanya akun OrgSpace yang sudah ada |
+| Semua `<form>` ikut dikirim sebagai "pendaftaran" | Hanya `form[data-ws-form]` |
+| `data-ws-limit` dan `data-ws-role` lolos cek upload tapi tidak berfungsi | Diterapkan di `TemplateRenderer` |
+| Modul kustom harus diketik manual di portal | `SiteRenderResponse.modules` (nama → field) mengisi form portal otomatis |
+| Form publik tanpa batas | Maks 30 isian × 5.000 karakter, nama form `[a-z0-9_-]` |
+
+Contoh template semua modul (paket unduhan dokumentasi): `../OrgSpace-Website/contoh-modul-orgspace/`. Aturan baru untuk provider: migrasi V29
+(artikel `modul-bawaan-orgspace`).
+
+### Website user dengan JavaScript (sandbox, 19 Oktober 2026)
+Keputusan Aris: JavaScript template harus jalan agar website organisasi interaktif. OrgSpace-Hosting menyajikan
+file asli template (`/{slug}/`, `/{slug}/tentang.html`, `css/`, `js/`, `img/`) dengan header
+`Content-Security-Policy: sandbox allow-scripts ...` tanpa `allow-same-origin`.
+
+| Dampak | Keterangan |
+|---|---|
+| JS template jalan | Menu HP, slider, tab, Tailwind CDN, Alpine, Swiper, AOS |
+| Banyak halaman jalan | Link relatif `tentang.html` → `/{slug}/tentang.html` (alamat beranda diberi "/" di akhir) |
+| Aman antar-website | Halaman berjalan sebagai origin anonim: tidak bisa membaca token Portal Pengurus/website lain |
+| Penyimpanan browser sementara | `localStorage`/cookie diganti versi memori agar script tidak error; hilang saat halaman ditutup |
+| Halaman publik selalu tamu | `data-ws-auth="logout"/"status"` dan `data-ws-role` tidak lagi menampilkan sesi pengurus |
+| CORS hanya di Hosting | `/api/forms/...` ber-CORS `*` (tanpa cookie/token); backend tetap tanpa CORS |
+| Mode rakit sendiri | Pindah ke `/rakit/{slug}`; slug `rakit` dicadangkan |
+
+### Statistik, profil organisasi, foto editor, dan template Sinergi (19 Oktober 2026)
+Target versi awal (keputusan Aris): provider bebas merancang tampilan & interaksi website memakai modul bawaan atau
+modul kustom; pembuat website mengubah teks, foto, dan warna (bukan layout) lalu langsung online, termasuk di domain sendiri.
+
+| Bagian | Cara kerja |
+|---|---|
+| `data-ws-stat` | `SiteRenderResponse.stats`: jumlah item tiap modul kustom, `pengurus` (anggota ruang kerja), `berita`, `form.{nama}` (jumlah isian; isi tetap rahasia). Nama bawaan menang jika bentrok dengan nama modul. |
+| `data-ws-org` | `SiteRenderResponse.org`: nama, singkatan, kategori, institusi, kota, alamat, email, WhatsApp, Instagram, TikTok, YouTube, logo. Ruang pribadi hanya `nama`. Logo disajikan Hosting di `/{slug}/_media/logo`. Profil kosong disembunyikan di website terbit. |
+| Data untuk script | `window.orgspace.data` kini juga berisi `stats` dan `org`. |
+| Cek upload | `HtmlRules`: nilai `data-ws-stat` harus `[a-z0-9_-]{2,40}` (boleh diawali `form.`), `data-ws-org` dari daftar di atas; modul `statistik` terdeteksi. |
+| Foto dari editor HP | Dulu foto yang diganti di editor dikirim sebagai path lokal HP (`images/x.webp`) dan tidak pernah terunggah, jadi rusak di website. Kini Publish Langsung mengirim multipart (`request` + `images`); server menyimpan foto sebagai aset project lalu build menulis `/{slug}/_media/{id}`. Batas `max-request-size` naik ke 25 MB. |
+| Modul di halaman lain | Deteksi modul untuk Portal membaca semua halaman rilis (dulu hanya `index.html`, jadi modul `struktur` di `tentang.html` tidak muncul di Portal). |
+| Runtime Hosting | Perbaikan: regex tanggal & WhatsApp di dalam template string TypeScript butuh `\\d`, bukan `\d` (sebelumnya tanggal tidak pernah diformat). |
+
+Template contoh **Sinergi** (`OrgSpace-Website/contoh-modul-orgspace/template-sinergi/`): 2 halaman, modul program,
+prestasi, agenda, pengumuman, galeri, testimoni, FAQ, struktur, form pendaftaran 2 langkah & aspirasi, statistik dan
+profil organisasi, tema gelap, animasi scroll, tanpa library. Lolos pengecekan tanpa error maupun peringatan; 36 isian
+editor dan 3 variabel tema (`--primary`, `--accent`, `--radius`).
+
+### Dokumentasi provider & paket AI agent dirapikan (19 Oktober 2026)
+Paket unduhan `OrgSpace-Website/public/downloads/contoh-modul-orgspace.zip` (sumber: `OrgSpace-Website/contoh-modul-orgspace/`)
+dicocokkan ulang dengan aturan cek upload di backend (`CheckRule`, `application.yml` `app.upload`):
+
+| Bagian | Perubahan |
+|---|---|
+| `docs/04-membuat-fitur-kustom.md` (baru, juga artikel web `/docs/membuat-fitur-kustom`) | Konsep fitur = modul + CSS + JS, siapa mengisi apa, pilih jenis isi, bisa vs tidak bisa (+ alternatif), rancangan per halaman, resep JS (halaman terpisah, agenda, filter, pencarian, lightbox, FAQ, statistik), persiapan Tandai & tema, langkah upload. |
+| `AGENTS.md` | Bagian konsep produk, Sinergi jadi rujukan utama, rencana halaman/modul sebelum kode, aturan yang dulu tidak tertulis (versi CDN lengkap, daftar library, tanpa `fetch` ke situs luar, tanpa `import` CDN di JS, maks. 10 halaman, 10 MB per file, atribut khusus app), checklist lebih lengkap, laporan saran isian Tandai & variabel tema. |
+| `docs/01–03` | Koreksi: `fetch()` ke API luar ditolak (`EXT_FETCH`, dulu ditulis boleh), Animate.css tidak ada di daftar library, kode error `NO_INDEX` (dulu `MISSING_INDEX_HTML`), Tailwind Play CDN & Google Fonts = peringatan, batas halaman/file, banyak halaman dengan modul yang sama. |
+| Web `/docs` | Salinan dokumentasi panjang yang usang di halaman indeks (field berita `gambar`/`link`, `data-ws-auth="status"/"logout"`) dihapus; diganti kartu unduh paket. Isinya sudah ada di artikel masing-masing. |
+
+### Template demo lama dihapus (19 Oktober 2026)
+Template statis tanpa modul `data-ws-*` (Profil Sekolah, UMKM Kuliner, Portofolio Minimal dari seeder) tidak dibuat lagi oleh
+`DemoTemplateSeeder`; seeder hanya membuat 4 template status wizard Upload. `DemoPackages` + paketnya pindah ke scope test
+(dipakai test galeri, paket, dan project). `WebsiteSeeder` tidak lagi menghubungkan website contoh ke "Profil Sekolah".
+
+Membersihkan database dev lama (backend dimatikan dulu). Website yang sudah terbit tetap tayang dari file rilisnya, tapi
+project yang memakai template terhapus tidak bisa dibuka di editor lagi (`source_template_id` menjadi kosong):
+```sql
+-- Lihat dulu template yang tidak punya modul / duplikat, lalu hapus per id:
+SELECT id, name, status FROM templates ORDER BY created_at;
+DELETE FROM templates WHERE id IN ('...');   -- pengecekan, event, notifikasi ikut terhapus (ON DELETE CASCADE)
+```
+Lalu hapus folder `backend/uploads/templates/{id}` yang sama.
+
+### Portal Pengurus: modul kustom lengkap (19 Oktober 2026)
+| Fitur | Cara kerja |
+|---|---|
+| Jenis field | `SiteRenderResponse.modules` kini `nama → field → jenis`. `<img data-ws-field>` = `gambar`, `data-ws-link` = `link`, `data-ws-type="paragraf"/"angka"/"tanggal"` = jenis itu, selain itu `teks`. Portal menampilkan isian yang sesuai (textarea, angka, pilih tanggal, link, unggah foto). |
+| Edit item | `PUT /api/public/sites/{slug}/admin/collections/{modul}/{itemId}` mengganti seluruh isi item |
+| Urutkan | Tombol naik/turun → `PUT .../collections/{modul}/order` `{ ids: [...] }`; daftar harus lengkap agar urutan tidak kacau saat dua pengurus mengubah bersamaan |
+| Foto | `POST /api/public/sites/{slug}/admin/media` (multipart `file`) disimpan sebagai aset project (`project_assets`, ikut kuota ruang kerja). Foto diperkecil di browser (1600 px, JPEG) karena batas 1 MB. Disajikan publik di `/{slug}/_media/{id}` (Hosting → `GET /api/public/sites/{slug}/media/{id}`, hanya aset project website itu). |
+| Tampil di website | `tanggal` 2026-10-19 → "19 Oktober 2026"; `paragraf` mempertahankan baris baru |
+| Isian dibersihkan | `cleanItemData`: teks di-trim, kosong dibuang, maks 30 field × 5.000 karakter |
+
+Perbaikan ikut: PUT/DELETE `/api/public/sites/**` dulu ditolak filter Security (token portal bukan token app), jadi hapus
+item/berita/pengurus dari Portal gagal 401. Sekarang diizinkan di filter; controller tetap memeriksa token portal.
 
 ## 34. Glosarium
 

@@ -17,6 +17,9 @@ import java.util.regex.Pattern;
 final class HtmlRules {
 
     private static final List<String> RESERVED = List.of("data-edit", "data-key", "data-label", "data-tpl-id");
+    /** Profil organisasi yang boleh dipakai data-ws-org (sama dengan PublicSiteController.orgProfile). */
+    static final List<String> ORG_FIELDS = List.of("nama", "singkatan", "kategori", "institusi", "kota", "alamat",
+            "email", "whatsapp", "instagram", "tiktok", "youtube", "logo");
     // Elemen yang biasanya berisi teks yang bisa ditandai.
     private static final String TEXT_ELEMENTS = "h1, h2, h3, h4, h5, h6, p, li, a, button, span, blockquote, "
             + "figcaption, td, th, label, dt, dd, strong, em, small";
@@ -477,6 +480,31 @@ final class HtmlRules {
                         authEl.outerHtml());
             } else {
                 ctx.dynamicModules.add("auth");
+            }
+        }
+
+        // 9. data-ws-stat (angka ringkasan) dan data-ws-org (profil organisasi)
+        for (Element statEl : doc.select("[data-ws-stat]")) {
+            String stat = statEl.attr("data-ws-stat").strip().toLowerCase(Locale.ROOT);
+            String name = stat.startsWith("form.") ? stat.substring(5) : stat;
+            if (!MODULE_SLUG_PATTERN.matcher(name).matches()) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " nilai data-ws-stat=\"" + stat + "\" tidak valid.",
+                        page, CheckContext.line(statEl),
+                        "Pakai pengurus, berita, form.{nama-form}, atau nama modul kustom, mis. data-ws-stat=\"prestasi\".",
+                        statEl.outerHtml());
+            } else {
+                ctx.dynamicModules.add("statistik");
+            }
+        }
+        for (Element orgEl : doc.select("[data-ws-org]")) {
+            String key = orgEl.attr("data-ws-org").strip().toLowerCase(Locale.ROOT);
+            if (!ORG_FIELDS.contains(key)) {
+                ctx.findings.add(CheckRule.DYNAMIC_MODULE_INVALID,
+                        page + " nilai data-ws-org=\"" + key + "\" tidak dikenal.",
+                        page, CheckContext.line(orgEl),
+                        "Pilihan: " + String.join(", ", ORG_FIELDS) + ".",
+                        orgEl.outerHtml());
             }
         }
 

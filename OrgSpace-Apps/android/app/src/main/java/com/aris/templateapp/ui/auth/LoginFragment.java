@@ -88,7 +88,7 @@ public class LoginFragment extends Fragment {
         viewModel.getSuccess().observe(getViewLifecycleOwner(), event -> {
             var result = event.getContentIfNotHandled();
             if (result != null) {
-                HomeNavigator.navigateHome(this, result.getUser());
+                AuthTransitionHelper.play(this, binding.authTransition, binding.loginContent, result.getUser(), false);
             }
         });
     }

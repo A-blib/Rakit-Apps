@@ -1,16 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Layar awal: animasi loading pahlawan (HeroLoading) selama app menentukan layar pertama (bagian 6.1).
-    Setelah itu pahlawan melaju ke kanan dan dashboard terakhir naik dari bawah (anim/slide_up_in).
+    Layar awal: Animasi pembuka (entrance) yang estetik dan elegan saat pengguna masuk ke aplikasi.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/startup_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/color_background">
 
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/animation"
-        android:layout_width="@dimen/illustration_size"
-        android:layout_height="@dimen/illustration_size"
+    <!-- Kontainer utama di tengah layar -->
+    <LinearLayout
+        android:id="@+id/center_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:contentDescription="@string/state_loading" />
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <!-- Wadah logo beserta efek aura cahaya di belakangnya -->
+        <FrameLayout
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:layout_gravity="center_horizontal">
+
+            <!-- Aura cahaya lembut di belakang logo -->
+            <View
+                android:id="@+id/glow_aura"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_entrance_aura" />
+
+            <!-- Kartu logo utama dengan sudut membulat modern -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/logo_card"
+                android:layout_width="92dp"
+                android:layout_height="92dp"
+                android:layout_gravity="center"
+                app:cardBackgroundColor="@color/color_primary"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="6dp"
+                app:strokeColor="#2EFFFFFF"
+                app:strokeWidth="1.5dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!-- Ikon O cincin putih lambang OrgSpace -->
+                    <ImageView
+                        android:id="@+id/logo_ring"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/app_name"
+                        android:src="@drawable/ic_orgspace_ring" />
+
+                    <!-- Titik aksen kuning emas yang mengorbit -->
+                    <View
+                        android:id="@+id/orbit_dot"
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:layout_gravity="top|end"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="@drawable/bg_entrance_dot" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </FrameLayout>
+
+        <!-- Nama Brand: OrgSpace -->
+        <TextView
+            android:id="@+id/app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_4"
+            android:fontFamily="@font/plus_jakarta_sans_extrabold"
+            android:letterSpacing="-0.02"
+            android:text="@string/app_name"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="32sp" />
+
+        <!-- Tagline aplikasi -->
+        <TextView
+            android:id="@+id/app_tagline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_1"
+            android:fontFamily="@font/plus_jakarta_sans_regular"
+            android:letterSpacing="0.01"
+            android:text="@string/startup_tagline"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13.5sp" />
+    </LinearLayout>
+
+    <!-- Bagian bawah: Indikator loading ramping dan teks status halus -->
+    <LinearLayout
+        android:id="@+id/bottom_section"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="52dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/loading_indicator"
+            android:layout_width="68dp"
+            android:layout_height="4dp"
+            android:indeterminate="true"
+            app:indicatorColor="@color/color_primary"
+            app:trackColor="@color/color_surface_subtle"
+            app:trackCornerRadius="2dp"
+            app:trackThickness="4dp" />
+
+        <TextView
+            android:id="@+id/status_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_3"
+            android:fontFamily="@font/plus_jakarta_sans_regular"
+            android:text="@string/startup_preparing"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="12sp" />
+    </LinearLayout>
+
 </FrameLayout>

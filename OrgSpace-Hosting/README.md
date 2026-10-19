@@ -25,9 +25,9 @@ Alasan pemisahan ke sistem mandiri:
 
 1. **Auto-Adapt:** Membaca data publik rilis website dari backend Spring Boot (`/api/public/sites/render/{slug}`).
 2. **Dynamic Route (`/[slug]` atau `/[namawebuser]`):** Menyajikan website secara dinamis per pengguna dan menampilkan halaman 404 berdesain rapi jika website tidak ditemukan atau belum aktif.
-3. **Dual Renderer:**
-   - **`TemplateRenderer`**: Menyajikan website berbasis template kreator dengan injeksi variabel CSS `:root`, modul berita dinamis, dan formulir interaktif.
-   - **`CustomRenderer`**: Menyajikan website hasil rakitan modular (Header, Hero, Profil/Visi-Misi, Struktur Pengurus, Program Kerja, Berita, Galeri, Formulir, Kontak & Footer).
+3. **Penyajian website:**
+   - **Mode template**: file asli template (`/{slug}/`, `/{slug}/tentang.html`, `css/`, `js/`, `img/`) disajikan dengan header `Content-Security-Policy: sandbox`. JavaScript template (menu, slider, Tailwind, dll.) jalan, tapi terisolasi dari Portal Pengurus dan website lain. Modul `data-ws-*` diisi script OrgSpace yang disisipkan (`src/lib/site-runtime.ts`).
+   - **Mode rakit sendiri**: `CustomRenderer` di `/rakit/{slug}`.
 4. **SEO & Sinkronisasi Instan:**
    - `generateMetadata` dinamis (title, description, Open Graph tags).
    - Pengambilan data instan (`cache: 'no-store'`) sehingga website langsung terbarukan saat tombol *Publish* ditekan di aplikasi.

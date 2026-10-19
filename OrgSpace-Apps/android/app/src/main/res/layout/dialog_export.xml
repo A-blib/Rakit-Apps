@@ -172,6 +172,24 @@
                         android:textAppearance="@style/TextAppearance.App.BodySmall"
                         android:textColor="@color/color_muted" />
 
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/slug_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_3"
+                        android:hint="@string/publish_slug_hint"
+                        app:helperTextEnabled="true">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/slug"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:importantForAutofill="no"
+                            android:inputType="textUri|textNoSuggestions"
+                            android:maxLength="@integer/publish_slug_max"
+                            android:maxLines="1" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                     <Button
                         android:id="@+id/publish_button"
                         style="@style/Widget.App.Button"

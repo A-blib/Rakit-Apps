@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,8 +35,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -111,9 +113,65 @@ public class ExportDialog extends DialogFragment {
         });
         viewModel.getExport().observe(getViewLifecycleOwner(), this::renderExport);
         viewModel.getPublish().observe(getViewLifecycleOwner(), this::renderPublish);
-        binding.publishButton.setOnClickListener(v -> viewModel.publishDirect());
+        bindSlug();
+        binding.publishButton.setOnClickListener(v -> viewModel.publishDirect(currentSlug()));
         binding.saveButton.setOnClickListener(v -> build(true));
         binding.shareButton.setOnClickListener(v -> build(false));
+    }
+
+    /**
+     * Nama website: isi dengan saran server, lalu cek ulang setiap berhenti mengetik. Website yang sudah terbit
+     * menguncinya. Jawaban lama (slug berbeda dengan isi field) diabaikan agar tidak menimpa ketikan terbaru.
+     */
+    private void bindSlug() {
+        Runnable check = () -> viewModel.checkSlug(currentSlug());
+        int delay = getResources().getInteger(R.integer.publish_slug_check_delay_ms);
+        binding.slug.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                binding.slug.removeCallbacks(check);
+                if (binding.slug.hasFocus()) {
+                    binding.slug.postDelayed(check, delay);
+                }
+            }
+        });
+        viewModel.getSlugCheck().observe(getViewLifecycleOwner(), result -> {
+            if (result == null) {
+                return;
+            }
+            if (currentSlug() == null || result.locked) {
+                binding.slug.setText(result.slug);
+            } else if (!result.slug.equals(currentSlug())) {
+                return;
+            }
+            binding.slugLayout.setEnabled(!result.locked);
+            if (result.locked) {
+                binding.slugLayout.setError(null);
+                binding.slugLayout.setHelperText(getString(R.string.publish_slug_locked, result.url));
+            } else if (result.available) {
+                binding.slugLayout.setError(null);
+                binding.slugLayout.setHelperText(getString(R.string.publish_slug_link, result.url));
+            } else {
+                binding.slugLayout.setError(result.message);
+            }
+            binding.publishButton.setEnabled(result.available);
+        });
+        viewModel.checkSlug(null);
+    }
+
+    @Nullable
+    private String currentSlug() {
+        CharSequence text = binding.slug.getText();
+        String slug = text == null ? "" : text.toString().trim().toLowerCase(Locale.ROOT);
+        return slug.isEmpty() ? null : slug;
     }
 
     /** "index.html, tentang.html …", folder utama, lalu custom.css dan perkiraan ukuran. */

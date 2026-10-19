@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Tab Website & halaman kelola (alur-pembuatan-website.md 4–5, 10): daftar, status, hak per peran, aksi kartu. */
 @Import(TestcontainersConfiguration.class)
-@SpringBootTest(properties = {"app.sites.domain=orgspace.site", "app.sites.url-scheme=https"})
+@SpringBootTest(properties = {"app.sites.domain=orgspace.site", "app.sites.url-scheme=https", "app.sites.hosting-url=https://orgspace.app"})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class WebsiteIntegrationTest {
@@ -83,7 +83,7 @@ class WebsiteIntegrationTest {
                 .andExpect(jsonPath("$.items[0].updatedByName").value("Sari"))
                 .andExpect(jsonPath("$.items[1].status").value("online"))
                 .andExpect(jsonPath("$.items[1].hasUnpublishedChanges").value(true))
-                .andExpect(jsonPath("$.items[1].siteUrl").value("https://osis-smansa.orgspace.site"))
+                .andExpect(jsonPath("$.items[1].siteUrl").value("https://orgspace.app/osis-smansa"))
                 .andExpect(jsonPath("$.items[2].hasUnpublishedChanges").value(false))
                 .andExpect(jsonPath("$.items[3].status").value("offline"))
                 .andExpect(jsonPath("$.counts.all").value(4))

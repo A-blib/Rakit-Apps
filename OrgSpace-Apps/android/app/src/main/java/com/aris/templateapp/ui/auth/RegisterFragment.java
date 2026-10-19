@@ -82,7 +82,7 @@ public class RegisterFragment extends Fragment {
         viewModel.getSuccess().observe(getViewLifecycleOwner(), event -> {
             var result = event.getContentIfNotHandled();
             if (result != null) {
-                HomeNavigator.navigateHome(this, result.getUser());
+                AuthTransitionHelper.play(this, binding.authTransition, binding.registerContent, result.getUser(), true);
             }
         });
     }

@@ -82,7 +82,19 @@ public class WebsiteManageFragment extends Fragment {
 
         row(binding.summaryItem, R.drawable.ic_qr_code, R.string.website_section_summary);
         row(binding.versionsItem, R.drawable.ic_history, R.string.website_section_versions);
-        row(binding.domainItem, R.drawable.ic_language, R.string.website_section_domain);
+        binding.domainItem.icon.setImageResource(R.drawable.ic_language);
+        binding.domainItem.title.setText(R.string.website_section_domain);
+        binding.domainItem.getRoot().setOnClickListener(v -> {
+            if (detail == null) return;
+            if (detail.website.status == WebsiteStatus.DRAFT) {
+                showInfo(R.string.website_section_domain, R.string.website_after_publish);
+                return;
+            }
+            CustomDomainDialog.show(this, detail.website.id, detail.website.name,
+                    detail.website.name,
+                    detail.website.siteUrl != null ? detail.website.siteUrl : "",
+                    () -> viewModel.load());
+        });
         row(binding.settingsItem, R.drawable.ic_settings, R.string.website_section_settings);
         soonRow(binding.contentItem, R.drawable.ic_article, R.string.website_section_content,
                 R.string.website_content_desc);
@@ -203,7 +215,18 @@ public class WebsiteManageFragment extends Fragment {
         // Riwayat versi & Ringkasan berisi data terbit: untuk draft dijelaskan kapan munculnya.
         binding.summaryItem.body.setText(draft ? R.string.website_after_publish : R.string.website_summary_desc);
         binding.versionsItem.body.setText(draft ? R.string.website_after_publish : R.string.website_versions_desc);
-        binding.domainItem.body.setText(draft ? R.string.website_after_publish : R.string.website_domain_desc);
+        if (draft) {
+            binding.domainItem.body.setText(R.string.website_after_publish);
+        } else if (website.siteUrl != null
+                && !website.siteUrl.contains("/sites/")
+                && !website.siteUrl.contains("orgspace.app/")
+                && !website.siteUrl.contains("localhost:3000/")
+                && !website.siteUrl.contains("localhost:8080/")) {
+            String shortAddr = WebsiteUi.shortAddress(website.siteUrl);
+            binding.domainItem.body.setText(getString(R.string.custom_domain_active_desc, shortAddr));
+        } else {
+            binding.domainItem.body.setText(R.string.website_domain_desc);
+        }
         binding.settingsItem.body.setText(R.string.website_settings_desc);
         // Domain & Pengaturan situs hanya Admin/Pemilik (G3, alur-publish-website.md 3.1).
         binding.domainItem.getRoot().setVisibility(admin ? View.VISIBLE : View.GONE);

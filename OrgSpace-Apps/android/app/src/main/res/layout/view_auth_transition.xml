@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Overlay transisi halus saat proses autentikasi (login/register) berhasil.
+    Mencegah hentakan visual keyboard dan pergantian layar mendadak ("jebret"),
+    memberikan animasi jeda transisi elegan berstandar UI/UX Pro Max.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/transition_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_background"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Kontainer utama di tengah layar -->
+    <LinearLayout
+        android:id="@+id/center_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <!-- Wadah logo beserta efek aura cahaya di belakangnya -->
+        <FrameLayout
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:layout_gravity="center_horizontal">
+
+            <!-- Aura cahaya lembut di belakang logo -->
+            <View
+                android:id="@+id/glow_aura"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_entrance_aura" />
+
+            <!-- Kartu logo utama dengan sudut membulat modern -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/logo_card"
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                android:layout_gravity="center"
+                app:cardBackgroundColor="@color/color_primary"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="6dp"
+                app:strokeColor="#2EFFFFFF"
+                app:strokeWidth="1.5dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!-- Ikon O cincin putih lambang OrgSpace -->
+                    <ImageView
+                        android:id="@+id/logo_ring"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/app_name"
+                        android:src="@drawable/ic_orgspace_ring" />
+
+                    <!-- Titik aksen kuning emas yang mekar -->
+                    <View
+                        android:id="@+id/orbit_dot"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_gravity="top|end"
+                        android:layout_marginTop="18dp"
+                        android:layout_marginEnd="18dp"
+                        android:background="@drawable/bg_entrance_dot" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </FrameLayout>
+
+        <!-- Judul status transisi (mis. "Berhasil Masuk") -->
+        <TextView
+            android:id="@+id/transition_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_4"
+            android:fontFamily="@font/plus_jakarta_sans_extrabold"
+            android:letterSpacing="-0.02"
+            android:text="@string/auth_transition_title"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="24sp" />
+
+        <!-- Subtitle penjelasan (mis. "Menyiapkan beranda dan ruang kerjamu…") -->
+        <TextView
+            android:id="@+id/transition_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_1"
+            android:fontFamily="@font/plus_jakarta_sans_regular"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/space_6"
+            android:text="@string/auth_transition_subtitle"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="13.5sp" />
+
+        <!-- Indikator loading ramping di bawah -->
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/loading_indicator"
+            android:layout_width="64dp"
+            android:layout_height="4dp"
+            android:layout_marginTop="@dimen/space_6"
+            android:indeterminate="true"
+            app:indicatorColor="@color/color_primary"
+            app:trackColor="@color/color_surface_subtle"
+            app:trackCornerRadius="2dp"
+            app:trackThickness="4dp" />
+    </LinearLayout>
+
+</FrameLayout>

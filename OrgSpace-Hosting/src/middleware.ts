@@ -8,34 +8,22 @@ const DEFAULT_HOSTS = new Set([
 ]);
 
 /**
- * Middleware untuk mendukung Custom Domain dan Routing Subdomain.
- * Mengalihkan request dari domain kustom pengguna langsung ke slug website yang sesuai.
+ * Middleware Custom Domain. Link bawaan berbentuk path (orgspace.app/{slug}), jadi host selain
+ * DEFAULT_HOSTS hanya dikenali sebagai domain kustom aktif lalu di-rewrite ke /{slug}.
  */
 export async function middleware(request: NextRequest) {
   const host = request.headers.get("host") || "";
   const { pathname } = request.nextUrl;
 
-  // Lewati static assets dan API internal Next.js
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.includes(".")
-  ) {
+  // Aset Next.js dan API internal (mis. kiriman form) tidak pernah milik website user.
+  if (pathname.startsWith("/_next") || pathname.startsWith("/api")) {
     return NextResponse.next();
   }
 
-  // Jika bukan host default, periksa apakah merupakan custom domain atau subdomain
+  // Host lain: cek apakah domain kustom milik sebuah website. File template (css/, img/) ikut diarahkan.
   if (host && !DEFAULT_HOSTS.has(host.toLowerCase())) {
     const cleanHost = host.toLowerCase().split(":")[0];
     
-    // Periksa apakah ini subdomain dari orgspace.app (mis. osis.orgspace.app)
-    if (cleanHost.endsWith(".orgspace.app")) {
-      const slug = cleanHost.replace(".orgspace.app", "");
-      if (slug && slug !== "www") {
-        return NextResponse.rewrite(new URL(`/${slug}${pathname === "/" ? "" : pathname}`, request.url));
-      }
-    }
-
     // Cek mapping custom domain via backend
     try {
       const backendUrl = process.env.BACKEND_API_URL || "http://localhost:8080";
@@ -46,9 +34,10 @@ export async function middleware(request: NextRequest) {
       if (res.ok) {
         const data = await res.json();
         if (data.slug) {
-          return NextResponse.rewrite(
-            new URL(`/${data.slug}${pathname === "/" ? "" : pathname}`, request.url)
-          );
+          // Link di halaman yang sudah memuat /{slug} tidak boleh jadi /{slug}/{slug}.
+          const base = `/${data.slug}`;
+          const target = pathname === base || pathname.startsWith(`${base}/`) ? pathname : `${base}${pathname}`;
+          return NextResponse.rewrite(new URL(target, request.url));
         }
       }
     } catch (e) {

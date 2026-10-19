@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dashboard "muncul dari bawah" setelah pahlawan pada layar awal melaju ke kanan. -->
+<!-- Dashboard muncul halus dari bawah (soft rise) dan perbesaran mikro saat transisi masuk. -->
 <set xmlns:android="http://schemas.android.com/apk/res/android"
     android:duration="@integer/slide_up_duration_ms"
-    android:interpolator="@android:anim/decelerate_interpolator"
+    android:interpolator="@android:interpolator/fast_out_slow_in"
     android:zAdjustment="top">
     <translate
-        android:fromYDelta="100%"
+        android:fromYDelta="4%p"
         android:toYDelta="0" />
+    <scale
+        android:fromXScale="0.96"
+        android:toXScale="1.0"
+        android:fromYScale="0.96"
+        android:toYScale="1.0"
+        android:pivotX="50%"
+        android:pivotY="50%" />
     <alpha
-        android:fromAlpha="0.4"
-        android:toAlpha="1" />
+        android:fromAlpha="0.0"
+        android:toAlpha="1.0" />
 </set>

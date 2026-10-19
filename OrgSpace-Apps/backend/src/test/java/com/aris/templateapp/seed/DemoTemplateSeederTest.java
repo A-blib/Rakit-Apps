@@ -4,7 +4,6 @@ import com.aris.templateapp.TestcontainersConfiguration;
 import com.aris.templateapp.auth.UserIdentityRepository;
 import com.aris.templateapp.notification.NotificationService;
 import com.aris.templateapp.provider.ProviderProfileRepository;
-import com.aris.templateapp.template.ProviderTemplateQueries;
 import com.aris.templateapp.template.TemplateCheckIssueRepository;
 import com.aris.templateapp.template.TemplateCheckRepository;
 import com.aris.templateapp.template.TemplateRepository;
@@ -54,14 +53,12 @@ class DemoTemplateSeederTest {
     @Autowired private TemplateRepository templateRepository;
     @Autowired private TemplateCheckRepository checkRepository;
     @Autowired private TemplateCheckIssueRepository issueRepository;
-    @Autowired private ProviderTemplateQueries queries;
     @Autowired private NotificationService notificationService;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private Clock clock;
     @Autowired private UploadStorage storage;
     @Autowired private TemplateChecker checker;
     @Autowired private ApplicationEventPublisher events;
-    @Autowired private DemoPackages demoPackages;
     @Autowired private TransactionTemplate transactionTemplate;
     @Autowired private JdbcTemplate jdbc;
     @Autowired private MockMvc mockMvc;
@@ -69,12 +66,12 @@ class DemoTemplateSeederTest {
     @Test
     void seedsDemoProviderOnceAndCanBeRemoved() throws Exception {
         DemoTemplateSeeder seeder = new DemoTemplateSeeder(userRepository, identityRepository, creatorProfileRepository,
-                providerProfileRepository, templateRepository, checkRepository, issueRepository, queries,
-                notificationService, passwordEncoder, clock, storage, checker, events, demoPackages);
+                providerProfileRepository, templateRepository, checkRepository, issueRepository,
+                notificationService, passwordEncoder, clock, storage, checker, events);
         transactionTemplate.executeWithoutResult(tx -> seeder.run(null));
         transactionTemplate.executeWithoutResult(tx -> seeder.run(null));
 
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM templates", Integer.class)).isEqualTo(7);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM templates", Integer.class)).isEqualTo(4);
         // Template demo yang diberi ZIP sungguhan bisa dibuka di wizard Upload.
         for (String name : new String[] {"Landing Event", "Organisasi Pemuda", "Instansi Desa"}) {
             UUID id = jdbc.queryForObject("SELECT id FROM templates WHERE name = ?", UUID.class, name);
@@ -100,11 +97,12 @@ class DemoTemplateSeederTest {
         mockMvc.perform(get("/api/providers/me/dashboard?period=30d").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(jsonPath("$.hasTemplates").value(true))
                 .andExpect(jsonPath("$.profileComplete").value(true))
-                .andExpect(jsonPath("$.summary.active").value(3))
-                .andExpect(jsonPath("$.actionItems[*].kind", contains("TEMPLATE_CHECK_FAILED", "TEMPLATE_WARNING", "DRAFT", "DRAFT")))
-                .andExpect(jsonPath("$.popular[*].name", contains("Profil Sekolah", "UMKM Kuliner", "Portofolio Minimal")));
+                .andExpect(jsonPath("$.summary.active").value(0))
+                .andExpect(jsonPath("$.actionItems[*].kind", contains("TEMPLATE_CHECK_FAILED", "DRAFT", "DRAFT")))
+                // Template statis lama (Profil Sekolah, dst.) tidak lagi dibuat seeder.
+                .andExpect(jsonPath("$.popular").isEmpty());
         mockMvc.perform(get("/api/notifications/unread-count").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(jsonPath("$.count").value(4));
+                .andExpect(jsonPath("$.count").value(2));
 
         // Sama dengan DevDemoController: hapus akun demo → semua data demo ikut terhapus (ON DELETE CASCADE).
         transactionTemplate.executeWithoutResult(tx -> userRepository.findByEmailIgnoreCase(DemoTemplateSeeder.DEMO_EMAIL)

@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSiteRenderData } from "@/lib/api";
-import TemplateRenderer from "@/components/TemplateRenderer";
 import CustomRenderer from "@/components/CustomRenderer";
 
 interface PageProps {
@@ -45,21 +44,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 /**
- * Halaman Dinamis Web User (/[slug] atau /[namawebuser]).
- * Mengadaptasi mode proyek (Template vs Custom/Rakit) secara otomatis.
+ * Website mode rakit sendiri (/rakit/[slug]). Website mode template disajikan sebagai file asli di /[slug]/
+ * (src/app/[slug]/route.ts) agar JavaScript template bisa jalan di sandbox.
  */
 export default async function UserSitePage({ params }: PageProps) {
   const { slug } = await params;
   const site = await getSiteRenderData(slug);
 
-  if (!site || site.status !== "online") {
+  if (!site || site.status !== "online" || site.mode !== "assembled") {
     notFound();
   }
 
-  // Pilih renderer berdasarkan mode proyek
-  if (site.mode === "assembled") {
-    return <CustomRenderer site={site} />;
-  }
-
-  return <TemplateRenderer site={site} />;
+  return <CustomRenderer site={site} />;
 }

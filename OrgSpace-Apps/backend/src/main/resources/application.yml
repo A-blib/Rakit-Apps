@@ -19,7 +19,8 @@ spring:
       # Sedikit di atas batas logo & foto profil (ORG_LOGO_MAX_KB, USER_AVATAR_MAX_KB); ukuran sebenarnya diperiksa
       # OrgLogoStorage / AvatarStorage.
       max-file-size: 2MB
-      max-request-size: 3MB
+      # Terbit langsung dari HP membawa semua foto yang diganti di editor (masing-masing maks PROJECT_ASSET_MAX_KB).
+      max-request-size: 25MB
 
 server:
   port: 8080
@@ -64,6 +65,11 @@ app:
     max-per-org: ${SITES_MAX_PER_ORG:5}
     max-per-personal: ${SITES_MAX_PER_PERSONAL:5}
     root-dir: ${SITES_ROOT:./data/sites}
+    # Alamat OrgSpace-Hosting; link website = {hosting-url}/{slug}. HP menjangkau localhost:3001 lewat adb reverse.
+    hosting-url: ${SITES_HOSTING_URL:http://localhost:3001}
+    # Domain kustom: tujuan DNS yang ditampilkan ke user (A untuk domain utama, CNAME untuk subdomain).
+    public-ip: ${SITES_PUBLIC_IP:103.175.216.42}
+    custom-target: ${SITES_CUSTOM_TARGET:custom.orgspace.app}
   # Portal web OrgSpace: landing, docs, monitoring, kritik & saran (docs/rancangan/portal-web.md).
   portal:
     android-download-url: ${PORTAL_ANDROID_DOWNLOAD_URL:}

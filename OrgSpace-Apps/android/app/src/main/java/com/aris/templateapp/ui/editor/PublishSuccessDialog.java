@@ -31,6 +31,7 @@ public class PublishSuccessDialog extends DialogFragment {
     private static final String ARG_PORT = "port";
     private static final String ARG_ORG_NAME = "org_name";
     private static final String ARG_SLUG = "slug";
+    private static final String ARG_PROJECT_ID = "project_id";
 
     private DialogPublishSuccessBinding binding;
 
@@ -41,6 +42,7 @@ public class PublishSuccessDialog extends DialogFragment {
         args.putInt(ARG_PORT, result.port);
         args.putString(ARG_ORG_NAME, result.organizationName);
         args.putString(ARG_SLUG, result.slug);
+        args.putString(ARG_PROJECT_ID, result.projectId != null ? result.projectId.toString() : "");
         dialog.setArguments(args);
         dialog.show(editor.getChildFragmentManager(), TAG);
     }
@@ -84,6 +86,16 @@ public class PublishSuccessDialog extends DialogFragment {
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(requireContext(), R.string.publish_success_copied, Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+
+        binding.btnCustomDomain.setOnClickListener(v -> {
+            String projectId = args.getString(ARG_PROJECT_ID, "");
+            String slug = args.getString(ARG_SLUG, "");
+            dismiss();
+            Fragment parent = getParentFragment();
+            if (parent != null) {
+                com.aris.templateapp.ui.website.CustomDomainDialog.show(parent, projectId, "", slug, url, null);
             }
         });
 

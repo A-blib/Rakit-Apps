@@ -5,6 +5,7 @@ import com.aris.templateapp.auth.UserIdentity;
 import com.aris.templateapp.auth.UserIdentityRepository;
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
+import com.aris.templateapp.config.AppProperties;
 import com.aris.templateapp.organization.MemberRole;
 import com.aris.templateapp.organization.Organization;
 import com.aris.templateapp.organization.OrganizationAccess;
@@ -13,6 +14,7 @@ import com.aris.templateapp.organization.OrganizationMemberRepository;
 import com.aris.templateapp.organization.OrganizationRepository;
 import com.aris.templateapp.project.Project;
 import com.aris.templateapp.project.ProjectRepository;
+import com.aris.templateapp.project.ProjectService;
 import com.aris.templateapp.security.JwtService;
 import com.aris.templateapp.site.dto.SiteRenderResponse;
 import com.aris.templateapp.user.User;
@@ -36,7 +38,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URI;
@@ -44,7 +48,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +56,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -65,11 +70,19 @@ import java.util.UUID;
 @Slf4j
 public class PublicSiteController {
 
+    /** Nama modul yang diisi dari tab Berita (tabel site_news), sama dengan TemplateRenderer di Hosting. */
+    private static final java.util.Set<String> NEWS_MODULES = java.util.Set.of("berita", "kegiatan", "pengumuman");
+    /** Jenis isian yang boleh ditulis provider lewat data-ws-type; gambar & link dikenali dari elemennya. */
+    private static final java.util.Set<String> FIELD_TYPES = java.util.Set.of("teks", "paragraf", "angka", "tanggal");
+    private static final int MAX_FIELDS = 30;
+    private static final int MAX_VALUE_LENGTH = 5000;
+
     private final SiteRepository siteRepository;
     private final SiteReleaseRepository siteReleaseRepository;
     private final SiteStorage siteStorage;
     private final SitePublishService publishService;
     private final ProjectRepository projectRepository;
+    private final ProjectService projectService;
     private final OrganizationRepository organizationRepository;
     private final SiteNewsRepository siteNewsRepository;
     private final FormSubmissionRepository formSubmissionRepository;
@@ -79,6 +92,8 @@ public class PublicSiteController {
     private final OrganizationMemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final SiteDomainRepository siteDomainRepository;
+    private final AppProperties properties;
 
     /**
      * Endpoint utama untuk Sistem Hosting Publik (Next.js OrgSpace-Hosting).
@@ -113,18 +128,8 @@ public class PublicSiteController {
             }
         }
 
-        // Ambil data berita organisasi untuk modul dinamis
+        // Hanya data asli: website terbit tidak boleh menampilkan berita contoh.
         List<SiteNews> dbNews = siteNewsRepository.findByOrganizationIdOrderByPublishedAtDesc(org.getId());
-        if (dbNews.isEmpty()) {
-            dbNews = List.of(
-                    new SiteNews(org.getId(), "Pelantikan Pengurus " + org.getName(),
-                            "Selamat bertugas bagi jajaran pengurus yang baru dilantik untuk masa bakti ini.",
-                            "Dokumentasi dan sambutan lengkap pengurus...", null, null),
-                    new SiteNews(org.getId(), "Rencana Kerja & Agenda Terdekat",
-                            "Simak agenda kegiatan dan program unggulan yang akan segera diselenggarakan.",
-                            "Program kerja terlaksana dengan sukses...", null, null)
-            );
-        }
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("id", "ID"));
         List<SiteRenderResponse.NewsItem> newsList = dbNews.stream()
                 .map(n -> new SiteRenderResponse.NewsItem(
@@ -132,7 +137,8 @@ public class PublicSiteController {
                         n.getTitle(),
                         n.getSummary(),
                         n.getContent(),
-                        LocalDate.now().format(fmt)
+                        n.getPublishedAt().atZone(ZoneId.of(properties.timezone())).format(fmt),
+                        n.getImageUrl()
                 )).toList();
 
         // Konfigurasi formulir interaktif
@@ -150,15 +156,16 @@ public class PublicSiteController {
                 )
         );
 
-        // SEO Metadata
-        String seoTitle = site.getSeoTitle() != null && !site.getSeoTitle().isBlank()
-                ? site.getSeoTitle() : (org.getName() + " — Website Resmi");
-        String seoDesc = site.getSeoDescription() != null && !site.getSeoDescription().isBlank()
-                ? site.getSeoDescription() : "Website resmi " + org.getName() + " diterbitkan melalui platform OrgSpace.";
-        SiteRenderResponse.SeoMeta seo = new SiteRenderResponse.SeoMeta(seoTitle, seoDesc, null, null);
-
         String mode = project != null && project.getMode() != null ? project.getMode().value() : "template";
         String projectName = project != null && project.getName() != null ? project.getName() : org.getName();
+
+        // SEO: judul bawaan dari nama website; nama ruang pribadi ("Ruang Pribadi X") tidak layak tampil ke publik.
+        String owner = org.isPersonal() ? projectName : org.getName();
+        String seoTitle = site.getSeoTitle() != null && !site.getSeoTitle().isBlank()
+                ? site.getSeoTitle() : (org.isPersonal() ? projectName : projectName + " — " + org.getName());
+        String seoDesc = site.getSeoDescription() != null && !site.getSeoDescription().isBlank()
+                ? site.getSeoDescription() : "Website " + owner + ", diterbitkan melalui OrgSpace.";
+        SiteRenderResponse.SeoMeta seo = new SiteRenderResponse.SeoMeta(seoTitle, seoDesc, null, null);
 
         // Data koleksi kustom dinamis
         List<SiteCustomItem> customItems = siteCustomItemRepository.findBySiteIdOrderByCollectionNameAscSortOrderAscCreatedAtDesc(site.getId());
@@ -168,15 +175,6 @@ public class PublicSiteController {
             row.put("id", item.getId());
             collectionsMap.computeIfAbsent(item.getCollectionName(), k -> new ArrayList<>()).add(row);
         }
-        // Contoh data bawaan jika koleksi prestasi belum diisi
-        if (!collectionsMap.containsKey("prestasi")) {
-            collectionsMap.put("prestasi", List.of(
-                    Map.of("nama_juara", "Budi Santoso", "lomba", "Juara 1 Olimpiade Sains Nasional", "tahun", "2026", "tingkat", "Nasional"),
-                    Map.of("nama_juara", "Siti Rahma", "lomba", "Juara 2 Lomba Debat Bahasa Inggris", "tahun", "2026", "tingkat", "Provinsi"),
-                    Map.of("nama_juara", "Tim Futsal OSIS", "lomba", "Juara 1 Turnamen Pelajar Se-Kota", "tahun", "2025", "tingkat", "Kota")
-            ));
-        }
-
         return new SiteRenderResponse(
                 site.getId(),
                 site.getProjectId(),
@@ -193,12 +191,100 @@ public class PublicSiteController {
                 newsList,
                 forms,
                 collectionsMap,
-                compiledHtml
+                compiledHtml,
+                templateModules(allPagesHtml(releaseDir, compiledHtml)),
+                siteStats(site, org, dbNews.size(), collectionsMap),
+                orgProfile(site, org, owner)
         );
+    }
+
+    /** Semua halaman rilis digabung, agar modul di halaman selain beranda (mis. struktur di tentang.html) ikut terbaca. */
+    private static String allPagesHtml(Path releaseDir, String indexHtml) {
+        StringBuilder html = new StringBuilder(indexHtml == null ? "" : indexHtml);
+        try (var files = Files.walk(releaseDir)) {
+            Path index = releaseDir.resolve("index.html");
+            for (Path page : files.filter(f -> f.toString().endsWith(".html") && !f.equals(index)).sorted().toList()) {
+                html.append(Files.readString(page, StandardCharsets.UTF_8));
+            }
+        } catch (IOException e) {
+            log.warn("Gagal membaca halaman rilis {}", releaseDir, e);
+        }
+        return html.toString();
+    }
+
+    /**
+     * Angka untuk data-ws-stat. Nama bawaan (pengurus, berita, form.{nama}) menang jika modul kustom memakai nama
+     * yang sama, agar arti angkanya selalu jelas.
+     */
+    private Map<String, Long> siteStats(Site site, Organization org, int newsCount,
+                                        Map<String, List<Map<String, Object>>> collections) {
+        Map<String, Long> stats = new LinkedHashMap<>();
+        collections.forEach((name, items) -> stats.put(name, (long) items.size()));
+        stats.put("pengurus", memberRepository.countByOrganizationId(org.getId()));
+        stats.put("berita", (long) newsCount);
+        for (Object[] row : formSubmissionRepository.countByFormName(site.getId())) {
+            stats.put("form." + row[0], (Long) row[1]);
+        }
+        return stats;
+    }
+
+    /** Profil umum organisasi untuk data-ws-org (isinya sudah publik di profil organisasi). */
+    private static Map<String, String> orgProfile(Site site, Organization org, String owner) {
+        Map<String, String> profile = new LinkedHashMap<>();
+        profile.put("nama", owner);
+        if (!org.isPersonal()) {
+            profile.put("singkatan", org.getShortName());
+            profile.put("kategori", org.getCategory() != null ? org.getCategory().label() : null);
+            profile.put("institusi", org.getInstitutionName());
+            profile.put("kota", org.getCity());
+            profile.put("alamat", org.getAddress());
+            profile.put("email", org.getEmail());
+            profile.put("whatsapp", org.getWhatsapp());
+            profile.put("instagram", org.getInstagram());
+            profile.put("tiktok", org.getTiktok());
+            profile.put("youtube", org.getYoutube());
+            // Logo disajikan Hosting di alamat website sendiri, karena halaman sandbox tidak memanggil backend.
+            profile.put("logo", org.getLogoUrl() != null ? "/" + site.getSlug() + "/_media/logo" : null);
+        }
+        profile.values().removeIf(v -> v == null || v.isBlank());
+        return profile;
+    }
+
+    /**
+     * Koleksi data-ws-list/collection di template beserta field dan jenisnya; berita diisi lewat tab Berita,
+     * jadi tidak ikut. Jenis: img = gambar, data-ws-link = link, selain itu data-ws-type atau teks.
+     */
+    static Map<String, Map<String, String>> templateModules(String html) {
+        Map<String, Map<String, String>> modules = new LinkedHashMap<>();
+        if (html == null) {
+            return modules;
+        }
+        for (org.jsoup.nodes.Element list : org.jsoup.Jsoup.parse(html).select("[data-ws-list], [data-ws-collection]")) {
+            String name = (list.hasAttr("data-ws-list") ? list.attr("data-ws-list") : list.attr("data-ws-collection"))
+                    .strip().toLowerCase(Locale.ROOT);
+            if (name.isEmpty() || NEWS_MODULES.contains(name)) {
+                continue;
+            }
+            Map<String, String> fields = modules.computeIfAbsent(name, k -> new LinkedHashMap<>());
+            for (org.jsoup.nodes.Element f : list.select("[data-ws-field], [data-ws-link]")) {
+                boolean isField = f.hasAttr("data-ws-field");
+                String field = (isField ? f.attr("data-ws-field") : f.attr("data-ws-link")).strip();
+                if (field.isEmpty()) {
+                    continue;
+                }
+                String declared = f.attr("data-ws-type").strip().toLowerCase(Locale.ROOT);
+                String type = !isField ? "link"
+                        : f.normalName().equals("img") ? "gambar"
+                        : FIELD_TYPES.contains(declared) ? declared : "teks";
+                fields.putIfAbsent(field, type);
+            }
+        }
+        return modules;
     }
 
     /**
      * Menyelesaikan custom domain ke slug website terkait untuk router hosting.
+     * Hanya domain kustom aktif (mis. webuser.my.id); subdomain {slug}.orgspace.app tidak dipakai.
      */
     @GetMapping("/api/public/sites/resolve-domain")
     public Map<String, Object> resolveDomain(@RequestParam String domain) {
@@ -206,16 +292,40 @@ public class PublicSiteController {
             throw new ApiException(ErrorCode.NOT_FOUND, "Domain tidak boleh kosong");
         }
         String cleanDomain = domain.toLowerCase(Locale.ROOT).trim();
-        if (cleanDomain.contains(".")) {
-            String prefix = cleanDomain.substring(0, cleanDomain.indexOf('.'));
-            if (siteRepository.existsBySlug(prefix)) {
-                return Map.of("slug", prefix, "domain", cleanDomain);
+        cleanDomain = cleanDomain.replaceFirst("^https?://", "");
+        cleanDomain = cleanDomain.split("[/?#:]")[0];
+
+        // 1. Cek tabel site_domains apakah terdaftar sebagai domain kustom aktif
+        Optional<SiteDomain> customDomain = siteDomainRepository.findByHostnameAndStatus(cleanDomain, "active");
+        if (customDomain.isPresent()) {
+            Site site = siteRepository.findById(customDomain.get().getSiteId()).orElse(null);
+            if (site != null && "online".equalsIgnoreCase(site.getStatus())) {
+                return Map.of("slug", site.getSlug(), "domain", cleanDomain, "customDomain", true);
             }
         }
-        if (siteRepository.existsBySlug(cleanDomain)) {
-            return Map.of("slug", cleanDomain, "domain", cleanDomain);
+
+        // Link bawaan berbentuk path (orgspace.app/{slug}); host lain hanya dikenali lewat domain kustom aktif.
+        return Map.of("slug", "", "domain", cleanDomain, "customDomain", false);
+    }
+
+    /**
+     * Endpoint ask untuk Caddy On-Demand TLS (alur-publish-website.md 7.11).
+     * Caddy memanggil endpoint ini sebelum meminta sertifikat HTTPS untuk custom domain.
+     */
+    @GetMapping("/internal/caddy/ask")
+    public ResponseEntity<Void> caddyAsk(@RequestParam String domain) {
+        if (domain == null || domain.isBlank()) {
+            return ResponseEntity.notFound().build();
         }
-        return Map.of("slug", "", "domain", cleanDomain);
+        String cleanDomain = domain.toLowerCase(Locale.ROOT).trim().split(":")[0];
+        Optional<SiteDomain> active = siteDomainRepository.findByHostnameAndStatus(cleanDomain, "active");
+        if (active.isPresent()) {
+            Site site = siteRepository.findById(active.get().getSiteId()).orElse(null);
+            if (site != null && "online".equalsIgnoreCase(site.getStatus())) {
+                return ResponseEntity.ok().build();
+            }
+        }
+        return ResponseEntity.notFound().build();
     }
 
     /**
@@ -323,7 +433,7 @@ public class PublicSiteController {
         String ip = request.getRemoteAddr();
         String ua = request.getHeader(HttpHeaders.USER_AGENT);
         publishService.submitForm(slug, formName, payload, ip, ua);
-        return Map.of("success", true, "message", "Data pendaftaran berhasil diterima!");
+        return Map.of("success", true, "message", "Terima kasih, data berhasil dikirim.");
     }
 
     // ==========================================
@@ -335,7 +445,7 @@ public class PublicSiteController {
             throw new ApiException(ErrorCode.UNAUTHORIZED, "Token autentikasi pengurus diperlukan");
         }
         String token = authHeader.substring(7).trim();
-        UUID userId = jwtService.parseUserId(token)
+        UUID userId = jwtService.parseSiteUserId(token, site.getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "Sesi login pengurus tidak valid atau telah berakhir"));
         memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Anda bukan pengurus atau anggota dari organisasi website ini"));
@@ -347,7 +457,7 @@ public class PublicSiteController {
             throw new ApiException(ErrorCode.UNAUTHORIZED, "Token autentikasi pengurus diperlukan");
         }
         String token = authHeader.substring(7).trim();
-        UUID userId = jwtService.parseUserId(token)
+        UUID userId = jwtService.parseSiteUserId(token, site.getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "Sesi login pengurus tidak valid atau telah berakhir"));
         OrganizationMember member = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Anda bukan pengurus atau anggota dari organisasi website ini"));
@@ -379,7 +489,7 @@ public class PublicSiteController {
         OrganizationMember member = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), user.getId())
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Akun ini tidak terdaftar sebagai pengurus organisasi website ini"));
 
-        String token = jwtService.createAccessToken(user.getId());
+        String token = jwtService.createSiteToken(user.getId(), site.getId());
         return Map.of(
                 "success", true,
                 "token", token,
@@ -554,17 +664,119 @@ public class PublicSiteController {
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
         authenticateSiteManager(authHeader, site);
 
-        if (itemData == null || itemData.isEmpty()) {
-            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Data koleksi tidak boleh kosong");
-        }
-
         String cleanCol = collectionName.toLowerCase(Locale.ROOT).trim();
-        SiteCustomItem item = new SiteCustomItem(site.getId(), cleanCol, itemData, 0);
+        SiteCustomItem item = new SiteCustomItem(site.getId(), cleanCol, cleanItemData(itemData), 0);
         SiteCustomItem saved = siteCustomItemRepository.save(item);
 
         Map<String, Object> res = new HashMap<>(saved.getData());
         res.put("id", saved.getId());
         return res;
+    }
+
+    @PutMapping("/api/public/sites/{slug}/admin/collections/{collectionName}/{itemId}")
+    public Map<String, Object> updateCollectionItem(@PathVariable String slug,
+                                                    @PathVariable String collectionName,
+                                                    @PathVariable UUID itemId,
+                                                    @RequestBody Map<String, Object> itemData,
+                                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        authenticateSiteManager(authHeader, site);
+
+        SiteCustomItem item = siteCustomItemRepository.findById(itemId)
+                .filter(i -> i.getSiteId().equals(site.getId()))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Item tidak ditemukan"));
+        item.setData(cleanItemData(itemData));
+        item.setUpdatedAt(Instant.now());
+        SiteCustomItem saved = siteCustomItemRepository.save(item);
+
+        Map<String, Object> res = new HashMap<>(saved.getData());
+        res.put("id", saved.getId());
+        return res;
+    }
+
+    /** Urutan tampil item di website mengikuti urutan id yang dikirim Portal (atas ke bawah). */
+    @PutMapping("/api/public/sites/{slug}/admin/collections/{collectionName}/order")
+    public Map<String, Object> reorderCollection(@PathVariable String slug,
+                                                 @PathVariable String collectionName,
+                                                 @RequestBody Map<String, List<UUID>> payload,
+                                                 @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        authenticateSiteManager(authHeader, site);
+
+        List<UUID> ids = payload == null ? null : payload.get("ids");
+        if (ids == null || ids.isEmpty()) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Urutan item tidak boleh kosong");
+        }
+        String cleanCol = collectionName.toLowerCase(Locale.ROOT).trim();
+        Map<UUID, SiteCustomItem> items = new HashMap<>();
+        siteCustomItemRepository.findBySiteIdAndCollectionNameOrderBySortOrderAscCreatedAtDesc(site.getId(), cleanCol)
+                .forEach(i -> items.put(i.getId(), i));
+        if (ids.size() != items.size() || !items.keySet().containsAll(ids)) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Daftar item sudah berubah. Muat ulang lalu coba lagi.");
+        }
+        for (int i = 0; i < ids.size(); i++) {
+            items.get(ids.get(i)).setSortOrder(i);
+        }
+        siteCustomItemRepository.saveAll(items.values());
+        return Map.of("success", true);
+    }
+
+    /** Foto untuk field gambar modul. Disimpan sebagai aset website, tampil di /{slug}/_media/{id}. */
+    @PostMapping(value = "/api/public/sites/{slug}/admin/media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String, Object> uploadMedia(@PathVariable String slug,
+                                           @RequestPart("file") MultipartFile file,
+                                           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        UUID userId = authenticateSiteManager(authHeader, site);
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException e) {
+            throw new ApiException(ErrorCode.ASSET_INVALID);
+        }
+        UUID assetId = projectService.saveSiteMedia(site.getProjectId(), userId, bytes).assetId();
+        return Map.of("id", assetId, "url", "/" + site.getSlug() + "/_media/" + assetId);
+    }
+
+    @GetMapping("/api/public/sites/{slug}/media/{assetId}")
+    public ResponseEntity<Resource> serveMedia(@PathVariable String slug, @PathVariable UUID assetId) {
+        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
+        ProjectService.StoredAsset asset = projectService.siteMedia(site.getProjectId(), assetId);
+        // Isi aset tidak pernah berubah (foto baru = id baru), jadi aman disimpan lama oleh browser.
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(asset.mimeType()))
+                .cacheControl(org.springframework.http.CacheControl.maxAge(java.time.Duration.ofDays(365)).cachePublic())
+                .body(new FileSystemResource(asset.file()));
+    }
+
+    /** Isian modul dari Portal: hanya teks, kosong dibuang, dibatasi agar satu item tidak membengkak. */
+    static Map<String, Object> cleanItemData(Map<String, Object> itemData) {
+        Map<String, Object> clean = new LinkedHashMap<>();
+        if (itemData != null) {
+            itemData.forEach((key, value) -> {
+                String k = key == null ? "" : key.strip();
+                String v = value == null ? "" : String.valueOf(value).strip();
+                if (k.isEmpty() || k.equals("id") || v.isEmpty()) {
+                    return;
+                }
+                if (k.length() > 60 || v.length() > MAX_VALUE_LENGTH) {
+                    throw new ApiException(ErrorCode.VALIDATION_ERROR,
+                            "Isian \"" + k + "\" terlalu panjang (maks " + MAX_VALUE_LENGTH + " karakter)");
+                }
+                clean.put(k, v);
+            });
+        }
+        if (clean.isEmpty()) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Data koleksi tidak boleh kosong");
+        }
+        if (clean.size() > MAX_FIELDS) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Maksimal " + MAX_FIELDS + " field per item");
+        }
+        return clean;
     }
 
     @DeleteMapping("/api/public/sites/{slug}/admin/collections/{collectionName}/{itemId}")
@@ -633,20 +845,11 @@ public class PublicSiteController {
         }
 
         String cleanEmail = email.trim().toLowerCase(Locale.ROOT);
+        // Hanya akun OrgSpace yang sudah ada. Dulu akun baru dibuat dengan password bawaan yang diketahui
+        // orang lain, sehingga pemilik email asli tidak bisa mendaftar dan akunnya bisa dimasuki pihak lain.
         User user = userRepository.findByEmailIgnoreCase(cleanEmail)
-                .orElseGet(() -> {
-                    String name = payload.get("name") != null && !payload.get("name").isBlank()
-                            ? payload.get("name").trim()
-                            : cleanEmail.split("@")[0];
-                    User newUser = new User(name, cleanEmail);
-                    newUser.setOnboardingCompleted(true);
-                    User savedUser = userRepository.save(newUser);
-                    String tempPassword = payload.get("password") != null && !payload.get("password").isBlank()
-                            ? payload.get("password")
-                            : "password123";
-                    userIdentityRepository.save(UserIdentity.local(savedUser, cleanEmail, passwordEncoder.encode(tempPassword)));
-                    return savedUser;
-                });
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND,
+                        "Email ini belum punya akun OrgSpace. Minta dia daftar di aplikasi OrgSpace dulu, atau undang lewat aplikasi."));
 
         if (memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), user.getId()).isPresent()) {
             throw new ApiException(ErrorCode.ALREADY_MEMBER, "Pengguna sudah menjadi pengurus organisasi ini");

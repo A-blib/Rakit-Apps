@@ -24,6 +24,7 @@ public final class EditorNav {
     static final String ARG_PROJECT_ID = "projectId";
     static final String ARG_TEMPLATE_ID = "templateId";
     static final String ARG_TEMPLATE_VERSION = "templateVersion";
+    static final String ARG_ORGANIZATION_ID = "organizationId";
 
     private EditorNav() {
     }
@@ -65,6 +66,7 @@ public final class EditorNav {
         Bundle args = new Bundle();
         args.putString(ARG_TITLE, detail.website.name);
         args.putString(ARG_PROJECT_ID, detail.website.id);
+        args.putString(ARG_ORGANIZATION_ID, detail.website.organizationId);
         if (detail.sourceTemplateId != null) {
             args.putString(ARG_TEMPLATE_ID, detail.sourceTemplateId);
         }

@@ -8,22 +8,31 @@ import com.aris.templateapp.site.dto.DirectPublishResponse;
 import com.aris.templateapp.site.dto.FormSubmissionResponse;
 import com.aris.templateapp.site.dto.PublishSiteRequest;
 import com.aris.templateapp.site.dto.SiteResponse;
+import com.aris.templateapp.site.dto.SlugCheckResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.aris.templateapp.common.exception.ApiException;
+import com.aris.templateapp.common.exception.ErrorCode;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Tag(name = "Publish", description = "Fitur terbitkan website dan antrean bangun (alur-publish-website.md)")
@@ -40,10 +49,37 @@ public class SitePublishController {
     @PostMapping("/projects/publish-direct")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public DirectPublishResponse publishDirect(@Valid @RequestBody DirectPublishRequest request) {
-        return publishService.publishDirect(currentUser.id(), request);
+        return publishService.publishDirect(currentUser.id(), request, Map.of());
     }
 
-    @Operation(summary = "Terbitkan website ke subdomain publik")
+    @Operation(summary = "Terbitkan langsung beserta foto yang diganti di editor",
+            description = "Part `request` = JSON DirectPublishRequest; part `images` = file foto, nama file = path di isi "
+                    + "website (mis. images/foto_hero-1.webp). Path itu diganti menjadi foto yang tersimpan di server.")
+    @PostMapping(value = "/projects/publish-direct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public DirectPublishResponse publishDirectWithImages(@Valid @RequestPart("request") DirectPublishRequest request,
+                                                         @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        Map<String, byte[]> files = new HashMap<>();
+        for (MultipartFile image : images == null ? List.<MultipartFile>of() : images) {
+            try {
+                files.put(image.getOriginalFilename(), image.getBytes());
+            } catch (IOException e) {
+                throw new ApiException(ErrorCode.ASSET_INVALID);
+            }
+        }
+        return publishService.publishDirect(currentUser.id(), request, files);
+    }
+
+    @Operation(summary = "Cek atau sarankan nama website (slug) sebelum terbit langsung")
+    @GetMapping("/projects/publish-direct/slug")
+    public SlugCheckResponse checkSlug(@RequestParam String name,
+                                       @RequestParam(required = false) UUID organizationId,
+                                       @RequestParam(required = false) UUID projectId,
+                                       @RequestParam(required = false) String slug) {
+        return publishService.checkSlug(currentUser.id(), name, organizationId, projectId, slug);
+    }
+
+    @Operation(summary = "Terbitkan website ke alamat publik orgspace.app/{slug}")
     @PostMapping("/projects/{projectId}/publish")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public BuildResponse publish(@PathVariable UUID projectId,

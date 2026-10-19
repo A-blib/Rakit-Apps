@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Material Symbols Rounded "web" (Apache 2.0) untuk splash; warna token biru utama (splash belum memakai tema app). -->
+<!-- Lambang OrgSpace untuk splash: Lingkaran O dengan titik orbit kuning -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:tint="@color/color_primary"
-    android:viewportWidth="960"
-    android:viewportHeight="960">
-    <group android:translateY="960">
-        <path
-            android:fillColor="@android:color/white"
-            android:pathData="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h420v-140H160v140Zm500 0h140v-360H660v360ZM160-460h420v-140H160v140Z" />
-    </group>
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Cincin O tebal warna biru utama -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="@color/color_primary"
+        android:strokeWidth="10"
+        android:pathData="M54,34a20,20 0,1 1,0 40a20,20 0,1 1,0 -40z" />
+    <!-- Titik aksen kuning yang mengorbit -->
+    <path
+        android:fillColor="@color/color_launcher_accent"
+        android:pathData="M76,28m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0" />
 </vector>

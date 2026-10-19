@@ -82,6 +82,27 @@ class CheckRuleFixturesTest {
     }
 
     @Test
+    void statAndOrgAttributesAreChecked() throws IOException {
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        try (java.util.zip.ZipOutputStream zip = new java.util.zip.ZipOutputStream(out)) {
+            zip.putNextEntry(new java.util.zip.ZipEntry("index.html"));
+            zip.write("""
+                    <!doctype html><html lang="id"><head><meta charset="utf-8"><title>x</title></head><body>
+                    <b data-ws-stat="pengurus">0</b><b data-ws-stat="form.pendaftaran">0</b><b data-ws-stat="prestasi">0</b>
+                    <b data-ws-stat="bukan valid!">0</b><span data-ws-org="nama">x</span><span data-ws-org="password">x</span>
+                    </body></html>""".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            zip.closeEntry();
+        }
+        TemplateChecker.Result result = CHECKER.check(out.toByteArray(), "stat.zip", stage -> { });
+
+        assertThat(result.findings()).filteredOn(f -> f.rule() == CheckRule.DYNAMIC_MODULE_INVALID)
+                .extracting(Finding::message)
+                .containsExactlyInAnyOrder("index.html nilai data-ws-stat=\"bukan valid!\" tidak valid.",
+                        "index.html nilai data-ws-org=\"password\" tidak dikenal.");
+        assertThat(result.techInfo().dynamicModules()).contains("statistik");
+    }
+
+    @Test
     void nameIsTakenFromZipFileName() {
         assertThat(TemplateChecker.nameFromFile("toko-kue.zip")).isEqualTo("Toko Kue");
         assertThat(TemplateChecker.nameFromFile("portofolio_minimal.ZIP")).isEqualTo("Portofolio Minimal");

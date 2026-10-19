@@ -29,8 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -62,7 +60,6 @@ public class SiteBuildService {
     private final SiteRepository siteRepository;
     private final SiteReleaseRepository siteReleaseRepository;
     private final SiteBuildRepository siteBuildRepository;
-    private final SiteNewsRepository siteNewsRepository;
     private final TemplateRepository templateRepository;
     private final OrganizationRepository organizationRepository;
     private final UploadStorage uploadStorage;
@@ -208,7 +205,7 @@ public class SiteBuildService {
             for (Path htmlFile : htmlFiles) {
                 Document doc = Jsoup.parse(htmlFile.toFile(), "UTF-8");
                 applySeoAndMeta(doc, org, site);
-                applyFieldValues(doc, snapshot);
+                applyFieldValues(doc, snapshot, site.getSlug());
                 injectDynamicModules(doc, org, site);
                 stripMarkingAttributes(doc);
                 Files.writeString(htmlFile, doc.outerHtml(), StandardCharsets.UTF_8);
@@ -238,7 +235,7 @@ public class SiteBuildService {
     }
 
     @SuppressWarnings("unchecked")
-    private void applyFieldValues(Document doc, Map<String, Object> snapshot) {
+    private void applyFieldValues(Document doc, Map<String, Object> snapshot, String slug) {
         Map<String, Object> fields = (Map<String, Object>) snapshot.get("fields");
         if (fields != null) {
             for (Map.Entry<String, Object> entry : fields.entrySet()) {
@@ -258,7 +255,8 @@ public class SiteBuildService {
                     if (val.containsKey("image")) {
                         String imgVal = String.valueOf(val.get("image"));
                         if (imgVal.startsWith("asset:")) {
-                            imgVal = "/api/assets/" + imgVal.substring("asset:".length());
+                            // Alamat publik di website itu sendiri (/api/assets butuh login anggota ruang kerja).
+                            imgVal = "/" + slug + "/_media/" + imgVal.substring("asset:".length());
                         }
                         if ("img".equalsIgnoreCase(el.tagName())) {
                             el.attr("src", imgVal);
@@ -334,53 +332,8 @@ public class SiteBuildService {
     }
 
     private void injectDynamicModules(Document doc, Organization org, Site site) {
-        // 1. Modul Berita (data-ws-list="berita")
-        Elements newsLists = doc.select("[data-ws-list=berita]");
-        for (Element listEl : newsLists) {
-            Element itemTemplate = listEl.selectFirst("[data-ws-item]");
-            Element emptyEl = listEl.selectFirst("[data-ws-empty]");
-            if (itemTemplate == null) {
-                continue;
-            }
-
-            List<SiteNews> news = siteNewsRepository.findByOrganizationIdOrderByPublishedAtDesc(org.getId());
-            if (news.isEmpty()) {
-                // Berikan data berita contoh bawaan bila belum ada
-                news = List.of(
-                        new SiteNews(org.getId(), "Pelantikan Pengurus " + org.getName(),
-                                "Selamat bertugas bagi jajaran pengurus yang baru dilantik untuk masa bakti ini.",
-                                "Dokumentasi dan sambutan lengkap...", null, null),
-                        new SiteNews(org.getId(), "Rencana Kerja & Agenda Terdekat",
-                                "Simak agenda kegiatan dan program unggulan yang akan segera diselenggarakan.",
-                                "Program kerja terlaksana...", null, null)
-                );
-            }
-
-            if (emptyEl != null) {
-                emptyEl.remove();
-            }
-
-            // Hapus kartu template sebelum mengisi data baru
-            itemTemplate.remove();
-
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("id", "ID"));
-            for (SiteNews item : news) {
-                Element clone = itemTemplate.clone();
-                Element titleEl = clone.selectFirst("[data-ws-field=judul]");
-                if (titleEl != null) titleEl.text(item.getTitle());
-
-                Element dateEl = clone.selectFirst("[data-ws-field=tanggal]");
-                if (dateEl != null) dateEl.text(LocalDate.now().format(fmt));
-
-                Element summaryEl = clone.selectFirst("[data-ws-field=ringkasan]");
-                if (summaryEl != null && item.getSummary() != null) summaryEl.text(item.getSummary());
-
-                Element linkEl = clone.selectFirst("[data-ws-link=detail]");
-                if (linkEl != null) linkEl.attr("href", "#");
-
-                listEl.appendChild(clone);
-            }
-        }
+        // Berita, koleksi kustom, dan login tidak diisi saat build: atribut data-ws-* dibiarkan agar OrgSpace-Hosting
+        // mengisinya dengan data terbaru setiap kali halaman dibuka (berita baru langsung tampil tanpa terbit ulang).
 
         // 2. Modul Formulir Dinamis (data-ws-form)
         // Menghormati kebebasan desain penyedia template: jika provider telah merancang form kustom,
@@ -431,14 +384,21 @@ public class SiteBuildService {
         }
     }
 
-    private void stripMarkingAttributes(Document doc) {
+    /**
+     * Buang penanda editor (data-ws-* tetap, dipakai Hosting). Sekalian buang handler on* dan URL javascript:
+     * karena semua website tayang di satu domain (orgspace.app/{slug}): script dari template bisa membaca sesi
+     * Portal Pengurus website lain.
+     */
+    static void stripMarkingAttributes(Document doc) {
         for (Element el : doc.getAllElements()) {
             el.removeAttr("data-key");
             el.removeAttr("data-edit");
             el.removeAttr("data-label");
             el.removeAttr("data-tpl-id");
             for (org.jsoup.nodes.Attribute attr : new java.util.ArrayList<>(el.attributes().asList())) {
-                if (attr.getKey().toLowerCase(Locale.ROOT).startsWith("data-ws-")) {
+                String key = attr.getKey().toLowerCase(Locale.ROOT);
+                String value = attr.getValue().replaceAll("[\\s\\u0000-\\u001f]", "").toLowerCase(Locale.ROOT);
+                if (key.startsWith("on") || value.startsWith("javascript:")) {
                     el.removeAttr(attr.getKey());
                 }
             }

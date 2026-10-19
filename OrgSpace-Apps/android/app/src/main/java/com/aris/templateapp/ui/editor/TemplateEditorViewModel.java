@@ -29,6 +29,7 @@ import com.aris.templateapp.data.model.TemplateManifest;
 import com.aris.templateapp.data.model.WebsiteDetail;
 import com.aris.templateapp.data.remote.dto.DirectPublishRequestDto;
 import com.aris.templateapp.data.remote.dto.DirectPublishResponseDto;
+import com.aris.templateapp.data.remote.dto.SlugCheckDto;
 import com.aris.templateapp.data.repository.ProjectRepository;
 import com.aris.templateapp.data.repository.TemplateEventRepository;
 import com.aris.templateapp.data.repository.TemplatePackageRepository;
@@ -135,6 +136,7 @@ public class TemplateEditorViewModel extends ViewModel {
     private final MutableLiveData<Event<Boolean>> closed = new MutableLiveData<>();
     private final MutableLiveData<ExportState> export = new MutableLiveData<>(ExportState.idle());
     private final MutableLiveData<PublishState> publish = new MutableLiveData<>(PublishState.idle());
+    private final MutableLiveData<SlugCheckDto> slugCheck = new MutableLiveData<>();
 
     private Loaded data;
     private ProjectValues values = new ProjectValues();
@@ -147,6 +149,10 @@ public class TemplateEditorViewModel extends ViewModel {
     /** null sampai project dibuat (perubahan pertama). Hanya diubah di thread utama. */
     @Nullable
     private String projectId;
+    @Nullable
+    private String targetOrganizationId;
+    /** ID website di server bila editor dibuka dari halaman kelola website; null untuk website baru dari template. */
+    private String serverProjectId;
     private String projectName;
     @Nullable
     private Long lastExportedAt;
@@ -204,6 +210,13 @@ public class TemplateEditorViewModel extends ViewModel {
      * @param templateVersion versi paket untuk project baru
      */
     void start(@Nullable String projectId, @Nullable String templateId, int templateVersion, @Nullable String title) {
+        start(projectId, templateId, templateVersion, title, null);
+    }
+
+    void start(@Nullable String projectId, @Nullable String templateId, int templateVersion, @Nullable String title,
+               @Nullable String organizationId) {
+        this.targetOrganizationId = organizationId;
+        this.serverProjectId = organizationId != null ? projectId : null;
         if (started) {
             return;
         }
@@ -713,12 +726,39 @@ public class TemplateEditorViewModel extends ViewModel {
 
     void resetPublish() {
         publish.setValue(PublishState.idle());
+        slugCheck.setValue(null);
+    }
+
+    /** Hasil cek nama website terakhir; null selama belum ada jawaban server. */
+    LiveData<SlugCheckDto> getSlugCheck() {
+        return slugCheck;
+    }
+
+    /** {@code slug} null = minta saran dari nama project. Gagal (mis. offline) = diam; server tetap memeriksa saat terbit. */
+    void checkSlug(@Nullable String slug) {
+        String name = publishName();
+        String orgId = publishOrganizationId();
+        executors.networkIO().execute(() -> {
+            Resource<SlugCheckDto> res = websiteRepository.checkSlug(name, orgId, serverProjectId, slug);
+            if (res.getStatus() == Resource.Status.SUCCESS && res.getData() != null) {
+                slugCheck.postValue(res.getData());
+            }
+        });
+    }
+
+    private String publishName() {
+        return projectName != null && !projectName.isBlank() ? projectName : "Website Saya";
+    }
+
+    private String publishOrganizationId() {
+        return targetOrganizationId != null ? targetOrganizationId : workspaceRepository.getActiveWorkspaceId();
     }
 
     /**
-     * Menerbitkan website langsung ke server lokal (port 8080) dan menyimpannya di Ruang Pribadi user.
+     * Menerbitkan website ke {hosting}/{slug} dan menyimpannya di ruang kerja aktif. {@code slug} hanya dipakai
+     * saat terbit pertama; setelah itu server memakai slug lama.
      */
-    void publishDirect() {
+    void publishDirect(@Nullable String slug) {
         if (data == null) {
             return;
         }
@@ -726,10 +766,13 @@ public class TemplateEditorViewModel extends ViewModel {
         ProjectValues snapshot = values.copy();
         CompletenessChecker.Result completeness = CompletenessChecker.check(data.manifest, snapshot);
         Loaded loadedData = data;
-        String name = projectName != null && !projectName.isBlank() ? projectName : "Website Saya";
+        String name = publishName();
 
         Map<String, Object> contentMap = new HashMap<>();
         Map<String, Object> fieldsMap = new HashMap<>();
+        // Foto yang diganti masih berupa file di HP; ikut dikirim agar server bisa menampilkannya di website.
+        Map<String, File> images = new HashMap<>();
+        File dir = projectDir();
         for (Map.Entry<String, ProjectValues.FieldValue> entry : snapshot.fields.entrySet()) {
             Map<String, Object> valMap = new HashMap<>();
             if (entry.getValue().text != null) {
@@ -740,6 +783,10 @@ public class TemplateEditorViewModel extends ViewModel {
             }
             if (entry.getValue().image != null) {
                 valMap.put("image", entry.getValue().image);
+                File file = new File(dir, entry.getValue().image);
+                if (file.isFile()) {
+                    images.put(entry.getValue().image, file);
+                }
             }
             fieldsMap.put(entry.getKey(), valMap);
         }
@@ -747,19 +794,30 @@ public class TemplateEditorViewModel extends ViewModel {
         contentMap.put("styles", new HashMap<>(snapshot.styles));
         contentMap.put("theme", new HashMap<>(snapshot.theme));
 
+        String orgId = publishOrganizationId();
+
         DirectPublishRequestDto request = new DirectPublishRequestDto(
                 name,
                 loadedData.templateId,
                 loadedData.templateVersion,
                 contentMap,
                 completeness != null ? completeness.missingCount() : 0,
-                null
+                slug,
+                orgId
         );
+
+        request.projectId = serverProjectId;
 
         publish.setValue(PublishState.publishing());
         executors.networkIO().execute(() -> {
-            Resource<DirectPublishResponseDto> res = websiteRepository.publishDirect(request);
+            Resource<DirectPublishResponseDto> res = websiteRepository.publishDirect(request, images);
             if (res.getStatus() == Resource.Status.SUCCESS && res.getData() != null) {
+                DirectPublishResponseDto done = res.getData();
+                // Terbit berikutnya dari editor ini memperbarui website yang sama di ruang kerja yang sama.
+                main.post(() -> {
+                    serverProjectId = done.projectId;
+                    targetOrganizationId = done.organizationId;
+                });
                 workspaceRepository.refresh(null);
                 publish.postValue(PublishState.success(res.getData()));
             } else {

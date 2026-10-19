@@ -78,6 +78,16 @@ public class WorkspaceRepository {
         return active;
     }
 
+    /** ID ruang kerja aktif saat ini (dari memori atau SessionStore). */
+    @Nullable
+    public String getActiveWorkspaceId() {
+        Workspace current = active.getValue();
+        if (current != null) {
+            return current.getId();
+        }
+        return sessionStore.getActiveWorkspaceId();
+    }
+
     /**
      * Memuat ulang daftar dari backend. Ruang kerja aktif dipertahankan jika masih ada; jika tidak, dipakai
      * {@code serverLastId} (ruang kerja terakhir menurut server, mis. dari HP lain), lalu yang pertama.

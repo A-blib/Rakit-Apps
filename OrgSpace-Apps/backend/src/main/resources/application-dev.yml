@@ -8,3 +8,8 @@ spring:
 logging:
   level:
     com.aris.templateapp: DEBUG
+
+app:
+  sites:
+    # Hanya di laptop: domain kustom boleh diaktifkan tanpa cek DNS (tombol "Aktifkan untuk uji" di app debug).
+    allow-dns-bypass: true

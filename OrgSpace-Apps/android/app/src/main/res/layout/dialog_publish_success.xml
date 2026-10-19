@@ -183,6 +183,15 @@
             app:icon="@drawable/ic_web" />
 
         <Button
+            android:id="@+id/btn_custom_domain"
+            style="@style/Widget.App.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_2"
+            android:text="@string/custom_domain_publish_success_btn"
+            app:icon="@drawable/ic_language" />
+
+        <Button
             android:id="@+id/btn_copy_link"
             style="@style/Widget.App.Button.Outlined"
             android:layout_width="match_parent"
