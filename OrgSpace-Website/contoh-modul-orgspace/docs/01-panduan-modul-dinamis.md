@@ -148,6 +148,27 @@ Semua website tayang di satu domain (`orgspace.app/...`), jadi setiap halaman di
 | `fetch()` ke API luar | Jalan jika API itu mengizinkan semua origin (CORS `*`). |
 | Atribut `onclick`, `onload`, `onerror`, dst. dan link `javascript:` | **Dihapus** saat website diterbitkan. Pasang event di file JS dengan `addEventListener`. |
 
+## JavaScript + data modul
+
+Script template berjalan **sebelum** OrgSpace mengisi modul. Jika script-mu perlu kartu atau data modul (filter, slider, grafik, peta), tunggu event `orgspace:siap`:
+
+```js
+function mulai() {
+  // Data modul (salinan): window.orgspace.data
+  //   .slug          nama website
+  //   .news          pengumuman/berita: [{ judul, ringkasan, konten, tanggal, foto, detail }]
+  //   .collections   modul kustom: { prestasi: [{ judul, tingkat, ... }], agenda: [...] }
+  var prestasi = window.orgspace.data.collections.prestasi || [];
+  console.log(prestasi.length + " prestasi");
+}
+if (window.orgspace && window.orgspace.siap) mulai();
+else document.addEventListener("orgspace:siap", mulai);
+```
+
+- Setelah event ini, kartu `data-ws-item` sudah terisi dan bisa dipilih dengan `querySelectorAll`.
+- Contoh lengkap: **filter prestasi per tingkat** di `contoh-template/js/main.js` pada paket unduhan.
+- Event ini hanya ada di website yang tayang di OrgSpace. Di preview app atau file ZIP export, `window.orgspace` tidak ada, jadi tulis script yang tetap aman tanpa data (mis. filter tidak dibuat).
+
 ## Banyak halaman
 
 Template boleh punya beberapa halaman (`index.html`, `tentang.html`, `kontak.html`). Hubungkan dengan link relatif biasa, mis. `<a href="tentang.html">`. Hasilnya `orgspace.app/nama-website/tentang.html`. Modul dan formulir bekerja di semua halaman.
@@ -175,3 +196,4 @@ Template boleh punya beberapa halaman (`index.html`, `tentang.html`, `kontak.htm
 | Tombol Keluar atau bagian khusus pengurus tidak terlihat | Memang disembunyikan di halaman publik; pengurus bekerja di Portal Pengurus. |
 | Pilihan dark mode hilang setelah halaman ditutup | Penyimpanan browser di website hanya sementara (sandbox). |
 | Tombol dengan `onclick` tidak bereaksi | Atribut `on...` dihapus saat terbit; pasang event dengan `addEventListener` di file JS. |
+| Script hanya melihat kartu contoh, bukan data asli | Jalankan script setelah event `orgspace:siap` (bagian JavaScript + data modul). |

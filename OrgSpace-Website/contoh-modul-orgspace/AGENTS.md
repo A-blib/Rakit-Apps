@@ -39,6 +39,9 @@ Jika ada yang bertentangan, `docs/01-panduan-modul-dinamis.md` dan bagian 3 file
 - **Dilarang** atribut `on...` (`onclick`, `onload`, `onerror`, dst.) dan link `javascript:`. Keduanya dihapus saat
   website diterbitkan. Pasang event dengan `addEventListener` di file JS (lihat `contoh-template/js/main.js`).
 - Boleh beberapa halaman (`index.html`, `tentang.html`, ...) yang saling terhubung dengan link relatif.
+- Script yang memakai kartu atau data modul (filter, slider, grafik) harus menunggu event `orgspace:siap` dan
+  membaca `window.orgspace.data` (lihat `docs/01-panduan-modul-dinamis.md` bagian "JavaScript + data modul" dan
+  `contoh-template/js/main.js`). Tanpa `window.orgspace` (preview/export), script tetap tidak boleh error.
 - **Path relatif** untuk aset lokal: `css/style.css`, `img/logo.png` (bukan `/css/...`).
 - Wajib `<meta name="viewport" content="width=device-width, initial-scale=1">` dan desain rapi di layar HP (≤ 400px).
 - CDN hanya dari: `cdn.jsdelivr.net`, `cdnjs.cloudflare.com`, `unpkg.com`, `cdn.tailwindcss.com`,
