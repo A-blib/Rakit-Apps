@@ -5,6 +5,7 @@ import com.aris.templateapp.auth.UserIdentity;
 import com.aris.templateapp.auth.UserIdentityRepository;
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
+import com.aris.templateapp.config.AppProperties;
 import com.aris.templateapp.organization.MemberRole;
 import com.aris.templateapp.organization.Organization;
 import com.aris.templateapp.organization.OrganizationAccess;
@@ -44,7 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -79,6 +81,8 @@ public class PublicSiteController {
     private final OrganizationMemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final SiteDomainRepository siteDomainRepository;
+    private final AppProperties properties;
 
     /**
      * Endpoint utama untuk Sistem Hosting Publik (Next.js OrgSpace-Hosting).
@@ -113,18 +117,8 @@ public class PublicSiteController {
             }
         }
 
-        // Ambil data berita organisasi untuk modul dinamis
+        // Hanya data asli: website terbit tidak boleh menampilkan berita contoh.
         List<SiteNews> dbNews = siteNewsRepository.findByOrganizationIdOrderByPublishedAtDesc(org.getId());
-        if (dbNews.isEmpty()) {
-            dbNews = List.of(
-                    new SiteNews(org.getId(), "Pelantikan Pengurus " + org.getName(),
-                            "Selamat bertugas bagi jajaran pengurus yang baru dilantik untuk masa bakti ini.",
-                            "Dokumentasi dan sambutan lengkap pengurus...", null, null),
-                    new SiteNews(org.getId(), "Rencana Kerja & Agenda Terdekat",
-                            "Simak agenda kegiatan dan program unggulan yang akan segera diselenggarakan.",
-                            "Program kerja terlaksana dengan sukses...", null, null)
-            );
-        }
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("id", "ID"));
         List<SiteRenderResponse.NewsItem> newsList = dbNews.stream()
                 .map(n -> new SiteRenderResponse.NewsItem(
@@ -132,7 +126,7 @@ public class PublicSiteController {
                         n.getTitle(),
                         n.getSummary(),
                         n.getContent(),
-                        LocalDate.now().format(fmt)
+                        n.getPublishedAt().atZone(ZoneId.of(properties.timezone())).format(fmt)
                 )).toList();
 
         // Konfigurasi formulir interaktif
@@ -150,15 +144,16 @@ public class PublicSiteController {
                 )
         );
 
-        // SEO Metadata
-        String seoTitle = site.getSeoTitle() != null && !site.getSeoTitle().isBlank()
-                ? site.getSeoTitle() : (org.getName() + " — Website Resmi");
-        String seoDesc = site.getSeoDescription() != null && !site.getSeoDescription().isBlank()
-                ? site.getSeoDescription() : "Website resmi " + org.getName() + " diterbitkan melalui platform OrgSpace.";
-        SiteRenderResponse.SeoMeta seo = new SiteRenderResponse.SeoMeta(seoTitle, seoDesc, null, null);
-
         String mode = project != null && project.getMode() != null ? project.getMode().value() : "template";
         String projectName = project != null && project.getName() != null ? project.getName() : org.getName();
+
+        // SEO: judul bawaan dari nama website; nama ruang pribadi ("Ruang Pribadi X") tidak layak tampil ke publik.
+        String owner = org.isPersonal() ? projectName : org.getName();
+        String seoTitle = site.getSeoTitle() != null && !site.getSeoTitle().isBlank()
+                ? site.getSeoTitle() : (org.isPersonal() ? projectName : projectName + " — " + org.getName());
+        String seoDesc = site.getSeoDescription() != null && !site.getSeoDescription().isBlank()
+                ? site.getSeoDescription() : "Website " + owner + ", diterbitkan melalui OrgSpace.";
+        SiteRenderResponse.SeoMeta seo = new SiteRenderResponse.SeoMeta(seoTitle, seoDesc, null, null);
 
         // Data koleksi kustom dinamis
         List<SiteCustomItem> customItems = siteCustomItemRepository.findBySiteIdOrderByCollectionNameAscSortOrderAscCreatedAtDesc(site.getId());
@@ -168,15 +163,6 @@ public class PublicSiteController {
             row.put("id", item.getId());
             collectionsMap.computeIfAbsent(item.getCollectionName(), k -> new ArrayList<>()).add(row);
         }
-        // Contoh data bawaan jika koleksi prestasi belum diisi
-        if (!collectionsMap.containsKey("prestasi")) {
-            collectionsMap.put("prestasi", List.of(
-                    Map.of("nama_juara", "Budi Santoso", "lomba", "Juara 1 Olimpiade Sains Nasional", "tahun", "2026", "tingkat", "Nasional"),
-                    Map.of("nama_juara", "Siti Rahma", "lomba", "Juara 2 Lomba Debat Bahasa Inggris", "tahun", "2026", "tingkat", "Provinsi"),
-                    Map.of("nama_juara", "Tim Futsal OSIS", "lomba", "Juara 1 Turnamen Pelajar Se-Kota", "tahun", "2025", "tingkat", "Kota")
-            ));
-        }
-
         return new SiteRenderResponse(
                 site.getId(),
                 site.getProjectId(),
@@ -199,6 +185,7 @@ public class PublicSiteController {
 
     /**
      * Menyelesaikan custom domain ke slug website terkait untuk router hosting.
+     * Hanya domain kustom aktif (mis. webuser.my.id); subdomain {slug}.orgspace.app tidak dipakai.
      */
     @GetMapping("/api/public/sites/resolve-domain")
     public Map<String, Object> resolveDomain(@RequestParam String domain) {
@@ -206,16 +193,40 @@ public class PublicSiteController {
             throw new ApiException(ErrorCode.NOT_FOUND, "Domain tidak boleh kosong");
         }
         String cleanDomain = domain.toLowerCase(Locale.ROOT).trim();
-        if (cleanDomain.contains(".")) {
-            String prefix = cleanDomain.substring(0, cleanDomain.indexOf('.'));
-            if (siteRepository.existsBySlug(prefix)) {
-                return Map.of("slug", prefix, "domain", cleanDomain);
+        cleanDomain = cleanDomain.replaceFirst("^https?://", "");
+        cleanDomain = cleanDomain.split("[/?#:]")[0];
+
+        // 1. Cek tabel site_domains apakah terdaftar sebagai domain kustom aktif
+        Optional<SiteDomain> customDomain = siteDomainRepository.findByHostnameAndStatus(cleanDomain, "active");
+        if (customDomain.isPresent()) {
+            Site site = siteRepository.findById(customDomain.get().getSiteId()).orElse(null);
+            if (site != null && "online".equalsIgnoreCase(site.getStatus())) {
+                return Map.of("slug", site.getSlug(), "domain", cleanDomain, "customDomain", true);
             }
         }
-        if (siteRepository.existsBySlug(cleanDomain)) {
-            return Map.of("slug", cleanDomain, "domain", cleanDomain);
+
+        // Link bawaan berbentuk path (orgspace.app/{slug}); host lain hanya dikenali lewat domain kustom aktif.
+        return Map.of("slug", "", "domain", cleanDomain, "customDomain", false);
+    }
+
+    /**
+     * Endpoint ask untuk Caddy On-Demand TLS (alur-publish-website.md 7.11).
+     * Caddy memanggil endpoint ini sebelum meminta sertifikat HTTPS untuk custom domain.
+     */
+    @GetMapping("/internal/caddy/ask")
+    public ResponseEntity<Void> caddyAsk(@RequestParam String domain) {
+        if (domain == null || domain.isBlank()) {
+            return ResponseEntity.notFound().build();
         }
-        return Map.of("slug", "", "domain", cleanDomain);
+        String cleanDomain = domain.toLowerCase(Locale.ROOT).trim().split(":")[0];
+        Optional<SiteDomain> active = siteDomainRepository.findByHostnameAndStatus(cleanDomain, "active");
+        if (active.isPresent()) {
+            Site site = siteRepository.findById(active.get().getSiteId()).orElse(null);
+            if (site != null && "online".equalsIgnoreCase(site.getStatus())) {
+                return ResponseEntity.ok().build();
+            }
+        }
+        return ResponseEntity.notFound().build();
     }
 
     /**

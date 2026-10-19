@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--
-        Layar awal (saat masuk app): animasi pahlawan selalu tampil minimal selama ini (permintaan Aris).
-        Satu putaran terbang = 4000 ms.
+        Layar awal (saat masuk app): durasi minimal animasi entrance agar tampil mulus dan estetik.
     -->
-    <integer name="loading_min_duration_ms">2000</integer>
+    <integer name="loading_min_duration_ms">1400</integer>
     <!--
         Loading di dalam app (StateView): proses yang selesai sebelum jeda ini tidak diberi animasi sama sekali
         (permintaan Aris). Jika lebih lama, animasi tampil minimal loading_min_visible_ms agar tidak berkedip.
     -->
     <integer name="loading_show_delay_ms">600</integer>
     <integer name="loading_min_visible_ms">1000</integer>
-    <!-- Lama isi layar / dashboard naik dari bawah setelah pahlawan melaju ke kanan. -->
-    <integer name="slide_up_duration_ms">700</integer>
+    <!-- Lama transisi halus ke dashboard (soft rise + fade-through). -->
+    <integer name="slide_up_duration_ms">380</integer>
+    <!-- Jeda transisi halus saat masuk/daftar berhasil sebelum membuka beranda (mencegah hentakan keyboard). -->
+    <integer name="auth_transition_min_duration_ms">850</integer>
+    <!-- Nama website (slug) maks 40 karakter, sama dengan aturan backend. Jeda cek ketersediaan saat mengetik. -->
+    <integer name="publish_slug_max">40</integer>
+    <integer name="publish_slug_check_delay_ms">500</integer>
 </resources>

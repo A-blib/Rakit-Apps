@@ -8,8 +8,8 @@ const DEFAULT_HOSTS = new Set([
 ]);
 
 /**
- * Middleware untuk mendukung Custom Domain dan Routing Subdomain.
- * Mengalihkan request dari domain kustom pengguna langsung ke slug website yang sesuai.
+ * Middleware Custom Domain. Link bawaan berbentuk path (orgspace.app/{slug}), jadi host selain
+ * DEFAULT_HOSTS hanya dikenali sebagai domain kustom aktif lalu di-rewrite ke /{slug}.
  */
 export async function middleware(request: NextRequest) {
   const host = request.headers.get("host") || "";
@@ -24,18 +24,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Jika bukan host default, periksa apakah merupakan custom domain atau subdomain
+  // Host lain: cek apakah domain kustom milik sebuah website
   if (host && !DEFAULT_HOSTS.has(host.toLowerCase())) {
     const cleanHost = host.toLowerCase().split(":")[0];
     
-    // Periksa apakah ini subdomain dari orgspace.app (mis. osis.orgspace.app)
-    if (cleanHost.endsWith(".orgspace.app")) {
-      const slug = cleanHost.replace(".orgspace.app", "");
-      if (slug && slug !== "www") {
-        return NextResponse.rewrite(new URL(`/${slug}${pathname === "/" ? "" : pathname}`, request.url));
-      }
-    }
-
     // Cek mapping custom domain via backend
     try {
       const backendUrl = process.env.BACKEND_API_URL || "http://localhost:8080";

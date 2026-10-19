@@ -196,13 +196,69 @@ class SitePublishIntegrationTest {
     }
 
     @Test
-    void directPublishFromEditorToPersonalSpace() throws Exception {
+    void directPublishToSelectedWorkspace() throws Exception {
+        // 1. Buat tempat kerja baru (misal: "Klub Jurnalistik")
+        String newOrgRes = mockMvc.perform(post("/api/organizations")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"organization\",\"name\":\"Klub Jurnalistik\",\"category\":\"jurnalistik_media\",\"level\":\"sma\",\"institutionName\":\"SMA Negeri 1 Bandung\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        UUID newOrgId = UUID.fromString(JsonPath.read(newOrgRes, "$.id"));
+
+        // 2. Terbitkan website dengan menentukan organizationId ruang kerja baru yang dipilih
+        String reqJson = String.format("""
+                {
+                    "name": "Warta Jurnalistik Smansa",
+                    "organizationId": "%s",
+                    "content": {
+                        "fields": {
+                            "judul": {"text": "Selamat Datang di Portal Jurnalistik"}
+                        }
+                    },
+                    "missingCount": 0
+                }
+                """, newOrgId);
+
+        mockMvc.perform(post("/api/projects/publish-direct")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(reqJson))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.status").value("online"))
+                .andExpect(jsonPath("$.port").value(3001))
+                .andExpect(jsonPath("$.organizationId").value(newOrgId.toString()))
+                .andExpect(jsonPath("$.organizationName").value("Klub Jurnalistik"))
+                .andExpect(jsonPath("$.url").value("http://localhost:3001/warta-jurnalistik-smansa"));
+
+        // 3. Verifikasi website tersimpan dan terdaftar di ruang kerja baru
+        mockMvc.perform(get("/api/organizations/" + newOrgId + "/websites")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].name").value("Warta Jurnalistik Smansa"))
+                .andExpect(jsonPath("$.items[0].status").value("online"))
+                .andExpect(jsonPath("$.counts.online").value(1));
+
+        // 4. Pastikan website TIDAK terdaftar di ruang kerja lain (orgId awal)
+        mockMvc.perform(get("/api/organizations/" + orgId + "/websites")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[?(@.name == 'Warta Jurnalistik Smansa')]").isEmpty());
+
+        // 5. Akses root web publiknya
+        mockMvc.perform(get("/sites/warta-jurnalistik-smansa/"))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", "/sites/warta-jurnalistik-smansa/index.html"));
+    }
+
+    @Test
+    void directPublishFallbackToActiveWorkspace() throws Exception {
+        // Request tanpa organizationId eksplisit harus otomatis masuk ke ruang kerja aktif terakhir (orgId di setUp)
         String reqJson = """
                 {
                     "name": "Web Organisasi Saya",
                     "content": {
                         "fields": {
-                            "judul": {"text": "Selamat Datang di Web Pribadi"}
+                            "judul": {"text": "Selamat Datang di OSIS"}
                         }
                     },
                     "missingCount": 0
@@ -215,12 +271,65 @@ class SitePublishIntegrationTest {
                         .content(reqJson))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.status").value("online"))
-                .andExpect(jsonPath("$.port").value(8080))
-                .andExpect(jsonPath("$.organizationName").value(org.hamcrest.Matchers.containsString("Ruang Pribadi")))
-                .andExpect(jsonPath("$.url").value(org.hamcrest.Matchers.containsString("/sites/web-organisasi-saya/")));
+                .andExpect(jsonPath("$.port").value(3001))
+                .andExpect(jsonPath("$.organizationId").value(orgId.toString()))
+                .andExpect(jsonPath("$.organizationName").value("OSIS SMAN 1 Bandung"))
+                .andExpect(jsonPath("$.url").value("http://localhost:3001/web-organisasi-saya"));
 
         mockMvc.perform(get("/sites/web-organisasi-saya/"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", "/sites/web-organisasi-saya/index.html"));
+    }
+
+    @Test
+    void slugIsSuggestedCheckedAndLockedAfterFirstPublish() throws Exception {
+        String auth = "Bearer " + creatorToken;
+        // Saran dari nama project
+        mockMvc.perform(get("/api/projects/publish-direct/slug").header(HttpHeaders.AUTHORIZATION, auth)
+                        .param("name", "Profil OSIS Keren"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.slug").value("profil-osis-keren"))
+                .andExpect(jsonPath("$.locked").value(false))
+                .andExpect(jsonPath("$.available").value(true))
+                .andExpect(jsonPath("$.url").value("http://localhost:3001/profil-osis-keren"));
+
+        // Nama pilihan user dipakai saat terbit pertama
+        mockMvc.perform(post("/api/projects/publish-direct").header(HttpHeaders.AUTHORIZATION, auth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Profil OSIS Keren\",\"slug\":\"osis-keren-kita\",\"content\":{},\"missingCount\":0}"))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.slug").value("osis-keren-kita"))
+                .andExpect(jsonPath("$.url").value("http://localhost:3001/osis-keren-kita"));
+
+        // Setelah terbit, slug terkunci; terbit ulang dengan slug lain tetap memakai slug lama
+        mockMvc.perform(get("/api/projects/publish-direct/slug").header(HttpHeaders.AUTHORIZATION, auth)
+                        .param("name", "Profil OSIS Keren").param("slug", "nama-lain"))
+                .andExpect(jsonPath("$.locked").value(true))
+                .andExpect(jsonPath("$.slug").value("osis-keren-kita"));
+        mockMvc.perform(post("/api/projects/publish-direct").header(HttpHeaders.AUTHORIZATION, auth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Profil OSIS Keren\",\"slug\":\"nama-lain\",\"content\":{},\"missingCount\":0}"))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.slug").value("osis-keren-kita"))
+                .andExpect(jsonPath("$.version").value(2));
+
+        // Project lain: slug yang sudah dipakai, dicadangkan, atau formatnya salah ditolak dengan alasan
+        for (String bad : List.of("osis-keren-kita", "api", "ab", "Huruf Besar!")) {
+            mockMvc.perform(get("/api/projects/publish-direct/slug").header(HttpHeaders.AUTHORIZATION, auth)
+                            .param("name", "Website Lain").param("slug", bad))
+                    .andExpect(jsonPath("$.available").value(false))
+                    .andExpect(jsonPath("$.message").isNotEmpty());
+        }
+        mockMvc.perform(post("/api/projects/publish-direct").header(HttpHeaders.AUTHORIZATION, auth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Website Lain\",\"slug\":\"osis-keren-kita\",\"content\":{},\"missingCount\":0}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("SLUG_TAKEN"));
+
+        // Website asli tidak memuat berita/prestasi contoh
+        mockMvc.perform(get("/api/public/sites/render/osis-keren-kita"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.news").isEmpty())
+                .andExpect(jsonPath("$.collections.prestasi").doesNotExist());
     }
 }

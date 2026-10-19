@@ -118,7 +118,11 @@ public record AppProperties(
             Integer buildTimeoutSeconds,
             Integer maxOutputMb,
             Integer maxFiles,
-            Integer keepReleases) {
+            Integer keepReleases,
+            String customTarget,
+            String publicIp,
+            String verifyTxtPrefix,
+            String hostingUrl) {
 
         public Sites {
             if (rootDir == null || rootDir.isBlank()) {
@@ -136,6 +140,19 @@ public record AppProperties(
             if (keepReleases == null || keepReleases <= 0) {
                 keepReleases = 3;
             }
+            if (customTarget == null || customTarget.isBlank()) {
+                customTarget = "custom." + (domain != null && !domain.contains("localhost") ? domain : "orgspace.site");
+            }
+            if (publicIp == null || publicIp.isBlank()) {
+                publicIp = "103.175.216.42";
+            }
+            if (verifyTxtPrefix == null || verifyTxtPrefix.isBlank()) {
+                verifyTxtPrefix = "_orgspace-verify";
+            }
+            if (hostingUrl == null || hostingUrl.isBlank()) {
+                hostingUrl = "http://localhost:3001";
+            }
+            hostingUrl = hostingUrl.replaceAll("/+$", "");
         }
 
         public String storageRootDir() {
@@ -158,12 +175,12 @@ public record AppProperties(
             return keepReleases != null && keepReleases > 0 ? keepReleases : 3;
         }
 
-        /** Alamat lengkap website dari nama subdomainnya, mis. {@code https://osis-smansa.orgspace.site}. */
+        /**
+         * Alamat publik website di OrgSpace-Hosting berbentuk path, mis. {@code https://orgspace.app/osis-smansa}
+         * (keputusan Aris 19 Oktober 2026: path, bukan subdomain).
+         */
         public String urlOf(String slug) {
-            if (domain != null && domain.contains("localhost")) {
-                return urlScheme + "://" + domain + "/sites/" + slug + "/";
-            }
-            return urlScheme + "://" + slug + "." + domain;
+            return hostingUrl + "/" + slug;
         }
     }
 

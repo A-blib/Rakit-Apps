@@ -126,7 +126,10 @@
     <!-- Publikasi Langsung & Opsi Selesai -->
     <string name="export_options_title">Selesai &amp; Publikasi</string>
     <string name="publish_direct_title">Publish Langsung</string>
-    <string name="publish_direct_desc">Website langsung aktif di server lokal dan otomatis disimpan ke Ruang Pribadi kamu.</string>
+    <string name="publish_direct_desc">Website langsung tayang di orgspace.app/nama-website dan tersimpan di ruang kerja kamu.</string>
+    <string name="publish_slug_hint">Nama website</string>
+    <string name="publish_slug_link">Link: %1$s</string>
+    <string name="publish_slug_locked">Sudah terbit di %1$s. Nama website tidak bisa diganti agar link lama tetap jalan.</string>
     <string name="publish_direct_button">Publish Langsung Sekarang</string>
     <string name="publish_direct_loading">Sedang menerbitkan website ke server…</string>
     <string name="publish_direct_failed">Gagal menerbitkan website: %1$s</string>
@@ -136,7 +139,7 @@
     <string name="download_zip_button">Download File ZIP</string>
 
     <string name="publish_success_title">Website Berhasil Diterbitkan! 🎉</string>
-    <string name="publish_success_subtitle">Website kamu kini aktif dan berjalan di server lokal. Proyek ini telah berhasil masuk ke Ruang Pribadi kamu.</string>
+    <string name="publish_success_subtitle">Website kamu sudah online dan tersimpan di ruang kerja di bawah. Bagikan link-nya ke anggota dan pengunjung.</string>
     <string name="publish_success_workspace_label">Ruang Kerja:</string>
     <string name="publish_success_port_label">Port Server:</string>
     <string name="publish_success_url_label">Alamat Website:</string>

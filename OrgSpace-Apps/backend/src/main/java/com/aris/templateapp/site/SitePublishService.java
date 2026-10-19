@@ -19,6 +19,7 @@ import com.aris.templateapp.site.dto.DirectPublishRequest;
 import com.aris.templateapp.site.dto.DirectPublishResponse;
 import com.aris.templateapp.site.dto.FormSubmissionResponse;
 import com.aris.templateapp.site.dto.SiteResponse;
+import com.aris.templateapp.site.dto.SlugCheckResponse;
 import com.aris.templateapp.user.User;
 import com.aris.templateapp.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +67,7 @@ public class SitePublishService {
     private final OrganizationAccess access;
     private final SiteBuildService siteBuildService;
     private final SiteStorage siteStorage;
+    private final SiteDomainRepository siteDomainRepository;
     private final AppProperties properties;
     private final Clock clock;
 
@@ -74,23 +76,21 @@ public class SitePublishService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED));
 
-        // 1. Cari atau buat ruang pribadi (PERSONAL) untuk user ini
-        Organization personalOrg = organizationRepository.findAllForUser(userId).stream()
-                .map(OrganizationRepository.OrganizationWithRole::getOrganization)
-                .filter(Organization::isPersonal)
-                .findFirst()
-                .orElseGet(() -> {
-                    Organization org = new Organization(OrganizationType.PERSONAL, "Ruang Pribadi " + user.getDisplayName(), userId);
-                    org = organizationRepository.save(org);
-                    memberRepository.save(new OrganizationMember(org.getId(), userId, MemberRole.OWNER, null, clock.instant()));
-                    return org;
-                });
+        // 1. Tentukan ruang kerja tujuan; buat ruang pribadi bila user belum punya.
+        Organization targetOrg = findTargetOrg(user, request.organizationId()).orElseGet(() -> {
+            Organization org = new Organization(OrganizationType.PERSONAL, "Ruang Pribadi " + user.getDisplayName(), userId);
+            org = organizationRepository.save(org);
+            memberRepository.save(new OrganizationMember(org.getId(), userId, MemberRole.OWNER, null, clock.instant()));
+            return org;
+        });
 
-        // 2. Cari atau buat Project di ruang pribadi
+        final Organization chosenOrg = targetOrg;
+
+        // 2. Cari atau buat Project di ruang kerja yang dipilih
         String projectName = request.name() != null && !request.name().isBlank() ? request.name().trim() : "Website Saya";
-        Project project = projectRepository.findByOrganizationIdAndName(personalOrg.getId(), projectName)
+        Project project = projectRepository.findByOrganizationIdAndName(chosenOrg.getId(), projectName)
                 .orElseGet(() -> {
-                    Project p = new Project(personalOrg.getId(), projectName, ProjectMode.TEMPLATE, userId);
+                    Project p = new Project(chosenOrg.getId(), projectName, ProjectMode.TEMPLATE, userId);
                     p.setSourceTemplateId(request.sourceTemplateId());
                     p.setTemplateVersion(request.templateVersion());
                     return p;
@@ -108,11 +108,17 @@ public class SitePublishService {
         project.touch(userId);
         project = projectRepository.saveAndFlush(project);
 
-        // 3. Cari atau buat Site
+        // 3. Cari atau buat Site di ruang kerja yang dipilih
         Site site = siteRepository.findByProjectId(project.getId()).orElse(null);
         if (site == null) {
-            String slug = resolveSlug(request.slug(), personalOrg, project);
-            site = siteRepository.save(new Site(project.getId(), personalOrg.getId(), slug));
+            long siteCount = siteRepository.countByOrganizationId(chosenOrg.getId());
+            int maxSites = chosenOrg.isPersonal() ? properties.sites().maxPerPersonal() : properties.sites().maxPerOrg();
+            if (siteCount >= maxSites) {
+                throw new ApiException(ErrorCode.SITE_LIMIT_REACHED, "Batas maksimal " + maxSites + " website per ruang kerja telah tercapai.");
+            }
+
+            String slug = resolveSlug(request.slug(), project.getName());
+            site = siteRepository.save(new Site(project.getId(), chosenOrg.getId(), slug));
         }
 
         // 4. Buat SiteBuild dan jalankan build
@@ -140,8 +146,8 @@ public class SitePublishService {
 
         return new DirectPublishResponse(
                 project.getId(),
-                personalOrg.getId(),
-                personalOrg.getName(),
+                chosenOrg.getId(),
+                chosenOrg.getName(),
                 site.getId(),
                 site.getSlug(),
                 url,
@@ -149,6 +155,38 @@ public class SitePublishService {
                 site.getStatus(),
                 version
         );
+    }
+
+    /**
+     * Cek nama website (slug) untuk dialog terbitkan. Website yang sudah pernah terbit memakai slug lamanya
+     * (terkunci, agar link yang sudah dibagikan tidak putus). Tanpa {@code slug}: kembalikan saran dari nama project.
+     */
+    @Transactional(readOnly = true)
+    public SlugCheckResponse checkSlug(UUID userId, String name, UUID organizationId, String slug) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED));
+        String projectName = name != null && !name.isBlank() ? name.trim() : "Website Saya";
+        Optional<Site> existing = findTargetOrg(user, organizationId)
+                .flatMap(org -> projectRepository.findByOrganizationIdAndName(org.getId(), projectName))
+                .flatMap(project -> siteRepository.findByProjectId(project.getId()));
+        if (existing.isPresent()) {
+            String locked = existing.get().getSlug();
+            return new SlugCheckResponse(locked, true, true, null, properties.sites().urlOf(locked));
+        }
+        if (slug == null || slug.isBlank()) {
+            String suggestion = resolveSlug(null, projectName);
+            return new SlugCheckResponse(suggestion, false, true, null, properties.sites().urlOf(suggestion));
+        }
+        String clean = slug.trim().toLowerCase(Locale.ROOT);
+        try {
+            validateSlug(clean);
+            if (siteRepository.existsBySlug(clean)) {
+                throw new ApiException(ErrorCode.SLUG_TAKEN, "Nama website sudah dipakai. Pilih nama lain.");
+            }
+        } catch (ApiException e) {
+            return new SlugCheckResponse(clean, false, false, e.getMessage(), properties.sites().urlOf(clean));
+        }
+        return new SlugCheckResponse(clean, false, true, null, properties.sites().urlOf(clean));
     }
 
     @Transactional
@@ -170,7 +208,8 @@ public class SitePublishService {
                 throw new ApiException(ErrorCode.SITE_LIMIT_REACHED, "Batas maksimal " + maxSites + " website per ruang kerja telah tercapai.");
             }
 
-            String slug = resolveSlug(requestedSlug, membership.organization(), project);
+            String slug = resolveSlug(requestedSlug, project.getName() != null && !project.getName().isBlank()
+                    ? project.getName() : membership.organization().getName());
             site = siteRepository.save(new Site(projectId, project.getOrganizationId(), slug));
         }
 
@@ -310,26 +349,41 @@ public class SitePublishService {
                 .toList();
     }
 
-    private String resolveSlug(String requested, Organization org, Project project) {
+    /** Ruang kerja tujuan publish: pilihan request, lalu ruang kerja terakhir, lalu ruang pribadi (tanpa membuat baru). */
+    private Optional<Organization> findTargetOrg(User user, UUID requestedOrgId) {
+        UUID userId = user.getId();
+        if (requestedOrgId != null) {
+            return Optional.of(access.require(requestedOrgId, userId, OrgAction.PUBLISH).organization());
+        }
+        if (user.getLastOrganizationId() != null) {
+            try {
+                return Optional.of(access.require(user.getLastOrganizationId(), userId, OrgAction.PUBLISH).organization());
+            } catch (ApiException ignored) {
+                // Tidak punya hak publish di ruang kerja terakhir: jatuh ke ruang pribadi.
+            }
+        }
+        return organizationRepository.findAllForUser(userId).stream()
+                .map(OrganizationRepository.OrganizationWithRole::getOrganization)
+                .filter(Organization::isPersonal)
+                .findFirst();
+    }
+
+    private String resolveSlug(String requested, String baseName) {
         if (requested != null && !requested.isBlank()) {
             String slug = requested.trim().toLowerCase(Locale.ROOT);
             validateSlug(slug);
             if (siteRepository.existsBySlug(slug)) {
-                throw new ApiException(ErrorCode.SLUG_TAKEN, "Nama subdomain sudah digunakan. Silakan pilih nama lain.");
+                throw new ApiException(ErrorCode.SLUG_TAKEN, "Nama website sudah dipakai. Pilih nama lain.");
             }
             return slug;
         }
 
-        // Generate otomatis dari nama project jika ada, atau nama singkat / nama organisasi
-        String baseName = project != null && project.getName() != null && !project.getName().isBlank()
-                ? project.getName()
-                : (org.getShortName() != null && !org.getShortName().isBlank() ? org.getShortName() : org.getName());
         String candidate = toSlug(baseName);
-        if (candidate.length() < 3) {
-            candidate = "site-" + candidate;
-        }
         if (candidate.length() > 35) {
-            candidate = candidate.substring(0, 35);
+            candidate = candidate.substring(0, 35).replaceAll("-+$", "");
+        }
+        if (candidate.length() < 3) {
+            candidate = candidate.isEmpty() ? "website" : "website-" + candidate;
         }
 
         String finalSlug = candidate;
@@ -342,13 +396,13 @@ public class SitePublishService {
 
     private void validateSlug(String slug) {
         if (slug.length() < 3 || slug.length() > 40) {
-            throw new ApiException(ErrorCode.SLUG_INVALID, "Panjang subdomain harus 3–40 karakter.");
+            throw new ApiException(ErrorCode.SLUG_INVALID, "Panjang nama website harus 3–40 karakter.");
         }
         if (!SLUG_PATTERN.matcher(slug).matches()) {
-            throw new ApiException(ErrorCode.SLUG_INVALID, "Subdomain hanya boleh berupa huruf kecil, angka, dan strip.");
+            throw new ApiException(ErrorCode.SLUG_INVALID, "Nama website hanya boleh huruf kecil, angka, dan strip (-).");
         }
         if (RESERVED_SLUGS.contains(slug)) {
-            throw new ApiException(ErrorCode.SLUG_RESERVED, "Nama subdomain ini dicadangkan oleh sistem.");
+            throw new ApiException(ErrorCode.SLUG_RESERVED, "Nama website ini dicadangkan oleh sistem.");
         }
     }
 
@@ -384,8 +438,12 @@ public class SitePublishService {
                 }
             }
         }
-        String url = properties.sites().urlOf(site.getSlug());
+        String customDomain = siteDomainRepository.findFirstBySiteIdAndStatus(site.getId(), "active")
+                .map(SiteDomain::getHostname).orElse(null);
+        String url = customDomain != null && !customDomain.isBlank()
+                ? "https://" + customDomain
+                : properties.sites().urlOf(site.getSlug());
         return new SiteResponse(site.getId(), site.getProjectId(), site.getSlug(), url, site.getStatus(),
-                version, site.getPublishedAt(), publishedByName, false, site.getSeoTitle(), site.getSeoDescription());
+                version, site.getPublishedAt(), publishedByName, false, site.getSeoTitle(), site.getSeoDescription(), customDomain);
     }
 }

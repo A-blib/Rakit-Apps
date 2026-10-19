@@ -12,6 +12,8 @@
 while true; do
   for serial in $(adb devices | awk 'NR > 1 && $2 == "device" { print $1 }'); do
     adb -s "$serial" reverse tcp:8080 tcp:8080 >/dev/null 2>&1
+    # 3001 = OrgSpace-Hosting: link website terbit (localhost:3001/{slug}) bisa dibuka di browser HP.
+    adb -s "$serial" reverse tcp:3001 tcp:3001 >/dev/null 2>&1
   done
   sleep 3
 done

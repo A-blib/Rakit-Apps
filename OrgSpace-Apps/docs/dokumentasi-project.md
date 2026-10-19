@@ -1675,6 +1675,29 @@ browser ke server Next.js; server yang memanggil backend. Bonusnya, browser tida
 jadi backend tidak perlu CORS. Refresh token backend sekali pakai, sehingga refresh dilakukan di satu tempat
 (`proxy.ts` + `lib/auth/refresh.ts`) dan refresh bersamaan untuk token yang sama dipakai bersama.
 
+## 33a. Revisi terbitkan website: alamat orgspace.app/{nama-website} (19 Oktober 2026)
+
+### Alur
+1. Di editor template, buka **Export → Publish Langsung**. Field **Nama website** langsung terisi saran dari nama project
+   (`GET /api/projects/publish-direct/slug?name=...`).
+2. Saat user mengetik, app menunggu 500 ms lalu mengecek nama itu ke server. Nama yang dipakai website lain, dicadangkan
+   (`admin`, `api`, ...), atau formatnya salah ditolak dengan alasannya. Tombol terbit nonaktif selama nama ditolak.
+3. `POST /api/projects/publish-direct` membangun rilis lalu mengembalikan `url = {SITES_HOSTING_URL}/{slug}`.
+4. OrgSpace-Hosting (`/[slug]`) membaca `GET /api/public/sites/render/{slug}` lalu menampilkan HTML template.
+
+### Keputusan Aris
+| Keputusan | Alasan |
+|---|---|
+| Alamat berbentuk path, bukan subdomain | Satu domain `orgspace.app` cukup satu sertifikat HTTPS; `{slug}.orgspace.app` tidak dipakai lagi |
+| Nama dipilih user, terkunci setelah terbit pertama | Link yang sudah dibagikan (QR, grup WA) tidak boleh putus |
+| Data contoh dihapus dari website asli | Berita "Pelantikan Pengurus" dan prestasi "Budi Santoso" dulu tampil di website sungguhan jika organisasi belum punya data |
+
+### Yang ikut diperbaiki
+- `resolve-domain` dulu memetakan host apa pun ke slug dari awalan host (`osis.sch.id` → slug `osis`). Sekarang hanya
+  domain kustom aktif yang dikenali.
+- Tanggal berita memakai tanggal terbit berita, bukan tanggal hari ini.
+- Judul halaman bawaan memakai nama website, bukan "Ruang Pribadi X — Website Resmi".
+
 ## 34. Glosarium
 
 | Istilah | Arti singkat |

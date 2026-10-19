@@ -15,9 +15,12 @@ import com.aris.templateapp.data.model.WebsiteDetail;
 import com.aris.templateapp.data.model.WebsitePage;
 import com.aris.templateapp.data.model.WebsiteQuery;
 import com.aris.templateapp.data.remote.api.WebsiteApi;
+import com.aris.templateapp.data.remote.dto.AddDomainRequestDto;
 import com.aris.templateapp.data.remote.dto.ConfirmNameRequestDto;
 import com.aris.templateapp.data.remote.dto.DirectPublishRequestDto;
 import com.aris.templateapp.data.remote.dto.DirectPublishResponseDto;
+import com.aris.templateapp.data.remote.dto.SlugCheckDto;
+import com.aris.templateapp.data.remote.dto.DomainResponseDto;
 import com.aris.templateapp.data.remote.dto.PublishRequestDto;
 import com.aris.templateapp.data.remote.dto.PublishRequestNoteDto;
 import com.aris.templateapp.data.remote.dto.WebsiteListDto;
@@ -140,6 +143,11 @@ public class WebsiteRepository {
         return execute(() -> api.publishDirect(request).execute(), dto -> dto);
     }
 
+    @WorkerThread
+    public Resource<SlugCheckDto> checkSlug(String name, String organizationId, String slug) {
+        return execute(() -> api.checkSlug(name, organizationId, slug).execute(), dto -> dto);
+    }
+
     /** Keluar akun: cache website akun lama tidak boleh terlihat akun berikutnya. */
     @WorkerThread
     public void clearCache() {
@@ -199,5 +207,60 @@ public class WebsiteRepository {
         List<WebsiteEntity> rows = new ArrayList<>();
         rows.add(WebsiteMapper.toEntity(detail.website, System.currentTimeMillis()));
         dao.upsert(rows);
+    }
+
+    @WorkerThread
+    public Resource<DomainResponseDto> getDomain(String projectId) {
+        try {
+            Response<DomainResponseDto> response = api.getDomain(projectId).execute();
+            if (response.code() == 204) {
+                return Resource.success(null);
+            }
+            if (!response.isSuccessful() || response.body() == null) {
+                return Resource.error(errorParser.parse(response));
+            }
+            return Resource.success(response.body());
+        } catch (IOException e) {
+            return Resource.error(errorParser.parse(e));
+        }
+    }
+
+    @WorkerThread
+    public Resource<DomainResponseDto> addDomain(String projectId, String hostname) {
+        try {
+            Response<DomainResponseDto> response = api.addDomain(projectId, new AddDomainRequestDto(hostname)).execute();
+            if (!response.isSuccessful() || response.body() == null) {
+                return Resource.error(errorParser.parse(response));
+            }
+            return Resource.success(response.body());
+        } catch (IOException e) {
+            return Resource.error(errorParser.parse(e));
+        }
+    }
+
+    @WorkerThread
+    public Resource<DomainResponseDto> verifyDomain(String projectId, String domainId, boolean bypassDns) {
+        try {
+            Response<DomainResponseDto> response = api.verifyDomain(projectId, domainId, bypassDns).execute();
+            if (!response.isSuccessful() || response.body() == null) {
+                return Resource.error(errorParser.parse(response));
+            }
+            return Resource.success(response.body());
+        } catch (IOException e) {
+            return Resource.error(errorParser.parse(e));
+        }
+    }
+
+    @WorkerThread
+    public Resource<Boolean> removeDomain(String projectId, String domainId) {
+        try {
+            Response<Void> response = api.removeDomain(projectId, domainId).execute();
+            if (!response.isSuccessful()) {
+                return Resource.error(errorParser.parse(response));
+            }
+            return Resource.success(true);
+        } catch (IOException e) {
+            return Resource.error(errorParser.parse(e));
+        }
     }
 }

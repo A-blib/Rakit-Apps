@@ -8,6 +8,7 @@ import com.aris.templateapp.site.dto.DirectPublishResponse;
 import com.aris.templateapp.site.dto.FormSubmissionResponse;
 import com.aris.templateapp.site.dto.PublishSiteRequest;
 import com.aris.templateapp.site.dto.SiteResponse;
+import com.aris.templateapp.site.dto.SlugCheckResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,7 +44,15 @@ public class SitePublishController {
         return publishService.publishDirect(currentUser.id(), request);
     }
 
-    @Operation(summary = "Terbitkan website ke subdomain publik")
+    @Operation(summary = "Cek atau sarankan nama website (slug) sebelum terbit langsung")
+    @GetMapping("/projects/publish-direct/slug")
+    public SlugCheckResponse checkSlug(@RequestParam String name,
+                                       @RequestParam(required = false) UUID organizationId,
+                                       @RequestParam(required = false) String slug) {
+        return publishService.checkSlug(currentUser.id(), name, organizationId, slug);
+    }
+
+    @Operation(summary = "Terbitkan website ke alamat publik orgspace.app/{slug}")
     @PostMapping("/projects/{projectId}/publish")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public BuildResponse publish(@PathVariable UUID projectId,

@@ -381,7 +381,7 @@ python3 tools/buat-zip-uji.py
 
 **Folder upload.** ZIP yang diupload provider, salinan bernomor (`work.zip`), thumbnail, dan paket template tayang (`package.zip`) disimpan di `backend/uploads/` (sudah di `.gitignore`). Ganti lokasinya dengan `UPLOAD_STORAGE_DIR` di `.env` jika perlu. Batas ukuran, daftar CDN, dan library yang diizinkan ada di `application.yml` bagian `app.upload`.
 
-**Alamat website.** Kartu website yang pernah terbit menampilkan alamat `http://{nama}.sites.localhost:8081` di laptop. Atur dengan `SITES_DOMAIN` dan `SITES_URL_SCHEME`; batas website beralamat per ruang kerja dengan `SITES_MAX_PER_ORG` / `SITES_MAX_PER_PERSONAL` (lihat `.env.example`).
+**Alamat website.** Website yang terbit tayang lewat OrgSpace-Hosting dengan alamat berbentuk path: `{SITES_HOSTING_URL}/{nama-website}`, mis. `http://localhost:3001/osis-smansa` di laptop dan `https://orgspace.app/osis-smansa` di server. Jalankan OrgSpace-Hosting (`cd ../OrgSpace-Hosting && npm run dev`) agar link bisa dibuka. Nama website dipilih user saat terbit pertama (saran otomatis dari nama project) lalu terkunci agar link yang sudah dibagikan tidak putus. Batas website beralamat per ruang kerja dengan `SITES_MAX_PER_ORG` / `SITES_MAX_PER_PERSONAL` (lihat `.env.example`).
 
 **Logo organisasi.** Logo yang diunggah diolah server (dipotong persegi, maks 512 px, PNG) lalu disimpan di `backend/data/org-logos/` (sudah di `.gitignore`). Atur dengan `ORG_LOGO_DIR`, `ORG_LOGO_MAX_KB`, `ORG_MAX_MEMBERS`, dan `ORG_INVITE_TTL_DAYS` di `.env` (lihat `.env.example`).
 
@@ -432,6 +432,7 @@ Nilai ini dibaca `app/build.gradle.kts` menjadi `BuildConfig.GOOGLE_WEB_CLIENT_I
 ```bash
 adb devices                       # pastikan HP berstatus "device"
 adb reverse tcp:8080 tcp:8080     # localhost:8080 di HP diteruskan ke backend di laptop
+adb reverse tcp:3001 tcp:3001     # localhost:3001 di HP = OrgSpace-Hosting, untuk membuka website yang terbit
 ```
 
 > **Wajib diulang** setiap kali HP dicabut-colok, HP restart, atau `adb` di-restart. Tanpa ini app menampilkan "Tidak ada koneksi".
