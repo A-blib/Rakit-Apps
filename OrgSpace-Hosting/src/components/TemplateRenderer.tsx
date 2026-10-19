@@ -101,6 +101,12 @@ export default function TemplateRenderer({ site }: TemplateRendererProps) {
     loginLinks.forEach((el) => {
       el.setAttribute("href", `/${site.slug}/admin`);
     });
+    // Contoh di dokumentasi provider memakai href="admin". Alamat website tidak berakhiran "/", jadi browser
+    // akan membukanya sebagai /admin; arahkan ke Portal Pengurus website ini.
+    root.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((el) => {
+      const href = (el.getAttribute("href") || "").trim().replace(/^\.\//, "").replace(/\/$/, "");
+      if (href === "admin") el.setAttribute("href", `/${site.slug}/admin`);
+    });
 
     const logoutBtns = root.querySelectorAll<HTMLElement>('[data-ws-auth="logout"]');
     logoutBtns.forEach((el) => {

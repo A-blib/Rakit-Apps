@@ -8,6 +8,7 @@ body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 .brand img { width: 36px; height: 36px; border-radius: 8px; }
 .nav { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-size: 14px; }
 .nav a { color: var(--text); text-decoration: none; }
+.nav a.btn-primary { color: #fff; }
 .btn { display: inline-block; padding: 10px 18px; border-radius: 8px; border: 0; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 14px; }
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-accent { background: var(--accent); color: #111; }

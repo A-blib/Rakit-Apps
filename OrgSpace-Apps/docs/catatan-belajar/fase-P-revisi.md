@@ -51,7 +51,8 @@
 - Di HP: template dipilih dari galeri, nama organisasi diubah, terbit ke `osis-uji-modul`; tamu tidak melihat tombol Keluar & catatan khusus pengurus; pengumuman tampil dari database.
 - Situs uji `osis-modul-api` (akun `pengurus-uji@orgspace.test`): login portal, token portal ditolak API app & website lain, tambah pengumuman/prestasi/agenda, form pendaftaran & aspirasi masuk Kotak Masuk, form terlalu panjang/nama aneh ditolak, tambah pengurus email tak terdaftar ditolak.
 - Di HP: prestasi & agenda tampil; foto/link `javascript:` dari data diabaikan; form pendaftaran dikirim dari Chrome HP dan masuk Kotak Masuk.
-- Belum diuji di HP: tampilan setelah pengurus login (nama di status, tombol Keluar, catatan `data-ws-role`).
+- Di HP (lanjutan): login Portal Pengurus `osis-modul-api` berhasil; tab Modul Kustom otomatis berisi field prestasi (foto, tingkat, judul, nama, tahun); prestasi baru dari portal langsung tampil di website tanpa terbit ulang; website setelah login menampilkan "Halo, Pengurus Uji", tombol Keluar, dan catatan `data-ws-role`; tombol Masuk tersembunyi; Keluar mengembalikan tampilan tamu.
+- Ditemukan & diperbaiki: link `href="admin"` di template membuka `/admin` (alamat website tidak berakhiran `/`); sekarang diarahkan ke `/{slug}/admin`.
 
 ## Konsep yang dipelajari
 - Satu domain untuk banyak website (path) berarti localStorage dipakai bersama: token yang disimpan di sana harus dibatasi untuk satu website saja.
