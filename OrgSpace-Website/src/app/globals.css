@@ -149,6 +149,13 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+  --color-rakit-navy: #070b14;
+  --color-rakit-surface: #0d1527;
+  --color-rakit-surface-elevated: #111c34;
+  --color-rakit-cyan: #00f2fe;
+  --color-rakit-cyan-light: #38bdf8;
+  --color-rakit-orange: #ff6b00;
+  --color-rakit-orange-glow: #ff7a00;
   --font-sans: var(--font-jakarta);
 
   /* Radius moderat */
@@ -157,7 +164,15 @@
   --radius-badge: 6px;
 }
 
+html {
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
 body {
+  max-width: 100vw;
+  overflow-x: clip;
+  position: relative;
   background: var(--background);
   color: var(--foreground);
 }
@@ -176,19 +191,6 @@ body {
 
 .animate-fade-in {
   animation: enterFade 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .animate-fade-in {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
 }
 
 /*
@@ -219,7 +221,7 @@ body {
 
 /* Container dengan border tipis dan shadow sangat ringan */
 @utility card {
-  @apply rounded-card border border-border bg-surface p-5;
+  @apply rounded-card border border-border bg-surface p-5 shadow-xs;
   box-shadow: var(--shadow-subtle);
 }
 
@@ -227,7 +229,7 @@ body {
   @apply card hover:border-border-strong transition-colors duration-150;
 }
 
-/* Card Frosted Glass Cyberpunk/Futuristic untuk Login */
+/* Card Frosted Glass Cyberpunk/Futuristic untuk Login & Hero */
 @utility card-glass {
   background: rgba(9, 27, 48, 0.78);
   backdrop-filter: blur(20px);
@@ -236,9 +238,17 @@ body {
   box-shadow: 0 0 40px -5px rgba(0, 201, 242, 0.22), 0 25px 50px -12px rgba(0, 0, 0, 0.75);
 }
 
+@utility card-glass-interactive {
+  @apply card-glass hover:border-rakit-cyan/50 hover:bg-white/[0.08] transition-all duration-300;
+}
+
 /* Input form dengan perubahan border halus saat fokus */
 @utility input {
   @apply h-10 w-full rounded-field border border-border bg-surface px-3 text-xs text-foreground placeholder:text-muted/60 outline-none transition-colors duration-150 focus:border-cyan focus:ring-2 focus:ring-cyan/25;
+}
+
+@utility input-glass {
+  @apply h-12 w-full rounded-field border border-white/15 bg-white/5 px-4 text-sm text-white placeholder:text-muted focus:border-rakit-cyan focus:outline-hidden focus:ring-2 focus:ring-rakit-cyan/20 backdrop-blur-xs;
 }
 
 /* Input cyber transparan dengan border pendar cyan */
@@ -262,6 +272,18 @@ body {
 /* Badge status yang natural */
 @utility badge {
   @apply inline-flex items-center gap-1 rounded-badge bg-primary-container px-2 py-0.5 text-[11px] font-semibold text-on-primary-container;
+}
+
+@utility badge-primary {
+  @apply badge bg-primary-container text-on-primary-container;
+}
+
+@utility badge-cyan {
+  @apply badge border border-rakit-cyan/30 bg-rakit-cyan/10 text-rakit-cyan;
+}
+
+@utility badge-orange {
+  @apply badge border border-rakit-orange/30 bg-rakit-orange/10 text-rakit-orange;
 }
 
 @utility badge-neutral {
@@ -296,5 +318,131 @@ body {
   }
   & tbody tr {
     @apply transition-colors duration-150 hover:bg-surface-subtle/50;
+  }
+}
+
+/* Utilitas Estetika Lanjutan */
+@utility gradient-rakit-text {
+  @apply bg-gradient-to-r from-rakit-cyan via-white to-rakit-orange bg-clip-text text-transparent;
+}
+
+@utility btn-orange-glow {
+  @apply inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-rakit-orange to-rakit-orange-glow px-6 text-sm font-bold text-white shadow-[0_0_25px_rgba(255,107,0,0.4)] hover:shadow-[0_0_35px_rgba(255,107,0,0.6)] hover:scale-[1.02] active:scale-95 transition-all;
+}
+
+@utility btn-glass-outline {
+  @apply inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 text-sm font-semibold text-white backdrop-blur-md hover:bg-white/10 hover:border-white/40 transition-all active:scale-95;
+}
+
+/* Animasi pulse lambat untuk radial ambient mesh */
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(1.08); }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 6s ease-in-out infinite;
+}
+
+/* =========================================================================
+   ANIMASI HERO SECTION — BERTAHAP & ELEGAN (CHOREOGRAPHED STAGED ENTRANCE)
+   ========================================================================= */
+
+/* 2. Fade In Up Halus & Anggun (Durasi 0.95s dengan dekelerasi sutra) */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Fade In Scale untuk visual mockup workspace */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* 4. Floating Animation Workspace (Naik-turun sangat halus & kontinu) */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+.animate-float {
+  animation: floatSlow 5.5s ease-in-out infinite;
+}
+
+/* 5. Subtle Wobble / Micro-Rotation Sticky Notes on Hover */
+@keyframes wobbleNote {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-5deg) scale(1.05) translateY(-2px); }
+  50% { transform: rotate(4deg) scale(1.05) translateY(-2px); }
+  75% { transform: rotate(-2deg) scale(1.02); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+.animate-wobble-hover:hover {
+  animation: wobbleNote 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 3. Tombol CTA Specular Sheen Effect */
+@keyframes buttonSheen {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  40%, 100% { transform: translateX(250%) skewX(-20deg); }
+}
+
+.animate-sheen {
+  animation: buttonSheen 4.5s ease-in-out infinite;
+}
+
+/* Jeda Sekuensial Bertahap (Staggered Delays Teratur Agar Mata Tidak Kewalahan) */
+.anim-delay-150  { animation-delay: 150ms; }
+.anim-delay-450  { animation-delay: 450ms; }
+.anim-delay-550  { animation-delay: 550ms; }
+.anim-delay-750  { animation-delay: 750ms; }
+.anim-delay-1050 { animation-delay: 1050ms; }
+.anim-delay-1350 { animation-delay: 1350ms; }
+.anim-delay-1650 { animation-delay: 1650ms; }
+.anim-delay-1950 { animation-delay: 1950ms; }
+
+/* Aksesibilitas: Hormati preferensi pengguna tanpa animasi */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .animate-fade-in-up,
+  .animate-fade-in-scale,
+  .animate-float,
+  .animate-pulse-glow,
+  .animate-wobble-hover,
+  .animate-sheen,
+  .animate-fade-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

@@ -11,7 +11,7 @@ export default async function DocsLayout({ children }: LayoutProps<"/docs">) {
     return <div className="mx-auto max-w-6xl px-4 py-10"><ErrorBox error={error} /></div>;
   }
   return (
-    <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-[240px_1fr]">
+    <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-20 pb-10 md:grid-cols-[240px_1fr]">
       <aside>
         <nav aria-label="Menu dokumentasi" className="space-y-6 text-sm">
           {tree.categories.map((category) => (
