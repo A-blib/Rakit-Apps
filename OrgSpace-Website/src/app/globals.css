@@ -1,54 +1,92 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
- * TOKEN DESAIN OrgSpace — Clean Enterprise / Modern Corporate
- * Warna identitas:
- * - Navy: #0C2E5B
- * - Deep Navy: #07152B
- * - Blue: #009FE3
- * - Cyan: #00C9F2
- * - Orange: #FF914D
- * - Background terang alternatif: #F5F7FA
- * - Border: #DCE3EC
- * - Teks utama: #172B4D
- * - Teks sekunder: #66758A
+ * Pengendalian Logo & Ikon Tema Presisi (Bebas FOUC & Hydration Mismatch):
+ * - Mode Terang (html.light / default): logo-light tampil kontras dengan teks biru korporat; logo-dark disembunyikan.
+ * - Mode Gelap (html.dark): logo-dark tampil kontras dengan teks putih bersih; logo-light disembunyikan.
  */
-:root {
-  --background: #F5F7FA;
+.logo-dark,
+.theme-icon-dark {
+  display: none !important;
+}
+
+.logo-light,
+.theme-icon-light {
+  display: block !important;
+}
+
+html.dark .logo-dark,
+html.dark .theme-icon-dark {
+  display: block !important;
+}
+
+html.dark .logo-light,
+html.dark .theme-icon-light {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not(.light) .logo-dark,
+  html:not(.light) .theme-icon-dark {
+    display: block !important;
+  }
+
+  html:not(.light) .logo-light,
+  html:not(.light) .theme-icon-light {
+    display: none !important;
+  }
+}
+
+/*
+ * TOKEN DESAIN OrgSpace — Clean Minimalist SaaS
+ * Dioptimalkan untuk kenyamanan mata (anti-glare / eye comfort) dan performa tinggi di semua perangkat:
+ * - Light mode: palet slate lembut (Slate-50 / Slate-900), kontras seimbang tanpa silau.
+ * - Dark mode: obsidian navy (#07152B / #0C2E5B) dengan aksen pendaran cyan.
+ * - Aksesibilitas WCAG: kontras teks dan tombol teruji memenuhi standar >= 4.5:1.
+ */
+:root,
+:root.light,
+[data-theme="light"] {
+  /* Background lembut anti-silau */
+  --background: #F8FAFC;
   --surface: #FFFFFF;
-  --surface-subtle: #EDF2F7;
-  --surface-hover: #E3EAF2;
-  --foreground: #172B4D;
-  --muted: #66758A;
-  --border: #DCE3EC;
-  --border-strong: #B3C2D8;
+  --surface-subtle: #F1F5F9;
+  --surface-hover: #E2E8F0;
+
+  /* Tipografi lembut dan jelas, tidak tajam/menusuk mata */
+  --foreground: #0F172A;
+  --muted: #64748B;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
 
   --navy: #0C2E5B;
   --deep-navy: #07152B;
-  --blue: #009FE3;
+  --blue: #0284C7;
   --cyan: #00C9F2;
-  --orange: #FF914D;
+  --orange: #EA580C;
 
-  /* Cyan untuk tombol utama, tautan aktif, dan fokus input */
-  --primary: #00C9F2;
-  --on-primary: #07152B;
-  --primary-hover: #00B5DC;
-  --primary-container: #E2F8FD;
-  --on-primary-container: #0C2E5B;
+  /* Primary di Light Mode: Sky-600 yang teduh dan berkontras tinggi (4.8:1) */
+  --primary: #0284C7;
+  --on-primary: #FFFFFF;
+  --primary-hover: #0369A1;
+  --primary-container: #E0F2FE;
+  --on-primary-container: #0369A1;
 
-  /* Orange hanya sebagai aksen kecil yang konsisten dengan logo */
-  --accent: #FF914D;
+  /* Aksen oranye natural */
+  --accent: #EA580C;
   --on-accent: #FFFFFF;
 
-  --link: #009FE3;
-  --link-hover: #0C2E5B;
+  --link: #0284C7;
+  --link-hover: #0369A1;
 
-  --success: #12805C;
+  --success: #059669;
   --warning: #D97706;
   --error: #DC2626;
 
-  /* Shadow sangat ringan */
-  --shadow-subtle: 0 1px 2px 0 rgba(12, 46, 91, 0.04);
+  /* Shadow sangat ringan & efisien komputasi */
+  --shadow-subtle: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -57,16 +95,16 @@
     --surface: #0C2E5B;
     --surface-subtle: #102C52;
     --surface-hover: #153763;
-    --foreground: #F5F7FA;
+    --foreground: #F8FAFC;
     --muted: #94A3B8;
     --border: #1E3E6B;
     --border-strong: #2D568D;
 
     --navy: #0C2E5B;
     --deep-navy: #07152B;
-    --blue: #009FE3;
+    --blue: #38BDF8;
     --cyan: #00C9F2;
-    --orange: #FF914D;
+    --orange: #FB923C;
 
     --primary: #00C9F2;
     --on-primary: #07152B;
@@ -74,17 +112,17 @@
     --primary-container: #0E3661;
     --on-primary-container: #E2F8FD;
 
-    --accent: #FF914D;
+    --accent: #FB923C;
     --on-accent: #07152B;
 
-    --link: #00C9F2;
+    --link: #38BDF8;
     --link-hover: #FFFFFF;
 
     --success: #34D399;
     --warning: #FBBF24;
     --error: #F87171;
 
-    --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+    --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
   }
 }
 
@@ -94,16 +132,16 @@
   --surface: #0C2E5B;
   --surface-subtle: #102C52;
   --surface-hover: #153763;
-  --foreground: #F5F7FA;
+  --foreground: #F8FAFC;
   --muted: #94A3B8;
   --border: #1E3E6B;
   --border-strong: #2D568D;
 
   --navy: #0C2E5B;
   --deep-navy: #07152B;
-  --blue: #009FE3;
+  --blue: #38BDF8;
   --cyan: #00C9F2;
-  --orange: #FF914D;
+  --orange: #FB923C;
 
   --primary: #00C9F2;
   --on-primary: #07152B;
@@ -111,17 +149,17 @@
   --primary-container: #0E3661;
   --on-primary-container: #E2F8FD;
 
-  --accent: #FF914D;
+  --accent: #FB923C;
   --on-accent: #07152B;
 
-  --link: #00C9F2;
+  --link: #38BDF8;
   --link-hover: #FFFFFF;
 
   --success: #34D399;
   --warning: #FBBF24;
   --error: #F87171;
 
-  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
+  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
 }
 
 @theme inline {
@@ -151,22 +189,35 @@
   --color-error: var(--error);
   --font-sans: var(--font-jakarta);
 
-  /* Radius moderat */
+  /* Radius modern & proporsional */
   --radius-field: 8px;
   --radius-card: 10px;
   --radius-badge: 6px;
 }
 
+/*
+ * PENGHALUSAN FONT GLOBAL
+ * Menghilangkan ketajaman pixel pada layar Windows / mobile agar teks sangat nyaman dibaca.
+ */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Animasi mikro singkat 150–250 ms */
+/* Animasi mikro singkat 150 ms untuk performa responsif */
 @keyframes enterFade {
   from {
     opacity: 0;
-    transform: translateY(3px);
+    transform: translateY(2px);
   }
   to {
     opacity: 1;
@@ -175,7 +226,7 @@ body {
 }
 
 .animate-fade-in {
-  animation: enterFade 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: enterFade 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -192,63 +243,63 @@ body {
 }
 
 /*
- * Komponen utilitas Clean Enterprise
+ * Komponen utilitas ringan & performan (ringan untuk CPU/GPU semua perangkat)
  */
 @utility btn {
   @apply inline-flex h-10 items-center justify-center gap-2 rounded-field px-4 text-xs font-semibold tracking-wide transition-colors duration-150 cursor-pointer select-none disabled:opacity-50 disabled:pointer-events-none;
 }
 
-/* Tombol utama dengan Cyan #00C9F2 */
+/* Tombol utama dengan kontras nyaman */
 @utility btn-primary {
-  @apply btn bg-cyan text-deep-navy hover:bg-[#00B7DE] active:bg-[#009FE3] active:text-white shadow-2xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan;
+  @apply btn bg-primary text-on-primary hover:bg-primary-hover shadow-2xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
 }
 
-/* Tombol aksi sekunder / otoritas Navy */
+/* Tombol sekunder Navy */
 @utility btn-navy {
-  @apply btn bg-navy text-white hover:bg-deep-navy active:brightness-95 shadow-2xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy;
+  @apply btn bg-navy text-white hover:bg-deep-navy shadow-2xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy;
 }
 
 /* Tombol outlined */
 @utility btn-outline {
-  @apply btn border border-border bg-surface text-foreground hover:bg-surface-subtle hover:border-border-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan;
+  @apply btn border border-border bg-surface text-foreground hover:bg-surface-subtle hover:border-border-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
 }
 
 @utility btn-ghost {
   @apply btn text-muted hover:text-foreground hover:bg-surface-subtle;
 }
 
-/* Container dengan border tipis dan shadow sangat ringan */
+/* Card berbobot ringan tanpa box-shadow berat */
 @utility card {
-  @apply rounded-card border border-border bg-surface p-5;
+  @apply rounded-card border border-border bg-surface p-5 transition-colors duration-150;
   box-shadow: var(--shadow-subtle);
 }
 
 @utility card-hover {
-  @apply card hover:border-border-strong transition-colors duration-150;
+  @apply card hover:border-border-strong;
 }
 
-/* Card Frosted Glass Cyberpunk/Futuristic untuk Login */
+/* Card Frosted Glass untuk Login */
 @utility card-glass {
-  background: rgba(11, 24, 43, 0.7);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  border: 1.5px solid rgba(56, 189, 248, 0.55);
-  box-shadow: 0 0 35px -5px rgba(0, 201, 242, 0.28), 0 25px 60px -15px rgba(0, 0, 0, 0.85);
+  background: rgba(11, 24, 43, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
 }
 
-/* Input form dengan perubahan border halus saat fokus */
+/* Input form ramah mata */
 @utility input {
-  @apply h-10 w-full rounded-field border border-border bg-surface px-3 text-xs text-foreground placeholder:text-muted/60 outline-none transition-colors duration-150 focus:border-cyan focus:ring-2 focus:ring-cyan/25;
+  @apply h-10 w-full rounded-field border border-border bg-surface px-3 text-xs text-foreground placeholder:text-muted/60 outline-none transition-colors duration-150 focus:border-primary focus:ring-1 focus:ring-primary/20;
 }
 
-/* Input cyber transparan dengan border pendar cyan */
+/* Input cyber untuk login */
 @utility input-cyber {
-  @apply h-12 w-full rounded-xl border border-slate-600/50 bg-[#12233b]/75 px-4 text-sm text-white placeholder:text-slate-400/80 transition-all duration-150 focus:border-cyan focus:bg-[#152a47] focus:ring-2 focus:ring-cyan/30 focus:outline-none;
+  @apply h-12 w-full rounded-xl border border-slate-600/50 bg-[#12233b]/80 px-4 text-sm text-white placeholder:text-slate-400/80 transition-colors duration-150 focus:border-cyan focus:bg-[#152a47] focus:ring-2 focus:ring-cyan/30 focus:outline-none;
 }
 
-/* Tombol cyber neon cyan berpendar */
+/* Tombol cyber neon */
 @utility btn-cyber {
-  @apply inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00f0ff] via-[#00c8ff] to-[#0088ff] px-4 text-sm font-bold tracking-wide text-[#041021] shadow-[0_0_28px_rgba(0,210,255,0.65)] transition-all duration-200 hover:shadow-[0_0_38px_rgba(0,210,255,0.85)] hover:brightness-105 active:scale-[0.99] cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
+  @apply inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00f0ff] via-[#00c8ff] to-[#0088ff] px-4 text-sm font-bold tracking-wide text-[#041021] shadow-[0_0_20px_rgba(0,210,255,0.45)] transition-all duration-150 hover:brightness-105 active:scale-[0.99] cursor-pointer disabled:opacity-50 disabled:pointer-events-none;
 }
 
 @utility textarea {
@@ -259,7 +310,7 @@ body {
   @apply mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted;
 }
 
-/* Badge status yang natural */
+/* Badges */
 @utility badge {
   @apply inline-flex items-center gap-1 rounded-badge bg-primary-container px-2 py-0.5 text-[11px] font-semibold text-on-primary-container;
 }
@@ -281,20 +332,48 @@ body {
 }
 
 @utility link {
-  @apply text-blue font-medium hover:text-navy hover:underline dark:hover:text-cyan transition-colors duration-150;
+  @apply text-blue font-medium hover:underline transition-colors duration-150;
 }
 
-/* Tabel data bersih tanpa card redundant */
+/* Tabel data */
 @utility table {
   @apply w-full text-left text-xs;
 
   & th {
-    @apply border-b border-border bg-surface-subtle/60 px-3.5 py-2.5 font-semibold text-muted tracking-wider uppercase text-[11px];
+    @apply border-b border-border bg-surface-subtle/70 px-3.5 py-2.5 font-semibold text-muted tracking-wider uppercase text-[11px];
   }
   & td {
     @apply border-b border-border/70 px-3.5 py-3 align-middle text-foreground;
   }
   & tbody tr {
     @apply transition-colors duration-150 hover:bg-surface-subtle/50;
+  }
+}
+
+/*
+ * Optimasi Cetak & Ekspor PDF Laporan Operasional
+ */
+@media print {
+  @page {
+    margin: 1.5cm;
+    size: A4 portrait;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    font-size: 11pt;
+  }
+
+  .card {
+    border: 1px solid #CBD5E1 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  figure, section {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

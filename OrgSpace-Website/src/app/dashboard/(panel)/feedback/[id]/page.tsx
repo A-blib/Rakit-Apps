@@ -21,11 +21,16 @@ export default async function FeedbackDetailPage({ params }: PageProps<"/dashboa
     if (error instanceof ApiError && error.code === "FEEDBACK_NOT_FOUND") notFound();
     throw error;
   }
+
   return (
-    <div className="max-w-3xl space-y-6">
-      <Link href="/dashboard/feedback" className="inline-flex items-center gap-1.5 text-xs font-medium text-muted hover:text-navy transition-colors">
+    <div className="max-w-3xl space-y-6 mx-auto">
+      <Link
+        href="/dashboard/feedback"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-muted hover:text-foreground transition-colors duration-150"
+      >
         ← Kembali ke Kritik & saran
       </Link>
+
       <header className="border-b border-border/80 pb-4">
         <div className="flex items-center gap-2 flex-wrap mb-2">
           <span className="badge-neutral text-[10px]">
@@ -40,7 +45,7 @@ export default async function FeedbackDetailPage({ params }: PageProps<"/dashboa
             </span>
           )}
         </div>
-        <h1 className="text-xl font-bold tracking-tight text-navy dark:text-foreground sm:text-2xl">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           {feedback.subject}
         </h1>
         <p className="mt-1 text-xs text-muted">
@@ -67,17 +72,17 @@ export default async function FeedbackDetailPage({ params }: PageProps<"/dashboa
         {feedback.messages.map((message) => (
           <li
             key={message.id}
-            className={`card p-4 ${
+            className={`card p-4 transition-colors duration-150 ${
               message.fromStaff
-                ? "ml-6 border-cyan/40 bg-surface-subtle"
+                ? "ml-6 border-primary/30 bg-primary-container/15"
                 : "mr-6 bg-surface"
             }`}
           >
             <div className="flex items-center justify-between border-b border-border/60 pb-2 mb-2">
               <p className="text-xs font-semibold text-foreground">
                 {message.fromStaff ? (
-                  <span className="inline-flex items-center gap-1.5 text-navy dark:text-cyan">
-                    <span className="size-1.5 rounded-full bg-cyan" />
+                  <span className="inline-flex items-center gap-1.5 text-primary dark:text-cyan">
+                    <span className="size-1.5 rounded-full bg-primary dark:bg-cyan" />
                     {message.authorName} (Tim Internal)
                   </span>
                 ) : (
@@ -94,7 +99,7 @@ export default async function FeedbackDetailPage({ params }: PageProps<"/dashboa
       </ol>
 
       {feedback.status === "closed" ? (
-        <div className="rounded-field border border-border bg-surface-subtle p-3.5 text-center text-xs text-muted">
+        <div className="rounded-lg border border-border bg-surface-subtle p-3.5 text-center text-xs text-muted">
           Percakapan ditutup. Ubah status untuk membalas kembali.
         </div>
       ) : (

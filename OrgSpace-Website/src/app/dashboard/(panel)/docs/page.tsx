@@ -10,15 +10,15 @@ export default async function AdminDocsPage() {
   const docs = await adminApi.docs(await adminToken());
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight text-navy dark:text-foreground sm:text-2xl">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Pusat Dokumentasi & Panduan
             </h1>
-            <span className="rounded-badge bg-primary-container px-2 py-0.5 text-xs font-bold font-mono text-on-primary-container">
+            <span className="rounded-md bg-surface-subtle border border-border px-2 py-0.5 text-xs font-bold font-mono text-muted">
               {docs.length}
             </span>
           </div>
@@ -27,7 +27,10 @@ export default async function AdminDocsPage() {
           </p>
         </div>
 
-        <Link href="/dashboard/docs/new" className="btn-primary h-9.5 px-4 text-xs font-semibold inline-flex items-center gap-1.5 self-start sm:self-auto">
+        <Link
+          href="/dashboard/docs/new"
+          className="btn-primary h-9.5 px-4 text-xs font-semibold inline-flex items-center gap-1.5 self-start sm:self-auto"
+        >
           <svg className="size-3.5" viewBox="0 0 20 20" fill="currentColor">
             <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
           </svg>
@@ -61,12 +64,12 @@ export default async function AdminDocsPage() {
                     <td>
                       <div>
                         <Link
-                          className="font-medium text-xs text-foreground hover:text-primary transition-colors"
                           href={`/dashboard/docs/${doc.id}`}
+                          className="font-semibold text-xs text-foreground hover:text-primary transition-colors duration-150"
                         >
                           {doc.title}
                         </Link>
-                        <p className="font-mono text-[11px] text-muted mt-0.5">/docs/{doc.slug}</p>
+                        <p className="text-[11px] font-mono text-muted mt-0.5">/docs/{doc.slug}</p>
                       </div>
                     </td>
                     <td>
@@ -74,13 +77,19 @@ export default async function AdminDocsPage() {
                         {DOC_CATEGORY_LABEL[doc.category] ?? doc.category}
                       </span>
                     </td>
-                    <td className="text-center font-mono text-xs text-muted">{doc.sortOrder}</td>
+                    <td className="text-center font-mono text-xs text-muted">
+                      {doc.sortOrder}
+                    </td>
                     <td>
-                      {doc.status === "published" ? (
-                        <span className="badge-success text-[10px]">Tayang</span>
-                      ) : (
-                        <span className="badge-neutral text-[10px]">Draft</span>
-                      )}
+                      <span
+                        className={
+                          doc.status === "published"
+                            ? "badge-success text-[10px]"
+                            : "badge-neutral text-[10px]"
+                        }
+                      >
+                        {doc.status === "published" ? "Tayang" : "Draf"}
+                      </span>
                     </td>
                     <td className="whitespace-nowrap text-xs text-muted font-mono">
                       {formatDateTime(doc.updatedAt)}

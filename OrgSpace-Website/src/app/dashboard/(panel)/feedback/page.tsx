@@ -61,20 +61,17 @@ export default async function FeedbackPage({ searchParams }: PageProps<"/dashboa
   };
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-navy dark:text-foreground sm:text-2xl">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Kritik & Saran Pengguna
           </h1>
-          <p className="mt-1 text-xs text-muted">
-            Saluran umpan balik pengguna aplikasi dan laporan bug langsung dari platform.
-          </p>
         </div>
 
         {counts.unread > 0 && (
-          <div className="inline-flex items-center gap-1.5 rounded-field border border-primary/30 bg-primary-container px-3 py-1.5 text-xs font-semibold text-on-primary-container">
+          <div className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary-container px-3 py-1.5 text-xs font-semibold text-on-primary-container">
             <span className="size-2 rounded-full bg-primary" />
             <span>{counts.unread} pesan belum dibaca tim</span>
           </div>
@@ -89,15 +86,15 @@ export default async function FeedbackPage({ searchParams }: PageProps<"/dashboa
             <Link
               key={tab.label}
               href={href({ status: tab.value, page: undefined })}
-              className={`inline-flex items-center gap-1.5 rounded-field px-3 py-1.5 text-xs font-medium transition-all ${
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors duration-150 ${
                 isActive
-                  ? "bg-navy text-white shadow-xs dark:bg-cyan dark:text-navy font-semibold"
-                  : "bg-surface text-muted hover:bg-surface-subtle hover:text-foreground border border-border"
+                  ? "bg-surface font-semibold text-foreground border border-border dark:border-border"
+                  : "bg-surface-subtle text-muted hover:bg-surface-hover hover:text-foreground border border-transparent"
               }`}
             >
               <span>{tab.label}</span>
-              <span className={`rounded-full px-1.5 text-[10px] font-mono ${
-                isActive ? "bg-white/20 text-white dark:bg-navy/20 dark:text-navy" : "bg-surface-subtle text-muted"
+              <span className={`rounded-md px-1.5 py-0.2 text-[10px] font-mono ${
+                isActive ? "bg-surface-subtle text-foreground" : "bg-surface text-muted border border-border/60"
               }`}>
                 {tab.count}
               </span>
@@ -175,7 +172,7 @@ export default async function FeedbackPage({ searchParams }: PageProps<"/dashboa
                         )}
                         <Link
                           href={`/dashboard/feedback/${item.id}`}
-                          className="font-medium text-xs text-foreground hover:text-primary transition-colors"
+                          className="font-medium text-xs text-foreground hover:text-primary transition-colors duration-150"
                         >
                           {item.subject}
                         </Link>
