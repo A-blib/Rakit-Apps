@@ -401,9 +401,23 @@ export default async function LandingPage() {
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-12">
-            {/* Kolom Kiri: Teks & 6 Poin Masalah (Persis Gambar Referensi) */}
-            <div className="lg:col-span-6 text-left z-10 min-w-0">
+          <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12">
+            {/* Kolom Kiri: Visual Orang Tertekan dengan Laptop & Sticky Notes (Hampir Full Section) */}
+            <div className="lg:col-span-7 relative flex justify-center lg:justify-start items-center">
+              <div className="relative w-full max-w-2xl lg:max-w-none transition-transform duration-500 hover:scale-[1.01] flex justify-center">
+                <Image
+                  src="/images/problem-illustration-clean.png"
+                  alt="Ilustrasi kesulitan dan kebingungan mengelola website sendiri"
+                  width={1602}
+                  height={1536}
+                  className="w-full h-auto object-contain select-none drop-shadow-md rounded-2xl lg:rounded-3xl"
+                  priority={false}
+                />
+              </div>
+            </div>
+
+            {/* Kolom Kanan: Teks & 6 Poin Masalah (Persis Gambar Referensi) */}
+            <div className="lg:col-span-5 text-left z-10 min-w-0">
               <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-[44px] lg:text-[48px] font-black tracking-tight text-[#0B1E36] leading-[1.18] sm:leading-[1.12]">
                 Masih ribet kelola<br />
                 website sendiri?
@@ -506,19 +520,7 @@ export default async function LandingPage() {
               </div>
             </div>
 
-            {/* Kolom Kanan: Visual Orang Tertekan dengan Laptop & Sticky Notes */}
-            <div className="lg:col-span-6 relative flex justify-center lg:justify-end items-center">
-              <div className="relative w-full max-w-lg lg:max-w-xl transition-transform duration-500 hover:scale-[1.02]">
-                <Image
-                  src="/images/problem-illustration-clean.png"
-                  alt="Ilustrasi kesulitan dan kebingungan mengelola website sendiri"
-                  width={1532}
-                  height={1536}
-                  className="w-full h-auto object-contain select-none drop-shadow-sm"
-                  priority={false}
-                />
-              </div>
-            </div>
+
           </div>
         </div>
       </section>
