@@ -8,50 +8,75 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} className="space-y-5">
+      {/* Pesan Kesalahan */}
+      {state.error && (
+        <div
+          role="alert"
+          className="flex items-start gap-2.5 rounded-lg border border-rose-400/40 bg-rose-50 p-3 text-xs text-rose-800 backdrop-blur-sm dark:border-rose-500/30 dark:bg-rose-950/50 dark:text-rose-200"
+        >
+          <svg className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span className="leading-relaxed font-medium">{state.error}</span>
+        </div>
+      )}
+
       {/* Email Field */}
       <div>
-        <label
-          className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-300"
-          htmlFor="email"
-        >
-          EMAIL ADMIN
+        <label htmlFor="email" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+          Email Admin
         </label>
         <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
           <input
-            className="input-cyber pr-10"
+            type="email"
             id="email"
             name="email"
-            type="email"
             autoComplete="username"
+            className="block w-full pl-10 pr-3 py-2.5 bg-white/70 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors sm:text-sm"
             placeholder="nama@organisasi.id"
             required
             autoFocus
           />
-          <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-slate-400">
-            <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
-              <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
-            </svg>
-          </span>
         </div>
       </div>
 
       {/* Password Field */}
       <div>
-        <label
-          className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-300"
-          htmlFor="password"
-        >
-          PASSWORD
+        <label htmlFor="password" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+          Password
         </label>
         <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.5"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          </div>
           <input
-            className="input-cyber pr-10"
+            type={showPassword ? "text" : "password"}
             id="password"
             name="password"
-            type={showPassword ? "text" : "password"}
             autoComplete="current-password"
+            className="block w-full pl-10 pr-10 py-2.5 bg-white/70 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors sm:text-sm"
             placeholder="••••••••"
             required
           />
@@ -59,25 +84,25 @@ export function LoginForm() {
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
             aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-            className="absolute inset-y-0 right-1 flex items-center px-2.5 text-slate-400 hover:text-cyan transition-colors cursor-pointer"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 cursor-pointer hover:text-slate-700 dark:hover:text-white transition-colors"
           >
             {showPassword ? (
-              // Eye Slash Icon
-              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
-                  fillRule="evenodd"
-                  d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.692 1.69a2.5 2.5 0 013.178 3.179l1.63 1.629a4.5 4.5 0 00-6.5-6.5zm-3.23 2.193A11.472 11.472 0 001.664 10.59a1.652 1.652 0 000 1.185A10.004 10.004 0 0010 17a9.958 9.958 0 004.288-.971l-1.536-1.536a8.46 8.46 0 01-2.752.507 8.5 8.5 0 01-7.072-4.41 8.51 8.51 0 011.83-2.348l-1.236-1.237z"
-                  clipRule="evenodd"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"
                 />
               </svg>
             ) : (
-              // Eye Icon
-              <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path
-                  fillRule="evenodd"
-                  d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                  clipRule="evenodd"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                 />
               </svg>
             )}
@@ -85,48 +110,34 @@ export function LoginForm() {
         </div>
       </div>
 
-      {/* Error Message */}
-      {state.error && (
-        <div
-          role="alert"
-          className="flex items-start gap-2.5 rounded-xl border border-rose-500/40 bg-rose-950/60 p-3 text-xs text-rose-200 backdrop-blur-md"
-        >
-          <svg className="mt-0.5 size-4 shrink-0 text-rose-400" viewBox="0 0 20 20" fill="currentColor">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="leading-relaxed">{state.error}</span>
-        </div>
-      )}
-
       {/* Submit Button */}
-      <button
-        type="submit"
-        className="btn-cyber mt-2"
-        disabled={pending}
-      >
-        {pending ? (
-          <>
-            <svg className="size-4 animate-spin text-deep-navy" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-            <span>Memverifikasi...</span>
-          </>
-        ) : (
-          <span>Masuk ke Dashboard</span>
-        )}
-      </button>
+      <div className="pt-2">
+        <button
+          type="submit"
+          disabled={pending}
+          className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-lg shadow-lg shadow-cyan-500/30 dark:shadow-cyan-500/20 text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 dark:hover:bg-cyan-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 focus:ring-cyan-500 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+        >
+          {pending ? (
+            <>
+              <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              <span>Memverifikasi...</span>
+            </>
+          ) : (
+            <span>Masuk ke Dashboard</span>
+          )}
+        </button>
+      </div>
 
-      {/* Development Account Hint */}
-      <div className="pt-3 border-t border-slate-700/60 text-[11px] text-slate-300 leading-relaxed">
-        <span className="font-semibold text-slate-300">Akun default:</span>{" "}
-        <span className="text-cyan font-mono">admin@admin.com</span>
-        {" / "}
-        <span className="text-cyan font-mono">admin123</span>
+      {/* Footer Info */}
+      <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 text-xs flex justify-between items-center text-slate-500 dark:text-slate-400">
+        <span>
+          Akun default:{" "}
+          <span className="text-cyan-600 dark:text-cyan-400 font-semibold font-mono">admin@admin.com</span> /{" "}
+          <span className="text-cyan-600 dark:text-cyan-400 font-semibold font-mono">admin123</span>
+        </span>
       </div>
     </form>
   );
