@@ -465,3 +465,18 @@ body {
     transform: none !important;
   }
 }
+
+/* 
+ * Fade effect mask untuk ilustrasi agar menyatu mulus (seamless) dengan background
+ * Memudarkan semua tepi (kiri, kanan, atas, bawah) secara transparan tanpa potongan kaku/kotak
+ */
+.illustration-container img,
+.illustration-fade {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 78%, transparent),
+                      linear-gradient(to bottom, transparent, black 6%, black 85%, transparent);
+  -webkit-mask-composite: source-in;
+  -webkit-mask-composite: intersect;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 78%, transparent),
+              linear-gradient(to bottom, transparent, black 6%, black 85%, transparent);
+  mask-composite: intersect;
+}
