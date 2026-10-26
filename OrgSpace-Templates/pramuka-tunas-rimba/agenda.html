@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agenda — Pramuka Tunas Rimba</title>
+  <meta name="description" content="Agenda perkemahan, latihan gabungan, dan lomba.">
+  <meta name="theme-color" content="#1f3d2b">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+  <a class="skip" href="#utama">Lewati ke isi</a>
+  <header class="topbar" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo gugus depan" width="42" height="42" data-ws-org="logo">
+        <span class="brand-name"><span data-ws-org="nama">Pramuka Tunas Rimba</span><small id="brand-gudep">Gugus Depan 07.081 – 07.082</small></span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html">Beranda</a>
+        <a href="profil.html">Profil</a>
+        <a href="kegiatan.html">Kegiatan</a>
+        <a href="agenda.html" aria-current="page">Agenda</a>
+        <a href="galeri.html">Galeri</a>
+        <a href="prestasi.html">Prestasi</a>
+        <a href="latihan.html">Pojok Latihan</a>
+        <a class="btn btn-primary btn-sm" href="gabung.html">Gabung</a>
+      </nav>
+      <button class="burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="utama">
+    <section class="page-hero on-dark">
+      <div class="wrap reveal">
+        <p class="eyebrow" id="agenda-label">Agenda</p>
+        <h1 id="agenda-judul">Catat tanggalnya, <span class="hl">siapkan ranselmu</span></h1>
+        <p class="lead" id="agenda-deskripsi">Perkemahan, latihan gabungan, upacara, dan lomba yang akan datang.</p>
+      </div>
+      <span class="num" aria-hidden="true">03</span>
+    </section>
+
+    <section class="section" id="agenda-utama">
+      <div class="wrap">
+        <div class="countdown reveal" id="countdown">
+          <div>
+            <p class="eyebrow" id="hitung-label">Agenda terdekat</p>
+            <h3 id="countdown-title">Perkemahan Sabtu Minggu (Persami)</h3>
+            <p id="countdown-when">Siapkan perlengkapanmu, petualangan berikutnya segera dimulai.</p>
+          </div>
+          <div class="clock" aria-live="polite">
+            <div><strong id="cd-hari">00</strong><span>Hari</span></div>
+            <div><strong id="cd-jam">00</strong><span>Jam</span></div>
+            <div><strong id="cd-menit">00</strong><span>Menit</span></div>
+            <div><strong id="cd-detik">00</strong><span>Detik</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" id="daftar-agenda">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="daftar-label">Kalender</p>
+            <h2 id="daftar-judul">Semua agenda</h2>
+          </div>
+        </div>
+        <div class="segmented" id="agenda-filter" role="group" aria-label="Pilih agenda">
+          <button type="button" data-when="soon" aria-pressed="true">Akan datang</button>
+          <button type="button" data-when="past" aria-pressed="false">Sudah lewat</button>
+          <button type="button" data-when="all" aria-pressed="false">Semua</button>
+        </div>
+        <div class="agenda-list" data-ws-collection="agenda">
+          <article class="agenda-item reveal" data-ws-item>
+            <div class="agenda-date" aria-hidden="true"><span class="day">14</span><span class="month">Nov 2026</span></div>
+            <div>
+              <h3 data-ws-field="judul">Perkemahan Sabtu Minggu (Persami)</h3>
+              <div class="meta"><span class="time" data-ws-field="waktu">Sabtu, 07.00 WIB</span><span class="where" data-ws-field="lokasi">Bumi Perkemahan Sekolah</span></div>
+              <time class="full" data-ws-field="tanggal" data-ws-type="tanggal" datetime="2026-11-14">14 November 2026</time>
+              <p class="desc" data-ws-field="deskripsi" data-ws-type="paragraf">Bawa tenda regu, perlengkapan masak, dan seragam lengkap. Kumpul di halaman sekolah.</p>
+            </div>
+            <span class="tag" data-ws-field="golongan">Penggalang</span>
+          </article>
+          <p class="empty" data-ws-empty>Belum ada agenda. Pantau terus halaman ini, ya!</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="perlengkapan">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="bawaan-label">Checklist</p>
+            <h2 id="bawaan-judul">Bawaan wajib saat berkemah</h2>
+            <p class="lead" id="bawaan-deskripsi">Centang yang sudah masuk ransel. Daftar ini tersimpan selama halaman dibuka.</p>
+          </div>
+        </div>
+        <ul class="packing" id="checklist">
+          <li><label><input type="checkbox"> <span id="bawaan-1">Seragam pramuka lengkap & setangan leher</span></label></li>
+          <li><label><input type="checkbox"> <span id="bawaan-2">Matras, sleeping bag, dan jaket</span></label></li>
+          <li><label><input type="checkbox"> <span id="bawaan-3">Senter, peluit, dan tongkat</span></label></li>
+          <li><label><input type="checkbox"> <span id="bawaan-4">Alat masak regu & bahan makanan</span></label></li>
+          <li><label><input type="checkbox"> <span id="bawaan-5">Obat pribadi & kotak P3K</span></label></li>
+          <li><label><input type="checkbox"> <span id="bawaan-6">Tali, pasak, dan terpal cadangan</span></label></li>
+        </ul>
+        <p id="checklist-hasil" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-in">
+        <div>
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="img/logo.svg" alt="Logo gugus depan" width="42" height="42" data-ws-org="logo">
+            <span class="brand-name" data-ws-org="nama">Pramuka Tunas Rimba</span>
+          </a>
+          <p class="salam" id="footer-salam">Salam Pramuka!</p>
+          <p id="footer-teks">Gugus depan tempat adik-adik belajar mandiri, peduli, dan tangguh lewat kegiatan di alam terbuka.</p>
+        </div>
+        <div>
+          <p class="footer-title">Jelajahi</p>
+          <ul>
+            <li><a href="profil.html">Profil & Pembina</a></li>
+            <li><a href="kegiatan.html">Kegiatan & Jadwal</a></li>
+            <li><a href="agenda.html">Agenda</a></li>
+            <li><a href="galeri.html">Galeri</a></li>
+            <li><a href="prestasi.html">Prestasi</a></li>
+            <li><a href="latihan.html">Pojok Latihan</a></li>
+          </ul>
+        </div>
+        <div data-org-group>
+          <p class="footer-title">Kontak</p>
+          <ul>
+            <li><a href="gabung.html" data-ws-org="email">Email gugus depan</a></li>
+            <li><a href="gabung.html" data-ws-org="whatsapp">WhatsApp</a></li>
+            <li><a href="gabung.html" data-ws-org="instagram">Instagram</a></li>
+            <li><span data-ws-org="alamat">Alamat pangkalan</span></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">Untuk pembina</p>
+          <p class="muted" id="footer-pembina">Kelola kegiatan, agenda, dan pendaftar dari Portal Pengurus.</p>
+          <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span data-ws-org="institusi">Pangkalan SMA Tunas Bangsa</span> · <span data-ws-org="kota">Kota</span></span>
+        <a href="#atas">Kembali ke atas ↑</a>
+      </div>
+    </div>
+  </footer>
+  <button class="to-top" id="to-top" type="button" aria-label="Kembali ke atas">↑</button>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

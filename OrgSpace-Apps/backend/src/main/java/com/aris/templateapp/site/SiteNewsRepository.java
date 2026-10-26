@@ -8,4 +8,6 @@ import java.util.UUID;
 public interface SiteNewsRepository extends JpaRepository<SiteNews, UUID> {
 
     List<SiteNews> findByOrganizationIdOrderByPublishedAtDesc(UUID organizationId);
+
+    long countByOrganizationId(UUID organizationId);
 }

@@ -42,6 +42,14 @@
                 android:textAppearance="@style/TextAppearance.App.Body"
                 android:textColor="@color/color_muted" />
 
+            <!-- Muncul jika ada foto yang filenya hilang dari HP saat terbit (diisi PublishSuccessDialog). -->
+            <com.aris.templateapp.ui.common.StatusBannerView
+                android:id="@+id/missing_images_banner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_4"
+                android:visibility="gone" />
+
             <!-- Card Informasi Website Live & Port -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

@@ -71,6 +71,8 @@ public class GalleryAdapter extends ListAdapter<GalleryTemplateDto, GalleryAdapt
                 : context.getString(R.string.gallery_content_tags, String.join(" · ", tags));
         if (holder.binding instanceof ItemGalleryCardBinding) {
             ItemGalleryCardBinding b = (ItemGalleryCardBinding) holder.binding;
+            b.thumbnailPlaceholder.setVisibility(View.VISIBLE);
+            thumbnails.load(item.thumbnailUrl, b.thumbnail, () -> b.thumbnailPlaceholder.setVisibility(View.GONE));
             b.name.setText(item.name);
             b.creator.setText(creator);
             b.category.setText(category);

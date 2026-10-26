@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creative Crew — Creative Force on Campus</title>
+  <meta name="description" content="Rumah produksi kreatif mahasiswa: video, desain, dan liputan event.">
+  <meta name="theme-color" content="#121212">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#utama">Lewati ke isi</a>
+  <header class="topbar" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" width="40" height="40" data-ws-org="logo">
+        <span class="brand-name" data-ws-org="nama">Creative Crew</span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html" aria-current="page">Home</a>
+        <a href="works.html">Works</a>
+        <a href="crew.html">Crew</a>
+        <a href="gear.html">Gear</a>
+        <a class="btn btn-primary btn-sm" href="collab.html">Start a Project</a>
+      </nav>
+      <button class="burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="utama">
+    <section class="hero">
+      <div class="hero-bg"><img id="hero-foto" src="img/hero.jpg" alt="Foto bersama seluruh kru" width="1920" height="1080" fetchpriority="high"></div>
+      <div class="wrap">
+        <p class="eyebrow" id="hero-label">Student Creative House</p>
+        <h1><span id="hero-judul-1">We are the</span> <span class="hl" id="hero-sorot">Creative Force</span> <span id="hero-judul-2">on campus</span></h1>
+        <p class="lead" id="hero-deskripsi">Kami memproduksi video, desain grafis, dan liputan event untuk organisasi di seluruh kampus, dari ide sampai karya jadi.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="collab.html" id="hero-cta-1">Start a Project
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn-ghost" href="crew.html" id="hero-cta-2">Meet The Crew</a>
+        </div>
+        <div class="hero-meta">
+          <div><strong data-ws-stat="karya">48</strong><span>Karya terbit</span></div>
+          <div><strong data-ws-stat="kru">32</strong><span>Kru aktif</span></div>
+          <div><strong data-ws-stat="form.kolaborasi">120</strong><span>Project diajukan</span></div>
+        </div>
+      </div>
+      <span class="scroll-hint" aria-hidden="true">Scroll</span>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Video Production</span><span>Graphic Design</span><span>Event Coverage</span><span>Photography</span><span>Motion Graphic</span><span>Social Media Content</span>
+        <span>Video Production</span><span>Graphic Design</span><span>Event Coverage</span><span>Photography</span><span>Motion Graphic</span><span>Social Media Content</span>
+      </div>
+    </div>
+
+    <!-- FEATURED WORKS: 4 karya teratas dari modul "karya" (urutan diatur di Portal Pengurus) -->
+    <section class="section" id="featured">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="featured-label">Featured Projects</p>
+            <h2 id="featured-judul">Karya terbaik kami</h2>
+          </div>
+          <a class="link-arrow" href="works.html" id="featured-link">Lihat semua karya</a>
+        </div>
+        <div class="grid works-featured" data-ws-collection="karya" data-ws-limit="4">
+          <a class="work reveal" href="karya.html" data-ws-item>
+            <div class="work-media"><img src="img/karya-1.jpg" alt="Sampul karya" width="900" height="1200" loading="lazy" data-ws-field="thumbnail"></div>
+            <div class="work-body">
+              <span class="tag" data-ws-field="kategori">Video</span>
+              <h3 data-ws-field="judul">Judul karya</h3>
+              <p data-ws-field="ringkasan" data-ws-type="paragraf">Ringkasan singkat project dalam satu atau dua kalimat.</p>
+            </div>
+            <span class="work-go" aria-hidden="true">↗</span>
+          </a>
+          <p class="empty" data-ws-empty>Karya terbaik akan segera tampil di sini.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIVISI -->
+    <section class="section alt" id="divisi">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="divisi-label">Our Divisions</p>
+            <h2 id="divisi-judul">Satu crew, banyak keahlian</h2>
+            <p class="lead" id="divisi-deskripsi">Setiap divisi punya spesialisasi sendiri, tapi semua project dikerjakan bersama.</p>
+          </div>
+          <a class="link-arrow" href="crew.html" id="divisi-link">Kenalan dengan kru</a>
+        </div>
+        <div class="grid divisions" data-ws-collection="divisi">
+          <article class="division reveal" data-ws-item>
+            <img src="img/divisi-1.jpg" alt="Foto divisi" width="800" height="560" loading="lazy" data-ws-field="foto">
+            <div class="division-body">
+              <h3 data-ws-field="nama">Nama divisi</h3>
+              <p data-ws-field="deskripsi" data-ws-type="paragraf">Deskripsi singkat pekerjaan divisi ini.</p>
+            </div>
+          </article>
+          <p class="empty" data-ws-empty>Daftar divisi akan segera diumumkan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATISTIK -->
+    <section class="section" id="angka">
+      <div class="wrap">
+        <div class="grid stats reveal">
+          <div class="stat"><strong data-ws-stat="karya">48</strong><span>Karya di portofolio</span></div>
+          <div class="stat"><strong data-ws-stat="kru">32</strong><span>Kru aktif</span></div>
+          <div class="stat"><strong data-ws-stat="layanan">6</strong><span>Jenis layanan</span></div>
+          <div class="stat"><strong data-ws-stat="alat">24</strong><span>Alat produksi</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="ajak">
+      <div class="wrap">
+        <div class="cta reveal">
+          <h2 id="cta-judul">Punya acara atau ide besar?</h2>
+          <p id="cta-deskripsi">Ceritakan kebutuhanmu. Tim kami akan meninjau brief dan menghubungi PIC dalam 2×24 jam kerja.</p>
+          <a class="btn" href="collab.html" id="cta-tombol">Ajukan project
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-in">
+        <div>
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" width="40" height="40" data-ws-org="logo">
+            <span class="brand-name" data-ws-org="nama">Creative Crew</span>
+          </a>
+          <p class="muted" id="footer-teks">Rumah produksi kreatif mahasiswa: video, desain, dan dokumentasi event untuk seluruh kampus.</p>
+        </div>
+        <div>
+          <p class="footer-title">Jelajahi</p>
+          <ul>
+            <li><a href="works.html">Works</a></li>
+            <li><a href="crew.html">Crew</a></li>
+            <li><a href="collab.html">Collab</a></li>
+            <li><a href="gear.html">Gear Room</a></li>
+          </ul>
+        </div>
+        <div data-org-group>
+          <p class="footer-title">Kontak</p>
+          <ul>
+            <li><a href="collab.html" data-ws-org="email">Email organisasi</a></li>
+            <li><a href="collab.html" data-ws-org="instagram">Instagram</a></li>
+            <li><a href="collab.html" data-ws-org="whatsapp">WhatsApp</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">Untuk pengurus</p>
+          <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span data-ws-org="institusi">Nama kampus</span> · <span data-ws-org="kota">Kota</span></span>
+        <a href="#atas">Kembali ke atas ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

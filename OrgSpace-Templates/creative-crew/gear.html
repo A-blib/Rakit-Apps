@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gear Room — Creative Crew</title>
+  <meta name="description" content="Status ketersediaan alat produksi Creative Crew.">
+  <meta name="theme-color" content="#121212">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#utama">Lewati ke isi</a>
+  <header class="topbar solid" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" width="40" height="40" data-ws-org="logo">
+        <span class="brand-name" data-ws-org="nama">Creative Crew</span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html">Home</a>
+        <a href="works.html">Works</a>
+        <a href="crew.html">Crew</a>
+        <a href="gear.html" aria-current="page">Gear</a>
+        <a class="btn btn-primary btn-sm" href="collab.html">Start a Project</a>
+      </nav>
+      <button class="burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="utama">
+    <section class="page-hero">
+      <div class="wrap reveal">
+        <p class="eyebrow" id="gear-label">Gear Room</p>
+        <h1 id="gear-judul">Status <span class="hl">alat</span> produksi</h1>
+        <p class="lead" id="gear-deskripsi">Cek alat yang tersedia, sedang dipinjam, atau dalam perawatan, lengkap dengan lokasi penyimpanannya, sebelum mengajukan peminjaman.</p>
+      </div>
+      <span class="num" aria-hidden="true">05</span>
+    </section>
+
+    <section class="section" id="alat">
+      <div class="wrap">
+        <div class="grid gear-summary reveal" aria-live="polite">
+          <div class="gear-count ok"><span class="dot" aria-hidden="true"></span><div><strong id="jumlah-tersedia">0</strong><span>Tersedia</span></div></div>
+          <div class="gear-count out"><span class="dot" aria-hidden="true"></span><div><strong id="jumlah-dipinjam">0</strong><span>Dipinjam</span></div></div>
+          <div class="gear-count fix"><span class="dot" aria-hidden="true"></span><div><strong id="jumlah-perawatan">0</strong><span>Maintenance</span></div></div>
+        </div>
+        <div class="chips" data-filter="alat" data-filter-field="jenis" role="group" aria-label="Filter jenis alat"></div>
+        <div class="grid gear-list" data-ws-collection="alat">
+          <article class="gear reveal" data-ws-item>
+            <div class="gear-top">
+              <div>
+                <h3 data-ws-field="nama">Nama alat</h3>
+                <span class="muted mono" data-ws-field="jenis">Kamera</span>
+              </div>
+              <span class="badge" data-ws-field="status">Tersedia</span>
+            </div>
+            <dl>
+              <div><dt>Lokasi</dt><dd data-ws-field="lokasi">Lemari utama</dd></div>
+              <div class="borrow"><dt>Peminjam</dt><dd data-ws-field="peminjam">Nama peminjam</dd></div>
+              <div class="borrow"><dt>Kembali</dt><dd data-ws-field="tanggal_kembali" data-ws-type="tanggal">1 Januari 2026</dd></div>
+            </dl>
+          </article>
+          <p class="empty" data-ws-empty>Data alat belum diisi pengurus.</p>
+        </div>
+        <p class="muted note" id="gear-catatan">Peminjaman alat diajukan ke koordinator inventaris. Status diperbarui pengurus lewat Portal Pengurus.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-in">
+        <div>
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" width="40" height="40" data-ws-org="logo">
+            <span class="brand-name" data-ws-org="nama">Creative Crew</span>
+          </a>
+          <p class="muted" id="footer-teks">Rumah produksi kreatif mahasiswa: video, desain, dan dokumentasi event untuk seluruh kampus.</p>
+        </div>
+        <div>
+          <p class="footer-title">Jelajahi</p>
+          <ul>
+            <li><a href="works.html">Works</a></li>
+            <li><a href="crew.html">Crew</a></li>
+            <li><a href="collab.html">Collab</a></li>
+            <li><a href="gear.html">Gear Room</a></li>
+          </ul>
+        </div>
+        <div data-org-group>
+          <p class="footer-title">Kontak</p>
+          <ul>
+            <li><a href="collab.html" data-ws-org="email">Email organisasi</a></li>
+            <li><a href="collab.html" data-ws-org="instagram">Instagram</a></li>
+            <li><a href="collab.html" data-ws-org="whatsapp">WhatsApp</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">Untuk pengurus</p>
+          <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span data-ws-org="institusi">Nama kampus</span> · <span data-ws-org="kota">Kota</span></span>
+        <a href="#atas">Kembali ke atas ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

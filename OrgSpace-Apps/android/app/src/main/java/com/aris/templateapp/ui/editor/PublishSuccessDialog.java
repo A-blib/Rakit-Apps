@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,9 @@ import androidx.fragment.app.Fragment;
 import com.aris.templateapp.R;
 import com.aris.templateapp.data.remote.dto.DirectPublishResponseDto;
 import com.aris.templateapp.databinding.DialogPublishSuccessBinding;
+import com.aris.templateapp.ui.common.StatusBannerView;
+
+import java.util.ArrayList;
 
 /**
  * Layar konfirmasi saat website berhasil diterbitkan langsung (publish langsung).
@@ -32,10 +36,12 @@ public class PublishSuccessDialog extends DialogFragment {
     private static final String ARG_ORG_NAME = "org_name";
     private static final String ARG_SLUG = "slug";
     private static final String ARG_PROJECT_ID = "project_id";
+    private static final String ARG_MISSING_IMAGES = "missing_images";
 
     private DialogPublishSuccessBinding binding;
 
-    public static void show(Fragment editor, DirectPublishResponseDto result) {
+    /** @param missingImageLabels label isian foto yang tidak ikut terbit karena filenya sudah tidak ada di HP */
+    public static void show(Fragment editor, DirectPublishResponseDto result, ArrayList<String> missingImageLabels) {
         PublishSuccessDialog dialog = new PublishSuccessDialog();
         Bundle args = new Bundle();
         args.putString(ARG_URL, result.url);
@@ -43,6 +49,7 @@ public class PublishSuccessDialog extends DialogFragment {
         args.putString(ARG_ORG_NAME, result.organizationName);
         args.putString(ARG_SLUG, result.slug);
         args.putString(ARG_PROJECT_ID, result.projectId != null ? result.projectId.toString() : "");
+        args.putStringArrayList(ARG_MISSING_IMAGES, missingImageLabels);
         dialog.setArguments(args);
         dialog.show(editor.getChildFragmentManager(), TAG);
     }
@@ -70,6 +77,14 @@ public class PublishSuccessDialog extends DialogFragment {
         binding.textWorkspace.setText(orgName);
         binding.textPort.setText(String.valueOf(port));
         binding.textUrl.setText(url);
+
+        // Website tetap terbit dengan foto contoh template; user perlu tahu agar memilih ulang fotonya.
+        ArrayList<String> missing = args.getStringArrayList(ARG_MISSING_IMAGES);
+        if (missing != null && !missing.isEmpty()) {
+            binding.missingImagesBanner.setVisibility(View.VISIBLE);
+            binding.missingImagesBanner.bind(StatusBannerView.Kind.WARNING,
+                    getString(R.string.publish_success_missing_images, TextUtils.join(", ", missing)));
+        }
 
         binding.btnOpenSite.setOnClickListener(v -> {
             if (!url.isEmpty()) {

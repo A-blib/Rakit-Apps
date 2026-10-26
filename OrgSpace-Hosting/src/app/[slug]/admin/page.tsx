@@ -32,8 +32,10 @@ import {
   EyeOff,
   Sun,
   Moon,
+  Copy,
 } from "lucide-react";
 import type { FieldType } from "@/lib/types";
+import { PUBLIC_BACKEND_URL } from "@/lib/config";
 
 interface AdminUser {
   id: string;
@@ -108,7 +110,7 @@ interface Member {
 export default function AdminPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+  const backendUrl = PUBLIC_BACKEND_URL;
 
   // Auth states
   const [token, setToken] = useState<string | null>(null);
@@ -192,11 +194,9 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
   // Members & Access Control state
   const [members, setMembers] = useState<Member[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
-  const [newMemberEmail, setNewMemberEmail] = useState("");
-  const [newMemberName, setNewMemberName] = useState("");
-  const [newMemberPosition, setNewMemberPosition] = useState("");
   const [newMemberRole, setNewMemberRole] = useState<"admin" | "editor">("editor");
-  const [newMemberPassword, setNewMemberPassword] = useState("password123");
+  // Kode undangan hanya dikirim server sekali (yang disimpan hash-nya), jadi ditampilkan sampai halaman ditutup.
+  const [invitation, setInvitation] = useState<{ code: string; role: string; expiresAt: string } | null>(null);
   const [submittingMember, setSubmittingMember] = useState(false);
 
   // Success / error alerts
@@ -289,40 +289,41 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
     }
   };
 
-  const handleAddMember = async (e: React.FormEvent) => {
+  // Pengurus baru diundang lewat kode, bukan dimasukkan langsung: penerima harus menerimanya sendiri di app.
+  const handleCreateInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !newMemberEmail.trim()) return;
+    if (!token) return;
     setSubmittingMember(true);
     try {
-      const res = await fetch(`${backendUrl}/api/public/sites/${slug}/admin/members`, {
+      const res = await fetch(`${backendUrl}/api/public/sites/${slug}/admin/invitations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          email: newMemberEmail.trim(),
-          name: newMemberName.trim(),
-          role: newMemberRole,
-          positionTitle: newMemberPosition.trim(),
-          password: newMemberPassword.trim() || "password123",
-        }),
+        body: JSON.stringify({ role: newMemberRole }),
       });
       const data = await res.json();
       if (res.ok) {
-        showToast("Pengurus baru berhasil ditambahkan!");
-        setNewMemberEmail("");
-        setNewMemberName("");
-        setNewMemberPosition("");
-        setNewMemberPassword("password123");
-        loadMembers(token);
+        setInvitation({ code: data.code, role: data.role, expiresAt: data.expiresAt });
+        showToast("Kode undangan dibuat");
       } else {
-        showToast(data.message || "Gagal menambahkan pengurus", "error");
+        showToast(data.message || "Gagal membuat kode undangan", "error");
       }
     } catch {
       showToast("Terjadi kesalahan jaringan", "error");
     } finally {
       setSubmittingMember(false);
+    }
+  };
+
+  const copyInvitationCode = async () => {
+    if (!invitation) return;
+    try {
+      await navigator.clipboard.writeText(invitation.code);
+      showToast("Kode undangan disalin");
+    } catch {
+      showToast("Gagal menyalin. Salin kode secara manual.", "error");
     }
   };
 
@@ -839,9 +840,14 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
     badge?: number;
   }
 
+  // Isian formulir pengunjung (nama, nomor WhatsApp) hanya untuk Pemilik & Admin; server menolak Editor (403).
+  const canViewSubmissions = user?.role === "owner" || user?.role === "admin";
+
   const tabs: TabItem[] = [
     { id: "overview", label: "Ringkasan", icon: LayoutDashboard },
-    { id: "submissions", label: "Kotak Masuk Form", icon: Inbox, badge: stats.submissionsCount },
+    ...(canViewSubmissions
+      ? [{ id: "submissions" as const, label: "Kotak Masuk Form", icon: Inbox, badge: stats.submissionsCount }]
+      : []),
     { id: "news", label: "Berita & Agenda", icon: Newspaper, badge: stats.newsCount },
     { id: "collections", label: "Modul Kustom", icon: Boxes, badge: stats.customItemsCount },
     { id: "members", label: "Pengurus & Hak Akses", icon: Users, badge: members.length },
@@ -1171,8 +1177,10 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
             {/* KPI Cards Grid (2 kolom di mobile: tingkat 1 kiri Formulir, kanan Berita; tingkat 2 kiri Modul, kanan Pengurus) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <div
-                onClick={() => setActiveTab("submissions")}
-                className="bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs hover:border-border-strong transition cursor-pointer"
+                onClick={() => canViewSubmissions && setActiveTab("submissions")}
+                className={`bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs transition ${
+                  canViewSubmissions ? "hover:border-border-strong cursor-pointer" : ""
+                }`}
               >
                 <div className="flex items-center justify-between text-muted mb-2 sm:mb-3">
                   <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-muted">
@@ -1291,7 +1299,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
         {/* ========================================================= */}
         {/* TAB 2: KOTAK MASUK FORMULIR (SUBMISSIONS)                 */}
         {/* ========================================================= */}
-        {activeTab === "submissions" && (
+        {activeTab === "submissions" && canViewSubmissions && (
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <div>
@@ -1833,7 +1841,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                   </span>
                 </div>
                 <p>
-                  <strong className="text-foreground">Pemilik (Owner)</strong> memiliki kendali penuh atas situs. <strong className="text-foreground">Admin</strong> dapat mengelola konten dan menunjuk pengurus baru. <strong className="text-foreground">Editor</strong> berfokus pada penerbitan berita, pengisian modul kustom, dan melihat pesan formulir.
+                  <strong className="text-foreground">Pemilik (Owner)</strong> memiliki kendali penuh atas situs. <strong className="text-foreground">Admin</strong> dapat mengelola konten dan menunjuk pengurus baru. <strong className="text-foreground">Editor</strong> berfokus pada penerbitan berita dan pengisian modul kustom. Data formulir pengunjung hanya untuk Pemilik dan Admin.
                 </p>
               </div>
             </div>
@@ -1848,80 +1856,24 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                         <UserPlus className="w-4 h-4" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-foreground">Tambah Pengurus</h3>
-                        <p className="text-xs text-muted">Beri hak akses ke akun pengurus baru</p>
+                        <h3 className="text-sm font-bold text-foreground">Undang Pengurus</h3>
+                        <p className="text-xs text-muted">Buat kode, lalu bagikan ke calon pengurus</p>
                       </div>
                     </div>
 
-                    <form onSubmit={handleAddMember} className="space-y-3.5">
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1">
-                          Email Pengurus <span className="text-error">*</span>
-                        </label>
-                        <input
-                          type="email"
-                          required
-                          placeholder="pengurus@organisasi.id"
-                          value={newMemberEmail}
-                          onChange={(e) => setNewMemberEmail(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1">
-                          Nama Lengkap
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Contoh: Ahmad Rizki"
-                          value={newMemberName}
-                          onChange={(e) => setNewMemberName(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1">
-                          Jabatan / Posisi
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Contoh: Staff Humas / Divisi Acara"
-                          value={newMemberPosition}
-                          onChange={(e) => setNewMemberPosition(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                        />
-                      </div>
-
+                    <form onSubmit={handleCreateInvitation} className="space-y-3.5">
                       <div>
                         <label className="block text-xs font-semibold text-foreground mb-1">
                           Tingkat Hak Akses (Role) <span className="text-error">*</span>
                         </label>
                         <select
                           value={newMemberRole}
-                          onChange={(e) => setNewMemberRole(e.target.value as any)}
+                          onChange={(e) => setNewMemberRole(e.target.value as "admin" | "editor")}
                           className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                         >
-                          <option value="editor">Editor (Kelola Berita, Modul & Formulir)</option>
+                          <option value="editor">Editor (Kelola Berita & Modul)</option>
                           <option value="admin">Admin (Akses Penuh + Kelola Hak Akses)</option>
                         </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1">
-                          Password Masuk Sementara <span className="text-error">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={newMemberPassword}
-                          onChange={(e) => setNewMemberPassword(e.target.value)}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                        />
-                        <p className="text-[11px] text-muted mt-1">
-                          Password awal untuk pengurus masuk ke portal ini.
-                        </p>
                       </div>
 
                       <button
@@ -1932,15 +1884,39 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                         {submittingMember ? (
                           <>
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span>Menyimpan...</span>
+                            <span>Membuat kode...</span>
                           </>
                         ) : (
                           <>
                             <UserPlus className="w-3.5 h-3.5" />
-                            <span>Beri Hak Akses</span>
+                            <span>Buat Kode Undangan</span>
                           </>
                         )}
                       </button>
+
+                      {invitation && (
+                        <div className="mt-2 p-3.5 rounded-xl border border-border bg-surface-subtle space-y-2">
+                          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+                            Kode undangan {invitation.role === "admin" ? "Admin" : "Editor"}
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <code className="flex-1 text-base font-bold tracking-widest text-foreground">{invitation.code}</code>
+                            <button
+                              type="button"
+                              onClick={copyInvitationCode}
+                              aria-label="Salin kode undangan"
+                              className="p-2 rounded-lg border border-border hover:border-border-strong transition"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <p className="text-[11px] text-muted leading-relaxed">
+                            Calon pengurus membuka app OrgSpace, masuk, memilih <strong className="text-foreground">Gabung organisasi</strong>,
+                            lalu memasukkan kode ini. Ia baru menjadi pengurus setelah menerimanya. Berlaku sampai{" "}
+                            {new Date(invitation.expiresAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}.
+                          </p>
+                        </div>
+                      )}
                     </form>
                   </div>
                 ) : (
@@ -1950,7 +1926,7 @@ export default function AdminPage({ params }: { params: Promise<{ slug: string }
                       <span>Hak Akses Terbatas</span>
                     </div>
                     <p className="text-xs text-muted leading-relaxed">
-                      Anda saat ini masuk sebagai <strong className="text-foreground">Editor Konten</strong>. Anda memiliki wewenang untuk menambah berita, item modul kustom, dan melihat pesan formulir.
+                      Anda saat ini masuk sebagai <strong className="text-foreground">Editor Konten</strong>. Anda memiliki wewenang untuk menambah berita dan item modul kustom.
                     </p>
                     <p className="text-xs text-muted leading-relaxed">
                       Penambahan pengurus baru serta pengubahan hak akses hanya dapat dilakukan oleh akun dengan peran <strong className="text-foreground">Admin</strong> atau <strong className="text-foreground">Pemilik</strong>.

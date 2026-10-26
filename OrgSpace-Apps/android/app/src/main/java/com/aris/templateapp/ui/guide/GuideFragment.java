@@ -11,7 +11,12 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.aris.templateapp.R;
+import com.aris.templateapp.data.model.Workspace;
+import com.aris.templateapp.data.repository.WorkspaceRepository;
 import com.aris.templateapp.databinding.FragmentGuideBinding;
+import com.aris.templateapp.ui.organization.MembersFragment;
+import com.aris.templateapp.ui.organization.OrganizationArgs;
+import com.google.android.material.snackbar.Snackbar;
 
 import javax.inject.Inject;
 
@@ -26,6 +31,8 @@ public class GuideFragment extends Fragment {
 
     @Inject
     GuideStore guideStore;
+    @Inject
+    WorkspaceRepository workspaceRepository;
 
     public static void open(Fragment from, Guide guide) {
         Bundle args = new Bundle();
@@ -50,6 +57,23 @@ public class GuideFragment extends Fragment {
         binding.body.setText(guide.available ? guide.body : R.string.guide_coming_soon_body);
         binding.badge.setVisibility(guide.available ? View.GONE : View.VISIBLE);
         guideStore.markOpened(guide);
+        if (guide == Guide.INVITE) {
+            binding.actionButton.setVisibility(View.VISIBLE);
+            binding.actionButton.setText(R.string.guide_invite_action);
+            binding.actionButton.setOnClickListener(v -> openInvite());
+        }
+    }
+
+    /** Membuka layar Anggota ruang kerja aktif dengan lembar undangan langsung terbuka. */
+    private void openInvite() {
+        Workspace active = workspaceRepository.getActive().getValue();
+        if (active == null || active.isPersonal()) {
+            Snackbar.make(binding.getRoot(), R.string.guide_invite_need_org, Snackbar.LENGTH_LONG).show();
+            return;
+        }
+        Bundle args = OrganizationArgs.of(active.getId());
+        args.putBoolean(MembersFragment.ARG_OPEN_INVITE, true);
+        NavHostFragment.findNavController(this).navigate(R.id.membersFragment, args);
     }
 
     @Override

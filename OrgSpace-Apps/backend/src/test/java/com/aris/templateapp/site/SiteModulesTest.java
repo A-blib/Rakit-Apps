@@ -52,11 +52,11 @@ class SiteModulesTest {
         raw.put("id", "palsu");
         raw.put("tahun", 2026);
 
-        assertThat(PublicSiteController.cleanItemData(raw)).containsExactly(
+        assertThat(PortalContentController.cleanItemData(raw)).containsExactly(
                 Map.entry("judul", "Juara 1"), Map.entry("tahun", "2026"));
-        assertThatThrownBy(() -> PublicSiteController.cleanItemData(Map.of("kosong", " ")))
+        assertThatThrownBy(() -> PortalContentController.cleanItemData(Map.of("kosong", " ")))
                 .isInstanceOf(com.aris.templateapp.common.exception.ApiException.class);
-        assertThatThrownBy(() -> PublicSiteController.cleanItemData(Map.of("cerita", "x".repeat(5001))))
+        assertThatThrownBy(() -> PortalContentController.cleanItemData(Map.of("cerita", "x".repeat(5001))))
                 .isInstanceOf(com.aris.templateapp.common.exception.ApiException.class);
     }
 }

@@ -170,6 +170,11 @@ public class ProjectRepository {
         dao.markExported(id, exportedAt);
     }
 
+    @WorkerThread
+    public void setServerProjectId(String id, String serverProjectId) {
+        dao.setServerProjectId(id, serverProjectId);
+    }
+
     public long now() {
         return clock.millis();
     }
@@ -181,6 +186,7 @@ public class ProjectRepository {
         copy.templateVersion = source.templateVersion;
         copy.missingCount = source.missingCount;
         copy.sample = source.sample;
+        // serverProjectId sengaja tidak disalin: salinan adalah website baru, bukan pembaruan website asal.
         return copy;
     }
 

@@ -14,7 +14,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -154,6 +161,52 @@ class AuthFlowIntegrationTest {
         login(uniqueEmail(), PASSWORD)
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
+    }
+
+    @Test
+    void tooManyLoginAttemptsForOneEmailAreRefused() throws Exception {
+        String email = uniqueEmail();
+        registerOk(email);
+        for (int i = 0; i < 10; i++) {
+            login(email, "password-salah").andExpect(status().isUnauthorized());
+        }
+        // Password benar pun ditolak sampai jendela 1 menit lewat, jadi penebak tidak tahu tebakan mana yang benar.
+        login(email.toUpperCase(), PASSWORD)
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.code").value("TOO_MANY_ATTEMPTS"));
+
+        String other = uniqueEmail();
+        registerOk(other);
+        login(other, PASSWORD).andExpect(status().isOk());
+    }
+
+    @Test
+    void sameEmailRegisteredTwiceAtOnceGivesOneAccountAndOneEmailAlreadyUsed() throws Exception {
+        // Tombol Daftar diketuk dua kali: dua request identik tiba hampir bersamaan (diulang agar balapannya terjadi).
+        for (int round = 0; round < 5; round++) {
+            String email = uniqueEmail();
+            List<Integer> statuses = concurrently(() -> register("Aris", email, PASSWORD).andReturn().getResponse().getStatus());
+            assertThat(statuses).containsExactlyInAnyOrder(201, 409);
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM users WHERE lower(email) = ?", Long.class, email)).isOne();
+        }
+    }
+
+    /** Menjalankan {@code task} di dua thread yang dilepas bersamaan (seperti dua request yang tiba serentak). */
+    static <T> List<T> concurrently(Callable<T> task) throws Exception {
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        CountDownLatch start = new CountDownLatch(1);
+        try {
+            Callable<T> gated = () -> {
+                start.await();
+                return task.call();
+            };
+            Future<T> first = pool.submit(gated);
+            Future<T> second = pool.submit(gated);
+            start.countDown();
+            return List.of(first.get(30, TimeUnit.SECONDS), second.get(30, TimeUnit.SECONDS));
+        } finally {
+            pool.shutdownNow();
+        }
     }
 
     @Test

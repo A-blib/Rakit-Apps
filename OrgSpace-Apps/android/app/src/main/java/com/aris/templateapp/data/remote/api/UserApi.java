@@ -1,5 +1,7 @@
 package com.aris.templateapp.data.remote.api;
 
+import com.aris.templateapp.data.remote.dto.TicketExchangeRequestDto;
+import com.aris.templateapp.data.remote.dto.GitHubAuthorizeRequestDto;
 import com.aris.templateapp.data.remote.dto.ActiveModeRequestDto;
 import com.aris.templateapp.data.remote.dto.CreatorOnboardingRequestDto;
 import com.aris.templateapp.data.remote.dto.GoogleIdTokenRequestDto;
@@ -55,7 +57,11 @@ public interface UserApi {
     Call<List<IdentityDto>> linkGoogle(@Body GoogleIdTokenRequestDto body);
 
     @POST("users/me/identities/github/authorize-url")
-    Call<UrlResponseDto> linkGitHubUrl();
+    Call<UrlResponseDto> linkGitHubUrl(@Body GitHubAuthorizeRequestDto body);
+
+    /** Menyelesaikan penyambungan GitHub dengan tiket {@code linkTicket} dari deep link. */
+    @POST("users/me/identities/github/exchange")
+    Call<List<IdentityDto>> exchangeGitHubLink(@Body TicketExchangeRequestDto body);
 
     /** @param provider "local", "google", atau "github" */
     @DELETE("users/me/identities/{provider}")

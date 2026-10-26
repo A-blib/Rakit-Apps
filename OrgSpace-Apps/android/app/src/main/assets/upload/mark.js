@@ -259,6 +259,9 @@
         var el = all[i];
         var id = idOf(el);
         if (id === null || marked[id] || !visible(el)) { continue; }
+        // Isi modul dinamis (kartu data, profil organisasi, angka, form, login) selalu diganti data OrgSpace saat
+        // website tayang, jadi editannya tidak pernah terlihat: jangan disarankan.
+        if (el.closest('[data-ws-item],[data-ws-org],[data-ws-stat],[data-ws-form],[data-ws-auth]')) { continue; }
         var r = rect(el);
         if (r.top < top - 1 || r.top >= bottom) { continue; }
         var tag = el.tagName.toLowerCase();

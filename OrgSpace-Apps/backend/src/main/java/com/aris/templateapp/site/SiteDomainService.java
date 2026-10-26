@@ -17,11 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
-import java.io.IOException;
 import com.google.common.net.InternetDomainName;
 import java.net.IDN;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.util.ArrayList;
@@ -45,10 +42,8 @@ public class SiteDomainService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final SiteRepository siteRepository;
-    private final SiteReleaseRepository siteReleaseRepository;
     private final SiteDomainRepository siteDomainRepository;
     private final OrganizationAccess access;
-    private final SiteStorage siteStorage;
     private final AppProperties properties;
     private final Clock clock;
 
@@ -135,9 +130,6 @@ public class SiteDomainService {
         domain.setFailingSince(null);
         domain = siteDomainRepository.save(domain);
 
-        // Pasang symlink host jika website sudah memiliki rilis aktif
-        setupHostSymlink(site, domain.getHostname());
-
         log.info("Domain kustom {} untuk website {} BERHASIL diverifikasi dan aktif!", domain.getHostname(), site.getSlug());
         return toResponse(domain);
     }
@@ -153,9 +145,6 @@ public class SiteDomainService {
         if (!domain.getSiteId().equals(site.getId())) {
             throw new ApiException(ErrorCode.DOMAIN_NOT_FOUND);
         }
-
-        // Hapus symlink host jika ada
-        removeHostSymlink(domain.getHostname());
 
         siteDomainRepository.delete(domain);
         log.info("Domain kustom {} untuk website {} telah dilepas", domain.getHostname(), site.getSlug());
@@ -260,35 +249,6 @@ public class SiteDomainService {
             log.debug("Pemeriksaan DNS TXT untuk {} gagal: {}", hostname, e.getMessage());
         }
         return false;
-    }
-
-    private void setupHostSymlink(Site site, String hostname) {
-        if (site.getCurrentReleaseId() == null) {
-            return;
-        }
-        siteReleaseRepository.findById(site.getCurrentReleaseId()).ifPresent(release -> {
-            Path hostsDir = Path.of(properties.sites().storageRootDir()).resolve("hosts");
-            try {
-                Files.createDirectories(hostsDir);
-                Path symlink = hostsDir.resolve(hostname);
-                Path target = siteStorage.releasePath(site.getId(), release.getVersion());
-                Files.deleteIfExists(symlink);
-                try {
-                    Files.createSymbolicLink(symlink, target);
-                } catch (UnsupportedOperationException | IOException ignored) {
-                }
-            } catch (IOException ignored) {
-            }
-        });
-    }
-
-    private void removeHostSymlink(String hostname) {
-        Path hostsDir = Path.of(properties.sites().storageRootDir()).resolve("hosts");
-        Path symlink = hostsDir.resolve(hostname);
-        try {
-            Files.deleteIfExists(symlink);
-        } catch (IOException ignored) {
-        }
     }
 
     public DomainResponse toResponse(SiteDomain domain) {

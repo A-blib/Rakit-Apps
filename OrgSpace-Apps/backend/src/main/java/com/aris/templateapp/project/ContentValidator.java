@@ -23,12 +23,16 @@ import java.util.regex.Pattern;
  *   <li>gambar hanya {@code asset:{id}} milik project yang sama ({@code local:} ditolak).</li>
  * </ul>
  */
-final class ContentValidator {
+public final class ContentValidator {
 
     private static final Set<String> TOP_LEVEL = Set.of("fields", "styles", "theme");
     private static final Set<String> VALUE_PROPS = Set.of("text", "href", "image", "fromProfile");
     private static final Pattern COLOR = Pattern.compile("^#[0-9a-fA-F]{6}$");
     private static final Pattern SIZE = Pattern.compile("^\\d{1,3}(\\.\\d{1,2})?(px|rem|em|%)$");
+    private static final Pattern THEME_VAR = Pattern.compile("^--[A-Za-z0-9_-]{1,64}$");
+    private static final Pattern PLAIN_NUMBER = Pattern.compile("^\\d{1,3}(\\.\\d{1,2})?$");
+    private static final Pattern ASSET_REF = Pattern.compile(
+            "^" + ContentAssets.PREFIX + "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
     private static final int DEFAULT_MAX_TEXT = 5000;
     private static final int MAX_HREF = 2000;
     private static final int RADIUS_MAX = 64;
@@ -136,6 +140,30 @@ final class ContentValidator {
             return lower.startsWith("https://") || lower.startsWith("http://") || lower.startsWith("mailto:")
                     || lower.startsWith("tel:");
         }
+    }
+
+    // Penjaga kedua untuk build website (SiteBuildService): nilai-nilai ini disisipkan apa adanya ke CSS/HTML,
+    // sedangkan isi lama di database mungkin tersimpan sebelum semua jalur tulis memakai validate().
+
+    /** Variabel tema yang aman ditulis ke elemen {@code <style>} (nama dan nilainya). */
+    public static boolean isSafeThemeEntry(String var, Object value) {
+        return var != null && THEME_VAR.matcher(var).matches() && value instanceof String text
+                && (COLOR.matcher(text).matches() || SIZE.matcher(text).matches());
+    }
+
+    public static boolean isSafeColor(Object value) {
+        return value instanceof String text && COLOR.matcher(text).matches();
+    }
+
+    /** Angka polos untuk font-size/border-radius (build menambahkan "px" sendiri). */
+    public static boolean isSafeNumber(Object value) {
+        return value instanceof Number number ? Double.isFinite(number.doubleValue())
+                : value instanceof String text && PLAIN_NUMBER.matcher(text).matches();
+    }
+
+    /** Rujukan {@code asset:{uuid}}; path lain (mis. path lokal HP) tidak boleh masuk ke src/url(). */
+    public static boolean isAssetRef(Object value) {
+        return value instanceof String text && ASSET_REF.matcher(text).matches();
     }
 
     private static double number(Object value, String label) {

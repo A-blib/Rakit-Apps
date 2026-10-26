@@ -34,8 +34,11 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -424,8 +427,11 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
         current.call("similarUnlinked", value -> {
             List<Similar> similar = parse(value, SIMILAR);
             if (similar != null && !similar.isEmpty()) {
-                Similar first = similar.get(0);
-                showHint(getString(R.string.mark_similar, first.text), R.string.mark_link_now, () -> linkSimilar(first));
+                // Satu ketukan menghubungkan semuanya (seperti "Tandai semua"), lalu bar saran hilang.
+                String text = similar.size() == 1 ? getString(R.string.mark_similar, similar.get(0).text)
+                        : getString(R.string.mark_similar_many, similar.size());
+                showHint(text, similar.size() == 1 ? R.string.mark_link_now : R.string.mark_link_all,
+                        () -> linkSimilar(similar));
                 return;
             }
             current.call("suggest", suggestValue -> {
@@ -454,29 +460,41 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
         }
         String page = viewModel.page();
         MarkingEditor editor = viewModel.editor();
+        // Kembaran per isian; satu elemen halaman ini hanya boleh masuk ke satu isian.
+        Map<String, List<MarkingDto.Element>> twins = new LinkedHashMap<>();
+        Set<Integer> taken = new HashSet<>();
+        String firstLabel = null;
         for (MarkingDto.Field field : editor.fields()) {
             for (MarkingDto.Element element : field.elements) {
                 if (element.page.equals(page)) {
                     continue;
                 }
                 Integer twin = PageScanner.sameElementElsewhere(scanned, element.page, element.tplId).get(page);
-                if (twin == null || editor.fieldOf(page, twin) != null) {
+                if (twin == null || editor.fieldOf(page, twin) != null || !taken.add(twin)) {
                     continue;
                 }
-                showHint(getString(R.string.mark_same_unlinked, field.label), R.string.mark_link_now, () -> {
-                    List<MarkingDto.Element> added = new ArrayList<>();
-                    added.add(new MarkingDto.Element(page, twin, new ArrayList<>(element.visibleIn)));
-                    editor.linkElements(field.key, added);
-                    viewModel.changed();
-                    Snackbar.make(binding.getRoot(), getString(R.string.mark_linked, field.label),
-                            Snackbar.LENGTH_SHORT).show();
-                    setMarks();
-                    updateHintBar();
-                });
-                return true;
+                twins.computeIfAbsent(field.key, k -> new ArrayList<>())
+                        .add(new MarkingDto.Element(page, twin, new ArrayList<>(element.visibleIn)));
+                if (firstLabel == null) {
+                    firstLabel = field.label;
+                }
             }
         }
-        return false;
+        if (twins.isEmpty()) {
+            return false;
+        }
+        int count = taken.size();
+        String text = count == 1 ? getString(R.string.mark_same_unlinked, firstLabel)
+                : getString(R.string.mark_same_unlinked_many, count);
+        showHint(text, count == 1 ? R.string.mark_link_now : R.string.mark_link_all, () -> {
+            twins.forEach(editor::linkElements);
+            viewModel.changed();
+            Snackbar.make(binding.getRoot(), getResources().getQuantityString(R.plurals.mark_linked_count, count, count),
+                    Snackbar.LENGTH_SHORT).show();
+            setMarks();
+            updateHintBar();
+        });
+        return true;
     }
 
     private void showHint(String text, int action, Runnable onAction) {
@@ -486,14 +504,25 @@ public class UploadMarkFragment extends Fragment implements MarkWebView.Listener
         binding.hintAction.setOnClickListener(v -> onAction.run());
     }
 
-    private void linkSimilar(Similar similar) {
-        MarkingDto.Field field = viewModel.editor().fieldOf(viewModel.page(), similar.matchId);
-        if (field == null) {
+    private void linkSimilar(List<Similar> similar) {
+        MarkingEditor editor = viewModel.editor();
+        int linked = 0;
+        String label = null;
+        for (Similar item : similar) {
+            MarkingDto.Field field = editor.fieldOf(viewModel.page(), item.matchId);
+            if (field == null || editor.fieldOf(viewModel.page(), item.id) != null) {
+                continue;
+            }
+            editor.linkElement(field.key, element(item.id, true));
+            label = field.label;
+            linked++;
+        }
+        if (linked == 0) {
             return;
         }
-        viewModel.editor().linkElement(field.key, element(similar.id, true));
         viewModel.changed();
-        Snackbar.make(binding.getRoot(), getString(R.string.mark_linked, field.label), Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(binding.getRoot(), linked == 1 ? getString(R.string.mark_linked, label)
+                : getResources().getQuantityString(R.plurals.mark_linked_count, linked, linked), Snackbar.LENGTH_SHORT).show();
         setMarks();
         updateHintBar();
     }

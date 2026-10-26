@@ -1,24 +1,16 @@
 package com.aris.templateapp.site;
 
-import com.aris.templateapp.auth.IdentityProvider;
-import com.aris.templateapp.auth.UserIdentity;
-import com.aris.templateapp.auth.UserIdentityRepository;
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.config.AppProperties;
-import com.aris.templateapp.organization.MemberRole;
+import com.aris.templateapp.organization.AttemptLimiter;
 import com.aris.templateapp.organization.Organization;
-import com.aris.templateapp.organization.OrganizationAccess;
-import com.aris.templateapp.organization.OrganizationMember;
 import com.aris.templateapp.organization.OrganizationMemberRepository;
 import com.aris.templateapp.organization.OrganizationRepository;
 import com.aris.templateapp.project.Project;
 import com.aris.templateapp.project.ProjectRepository;
 import com.aris.templateapp.project.ProjectService;
-import com.aris.templateapp.security.JwtService;
 import com.aris.templateapp.site.dto.SiteRenderResponse;
-import com.aris.templateapp.user.User;
-import com.aris.templateapp.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,26 +20,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -60,13 +44,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Controller publik untuk menyajikan website yang sudah tayang secara lokal,
- * melayani data render untuk sistem hosting publik (OrgSpace-Hosting), modul autentikasi pengurus,
- * kelola formulir, serta modul koleksi kustom dinamis.
+ * Website publik yang sudah tayang: data render untuk OrgSpace-Hosting, domain kustom (resolve-domain, ask Caddy),
+ * aset dan foto website, koleksi publik, kiriman formulir pengunjung, dan jalur lama {@code /sites/**}.
+ * Portal Pengurus ada di {@link PortalAuthController}, {@link PortalContentController}, {@link PortalMemberController}.
+ * Tanpa {@code @CrossOrigin}: izin CORS diatur satu tempat di {@code CorsOriginPolicy}.
  */
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 @Slf4j
 public class PublicSiteController {
 
@@ -74,8 +58,6 @@ public class PublicSiteController {
     private static final java.util.Set<String> NEWS_MODULES = java.util.Set.of("berita", "kegiatan", "pengumuman");
     /** Jenis isian yang boleh ditulis provider lewat data-ws-type; gambar & link dikenali dari elemennya. */
     private static final java.util.Set<String> FIELD_TYPES = java.util.Set.of("teks", "paragraf", "angka", "tanggal");
-    private static final int MAX_FIELDS = 30;
-    private static final int MAX_VALUE_LENGTH = 5000;
 
     private final SiteRepository siteRepository;
     private final SiteReleaseRepository siteReleaseRepository;
@@ -87,13 +69,10 @@ public class PublicSiteController {
     private final SiteNewsRepository siteNewsRepository;
     private final FormSubmissionRepository formSubmissionRepository;
     private final SiteCustomItemRepository siteCustomItemRepository;
-    private final UserRepository userRepository;
-    private final UserIdentityRepository userIdentityRepository;
     private final OrganizationMemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
     private final SiteDomainRepository siteDomainRepository;
     private final AppProperties properties;
+    private final AttemptLimiter attemptLimiter;
 
     /**
      * Endpoint utama untuk Sistem Hosting Publik (Next.js OrgSpace-Hosting).
@@ -374,10 +353,12 @@ public class PublicSiteController {
 
     @GetMapping(value = {"/sites/{slug}/admin", "/sites/{slug}/admin/**"})
     public ResponseEntity<Void> redirectToSiteAdmin(@PathVariable String slug) {
-        String target = "http://localhost:3001/" + slug + "/admin";
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create(target))
-                .build();
+        return ResponseEntity.status(HttpStatus.FOUND).location(portalAdminUri(slug)).build();
+    }
+
+    /** Portal Pengurus ada di OrgSpace-Hosting ({@code SITES_HOSTING_URL}), bukan di backend. */
+    private URI portalAdminUri(String slug) {
+        return URI.create(properties.sites().hostingUrl() + "/" + slug.toLowerCase(Locale.ROOT) + "/admin");
     }
 
     @GetMapping("/sites/{slug}/**")
@@ -402,9 +383,7 @@ public class PublicSiteController {
 
         // Jika user mengakses halaman admin atau portal pengurus dari link website statis
         if ("admin".equalsIgnoreCase(subPath) || subPath.startsWith("admin/") || "admin.html".equalsIgnoreCase(subPath)) {
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create("http://localhost:3001/" + slug + "/admin"))
-                    .build();
+            return ResponseEntity.status(HttpStatus.FOUND).location(portalAdminUri(slug)).build();
         }
 
         Path target = releaseDir.resolve(subPath).normalize();
@@ -431,213 +410,10 @@ public class PublicSiteController {
                                           @RequestBody Map<String, Object> payload,
                                           HttpServletRequest request) {
         String ip = request.getRemoteAddr();
+        attemptLimiter.checkFormSubmission(ip, slug);
         String ua = request.getHeader(HttpHeaders.USER_AGENT);
         publishService.submitForm(slug, formName, payload, ip, ua);
         return Map.of("success", true, "message", "Terima kasih, data berhasil dikirim.");
-    }
-
-    // ==========================================
-    // Modul Autentikasi & Dashboard Pengurus Web
-    // ==========================================
-
-    private UUID authenticateSiteManager(String authHeader, Site site) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new ApiException(ErrorCode.UNAUTHORIZED, "Token autentikasi pengurus diperlukan");
-        }
-        String token = authHeader.substring(7).trim();
-        UUID userId = jwtService.parseSiteUserId(token, site.getId())
-                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "Sesi login pengurus tidak valid atau telah berakhir"));
-        memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Anda bukan pengurus atau anggota dari organisasi website ini"));
-        return userId;
-    }
-
-    private OrganizationMember authenticateSiteAdmin(String authHeader, Site site) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new ApiException(ErrorCode.UNAUTHORIZED, "Token autentikasi pengurus diperlukan");
-        }
-        String token = authHeader.substring(7).trim();
-        UUID userId = jwtService.parseSiteUserId(token, site.getId())
-                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "Sesi login pengurus tidak valid atau telah berakhir"));
-        OrganizationMember member = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Anda bukan pengurus atau anggota dari organisasi website ini"));
-        if (member.getRole() != MemberRole.OWNER && member.getRole() != MemberRole.ADMIN) {
-            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Hanya Pemilik dan Admin yang berhak mengelola hak akses pengurus");
-        }
-        return member;
-    }
-
-    @PostMapping("/api/public/sites/{slug}/auth/login")
-    public Map<String, Object> siteLogin(@PathVariable String slug, @RequestBody Map<String, String> payload) {
-        String identifier = payload.get("identifier") != null ? payload.get("identifier") : payload.get("email");
-        String password = payload.get("password");
-        if (identifier == null || password == null || identifier.isBlank() || password.isBlank()) {
-            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Email/username dan password wajib diisi");
-        }
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-
-        String cleanEmail = identifier.trim().toLowerCase(Locale.ROOT);
-        UserIdentity identity = userIdentityRepository.findByProviderAndProviderUserId(IdentityProvider.LOCAL, cleanEmail)
-                .orElseThrow(() -> new ApiException(ErrorCode.INVALID_CREDENTIALS, "Email atau password pengurus salah"));
-        if (identity.getPasswordHash() == null || !passwordEncoder.matches(password, identity.getPasswordHash())) {
-            throw new ApiException(ErrorCode.INVALID_CREDENTIALS, "Email atau password pengurus salah");
-        }
-        UUID userId = identity.getUser().getId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "User tidak ditemukan"));
-        OrganizationMember member = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), user.getId())
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Akun ini tidak terdaftar sebagai pengurus organisasi website ini"));
-
-        String token = jwtService.createSiteToken(user.getId(), site.getId());
-        return Map.of(
-                "success", true,
-                "token", token,
-                "user", Map.of(
-                        "id", user.getId(),
-                        "name", user.getDisplayName() != null ? user.getDisplayName() : user.getEmail(),
-                        "email", user.getEmail(),
-                        "role", member.getRole().name().toLowerCase(Locale.ROOT)
-                ),
-                "site", Map.of(
-                        "slug", site.getSlug(),
-                        "organizationId", site.getOrganizationId()
-                )
-        );
-    }
-
-    @GetMapping("/api/public/sites/{slug}/auth/me")
-    public Map<String, Object> siteAuthMe(@PathVariable String slug,
-                                          @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        UUID userId = authenticateSiteManager(authHeader, site);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "User tidak ditemukan"));
-        OrganizationMember member = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER));
-
-        return Map.of(
-                "authenticated", true,
-                "user", Map.of(
-                        "id", user.getId(),
-                        "name", user.getDisplayName() != null ? user.getDisplayName() : user.getEmail(),
-                        "email", user.getEmail(),
-                        "role", member.getRole().name().toLowerCase(Locale.ROOT)
-                )
-        );
-    }
-
-    @GetMapping("/api/public/sites/{slug}/admin/stats")
-    public Map<String, Object> getAdminStats(@PathVariable String slug,
-                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-
-        long submissionsCount = formSubmissionRepository.findBySiteIdOrderByCreatedAtDesc(site.getId()).size();
-        long newsCount = siteNewsRepository.findByOrganizationIdOrderByPublishedAtDesc(site.getOrganizationId()).size();
-        long customCount = siteCustomItemRepository.findBySiteIdOrderByCollectionNameAscSortOrderAscCreatedAtDesc(site.getId()).size();
-
-        return Map.of(
-                "submissionsCount", submissionsCount,
-                "newsCount", newsCount,
-                "customItemsCount", customCount,
-                "status", site.getStatus()
-        );
-    }
-
-    @GetMapping("/api/public/sites/{slug}/admin/submissions")
-    public List<FormSubmission> getSubmissions(@PathVariable String slug,
-                                               @RequestParam(required = false) String formName,
-                                               @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-
-        if (formName != null && !formName.isBlank()) {
-            return formSubmissionRepository.findBySiteIdAndFormNameOrderByCreatedAtDesc(site.getId(), formName.trim());
-        }
-        return formSubmissionRepository.findBySiteIdOrderByCreatedAtDesc(site.getId());
-    }
-
-    @GetMapping("/api/public/sites/{slug}/admin/news")
-    public List<SiteNews> getNews(@PathVariable String slug,
-                                  @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-        return siteNewsRepository.findByOrganizationIdOrderByPublishedAtDesc(site.getOrganizationId());
-    }
-
-    @GetMapping("/api/public/sites/{slug}/admin/collections")
-    public Map<String, List<Map<String, Object>>> getAdminCollections(@PathVariable String slug,
-                                                                      @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-        List<SiteCustomItem> customItems = siteCustomItemRepository.findBySiteIdOrderByCollectionNameAscSortOrderAscCreatedAtDesc(site.getId());
-        Map<String, List<Map<String, Object>>> collectionsMap = new LinkedHashMap<>();
-        for (SiteCustomItem item : customItems) {
-            Map<String, Object> row = new HashMap<>(item.getData());
-            row.put("id", item.getId());
-            collectionsMap.computeIfAbsent(item.getCollectionName(), k -> new ArrayList<>()).add(row);
-        }
-        return collectionsMap;
-    }
-
-    @GetMapping("/api/public/sites/{slug}/admin/collections/{collectionName}")
-    public List<Map<String, Object>> getAdminCollectionItems(@PathVariable String slug,
-                                                             @PathVariable String collectionName,
-                                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-        String cleanCol = collectionName.toLowerCase(Locale.ROOT).trim();
-        List<SiteCustomItem> items = siteCustomItemRepository.findBySiteIdAndCollectionNameOrderBySortOrderAscCreatedAtDesc(site.getId(), cleanCol);
-        return items.stream().map(item -> {
-            Map<String, Object> row = new HashMap<>(item.getData());
-            row.put("id", item.getId());
-            return row;
-        }).toList();
-    }
-
-    @PostMapping("/api/public/sites/{slug}/admin/news")
-    public SiteNews createNews(@PathVariable String slug,
-                               @RequestBody Map<String, String> payload,
-                               @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        UUID userId = authenticateSiteManager(authHeader, site);
-
-        String title = payload.get("title");
-        String summary = payload.get("summary");
-        String content = payload.get("content");
-        String imageUrl = payload.get("imageUrl");
-
-        if (title == null || title.isBlank()) {
-            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Judul berita tidak boleh kosong");
-        }
-
-        SiteNews news = new SiteNews(site.getOrganizationId(), title.trim(), summary, content, imageUrl, userId);
-        return siteNewsRepository.save(news);
-    }
-
-    @DeleteMapping("/api/public/sites/{slug}/admin/news/{newsId}")
-    public Map<String, Object> deleteNews(@PathVariable String slug,
-                                          @PathVariable UUID newsId,
-                                          @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-
-        SiteNews news = siteNewsRepository.findById(newsId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Berita tidak ditemukan"));
-        if (!news.getOrganizationId().equals(site.getOrganizationId())) {
-            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Berita bukan milik organisasi ini");
-        }
-        siteNewsRepository.delete(news);
-        return Map.of("success", true, "message", "Berita berhasil dihapus");
     }
 
     @GetMapping("/api/public/sites/{slug}/collections/{collectionName}")
@@ -647,98 +423,8 @@ public class PublicSiteController {
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
         return siteCustomItemRepository.findBySiteIdAndCollectionNameOrderBySortOrderAscCreatedAtDesc(site.getId(), collectionName.toLowerCase(Locale.ROOT))
                 .stream()
-                .map(item -> {
-                    Map<String, Object> map = new HashMap<>(item.getData());
-                    map.put("id", item.getId());
-                    return map;
-                })
+                .map(PortalContentController::row)
                 .toList();
-    }
-
-    @PostMapping("/api/public/sites/{slug}/admin/collections/{collectionName}")
-    public Map<String, Object> addCollectionItem(@PathVariable String slug,
-                                                 @PathVariable String collectionName,
-                                                 @RequestBody Map<String, Object> itemData,
-                                                 @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-
-        String cleanCol = collectionName.toLowerCase(Locale.ROOT).trim();
-        SiteCustomItem item = new SiteCustomItem(site.getId(), cleanCol, cleanItemData(itemData), 0);
-        SiteCustomItem saved = siteCustomItemRepository.save(item);
-
-        Map<String, Object> res = new HashMap<>(saved.getData());
-        res.put("id", saved.getId());
-        return res;
-    }
-
-    @PutMapping("/api/public/sites/{slug}/admin/collections/{collectionName}/{itemId}")
-    public Map<String, Object> updateCollectionItem(@PathVariable String slug,
-                                                    @PathVariable String collectionName,
-                                                    @PathVariable UUID itemId,
-                                                    @RequestBody Map<String, Object> itemData,
-                                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-
-        SiteCustomItem item = siteCustomItemRepository.findById(itemId)
-                .filter(i -> i.getSiteId().equals(site.getId()))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Item tidak ditemukan"));
-        item.setData(cleanItemData(itemData));
-        item.setUpdatedAt(Instant.now());
-        SiteCustomItem saved = siteCustomItemRepository.save(item);
-
-        Map<String, Object> res = new HashMap<>(saved.getData());
-        res.put("id", saved.getId());
-        return res;
-    }
-
-    /** Urutan tampil item di website mengikuti urutan id yang dikirim Portal (atas ke bawah). */
-    @PutMapping("/api/public/sites/{slug}/admin/collections/{collectionName}/order")
-    public Map<String, Object> reorderCollection(@PathVariable String slug,
-                                                 @PathVariable String collectionName,
-                                                 @RequestBody Map<String, List<UUID>> payload,
-                                                 @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-
-        List<UUID> ids = payload == null ? null : payload.get("ids");
-        if (ids == null || ids.isEmpty()) {
-            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Urutan item tidak boleh kosong");
-        }
-        String cleanCol = collectionName.toLowerCase(Locale.ROOT).trim();
-        Map<UUID, SiteCustomItem> items = new HashMap<>();
-        siteCustomItemRepository.findBySiteIdAndCollectionNameOrderBySortOrderAscCreatedAtDesc(site.getId(), cleanCol)
-                .forEach(i -> items.put(i.getId(), i));
-        if (ids.size() != items.size() || !items.keySet().containsAll(ids)) {
-            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Daftar item sudah berubah. Muat ulang lalu coba lagi.");
-        }
-        for (int i = 0; i < ids.size(); i++) {
-            items.get(ids.get(i)).setSortOrder(i);
-        }
-        siteCustomItemRepository.saveAll(items.values());
-        return Map.of("success", true);
-    }
-
-    /** Foto untuk field gambar modul. Disimpan sebagai aset website, tampil di /{slug}/_media/{id}. */
-    @PostMapping(value = "/api/public/sites/{slug}/admin/media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Map<String, Object> uploadMedia(@PathVariable String slug,
-                                           @RequestPart("file") MultipartFile file,
-                                           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        UUID userId = authenticateSiteManager(authHeader, site);
-        byte[] bytes;
-        try {
-            bytes = file.getBytes();
-        } catch (IOException e) {
-            throw new ApiException(ErrorCode.ASSET_INVALID);
-        }
-        UUID assetId = projectService.saveSiteMedia(site.getProjectId(), userId, bytes).assetId();
-        return Map.of("id", assetId, "url", "/" + site.getSlug() + "/_media/" + assetId);
     }
 
     @GetMapping("/api/public/sites/{slug}/media/{assetId}")
@@ -751,170 +437,6 @@ public class PublicSiteController {
                 .contentType(MediaType.parseMediaType(asset.mimeType()))
                 .cacheControl(org.springframework.http.CacheControl.maxAge(java.time.Duration.ofDays(365)).cachePublic())
                 .body(new FileSystemResource(asset.file()));
-    }
-
-    /** Isian modul dari Portal: hanya teks, kosong dibuang, dibatasi agar satu item tidak membengkak. */
-    static Map<String, Object> cleanItemData(Map<String, Object> itemData) {
-        Map<String, Object> clean = new LinkedHashMap<>();
-        if (itemData != null) {
-            itemData.forEach((key, value) -> {
-                String k = key == null ? "" : key.strip();
-                String v = value == null ? "" : String.valueOf(value).strip();
-                if (k.isEmpty() || k.equals("id") || v.isEmpty()) {
-                    return;
-                }
-                if (k.length() > 60 || v.length() > MAX_VALUE_LENGTH) {
-                    throw new ApiException(ErrorCode.VALIDATION_ERROR,
-                            "Isian \"" + k + "\" terlalu panjang (maks " + MAX_VALUE_LENGTH + " karakter)");
-                }
-                clean.put(k, v);
-            });
-        }
-        if (clean.isEmpty()) {
-            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Data koleksi tidak boleh kosong");
-        }
-        if (clean.size() > MAX_FIELDS) {
-            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Maksimal " + MAX_FIELDS + " field per item");
-        }
-        return clean;
-    }
-
-    @DeleteMapping("/api/public/sites/{slug}/admin/collections/{collectionName}/{itemId}")
-    public Map<String, Object> deleteCollectionItem(@PathVariable String slug,
-                                                    @PathVariable String collectionName,
-                                                    @PathVariable UUID itemId,
-                                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-
-        SiteCustomItem item = siteCustomItemRepository.findById(itemId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Item tidak ditemukan"));
-        if (!item.getSiteId().equals(site.getId())) {
-            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED);
-        }
-        siteCustomItemRepository.delete(item);
-        return Map.of("success", true, "message", "Item berhasil dihapus");
-    }
-
-    // ==========================================
-    // Pengelolaan Pengurus & Hak Akses Organisasi
-    // ==========================================
-
-    @GetMapping("/api/public/sites/{slug}/admin/members")
-    public List<Map<String, Object>> getSiteMembers(@PathVariable String slug,
-                                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        authenticateSiteManager(authHeader, site);
-
-        return memberRepository.findByOrganizationId(site.getOrganizationId())
-                .stream()
-                .map(m -> {
-                    User u = userRepository.findById(m.getUserId()).orElse(null);
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("userId", m.getUserId());
-                    map.put("role", m.getRole().value());
-                    map.put("positionTitle", m.getPositionTitle());
-                    map.put("joinedAt", m.getJoinedAt());
-                    map.put("name", u != null && u.getDisplayName() != null ? u.getDisplayName() : (u != null ? u.getEmail() : "Pengurus"));
-                    map.put("email", u != null ? u.getEmail() : "-");
-                    return map;
-                })
-                .toList();
-    }
-
-    @PostMapping("/api/public/sites/{slug}/admin/members")
-    public Map<String, Object> addSiteMember(@PathVariable String slug,
-                                             @RequestBody Map<String, String> payload,
-                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        OrganizationMember currentAdmin = authenticateSiteAdmin(authHeader, site);
-
-        String email = payload.get("email");
-        String roleStr = payload.get("role");
-        String positionTitle = payload.get("positionTitle");
-        if (email == null || email.isBlank()) {
-            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Email pengurus wajib diisi");
-        }
-
-        MemberRole targetRole = "admin".equalsIgnoreCase(roleStr) ? MemberRole.ADMIN : MemberRole.EDITOR;
-        if (!OrganizationAccess.canInvite(currentAdmin.getRole(), targetRole)) {
-            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Anda tidak memiliki wewenang untuk memberikan peran ini");
-        }
-
-        String cleanEmail = email.trim().toLowerCase(Locale.ROOT);
-        // Hanya akun OrgSpace yang sudah ada. Dulu akun baru dibuat dengan password bawaan yang diketahui
-        // orang lain, sehingga pemilik email asli tidak bisa mendaftar dan akunnya bisa dimasuki pihak lain.
-        User user = userRepository.findByEmailIgnoreCase(cleanEmail)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND,
-                        "Email ini belum punya akun OrgSpace. Minta dia daftar di aplikasi OrgSpace dulu, atau undang lewat aplikasi."));
-
-        if (memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), user.getId()).isPresent()) {
-            throw new ApiException(ErrorCode.ALREADY_MEMBER, "Pengguna sudah menjadi pengurus organisasi ini");
-        }
-
-        OrganizationMember newMember = new OrganizationMember(site.getOrganizationId(), user.getId(), targetRole, positionTitle, Instant.now());
-        memberRepository.save(newMember);
-
-        return Map.of(
-                "success", true,
-                "message", "Pengurus berhasil ditambahkan",
-                "member", Map.of(
-                        "userId", user.getId(),
-                        "name", user.getDisplayName() != null ? user.getDisplayName() : user.getEmail(),
-                        "email", user.getEmail(),
-                        "role", targetRole.value()
-                )
-        );
-    }
-
-    @PutMapping("/api/public/sites/{slug}/admin/members/{targetUserId}")
-    public Map<String, Object> updateMemberRole(@PathVariable String slug,
-                                                @PathVariable UUID targetUserId,
-                                                @RequestBody Map<String, String> payload,
-                                                @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        OrganizationMember currentAdmin = authenticateSiteAdmin(authHeader, site);
-
-        OrganizationMember target = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), targetUserId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Pengurus tidak ditemukan"));
-
-        String roleStr = payload.get("role");
-        MemberRole newRole = "admin".equalsIgnoreCase(roleStr) ? MemberRole.ADMIN : MemberRole.EDITOR;
-
-        if (!OrganizationAccess.canChangeRole(currentAdmin.getRole(), target.getRole(), newRole)) {
-            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Anda tidak berhak mengubah peran pengurus ini");
-        }
-
-        target.setRole(newRole);
-        if (payload.get("positionTitle") != null) {
-            target.setPositionTitle(payload.get("positionTitle"));
-        }
-        memberRepository.save(target);
-
-        return Map.of("success", true, "message", "Peran pengurus berhasil diperbarui");
-    }
-
-    @DeleteMapping("/api/public/sites/{slug}/admin/members/{targetUserId}")
-    public Map<String, Object> removeMember(@PathVariable String slug,
-                                            @PathVariable UUID targetUserId,
-                                            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
-        OrganizationMember currentAdmin = authenticateSiteAdmin(authHeader, site);
-
-        OrganizationMember target = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), targetUserId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Pengurus tidak ditemukan"));
-
-        if (!OrganizationAccess.canRemove(currentAdmin.getRole(), target.getRole())) {
-            throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED, "Anda tidak berhak menghapus pengurus ini");
-        }
-
-        memberRepository.delete(target);
-        return Map.of("success", true, "message", "Akses pengurus berhasil dicabut");
     }
 
     private MediaType determineMediaType(Path path) {

@@ -1,0 +1,55 @@
+# Caddyfile production OrgSpace (cara B: website disajikan OrgSpace-Hosting, bukan file_server ke hosts/).
+# Langkah lengkap: docs/deploy/panduan-caddy.md. Ringkasnya: salin ke /etc/caddy/Caddyfile, isi variabel di
+# /etc/caddy/.env (dimuat lewat EnvironmentFile systemd), lalu:
+#   sudo caddy validate --config /etc/caddy/Caddyfile --envfile /etc/caddy/.env && sudo systemctl restart caddy
+#
+# Variabel:
+#   SITES_DOMAIN   domain website organisasi, mis. orgspace.app        (website tayang di orgspace.app/{slug})
+#   API_DOMAIN     domain backend Spring Boot, mis. api.orgspace.app   (dipakai app Android & portal web)
+#
+# Proses di VPS: backend :8080 dan OrgSpace-Hosting :3001, keduanya hanya mendengar 127.0.0.1; yang terbuka ke
+# internet hanya Caddy (port 80/443). Portal web (OrgSpace-Website) di-deploy ke Vercel, jadi tidak ada di sini.
+
+{
+	# Domain milik organisasi mendapat sertifikat HTTPS saat pertama dikunjungi. Caddy bertanya dulu ke backend agar
+	# sertifikat hanya dibuat untuk domain kustom yang aktif (bukan domain sembarang yang diarahkan ke VPS).
+	on_demand_tls {
+		ask http://127.0.0.1:8080/internal/caddy/ask
+	}
+}
+
+(keamanan) {
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}
+
+# Website organisasi: orgspace.app/{slug}. Hosting menambah header sandbox, data modul, dan foto (_media).
+{$SITES_DOMAIN}, www.{$SITES_DOMAIN} {
+	import keamanan
+	reverse_proxy 127.0.0.1:3001
+}
+
+# Domain milik organisasi (mis. osis.sch.id). Host aslinya diteruskan, lalu middleware Hosting mencari slug-nya
+# lewat /api/public/sites/resolve-domain.
+https:// {
+	tls {
+		on_demand
+	}
+	import keamanan
+	reverse_proxy 127.0.0.1:3001
+}
+
+# Backend untuk app Android dan portal web.
+{$API_DOMAIN} {
+	import keamanan
+	# Portal Pengurus (orgspace.app/{slug}/admin) memanggil /api/public/sites/** langsung dari browser, jadi jalur
+	# itu harus tetap terbuka (dan CORS backend tetap aktif).
+	# /sites/* = jalur lama penyaji website langsung dari backend, tanpa header sandbox Hosting; script template di
+	# sana akan berjalan di domain API. /internal/* hanya untuk Caddy sendiri (lewat 127.0.0.1 di atas).
+	@tertutup path /sites /sites/* /internal/*
+	respond @tertutup 404
+	reverse_proxy 127.0.0.1:8080
+}

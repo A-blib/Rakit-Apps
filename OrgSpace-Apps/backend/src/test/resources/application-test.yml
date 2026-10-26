@@ -1,5 +1,8 @@
 # Profile untuk test otomatis. Database disediakan Testcontainers, bukan PostgreSQL laptop.
 app:
+  auth:
+    # Semua test login dari 127.0.0.1 dalam satu konteks Spring; batas per IP diuji di AttemptLimiterTest.
+    login-max-per-ip: 100000
   jwt:
     # Hanya untuk test; bukan rahasia sungguhan.
     secret: test-secret-yang-panjangnya-minimal-32-byte-untuk-hs256

@@ -21,6 +21,7 @@ import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.databinding.FragmentCreatorHomeBinding;
 import com.aris.templateapp.databinding.ItemRowBinding;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
+import com.aris.templateapp.ui.common.PagerAwareSwipe;
 import com.aris.templateapp.ui.common.StatusBannerView;
 import com.aris.templateapp.ui.guide.Guide;
 import com.aris.templateapp.ui.guide.GuideFragment;
@@ -89,6 +90,9 @@ public class CreatorHomeFragment extends Fragment {
         binding.continueList.setAdapter(smallAdapter);
         recommendAdapter = GalleryAdapter.cards(thumbnailLoader, template -> TemplateOpener.open(this, template));
         binding.recommendList.setAdapter(recommendAdapter);
+        // Kedua daftar digeser ke samping di dalam tab yang juga bisa digeser; tanpa ini tab yang selalu bergerak.
+        PagerAwareSwipe.attach(binding.continueList);
+        PagerAwareSwipe.attach(binding.recommendList);
 
         new ViewModelProvider(this).get(WorkspaceViewModel.class).getActive().observe(getViewLifecycleOwner(), active -> {
             workspace = userViewModel.isLoggedInNow() ? active : null;

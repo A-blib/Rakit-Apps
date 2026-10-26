@@ -41,8 +41,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -302,6 +304,9 @@ public class TemplateEditorViewModel extends ViewModel {
         main.post(() -> {
             projectId = finalProject.id;
             projectName = finalProject.name;
+            if (serverProjectId == null) {
+                serverProjectId = finalProject.serverProjectId;
+            }
             lastExportedAt = finalProject.lastExportedAt;
             updatedAt = finalProject.updatedAt;
             values = finalStored;
@@ -501,6 +506,7 @@ public class TemplateEditorViewModel extends ViewModel {
         String id = pendingId();
         String name = projectName;
         Long exported = lastExportedAt;
+        String serverId = serverProjectId;
         executors.diskIO().execute(() -> {
             try {
                 long now = projects.now();
@@ -513,6 +519,8 @@ public class TemplateEditorViewModel extends ViewModel {
                     project.templateVersion = data.templateVersion;
                     project.missingCount = result.missingCount();
                     project.contentPath = store.dir(id).getAbsolutePath();
+                    // Terbit sebelum perubahan pertama: ID website server ikut disimpan saat baris project dibuat.
+                    project.serverProjectId = serverId;
                     projects.insertSync(project);
                     main.post(() -> {
                         projectId = id;
@@ -720,6 +728,19 @@ public class TemplateEditorViewModel extends ViewModel {
         }
     }
 
+    /** Label isian (mis. "Foto utama") untuk kunci dari server; kunci dipakai apa adanya jika tidak ada di manifest. */
+    ArrayList<String> fieldLabels(@Nullable List<String> keys) {
+        ArrayList<String> labels = new ArrayList<>();
+        if (keys == null) {
+            return labels;
+        }
+        for (String key : keys) {
+            TemplateManifest.Field field = data == null ? null : data.manifest.field(key);
+            labels.add(field != null && field.label != null ? field.label : key);
+        }
+        return labels;
+    }
+
     LiveData<PublishState> getPublish() {
         return publish;
     }
@@ -817,6 +838,11 @@ public class TemplateEditorViewModel extends ViewModel {
                 main.post(() -> {
                     serverProjectId = done.projectId;
                     targetOrganizationId = done.organizationId;
+                    // Diingat di HP agar terbit berikutnya (juga setelah editor ditutup) memperbarui website ini.
+                    String localId = projectId;
+                    if (localId != null) {
+                        executors.diskIO().execute(() -> projects.setServerProjectId(localId, done.projectId));
+                    }
                 });
                 workspaceRepository.refresh(null);
                 publish.postValue(PublishState.success(res.getData()));

@@ -79,4 +79,7 @@ public interface ProjectDao {
 
     @Query("UPDATE projects SET status = 'exported', last_exported_at = :exportedAt WHERE id = :id")
     void markExported(String id, long exportedAt);
+
+    @Query("UPDATE projects SET server_project_id = :serverProjectId WHERE id = :id")
+    void setServerProjectId(String id, String serverProjectId);
 }

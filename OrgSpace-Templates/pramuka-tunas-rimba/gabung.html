@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gabung — Pramuka Tunas Rimba</title>
+  <meta name="description" content="Formulir pendaftaran anggota baru gugus depan.">
+  <meta name="theme-color" content="#1f3d2b">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+  <a class="skip" href="#utama">Lewati ke isi</a>
+  <header class="topbar" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo gugus depan" width="42" height="42" data-ws-org="logo">
+        <span class="brand-name"><span data-ws-org="nama">Pramuka Tunas Rimba</span><small id="brand-gudep">Gugus Depan 07.081 – 07.082</small></span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html">Beranda</a>
+        <a href="profil.html">Profil</a>
+        <a href="kegiatan.html">Kegiatan</a>
+        <a href="agenda.html">Agenda</a>
+        <a href="galeri.html">Galeri</a>
+        <a href="prestasi.html">Prestasi</a>
+        <a href="latihan.html">Pojok Latihan</a>
+        <a class="btn btn-primary btn-sm" href="gabung.html" aria-current="page">Gabung</a>
+      </nav>
+      <button class="burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="utama">
+    <section class="page-hero on-dark">
+      <div class="wrap reveal">
+        <p class="eyebrow" id="gabung-label">Penerimaan anggota</p>
+        <h1 id="gabung-judul">Ayo <span class="hl">bergabung!</span></h1>
+        <p class="lead" id="gabung-deskripsi">Isi formulir di bawah. Kakak pembina akan menghubungimu untuk jadwal latihan perdana.</p>
+      </div>
+      <span class="num" aria-hidden="true">07</span>
+    </section>
+
+    <section class="section" id="alur">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="alur-label">Alur pendaftaran</p>
+            <h2 id="alur-judul">Empat langkah jadi anggota</h2>
+          </div>
+        </div>
+        <div class="grid steps">
+          <div class="step reveal"><h3 id="alur-1">Isi formulir</h3><p id="alur-1-teks">Lengkapi data diri dan golongan yang sesuai usiamu.</p></div>
+          <div class="step reveal"><h3 id="alur-2">Dihubungi pembina</h3><p id="alur-2-teks">Kami mengonfirmasi lewat WhatsApp dalam 3 hari kerja.</p></div>
+          <div class="step reveal"><h3 id="alur-3">Latihan perdana</h3><p id="alur-3-teks">Ikut latihan pertama sebagai calon anggota.</p></div>
+          <div class="step reveal"><h3 id="alur-4">Dilantik</h3><p id="alur-4-teks">Setelah lulus syarat kecakapan, kamu dilantik dan resmi berseragam.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" id="daftar">
+      <div class="wrap form-wrap">
+        <div class="reveal">
+          <p class="eyebrow" id="daftar-label">Formulir</p>
+          <h2 id="daftar-judul">Data calon anggota</h2>
+          <p class="lead" id="daftar-deskripsi">Data hanya dibaca kakak pembina untuk keperluan pendaftaran.</p>
+          <ul class="check-list">
+            <li id="daftar-poin-1">Terbuka untuk semua kelas</li>
+            <li id="daftar-poin-2">Tidak perlu pengalaman sebelumnya</li>
+            <li id="daftar-poin-3">Seragam dan atribut dibantu pengadaannya</li>
+          </ul>
+        </div>
+        <form class="form reveal" data-ws-form="pendaftaran" id="form-daftar">
+          <div class="alert" data-ws-form-alert></div>
+          <div class="form-grid">
+            <div class="field"><label for="d-nama">Nama lengkap</label><input id="d-nama" name="nama" required autocomplete="name" placeholder="Nama sesuai rapor"></div>
+            <div class="field"><label for="d-kelas">Kelas</label><input id="d-kelas" name="kelas" required placeholder="Mis. X IPA 2"></div>
+            <div class="field"><label for="d-lahir">Tanggal lahir</label><input id="d-lahir" name="tanggal_lahir" type="date" required></div>
+            <div class="field"><label for="d-golongan">Golongan</label>
+              <select id="d-golongan" name="golongan" required>
+                <option value="">Pilih golongan</option>
+                <option>Siaga</option>
+                <option>Penggalang</option>
+                <option>Penegak</option>
+                <option>Pandega</option>
+              </select>
+              <span class="hint" id="golongan-saran">Pilih tanggal lahir untuk saran golongan.</span>
+            </div>
+            <div class="field"><label for="d-wa">WhatsApp</label><input id="d-wa" name="whatsapp" type="tel" required autocomplete="tel" placeholder="08xxxxxxxxxx"></div>
+            <div class="field"><label for="d-ortu">WhatsApp orang tua</label><input id="d-ortu" name="whatsapp_ortu" type="tel" placeholder="08xxxxxxxxxx"></div>
+            <div class="field full"><label for="d-alasan">Kenapa ingin bergabung?</label><textarea id="d-alasan" name="alasan" required maxlength="600" placeholder="Ceritakan singkat motivasimu"></textarea><span class="hint"><span id="alasan-hitung">0</span>/600 karakter</span></div>
+          </div>
+          <div class="form-foot">
+            <p class="muted" id="daftar-catatan">Dengan mendaftar, kamu siap mengikuti latihan rutin.</p>
+            <button class="btn btn-primary" type="submit">Kirim pendaftaran</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="faq-label">Tanya jawab</p>
+            <h2 id="faq-judul">Yang sering ditanyakan</h2>
+          </div>
+        </div>
+        <div class="faq">
+          <details class="knot reveal"><summary id="faq-1">Siapa saja yang boleh mendaftar?</summary><p id="faq-1-jawab">Semua siswa aktif di pangkalan kami. Belum pernah ikut pramuka pun tetap boleh.</p></details>
+          <details class="knot reveal"><summary id="faq-2">Apakah ada biaya pendaftaran?</summary><p id="faq-2-jawab">Pendaftaran gratis. Iuran kegiatan tertentu, seperti perkemahan, akan diinformasikan lebih dulu.</p></details>
+          <details class="knot reveal"><summary id="faq-3">Kapan latihan rutin diadakan?</summary><p id="faq-3-jawab">Setiap Jumat sore di lapangan sekolah. Jadwal lengkap ada di halaman Kegiatan.</p></details>
+          <details class="knot reveal"><summary id="faq-4">Bagaimana jika saya berhalangan hadir?</summary><p id="faq-4-jawab">Kabari kakak pembina atau pemimpin regu sebelum latihan dimulai.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <dialog class="thanks" id="terima-kasih" aria-labelledby="terima-kasih-judul">
+      <div class="box">
+        <div class="badge" aria-hidden="true">✓</div>
+        <h3 id="terima-kasih-judul">Pendaftaran terkirim!</h3>
+        <p class="muted" id="terima-kasih-teks">Terima kasih. Kakak pembina akan menghubungimu lewat WhatsApp dalam 3 hari kerja. Salam Pramuka!</p>
+        <button class="btn btn-green" type="button" data-close>Tutup</button>
+      </div>
+    </dialog>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-in">
+        <div>
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="img/logo.svg" alt="Logo gugus depan" width="42" height="42" data-ws-org="logo">
+            <span class="brand-name" data-ws-org="nama">Pramuka Tunas Rimba</span>
+          </a>
+          <p class="salam" id="footer-salam">Salam Pramuka!</p>
+          <p id="footer-teks">Gugus depan tempat adik-adik belajar mandiri, peduli, dan tangguh lewat kegiatan di alam terbuka.</p>
+        </div>
+        <div>
+          <p class="footer-title">Jelajahi</p>
+          <ul>
+            <li><a href="profil.html">Profil & Pembina</a></li>
+            <li><a href="kegiatan.html">Kegiatan & Jadwal</a></li>
+            <li><a href="agenda.html">Agenda</a></li>
+            <li><a href="galeri.html">Galeri</a></li>
+            <li><a href="prestasi.html">Prestasi</a></li>
+            <li><a href="latihan.html">Pojok Latihan</a></li>
+          </ul>
+        </div>
+        <div data-org-group>
+          <p class="footer-title">Kontak</p>
+          <ul>
+            <li><a href="gabung.html" data-ws-org="email">Email gugus depan</a></li>
+            <li><a href="gabung.html" data-ws-org="whatsapp">WhatsApp</a></li>
+            <li><a href="gabung.html" data-ws-org="instagram">Instagram</a></li>
+            <li><span data-ws-org="alamat">Alamat pangkalan</span></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">Untuk pembina</p>
+          <p class="muted" id="footer-pembina">Kelola kegiatan, agenda, dan pendaftar dari Portal Pengurus.</p>
+          <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span data-ws-org="institusi">Pangkalan SMA Tunas Bangsa</span> · <span data-ws-org="kota">Kota</span></span>
+        <a href="#atas">Kembali ke atas ↑</a>
+      </div>
+    </div>
+  </footer>
+  <button class="to-top" id="to-top" type="button" aria-label="Kembali ke atas">↑</button>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

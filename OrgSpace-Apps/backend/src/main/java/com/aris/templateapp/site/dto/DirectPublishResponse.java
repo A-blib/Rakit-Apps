@@ -1,5 +1,6 @@
 package com.aris.templateapp.site.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 public record DirectPublishResponse(
@@ -11,6 +12,8 @@ public record DirectPublishResponse(
         String url,
         int port,
         String status,
-        Integer version
+        Integer version,
+        // Kunci isian foto yang filenya tidak ikut terkirim; website memakai foto contoh template untuk isian itu.
+        List<String> missingImages
 ) {
 }

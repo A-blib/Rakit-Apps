@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detail Karya — Creative Crew</title>
+  <meta name="description" content="Studi kasus karya Creative Crew.">
+  <meta name="theme-color" content="#121212">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#utama">Lewati ke isi</a>
+  <header class="topbar solid" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" width="40" height="40" data-ws-org="logo">
+        <span class="brand-name" data-ws-org="nama">Creative Crew</span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html">Home</a>
+        <a href="works.html">Works</a>
+        <a href="crew.html">Crew</a>
+        <a href="gear.html">Gear</a>
+        <a class="btn btn-primary btn-sm" href="collab.html">Start a Project</a>
+      </nav>
+      <button class="burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="utama">
+    <!-- DETAIL KARYA: semua karya diisi OrgSpace, lalu js/main.js menampilkan satu karya sesuai karya.html?id=... -->
+    <section class="section first">
+      <div class="wrap">
+        <a class="link-arrow" href="works.html" id="kembali">Semua karya</a>
+        <div data-ws-collection="karya" id="detail-karya">
+          <article class="case" data-ws-item>
+            <div class="case-head">
+              <div>
+                <span class="tag" data-ws-field="kategori">Video</span>
+                <h1 data-ws-field="judul">Judul karya</h1>
+              </div>
+              <dl class="case-facts">
+                <div><dt>Klien</dt><dd data-ws-field="klien">Nama klien</dd></div>
+                <div><dt>Tahun</dt><dd data-ws-field="tahun" data-ws-type="angka">2026</dd></div>
+              </dl>
+            </div>
+            <div class="case-cover"><img src="img/karya-2.jpg" alt="Sampul karya" width="900" height="600" loading="lazy" data-ws-field="thumbnail"></div>
+            <div class="case-body">
+              <div>
+                <p class="summary" data-ws-field="ringkasan" data-ws-type="paragraf">Ringkasan singkat project dalam satu atau dua kalimat.</p>
+                <h2>Case study</h2>
+                <p class="story" data-ws-field="studi_kasus" data-ws-type="paragraf">Ceritakan latar belakang, tantangan, proses produksi, dan hasil project ini.</p>
+              </div>
+              <aside class="credits">
+                <h2>Credit title</h2>
+                <p data-ws-field="kredit" data-ws-type="paragraf">Director — Nama
+Editor — Nama
+Designer — Nama</p>
+                <a class="btn btn-primary" href="#" data-ws-link="link_video">Tonton karya</a>
+              </aside>
+            </div>
+            <div class="case-gallery">
+              <img src="img/karya-3.jpg" alt="Aset karya" width="900" height="900" loading="lazy" data-ws-field="foto_2">
+              <img src="img/karya-5.jpg" alt="Aset karya" width="900" height="650" loading="lazy" data-ws-field="foto_3">
+              <img src="img/karya-7.jpg" alt="Aset karya" width="900" height="700" loading="lazy" data-ws-field="foto_4">
+            </div>
+          </article>
+          <p class="empty" data-ws-empty>Karya ini belum tersedia. <a class="link-arrow" href="works.html">Lihat karya lain</a></p>
+        </div>
+        <nav class="case-nav" id="case-nav" aria-label="Karya lain" hidden>
+          <a class="prev" id="karya-sebelum" href="works.html"><span>Sebelumnya</span><strong>Karya</strong></a>
+          <a class="next" id="karya-sesudah" href="works.html"><span>Berikutnya</span><strong>Karya</strong></a>
+        </nav>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-in">
+        <div>
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="img/logo.svg" alt="Logo organisasi" width="40" height="40" data-ws-org="logo">
+            <span class="brand-name" data-ws-org="nama">Creative Crew</span>
+          </a>
+          <p class="muted" id="footer-teks">Rumah produksi kreatif mahasiswa: video, desain, dan dokumentasi event untuk seluruh kampus.</p>
+        </div>
+        <div>
+          <p class="footer-title">Jelajahi</p>
+          <ul>
+            <li><a href="works.html">Works</a></li>
+            <li><a href="crew.html">Crew</a></li>
+            <li><a href="collab.html">Collab</a></li>
+            <li><a href="gear.html">Gear Room</a></li>
+          </ul>
+        </div>
+        <div data-org-group>
+          <p class="footer-title">Kontak</p>
+          <ul>
+            <li><a href="collab.html" data-ws-org="email">Email organisasi</a></li>
+            <li><a href="collab.html" data-ws-org="instagram">Instagram</a></li>
+            <li><a href="collab.html" data-ws-org="whatsapp">WhatsApp</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">Untuk pengurus</p>
+          <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span data-ws-org="institusi">Nama kampus</span> · <span data-ws-org="kota">Kota</span></span>
+        <a href="#atas">Kembali ke atas ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

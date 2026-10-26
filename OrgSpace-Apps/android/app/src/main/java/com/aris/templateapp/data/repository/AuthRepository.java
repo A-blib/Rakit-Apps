@@ -3,6 +3,7 @@ package com.aris.templateapp.data.repository;
 import androidx.annotation.WorkerThread;
 
 import com.aris.templateapp.core.network.ApiErrorParser;
+import com.aris.templateapp.core.storage.GitHubVerifierStore;
 import com.aris.templateapp.core.storage.SessionStore;
 import com.aris.templateapp.core.storage.TokenStorage;
 import com.aris.templateapp.core.util.Resource;
@@ -13,6 +14,7 @@ import com.aris.templateapp.data.remote.dto.AuthResponseDto;
 import com.aris.templateapp.data.remote.dto.GitHubAuthorizeRequestDto;
 import com.aris.templateapp.data.remote.dto.GoogleLoginRequestDto;
 import com.aris.templateapp.data.remote.dto.LoginRequestDto;
+import com.aris.templateapp.data.remote.dto.NonceResponseDto;
 import com.aris.templateapp.data.remote.dto.RefreshTokenRequestDto;
 import com.aris.templateapp.data.remote.dto.RegisterRequestDto;
 import com.aris.templateapp.data.remote.dto.TicketExchangeRequestDto;
@@ -34,6 +36,7 @@ import retrofit2.Response;
 @Singleton
 public class AuthRepository {
 
+    private final GitHubVerifierStore gitHubVerifiers;
     private final AuthApi authApi;
     private final TokenStorage tokenStorage;
     private final SessionStore sessionStore;
@@ -44,7 +47,8 @@ public class AuthRepository {
     @Inject
     public AuthRepository(AuthApi authApi, TokenStorage tokenStorage, SessionStore sessionStore,
                           ApiErrorParser errorParser, WorkspaceRepository workspaceRepository,
-                          WebsiteRepository websiteRepository) {
+                          WebsiteRepository websiteRepository, GitHubVerifierStore gitHubVerifiers) {
+        this.gitHubVerifiers = gitHubVerifiers;
         this.authApi = authApi;
         this.tokenStorage = tokenStorage;
         this.sessionStore = sessionStore;
@@ -64,6 +68,24 @@ public class AuthRepository {
         return execute(authApi.login(new LoginRequestDto(email, password, linkToken)));
     }
 
+    /**
+     * Nonce untuk satu kali login/sambungkan Google. Google menanamnya ke ID token, lalu backend mencoretnya saat token
+     * dipakai, sehingga salinan ID token yang bocor tidak bisa dipakai masuk lagi.
+     */
+    @WorkerThread
+    public Resource<String> googleNonce() {
+        try {
+            Response<NonceResponseDto> response = authApi.googleNonce().execute();
+            NonceResponseDto body = response.body();
+            if (response.isSuccessful() && body != null && body.nonce != null) {
+                return Resource.success(body.nonce);
+            }
+            return Resource.error(errorParser.parse(response));
+        } catch (IOException e) {
+            return Resource.error(errorParser.parse(e));
+        }
+    }
+
     /** Masuk/daftar dengan idToken dari Credential Manager. */
     @WorkerThread
     public Resource<AuthResult> loginWithGoogle(String idToken, String linkToken) {
@@ -74,7 +96,8 @@ public class AuthRepository {
     @WorkerThread
     public Resource<String> gitHubAuthorizeUrl(String linkToken) {
         try {
-            Response<UrlResponseDto> response = authApi.gitHubAuthorizeUrl(new GitHubAuthorizeRequestDto(linkToken)).execute();
+            Response<UrlResponseDto> response = authApi.gitHubAuthorizeUrl(
+                    new GitHubAuthorizeRequestDto(linkToken, gitHubVerifiers.startFlow())).execute();
             UrlResponseDto body = response.body();
             if (response.isSuccessful() && body != null && body.url != null) {
                 return Resource.success(body.url);
@@ -88,7 +111,7 @@ public class AuthRepository {
     /** Menukar tiket dari deep link GitHub menjadi sesi login. */
     @WorkerThread
     public Resource<AuthResult> exchangeGitHubTicket(String ticket) {
-        return execute(authApi.gitHubExchange(new TicketExchangeRequestDto(ticket)));
+        return execute(authApi.gitHubExchange(new TicketExchangeRequestDto(ticket, gitHubVerifiers.takeVerifier())));
     }
 
     /**

@@ -250,6 +250,16 @@ public class ProjectService {
      * Tandaan template asal (isian, gaya, tema yang diizinkan); null untuk website Rakit sendiri. Status template
      * tidak dicek: website tetap bisa diedit walau templatenya kemudian tidak tayang lagi.
      */
+    /** Publish langsung tidak boleh menimpa website yang sedang diedit anggota lain (kunci edit K17). */
+    public void requireNotLockedByOthers(UUID projectId, UUID userId) {
+        locks.requireFreeFor(projectId, userId);
+    }
+
+    /** Aturan isi yang sama dengan {@link #updateContent}, untuk jalur lain yang menyimpan isi (publish langsung). */
+    public void validateContent(Project project, Map<String, Object> content) {
+        ContentValidator.validate(content, marking(project), asset -> ownsAsset(project.getId(), asset));
+    }
+
     private MarkingData marking(Project project) {
         if (project.getSourceTemplateId() == null) {
             return null;
@@ -283,7 +293,10 @@ public class ProjectService {
         if (existing != null) {
             return existing;
         }
-        long used = jdbc.sql("SELECT COALESCE(SUM(size_bytes), 0) FROM project_assets WHERE organization_id = :org")
+        // Per file unik: foto yang sama di beberapa website satu organisasi tersimpan sekali di disk (nama = sha256).
+        long used = jdbc.sql("""
+                        SELECT COALESCE(SUM(size_bytes), 0) FROM (
+                            SELECT DISTINCT ON (storage_path) size_bytes FROM project_assets WHERE organization_id = :org) unik""")
                 .param("org", project.getOrganizationId())
                 .query(Long.class)
                 .single();

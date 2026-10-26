@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pramuka Tunas Rimba — Gugus Depan</title>
+  <meta name="description" content="Gugus depan pramuka: kegiatan, agenda, prestasi, dan pendaftaran anggota baru.">
+  <meta name="theme-color" content="#1f3d2b">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip" href="#utama">Lewati ke isi</a>
+  <header class="topbar" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo gugus depan" width="42" height="42" data-ws-org="logo">
+        <span class="brand-name"><span data-ws-org="nama">Pramuka Tunas Rimba</span><small id="brand-gudep">Gugus Depan 07.081 – 07.082</small></span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html" aria-current="page">Beranda</a>
+        <a href="profil.html">Profil</a>
+        <a href="kegiatan.html">Kegiatan</a>
+        <a href="agenda.html">Agenda</a>
+        <a href="galeri.html">Galeri</a>
+        <a href="prestasi.html">Prestasi</a>
+        <a href="latihan.html">Pojok Latihan</a>
+        <a class="btn btn-primary btn-sm" href="gabung.html">Gabung</a>
+      </nav>
+      <button class="burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="utama">
+    <section class="hero on-dark">
+      <div class="hero-bg" id="hero-bg"><img id="hero-foto" src="img/hero.jpg" alt="Perkemahan malam di bawah bintang" width="1920" height="1080" fetchpriority="high"></div>
+      <span class="ember" aria-hidden="true"></span>
+      <div class="wrap">
+        <p class="eyebrow" id="hero-label">Salam Pramuka!</p>
+        <h1><span id="hero-judul-1">Tumbuh di alam,</span> <span class="hl" id="hero-sorot">siap mengabdi</span></h1>
+        <p class="lead" id="hero-deskripsi">Kami gugus depan yang membina adik-adik Siaga sampai Penegak menjadi pribadi mandiri, peduli, dan tangguh lewat petualangan setiap pekan.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="gabung.html" id="hero-cta-1">Daftar jadi anggota <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn-ghost" href="kegiatan.html" id="hero-cta-2">Lihat kegiatan kami</a>
+        </div>
+        <div class="hero-meta">
+          <div><strong data-ws-stat="berita">36</strong><span id="hero-stat-1">Kegiatan tercatat</span></div>
+          <div><strong data-ws-stat="prestasi">12</strong><span id="hero-stat-2">Prestasi diraih</span></div>
+          <div><strong data-ws-stat="form.pendaftaran">80</strong><span id="hero-stat-3">Pendaftar baru</span></div>
+        </div>
+      </div>
+      <span class="scroll-hint" aria-hidden="true">Gulir</span>
+    </section>
+
+    <!-- GOLONGAN: pembagian peserta didik menurut usia -->
+    <section class="section" id="golongan">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="golongan-label">Golongan</p>
+            <h2 id="golongan-judul">Satu gerakan, empat tahap bertumbuh</h2>
+            <p class="lead" id="golongan-deskripsi">Setiap golongan punya cara belajar sendiri, disesuaikan dengan usia dan kemampuan anggotanya.</p>
+          </div>
+          <a class="link-arrow" href="profil.html" id="golongan-link">Kenali gugus depan kami</a>
+        </div>
+        <div class="grid ranks">
+          <article class="rank siaga reveal">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg></div>
+            <span class="age" id="golongan-1-usia">7–10 tahun</span>
+            <h3 id="golongan-1-nama">Siaga</h3>
+            <p id="golongan-1-teks">Belajar sambil bermain dalam barung dan perindukan: lagu, cerita, dan keterampilan dasar.</p>
+          </article>
+          <article class="rank penggalang reveal">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 3 20h18z"/><path d="M12 11l-3 9h6z"/></svg></div>
+            <span class="age" id="golongan-2-usia">11–15 tahun</span>
+            <h3 id="golongan-2-nama">Penggalang</h3>
+            <p id="golongan-2-teks">Berkegiatan dalam regu: tali-temali, sandi, penjelajahan, dan perkemahan.</p>
+          </article>
+          <article class="rank penegak reveal">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg></div>
+            <span class="age" id="golongan-3-usia">16–20 tahun</span>
+            <h3 id="golongan-3-nama">Penegak</h3>
+            <p id="golongan-3-teks">Memimpin dan mengabdi di ambalan: bakti masyarakat, raimuna, dan pelatihan kepemimpinan.</p>
+          </article>
+          <article class="rank pandega reveal">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 20 10 8l4 6 2-3 5 9z"/><path d="M10 8V3l4 1.5L10 6"/></svg></div>
+            <span class="age" id="golongan-4-usia">21–25 tahun</span>
+            <h3 id="golongan-4-nama">Pandega</h3>
+            <p id="golongan-4-teks">Merancang program dan pengabdian nyata di racana bersama masyarakat.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- KEGIATAN TERBARU: modul berita (diisi di tab Berita Portal Pengurus) -->
+    <section class="section alt" id="kegiatan-terbaru">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="kabar-label">Kabar Kegiatan</p>
+            <h2 id="kabar-judul">Petualangan terbaru kami</h2>
+          </div>
+          <a class="link-arrow" href="kegiatan.html" id="kabar-link">Semua kegiatan</a>
+        </div>
+        <div class="grid news" data-ws-list="kegiatan" data-ws-limit="3">
+          <a class="card news-card reveal" href="kegiatan.html" data-ws-item>
+            <div class="media"><img src="img/kegiatan-1.jpg" alt="Foto kegiatan" width="1200" height="800" loading="lazy" data-ws-field="foto"></div>
+            <div class="body">
+              <time data-ws-field="tanggal" data-ws-type="tanggal">12 Oktober 2026</time>
+              <h3 data-ws-field="judul">Penjelajahan 12 km menyusuri kaki gunung</h3>
+              <p data-ws-field="ringkasan" data-ws-type="paragraf">Regu penggalang belajar membaca peta, kompas, dan jejak sambil menyusuri jalur hutan pinus.</p>
+            </div>
+          </a>
+          <p class="empty" data-ws-empty>Cerita kegiatan terbaru akan segera dibagikan di sini.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- AGENDA TERDEKAT: hitung mundur ke agenda berikutnya -->
+    <section class="section" id="agenda-terdekat">
+      <div class="wrap">
+        <div class="countdown reveal" id="countdown">
+          <div>
+            <p class="eyebrow" id="hitung-label">Agenda terdekat</p>
+            <h3 id="countdown-title">Perkemahan Sabtu Minggu (Persami)</h3>
+            <p id="countdown-when">Siapkan perlengkapanmu, petualangan berikutnya segera dimulai.</p>
+            <a class="btn btn-primary btn-sm" href="agenda.html" id="hitung-link">Lihat semua agenda</a>
+          </div>
+          <div class="clock" aria-live="polite">
+            <div><strong id="cd-hari">00</strong><span>Hari</span></div>
+            <div><strong id="cd-jam">00</strong><span>Jam</span></div>
+            <div><strong id="cd-menit">00</strong><span>Menit</span></div>
+            <div><strong id="cd-detik">00</strong><span>Detik</span></div>
+          </div>
+        </div>
+        <div class="agenda-list" data-ws-collection="agenda" data-ws-limit="3" style="margin-top:22px">
+          <article class="agenda-item reveal" data-ws-item>
+            <div class="agenda-date" aria-hidden="true"><span class="day">14</span><span class="month">Nov 2026</span></div>
+            <div>
+              <h3 data-ws-field="judul">Perkemahan Sabtu Minggu (Persami)</h3>
+              <div class="meta"><span class="time" data-ws-field="waktu">Sabtu, 07.00 WIB</span><span class="where" data-ws-field="lokasi">Bumi Perkemahan Sekolah</span></div>
+              <time class="full" data-ws-field="tanggal" data-ws-type="tanggal" datetime="2026-11-14">14 November 2026</time>
+            </div>
+            <span class="tag" data-ws-field="golongan">Penggalang</span>
+          </article>
+          <p class="empty" data-ws-empty>Agenda berikutnya sedang disiapkan para pembina.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ANGKA: dihitung otomatis dari data -->
+    <section class="section dark on-dark" id="angka">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="angka-label">Jejak kami</p>
+            <h2 id="angka-judul">Setiap angka adalah cerita</h2>
+          </div>
+        </div>
+        <div class="grid stats reveal">
+          <div class="stat"><strong data-ws-stat="berita">36</strong><span id="angka-1">Kegiatan tercatat</span></div>
+          <div class="stat"><strong data-ws-stat="agenda">8</strong><span id="angka-2">Agenda tahun ini</span></div>
+          <div class="stat"><strong data-ws-stat="prestasi">12</strong><span id="angka-3">Prestasi lomba</span></div>
+          <div class="stat"><strong data-ws-stat="pembina">6</strong><span id="angka-4">Pembina & pelatih</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRESTASI PILIHAN -->
+    <section class="section" id="prestasi-pilihan">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="prestasi-label">Prestasi</p>
+            <h2 id="prestasi-judul">Bangga pada kerja keras regu kami</h2>
+          </div>
+          <a class="link-arrow" href="prestasi.html" id="prestasi-link">Semua prestasi</a>
+        </div>
+        <div class="grid awards" data-ws-collection="prestasi" data-ws-limit="3">
+          <article class="card award reveal" data-ws-item>
+            <div class="media"><img src="img/prestasi-1.jpg" alt="Foto prestasi" width="1200" height="800" loading="lazy" data-ws-field="foto"><span class="level" data-ws-field="tingkat">Provinsi</span></div>
+            <div class="body">
+              <span class="year" data-ws-field="tahun">2026</span>
+              <h3 data-ws-field="judul">Juara 1 Lomba Tingkat (LT) III Penggalang Putra</h3>
+              <p class="who" data-ws-field="peraih">Regu Elang</p>
+            </div>
+          </article>
+          <p class="empty" data-ws-empty>Daftar prestasi akan segera diperbarui.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" id="ajak">
+      <div class="wrap">
+        <div class="cta reveal">
+          <p class="eyebrow" id="cta-label">Penerimaan anggota baru</p>
+          <h2 id="cta-judul">Siap jadi bagian dari petualangan berikutnya?</h2>
+          <p id="cta-deskripsi">Pendaftaran terbuka untuk semua siswa. Tidak perlu pengalaman, cukup semangat belajar dan mau berkembang bersama.</p>
+          <a class="btn btn-primary" href="gabung.html" id="cta-tombol">Daftar sekarang <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-in">
+        <div>
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="img/logo.svg" alt="Logo gugus depan" width="42" height="42" data-ws-org="logo">
+            <span class="brand-name" data-ws-org="nama">Pramuka Tunas Rimba</span>
+          </a>
+          <p class="salam" id="footer-salam">Salam Pramuka!</p>
+          <p id="footer-teks">Gugus depan tempat adik-adik belajar mandiri, peduli, dan tangguh lewat kegiatan di alam terbuka.</p>
+        </div>
+        <div>
+          <p class="footer-title">Jelajahi</p>
+          <ul>
+            <li><a href="profil.html">Profil & Pembina</a></li>
+            <li><a href="kegiatan.html">Kegiatan & Jadwal</a></li>
+            <li><a href="agenda.html">Agenda</a></li>
+            <li><a href="galeri.html">Galeri</a></li>
+            <li><a href="prestasi.html">Prestasi</a></li>
+            <li><a href="latihan.html">Pojok Latihan</a></li>
+          </ul>
+        </div>
+        <div data-org-group>
+          <p class="footer-title">Kontak</p>
+          <ul>
+            <li><a href="gabung.html" data-ws-org="email">Email gugus depan</a></li>
+            <li><a href="gabung.html" data-ws-org="whatsapp">WhatsApp</a></li>
+            <li><a href="gabung.html" data-ws-org="instagram">Instagram</a></li>
+            <li><span data-ws-org="alamat">Alamat pangkalan</span></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">Untuk pembina</p>
+          <p class="muted" id="footer-pembina">Kelola kegiatan, agenda, dan pendaftar dari Portal Pengurus.</p>
+          <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span data-ws-org="institusi">Pangkalan SMA Tunas Bangsa</span> · <span data-ws-org="kota">Kota</span></span>
+        <a href="#atas">Kembali ke atas ↑</a>
+      </div>
+    </div>
+  </footer>
+  <button class="to-top" id="to-top" type="button" aria-label="Kembali ke atas">↑</button>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

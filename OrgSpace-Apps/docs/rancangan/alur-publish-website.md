@@ -68,6 +68,10 @@ VPS
 
 ### 2.3 Cara Caddy menemukan file website (kunci fitur ini)
 
+> **Diganti (26 Oktober 2026):** website kini disajikan OrgSpace-Hosting (`orgspace.app/{slug}`), bukan Caddy
+> `file_server` ke `hosts/`. Symlink `hosts/` tidak dibuat lagi. Lihat `docs/dokumentasi-project.md` 33c dan
+> `docs/deploy/Caddyfile`.
+
 Setiap hostname yang aktif punya **satu symlink** di folder `hosts/`. Caddy cukup membaca folder sesuai hostname yang diminta browser. **Caddy tidak perlu di-reload** saat ada website baru.
 
 ```

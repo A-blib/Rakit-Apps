@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { BACKEND_API_URL } from "@/lib/config";
 
 /**
  * Halaman website user berjalan di sandbox (origin "null"), jadi form-nya memanggil route ini lintas origin.
@@ -19,7 +20,7 @@ export async function POST(
   context: { params: Promise<{ slug: string; formName: string }> }
 ) {
   const { slug, formName } = await context.params;
-  const backendUrl = process.env.BACKEND_API_URL || "http://localhost:8080";
+  const backendUrl = BACKEND_API_URL;
 
   try {
     const body = await request.json();

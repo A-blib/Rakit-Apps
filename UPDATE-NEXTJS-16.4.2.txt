@@ -1,0 +1,136 @@
+PERINTAH UNTUK AI AGENT: UPDATE PROJECT ORGSPACE KE VERSI TERBARU (NEXT.JS 16.4.2)
+==================================================================================
+
+Salin seluruh isi file ini ke AI agent kamu (Claude Code, Codex, Cursor, dll.), lalu biarkan agent
+mengerjakannya langkah demi langkah. Agent harus berhenti dan bertanya jika ada langkah yang gagal.
+
+Latar belakang
+--------------
+- Next.js 16.4.0 terkena celah keamanan. `npm run build` gagal dengan pesan:
+    Error [SecurityFatalError]: Your version of Next.js is affected by a known security vulnerability.
+- Perbaikannya sudah ada di GitHub (repo A-blib/Rakit-Apps, cabang `main`):
+    * PR #16 -> OrgSpace-Website pakai next 16.4.2 (sudah di-merge)
+    * PR #17 -> OrgSpace-Hosting pakai next 16.4.2 (cek apakah sudah di-merge)
+- Tugasmu: tarik perubahan terbaru dari `main`, pasang ulang dependency, dan pastikan web jalan.
+
+ATURAN UNTUK AGENT
+------------------
+1. JANGAN ubah versi di package.json secara manual dan JANGAN menjalankan `next upgrade` sendiri.
+   Versi yang benar sudah ada di `main`; cukup pull lalu `npm install`.
+2. JANGAN commit `.env.local`, `node_modules/`, `.next/`.
+3. JANGAN memperbaiki error lint lama di OrgSpace-Hosting (14 error `no-explicit-any` dll.) kecuali diminta;
+   error itu sudah ada sebelum upgrade dan tidak menghalangi build.
+4. JANGAN menghapus perubahan lokal pengguna. Simpan dulu (langkah 1).
+5. Ikuti AGENTS.md di tiap folder (OrgSpace-Website/AGENTS.md, OrgSpace-Hosting/AGENTS.md).
+6. Sebelum mematikan proses di port 3000 / 3001 / 8080, cek dulu proses itu milik siapa.
+
+LANGKAH 1 - Simpan pekerjaan lokal
+----------------------------------
+Jalankan dari folder root repo (folder yang berisi OrgSpace-Apps, OrgSpace-Website, OrgSpace-Hosting):
+
+    git status
+
+- Jika ada perubahan yang belum di-commit: tanyakan ke pengguna mau di-commit atau di-stash.
+    commit : git add <file> lalu git commit -m "wip: <keterangan>"
+    stash  : git stash push -u -m "sebelum update next 16.4.2"
+- Catat nama cabang sekarang:
+    git branch --show-current
+
+LANGKAH 2 - Tarik perubahan terbaru dari main
+---------------------------------------------
+    git fetch origin
+    git log --oneline -5 origin/main
+
+Pastikan di daftar itu ada commit "Merge pull request #16" (dan #17 jika sudah di-merge).
+
+A. Jika pengguna bekerja langsung di cabang main:
+    git checkout main
+    git pull origin main
+
+B. Jika pengguna bekerja di cabang lain (misalnya web/<topik>-<nama>):
+    git merge origin/main
+   Jika ada konflik di package-lock.json: ambil versi dari main, lalu install ulang:
+    git checkout --theirs OrgSpace-Website/package-lock.json OrgSpace-Hosting/package-lock.json
+    git add OrgSpace-Website/package-lock.json OrgSpace-Hosting/package-lock.json
+   (lanjutkan ke langkah 3, lalu selesaikan merge dengan `git commit`)
+   Konflik di file lain: berhenti dan tanyakan ke pengguna.
+
+Cek versi di package.json setelah pull:
+    Windows (PowerShell): Select-String '"next"' OrgSpace-Website\package.json, OrgSpace-Hosting\package.json
+    Linux/macOS        : grep '"next"' OrgSpace-Website/package.json OrgSpace-Hosting/package.json
+Harus tertulis "16.4.2". Jika OrgSpace-Hosting masih "16.4.0", berarti PR #17 belum di-merge:
+beri tahu pengguna, lalu kerjakan OrgSpace-Website saja dulu.
+
+LANGKAH 3 - Pasang ulang dependency (WAJIB, pull saja tidak cukup)
+------------------------------------------------------------------
+Jalankan di OrgSpace-Website, lalu ulangi di OrgSpace-Hosting:
+
+    cd OrgSpace-Website
+    npm install
+    node -p "require('next/package.json').version"
+
+Hasil harus 16.4.2.
+
+Jika masih 16.4.0 atau build tetap error SecurityFatalError, hapus folder lama lalu install ulang:
+    Windows (PowerShell):
+        Remove-Item -Recurse -Force node_modules, .next
+        npm install
+    Linux/macOS:
+        rm -rf node_modules .next
+        npm install
+
+Peringatan "npm warn allow-scripts unrs-resolver" boleh diabaikan; lint dan build tetap jalan.
+
+LANGKAH 4 - Siapkan file environment (jika belum ada)
+-----------------------------------------------------
+Di OrgSpace-Website dan OrgSpace-Hosting, jika `.env.local` belum ada:
+    Windows (PowerShell): copy .env.example .env.local
+    Linux/macOS        : cp .env.example .env.local
+Jangan menimpa `.env.local` yang sudah ada.
+
+LANGKAH 5 - Pastikan bersih dan bisa jalan
+------------------------------------------
+Di OrgSpace-Website:
+    npm run lint     -> harus 0 error (2 warning lama di contoh-modul-orgspace boleh)
+    npm run build    -> harus sukses, TANPA pesan "affected by a known security vulnerability"
+    npm run dev      -> buka http://localhost:3000
+
+Di OrgSpace-Hosting:
+    npm run build    -> harus sukses
+    npm run dev      -> buka http://localhost:3001 (port 3001 sudah diatur di package.json)
+
+Cek cepat di browser:
+    http://localhost:3000/                 landing page tampil
+    http://localhost:3000/docs             dokumentasi tampil
+    http://localhost:3000/dashboard/login  form login tampil
+    http://localhost:3001/                 diarahkan (redirect) ke portal = normal
+
+Halaman yang butuh data (dashboard, website user di Hosting) perlu backend Spring Boot jalan di port 8080.
+Cara menjalankannya ada di OrgSpace-Website/README.md. Jika muncul "Server OrgSpace tidak bisa dihubungi",
+berarti backend belum jalan atau ORGSPACE_API_URL di .env.local salah.
+
+LANGKAH 6 - Kembalikan pekerjaan lokal (jika tadi di-stash)
+-----------------------------------------------------------
+    git stash list
+    git stash pop
+Jika ada konflik: berhenti dan tanyakan ke pengguna.
+
+LANGKAH 7 - Laporkan ke pengguna
+--------------------------------
+Laporkan singkat:
+- cabang yang dipakai dan commit terakhir (git log --oneline -1)
+- versi next di OrgSpace-Website dan OrgSpace-Hosting
+- hasil lint dan build masing-masing (sukses / gagal + pesan error persis)
+- halaman yang sudah dicek di browser
+- langkah yang dilewati atau gagal
+
+MASALAH UMUM
+------------
+| Gejala                                         | Penyebab & solusi                                              |
+|------------------------------------------------|----------------------------------------------------------------|
+| SecurityFatalError saat build                  | node_modules masih versi lama -> langkah 3 (hapus + install)   |
+| package.json sudah 16.4.2 tapi terpasang 16.4.0| Belum `npm install` setelah pull -> langkah 3                  |
+| Hosting masih 16.4.0 setelah pull              | PR #17 belum di-merge -> minta Aris merge, lalu ulang langkah 2|
+| Port 3000 / 3001 dipakai                       | Cek proses milik siapa; Website bisa `npm run dev -- -p 3002`  |
+| "Server OrgSpace tidak bisa dihubungi"         | Backend 8080 belum jalan / ORGSPACE_API_URL salah              |
+| Editor menandai PageProps merah                | Jalankan `npx next typegen` atau `npm run dev` sekali          |

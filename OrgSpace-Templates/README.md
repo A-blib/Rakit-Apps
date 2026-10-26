@@ -36,6 +36,26 @@ OrgSpace-Templates/
 
 ---
 
+## 🎬 Template Creative Crew (multi halaman, Black & Yellow)
+
+`creative-crew/` (ZIP siap upload: `creative-crew.zip`) adalah template untuk UKM kreatif/media kampus, dibuat dari
+brief `CreativeCrew.md`. Lolos pengecekan upload **tanpa error maupun peringatan**.
+
+| Halaman | Isi | Modul |
+|---|---|---|
+| `index.html` | Hero foto kru + vignette, statistik, marquee layanan, 4 featured project, divisi, ajakan | `karya` (limit 4), `divisi`, `data-ws-stat` |
+| `works.html` | Portofolio masonry + filter kategori dari data | `karya` |
+| `karya.html` | Studi kasus satu karya (`karya.html?id=...`): sampul, cerita, credit title, galeri, tombol video, karya sebelum/berikutnya | `karya` |
+| `crew.html` | Kru grayscale → berwarna saat disorot + link portofolio/Instagram, filter divisi, form open recruitment | `kru`, form `oprec` |
+| `collab.html` | Alur 4 langkah, layanan, form pengajuan 2 kolom (pilihan layanan dari data), pop-up terima kasih + SLA | `layanan`, form `kolaborasi` |
+| `gear.html` | Status alat (Tersedia/Dipinjam/Maintenance), lokasi, peminjam, tanggal kembali, tanda terlambat | `alat` |
+
+Bagian **Admin Dashboard** di brief tidak dibuat di template karena Portal Pengurus adalah bawaan OrgSpace:
+dasbor metrik = tab Ringkasan, inbox kolaborasi & rekrutmen = Kotak Masuk Form (tanpa kanban), CMS portofolio /
+inventaris / roster = tab Modul Kustom (`karya`, `alat`, `kru`).
+
+---
+
 ## 🛠️ Cara Mengedit dan Mengemas Ulang Menjadi ZIP
 
 Jika temanmu ingin membuat template baru dengan memodifikasi template ini:

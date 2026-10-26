@@ -977,7 +977,7 @@ Aris meminta (12 Oktober 2026) fondasi portal web dari `OrgSpace-Website/instruk
 
 Keputusan Aris saat memulai:
 
-- Struktur repo (keputusan Aris, 12 Oktober 2026): root repo berisi dua folder, **`OrgSpace-Apps/`** (backend, android, docs — file ini) dan **`OrgSpace-Website/`** (Next.js). Nama tanpa spasi agar build Android di Windows aman. Web adalah klien REST API Spring Boot yang sama (tanpa backend baru). Browser tidak memanggil backend langsung (token di cookie httpOnly), jadi CORS tetap tidak dipasang.
+- Struktur repo (keputusan Aris, 12 Oktober 2026): root repo berisi dua folder, **`OrgSpace-Apps/`** (backend, android, docs — file ini) dan **`OrgSpace-Website/`** (Next.js). Nama tanpa spasi agar build Android di Windows aman. Web adalah klien REST API Spring Boot yang sama (tanpa backend baru). Portal web tidak memanggil backend dari browser (token di cookie httpOnly). Pembaruan 26 Oktober 2026: Portal Pengurus (OrgSpace-Hosting `/{slug}/admin`) memanggil API langsung dari browser, jadi CORS **dipasang khusus** untuk alamat `SITES_HOSTING_URL` (+ `www.`) dan domain kustom aktif (`security/CorsOriginPolicy`); asal lain ditolak. Jangan dimatikan: Portal Pengurus akan rusak.
 - **Aris membuat fondasi** (endpoint, tabel, `OrgSpace-Website/src/lib/api/**`, `src/lib/auth/**`, `src/proxy.ts`, kerangka halaman); **tim web** menyempurnakan tampilan. Fitur web baru harus dikoordinasikan dengan Aris dulu. Aturan agent untuk web: `OrgSpace-Website/AGENTS.md`. Kontrak API hanya di `docs/rancangan/portal-web.md` (satu sumber).
 - Admin dashboard = akun dengan `users.is_admin = true`, login email + password.
 - Library web yang dipakai: next, react, tailwindcss, react-markdown + remark-gfm. Library npm lain harus ditanyakan dulu.

@@ -1,9 +1,5 @@
 import { SiteRenderData } from "./types";
-
-const BACKEND_URL =
-  process.env.BACKEND_API_URL ||
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  "http://localhost:8080";
+import { BACKEND_API_URL as BACKEND_URL } from "./config";
 
 /**
  * Mengambil data publik website berdasarkan slug untuk di-render.

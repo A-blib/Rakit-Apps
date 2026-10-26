@@ -49,6 +49,7 @@ public class AuthViewModel extends ViewModel {
     private final MutableLiveData<Event<Resource<AuthResult>>> failure = new MutableLiveData<>();
     private final MutableLiveData<Event<AuthResult>> success = new MutableLiveData<>();
     private final MutableLiveData<Event<String>> openUrl = new MutableLiveData<>();
+    private final MutableLiveData<Event<String>> googleNonce = new MutableLiveData<>();
     private final MutableLiveData<Event<LinkRequest>> linkRequired = new MutableLiveData<>();
     private final MutableLiveData<Event<LoginMethod>> continueWith = new MutableLiveData<>();
     private final MutableLiveData<LinkRequest> pendingLink = new MutableLiveData<>();
@@ -79,6 +80,11 @@ public class AuthViewModel extends ViewModel {
 
     public LiveData<Event<AuthResult>> getSuccess() {
         return success;
+    }
+
+    /** Nonce siap: layar membuka pilihan akun Google dengan nonce ini (Event). */
+    public LiveData<Event<String>> getGoogleNonce() {
+        return googleNonce;
     }
 
     public LiveData<Event<String>> getOpenUrl() {
@@ -117,6 +123,23 @@ public class AuthViewModel extends ViewModel {
     }
 
     // ---------- Google ----------
+
+    /** Meminta nonce ke backend, lalu layar membuka pilihan akun Google (pola sama dengan {@link #startGitHub()}). */
+    public void startGoogle() {
+        if (Boolean.TRUE.equals(loading.getValue())) {
+            return;
+        }
+        loading.setValue(true);
+        executors.networkIO().execute(() -> {
+            Resource<String> nonce = authRepository.googleNonce();
+            loading.postValue(false);
+            if (nonce.getStatus() == Resource.Status.SUCCESS) {
+                googleNonce.postValue(new Event<>(nonce.getData()));
+            } else {
+                failure.postValue(new Event<>(Resource.error(nonce.getError())));
+            }
+        });
+    }
 
     /** Dipanggil setelah Credential Manager memberikan idToken. */
     public void signInWithGoogle(String idToken) {

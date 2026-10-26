@@ -40,6 +40,9 @@ class AccountLinkingServiceTest {
     private UserIdentityRepository identityRepository;
     @Mock
     private AuthTicketService ticketService;
+    // Kunci antrean diuji di AuthFlowIntegrationTest/SocialAuthIntegrationTest (butuh PostgreSQL sungguhan).
+    @Mock
+    private com.aris.templateapp.common.persistence.AdvisoryLocks advisoryLocks;
     @InjectMocks
     private AccountLinkingService service;
 

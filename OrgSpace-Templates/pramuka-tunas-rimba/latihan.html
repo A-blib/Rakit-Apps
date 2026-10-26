@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pojok Latihan — Pramuka Tunas Rimba</title>
+  <meta name="description" content="Tri Satya, Dasa Darma, sandi Morse, dan tali-temali.">
+  <meta name="theme-color" content="#1f3d2b">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+  <a class="skip" href="#utama">Lewati ke isi</a>
+  <header class="topbar" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo gugus depan" width="42" height="42" data-ws-org="logo">
+        <span class="brand-name"><span data-ws-org="nama">Pramuka Tunas Rimba</span><small id="brand-gudep">Gugus Depan 07.081 – 07.082</small></span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html">Beranda</a>
+        <a href="profil.html">Profil</a>
+        <a href="kegiatan.html">Kegiatan</a>
+        <a href="agenda.html">Agenda</a>
+        <a href="galeri.html">Galeri</a>
+        <a href="prestasi.html">Prestasi</a>
+        <a href="latihan.html" aria-current="page">Pojok Latihan</a>
+        <a class="btn btn-primary btn-sm" href="gabung.html">Gabung</a>
+      </nav>
+      <button class="burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="utama">
+    <section class="page-hero on-dark">
+      <div class="wrap reveal">
+        <p class="eyebrow" id="latihan-label">Pojok Latihan</p>
+        <h1 id="latihan-judul">Hafal, paham, <span class="hl">terampil</span></h1>
+        <p class="lead" id="latihan-deskripsi">Belajar Tri Satya, Dasa Darma, sandi Morse, dan tali-temali dengan cara yang lebih seru.</p>
+      </div>
+      <span class="num" aria-hidden="true">06</span>
+    </section>
+
+    <section class="section dark on-dark" id="tri-satya">
+      <div class="wrap pledge">
+        <div class="reveal">
+          <p class="eyebrow" id="satya-label">Kode kehormatan</p>
+          <h2 id="satya-judul">Tri Satya</h2>
+          <p class="lead" id="satya-deskripsi">Janji yang diucapkan setiap anggota Penggalang, Penegak, dan Pandega. Rumusan poin kedua berbeda untuk Penggalang.</p>
+        </div>
+        <div class="reveal">
+          <div class="tabs" role="tablist" aria-label="Pilih golongan">
+            <button type="button" role="tab" aria-selected="true" aria-controls="satya-penggalang" id="tab-penggalang">Penggalang</button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="satya-penegak" id="tab-penegak">Penegak & Pandega</button>
+          </div>
+          <div class="oath" id="satya-penggalang" role="tabpanel" aria-labelledby="tab-penggalang">
+            <p class="intro" id="satya-pembuka-1">Demi kehormatanku aku berjanji akan bersungguh-sungguh:</p>
+            <ol>
+              <li id="satya-g1">Menjalankan kewajibanku terhadap Tuhan, Negara Kesatuan Republik Indonesia, dan mengamalkan Pancasila.</li>
+              <li id="satya-g2">Menolong sesama hidup dan mempersiapkan diri membangun masyarakat.</li>
+              <li id="satya-g3">Menepati Dasa Darma.</li>
+            </ol>
+          </div>
+          <div class="oath" id="satya-penegak" role="tabpanel" aria-labelledby="tab-penegak" hidden>
+            <p class="intro" id="satya-pembuka-2">Demi kehormatanku aku berjanji akan bersungguh-sungguh:</p>
+            <ol>
+              <li id="satya-t1">Menjalankan kewajibanku terhadap Tuhan, Negara Kesatuan Republik Indonesia, dan mengamalkan Pancasila.</li>
+              <li id="satya-t2">Menolong sesama hidup dan ikut serta membangun masyarakat.</li>
+              <li id="satya-t3">Menepati Dasa Darma.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="dasa-darma">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="darma-label">Dasa Darma</p>
+            <h2 id="darma-judul">Sepuluh pegangan seorang pramuka</h2>
+            <p class="lead" id="darma-deskripsi">Ketuk kartu untuk membalik dan membaca maknanya.</p>
+          </div>
+        </div>
+        <div class="grid darma">
+          <button class="darma-card reveal" type="button" aria-pressed="false" data-darma="1">
+            <span class="darma-inner">
+              <span class="darma-face darma-front"><span class="no">1</span><span class="text" id="darma-1">Takwa kepada Tuhan Yang Maha Esa.</span></span>
+              <span class="darma-face darma-back"><strong>Maknanya</strong><span id="darma-1-makna">Menjalankan ibadah dan perintah agama dalam keseharian.</span></span>
+            </span>
+          </button>
+          <button class="darma-card reveal" type="button" aria-pressed="false" data-darma="2">
+            <span class="darma-inner">
+              <span class="darma-face darma-front"><span class="no">2</span><span class="text" id="darma-2">Cinta alam dan kasih sayang sesama manusia.</span></span>
+              <span class="darma-face darma-back"><strong>Maknanya</strong><span id="darma-2-makna">Menjaga lingkungan dan menyayangi semua orang tanpa membedakan.</span></span>
+            </span>
+          </button>
+          <button class="darma-card reveal" type="button" aria-pressed="false" data-darma="3">
+            <span class="darma-inner">
+              <span class="darma-face darma-front"><span class="no">3</span><span class="text" id="darma-3">Patriot yang sopan dan kesatria.</span></span>
+              <span class="darma-face darma-back"><strong>Maknanya</strong><span id="darma-3-makna">Membela bangsa dengan sikap santun dan berani membela kebenaran.</span></span>
+            </span>
+          </button>
+          <button class="darma-card reveal" type="button" aria-pressed="false" data-darma="4">
+            <span class="darma-inner">
+              <span class="darma-face darma-front"><span class="no">4</span><span class="text" id="darma-4">Patuh dan suka bermusyawarah.</span></span>
+              <span class="darma-face darma-back"><strong>Maknanya</strong><span id="darma-4-makna">Taat aturan dan mengambil keputusan bersama secara mufakat.</span></span>
+            </span>
+          </button>
+          <button class="darma-card reveal" type="button" aria-pressed="false" data-darma="5">
+            <span class="darma-inner">
+              <span class="darma-face darma-front"><span class="no">5</span><span class="text" id="darma-5">Rela menolong dan tabah.</span></span>
+              <span class="darma-face darma-back"><strong>Maknanya</strong><span id="darma-5-makna">Ringan tangan membantu dan tegar menghadapi kesulitan.</span></span>
+            </span>
+          </button>
+          <button class="darma-card reveal" type="button" aria-pressed="false" data-darma="6">
+            <span class="darma-inner">
+              <span class="darma-face darma-front"><span class="no">6</span><span class="text" id="darma-6">Rajin, terampil, dan gembira.</span></span>
+              <span class="darma-face darma-back"><strong>Maknanya</strong><span id="darma-6-makna">Bersungguh-sungguh berlatih dan menjalaninya dengan hati riang.</span></span>
+            </span>
+          </button>
+          <button class="darma-card reveal" type="button" aria-pressed="false" data-darma="7">
+            <span class="darma-inner">
+              <span class="darma-face darma-front"><span class="no">7</span><span class="text" id="darma-7">Hemat, cermat, dan bersahaja.</span></span>
+              <span class="darma-face darma-back"><strong>Maknanya</strong><span id="darma-7-makna">Tidak boros, teliti, dan hidup sederhana.</span></span>
+            </span>
+          </button>
+          <button class="darma-card reveal" type="button" aria-pressed="false" data-darma="8">
+            <span class="darma-inner">
+              <span class="darma-face darma-front"><span class="no">8</span><span class="text" id="darma-8">Disiplin, berani, dan setia.</span></span>
+              <span class="darma-face darma-back"><strong>Maknanya</strong><span id="darma-8-makna">Tepat waktu, berani bertindak benar, dan setia pada janji.</span></span>
+            </span>
+          </button>
+          <button class="darma-card reveal" type="button" aria-pressed="false" data-darma="9">
+            <span class="darma-inner">
+              <span class="darma-face darma-front"><span class="no">9</span><span class="text" id="darma-9">Bertanggung jawab dan dapat dipercaya.</span></span>
+              <span class="darma-face darma-back"><strong>Maknanya</strong><span id="darma-9-makna">Menyelesaikan tugas dan menjaga amanah yang diberikan.</span></span>
+            </span>
+          </button>
+          <button class="darma-card reveal" type="button" aria-pressed="false" data-darma="10">
+            <span class="darma-inner">
+              <span class="darma-face darma-front"><span class="no">10</span><span class="text" id="darma-10">Suci dalam pikiran, perkataan, dan perbuatan.</span></span>
+              <span class="darma-face darma-back"><strong>Maknanya</strong><span id="darma-10-makna">Menjaga hati, ucapan, dan tindakan tetap baik.</span></span>
+            </span>
+          </button>
+        </div>
+
+        <div class="quiz reveal" id="quiz" aria-live="polite">
+          <p class="eyebrow" id="kuis-label">Uji hafalan</p>
+          <p class="question" id="quiz-question">Darma ke berapa bunyinya seperti ini?</p>
+          <div class="options" id="quiz-options">
+            <button type="button">Darma ke-1</button>
+            <button type="button">Darma ke-2</button>
+            <button type="button">Darma ke-3</button>
+            <button type="button">Darma ke-4</button>
+          </div>
+          <div class="morse-actions">
+            <button class="btn btn-green btn-sm" type="button" id="quiz-next">Soal berikutnya</button>
+            <span class="score" id="quiz-score">Skor 0 dari 0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section alt" id="sandi">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="morse-label">Sandi Morse</p>
+            <h2 id="morse-judul">Kirim pesan dengan titik dan garis</h2>
+            <p class="lead" id="morse-deskripsi">Ketik pesan, lalu putar bunyinya. Lampu akan berkedip seperti senter isyarat.</p>
+          </div>
+        </div>
+        <div class="morse">
+          <div class="morse-box reveal">
+            <label for="morse-input">Pesanmu</label>
+            <input id="morse-input" type="text" maxlength="60" value="SALAM PRAMUKA" autocomplete="off">
+            <div class="morse-out" id="morse-output" aria-live="polite">... .- .-.. .- -- / .--. .-. .- -- ..- -.- .-</div>
+            <div class="morse-actions">
+              <button class="btn btn-primary btn-sm" type="button" id="morse-play">Putar sandi</button>
+              <span class="lamp" id="morse-lamp" aria-hidden="true"></span>
+            </div>
+          </div>
+          <div class="reveal">
+            <p class="muted" id="morse-tabel-teks">Ketuk huruf untuk mendengar bunyinya.</p>
+            <div class="morse-table" id="morse-table">
+            <button type="button" data-letter="A"><b>A</b><code>•–</code></button>
+            <button type="button" data-letter="B"><b>B</b><code>–•••</code></button>
+            <button type="button" data-letter="C"><b>C</b><code>–•–•</code></button>
+            <button type="button" data-letter="D"><b>D</b><code>–••</code></button>
+            <button type="button" data-letter="E"><b>E</b><code>•</code></button>
+            <button type="button" data-letter="F"><b>F</b><code>••–•</code></button>
+            <button type="button" data-letter="G"><b>G</b><code>––•</code></button>
+            <button type="button" data-letter="H"><b>H</b><code>••••</code></button>
+            <button type="button" data-letter="I"><b>I</b><code>••</code></button>
+            <button type="button" data-letter="J"><b>J</b><code>•–––</code></button>
+            <button type="button" data-letter="K"><b>K</b><code>–•–</code></button>
+            <button type="button" data-letter="L"><b>L</b><code>•–••</code></button>
+            <button type="button" data-letter="M"><b>M</b><code>––</code></button>
+            <button type="button" data-letter="N"><b>N</b><code>–•</code></button>
+            <button type="button" data-letter="O"><b>O</b><code>–––</code></button>
+            <button type="button" data-letter="P"><b>P</b><code>•––•</code></button>
+            <button type="button" data-letter="Q"><b>Q</b><code>––•–</code></button>
+            <button type="button" data-letter="R"><b>R</b><code>•–•</code></button>
+            <button type="button" data-letter="S"><b>S</b><code>•••</code></button>
+            <button type="button" data-letter="T"><b>T</b><code>–</code></button>
+            <button type="button" data-letter="U"><b>U</b><code>••–</code></button>
+            <button type="button" data-letter="V"><b>V</b><code>•••–</code></button>
+            <button type="button" data-letter="W"><b>W</b><code>•––</code></button>
+            <button type="button" data-letter="X"><b>X</b><code>–••–</code></button>
+            <button type="button" data-letter="Y"><b>Y</b><code>–•––</code></button>
+            <button type="button" data-letter="Z"><b>Z</b><code>––••</code></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="simpul">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow" id="simpul-label">Tali-temali</p>
+            <h2 id="simpul-judul">Simpul & ikatan dasar</h2>
+            <p class="lead" id="simpul-deskripsi">Kegunaan simpul yang paling sering dipakai saat berkemah dan pionering.</p>
+          </div>
+        </div>
+        <div class="knots">
+          <details class="knot reveal"><summary id="simpul-1">Simpul mati</summary><p id="simpul-1-teks">Menyambung dua tali yang sama besar dan tidak licin. Kuat dan mudah dibuka kembali.</p></details>
+          <details class="knot reveal"><summary id="simpul-2">Simpul pangkal</summary><p id="simpul-2-teks">Mengawali dan mengakhiri ikatan pada tiang atau tongkat, dasar pionering.</p></details>
+          <details class="knot reveal"><summary id="simpul-3">Simpul anyam</summary><p id="simpul-3-teks">Menyambung dua tali yang berbeda ukuran, misalnya tali besar dan tali kecil.</p></details>
+          <details class="knot reveal"><summary id="simpul-4">Simpul tiang</summary><p id="simpul-4-teks">Membuat lingkaran tetap yang tidak menjerat, berguna untuk penyelamatan.</p></details>
+          <details class="knot reveal"><summary id="simpul-5">Ikatan palang</summary><p id="simpul-5-teks">Mengikat dua tongkat yang bersilangan tegak lurus, misalnya untuk menara.</p></details>
+          <details class="knot reveal"><summary id="simpul-6">Ikatan canggah</summary><p id="simpul-6-teks">Mengikat dua tongkat yang bersilangan tidak tegak lurus, membentuk huruf X.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-in">
+        <div>
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="img/logo.svg" alt="Logo gugus depan" width="42" height="42" data-ws-org="logo">
+            <span class="brand-name" data-ws-org="nama">Pramuka Tunas Rimba</span>
+          </a>
+          <p class="salam" id="footer-salam">Salam Pramuka!</p>
+          <p id="footer-teks">Gugus depan tempat adik-adik belajar mandiri, peduli, dan tangguh lewat kegiatan di alam terbuka.</p>
+        </div>
+        <div>
+          <p class="footer-title">Jelajahi</p>
+          <ul>
+            <li><a href="profil.html">Profil & Pembina</a></li>
+            <li><a href="kegiatan.html">Kegiatan & Jadwal</a></li>
+            <li><a href="agenda.html">Agenda</a></li>
+            <li><a href="galeri.html">Galeri</a></li>
+            <li><a href="prestasi.html">Prestasi</a></li>
+            <li><a href="latihan.html">Pojok Latihan</a></li>
+          </ul>
+        </div>
+        <div data-org-group>
+          <p class="footer-title">Kontak</p>
+          <ul>
+            <li><a href="gabung.html" data-ws-org="email">Email gugus depan</a></li>
+            <li><a href="gabung.html" data-ws-org="whatsapp">WhatsApp</a></li>
+            <li><a href="gabung.html" data-ws-org="instagram">Instagram</a></li>
+            <li><span data-ws-org="alamat">Alamat pangkalan</span></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">Untuk pembina</p>
+          <p class="muted" id="footer-pembina">Kelola kegiatan, agenda, dan pendaftar dari Portal Pengurus.</p>
+          <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span data-ws-org="institusi">Pangkalan SMA Tunas Bangsa</span> · <span data-ws-org="kota">Kota</span></span>
+        <a href="#atas">Kembali ke atas ↑</a>
+      </div>
+    </div>
+  </footer>
+  <button class="to-top" id="to-top" type="button" aria-label="Kembali ke atas">↑</button>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

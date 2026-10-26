@@ -1,6 +1,7 @@
 /**
  * Alamat backend. Hanya dibaca di server Next.js (Server Component, Server Action, proxy) — browser tidak pernah
  * memanggil backend langsung, jadi token admin tidak pernah tersimpan di JavaScript browser.
+ * Nilai localhost hanya untuk laptop; build production (Vercel) berhenti jika ORGSPACE_API_URL kosong (next.config.ts).
  */
 export const API_URL = (process.env.ORGSPACE_API_URL ?? "http://localhost:8080/api").replace(/\/$/, "");
 

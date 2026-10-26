@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prestasi — Pramuka Tunas Rimba</title>
+  <meta name="description" content="Prestasi regu dan anggota gugus depan.">
+  <meta name="theme-color" content="#1f3d2b">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page">
+  <a class="skip" href="#utama">Lewati ke isi</a>
+  <header class="topbar" id="atas">
+    <div class="wrap topbar-in">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="img/logo.svg" alt="Logo gugus depan" width="42" height="42" data-ws-org="logo">
+        <span class="brand-name"><span data-ws-org="nama">Pramuka Tunas Rimba</span><small id="brand-gudep">Gugus Depan 07.081 – 07.082</small></span>
+      </a>
+      <nav class="nav" id="menu" aria-label="Menu utama">
+        <a href="index.html">Beranda</a>
+        <a href="profil.html">Profil</a>
+        <a href="kegiatan.html">Kegiatan</a>
+        <a href="agenda.html">Agenda</a>
+        <a href="galeri.html">Galeri</a>
+        <a href="prestasi.html" aria-current="page">Prestasi</a>
+        <a href="latihan.html">Pojok Latihan</a>
+        <a class="btn btn-primary btn-sm" href="gabung.html">Gabung</a>
+      </nav>
+      <button class="burger" id="burger" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="utama">
+    <section class="page-hero on-dark">
+      <div class="wrap reveal">
+        <p class="eyebrow" id="prestasi-label">Prestasi</p>
+        <h1 id="prestasi-judul">Kerja keras yang <span class="hl">berbuah juara</span></h1>
+        <p class="lead" id="prestasi-deskripsi">Penghargaan yang diraih regu dan anggota kami di berbagai ajang kepramukaan.</p>
+      </div>
+      <span class="num" aria-hidden="true">05</span>
+    </section>
+
+    <section class="section" id="papan">
+      <div class="wrap">
+        <div class="medal-board reveal">
+          <div><strong data-ws-stat="prestasi">12</strong><span id="papan-1">Total prestasi</span></div>
+          <div><strong id="jumlah-tingkat">4</strong><span id="papan-2">Tingkat kejuaraan</span></div>
+          <div><strong id="tahun-terbaru">2026</strong><span id="papan-3">Prestasi terbaru</span></div>
+        </div>
+        <div class="chips" data-filter="prestasi" data-filter-field="tingkat" role="group" aria-label="Filter tingkat prestasi"></div>
+        <div class="grid awards" data-ws-collection="prestasi">
+          <article class="card award reveal" data-ws-item>
+            <div class="media"><img src="img/prestasi-1.jpg" alt="Foto prestasi" width="1200" height="800" loading="lazy" data-ws-field="foto"><span class="level" data-ws-field="tingkat">Provinsi</span></div>
+            <div class="body">
+              <span class="year" data-ws-field="tahun">2026</span>
+              <h3 data-ws-field="judul">Juara 1 Lomba Tingkat (LT) III Penggalang Putra</h3>
+              <p class="who" data-ws-field="peraih">Regu Elang</p>
+              <p data-ws-field="deskripsi" data-ws-type="paragraf">Regu kami unggul di pionering, semaphore, dan penjelajahan selama tiga hari perlombaan.</p>
+            </div>
+          </article>
+          <p class="empty" data-ws-empty>Daftar prestasi akan segera diperbarui.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-in">
+        <div>
+          <a class="brand" href="index.html">
+            <img class="brand-logo" src="img/logo.svg" alt="Logo gugus depan" width="42" height="42" data-ws-org="logo">
+            <span class="brand-name" data-ws-org="nama">Pramuka Tunas Rimba</span>
+          </a>
+          <p class="salam" id="footer-salam">Salam Pramuka!</p>
+          <p id="footer-teks">Gugus depan tempat adik-adik belajar mandiri, peduli, dan tangguh lewat kegiatan di alam terbuka.</p>
+        </div>
+        <div>
+          <p class="footer-title">Jelajahi</p>
+          <ul>
+            <li><a href="profil.html">Profil & Pembina</a></li>
+            <li><a href="kegiatan.html">Kegiatan & Jadwal</a></li>
+            <li><a href="agenda.html">Agenda</a></li>
+            <li><a href="galeri.html">Galeri</a></li>
+            <li><a href="prestasi.html">Prestasi</a></li>
+            <li><a href="latihan.html">Pojok Latihan</a></li>
+          </ul>
+        </div>
+        <div data-org-group>
+          <p class="footer-title">Kontak</p>
+          <ul>
+            <li><a href="gabung.html" data-ws-org="email">Email gugus depan</a></li>
+            <li><a href="gabung.html" data-ws-org="whatsapp">WhatsApp</a></li>
+            <li><a href="gabung.html" data-ws-org="instagram">Instagram</a></li>
+            <li><span data-ws-org="alamat">Alamat pangkalan</span></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-title">Untuk pembina</p>
+          <p class="muted" id="footer-pembina">Kelola kegiatan, agenda, dan pendaftar dari Portal Pengurus.</p>
+          <a class="btn btn-ghost btn-sm" href="admin" data-ws-auth="login">Portal Pengurus</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span data-ws-org="institusi">Pangkalan SMA Tunas Bangsa</span> · <span data-ws-org="kota">Kota</span></span>
+        <a href="#atas">Kembali ke atas ↑</a>
+      </div>
+    </div>
+  </footer>
+  <button class="to-top" id="to-top" type="button" aria-label="Kembali ke atas">↑</button>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

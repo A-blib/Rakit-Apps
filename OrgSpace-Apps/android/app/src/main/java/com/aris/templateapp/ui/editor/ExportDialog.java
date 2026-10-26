@@ -299,7 +299,7 @@ public class ExportDialog extends DialogFragment {
         } else if (state.phase == TemplateEditorViewModel.PublishPhase.SUCCESS && state.result != null) {
             Fragment editor = requireParentFragment();
             dismiss();
-            PublishSuccessDialog.show(editor, state.result);
+            PublishSuccessDialog.show(editor, state.result, viewModel.fieldLabels(state.result.missingImages));
         }
     }
 

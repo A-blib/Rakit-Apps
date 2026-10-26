@@ -36,12 +36,18 @@ final class SocialAuthBinder {
         LifecycleOwner owner = fragment.getViewLifecycleOwner();
         View root = fragment.requireView();
 
-        social.googleButton.setOnClickListener(v -> startGoogle(fragment, viewModel));
+        social.googleButton.setOnClickListener(v -> viewModel.startGoogle());
         social.githubButton.setOnClickListener(v -> viewModel.startGitHub());
 
         viewModel.isLoading().observe(owner, loading -> {
             social.googleButton.setEnabled(!loading);
             social.githubButton.setEnabled(!loading);
+        });
+        viewModel.getGoogleNonce().observe(owner, event -> {
+            String nonce = event.getContentIfNotHandled();
+            if (nonce != null) {
+                startGoogle(fragment, viewModel, nonce);
+            }
         });
         viewModel.getOpenUrl().observe(owner, event -> {
             String url = event.getContentIfNotHandled();
@@ -66,7 +72,7 @@ final class SocialAuthBinder {
         viewModel.getContinueWith().observe(owner, event -> {
             LoginMethod method = event.getContentIfNotHandled();
             if (method == LoginMethod.GOOGLE) {
-                startGoogle(fragment, viewModel);
+                viewModel.startGoogle();
             } else if (method == LoginMethod.GITHUB) {
                 viewModel.startGitHub();
             } else if (method == LoginMethod.LOCAL) {
@@ -86,8 +92,8 @@ final class SocialAuthBinder {
         });
     }
 
-    private static void startGoogle(Fragment fragment, AuthViewModel viewModel) {
-        GoogleSignInHelper.signIn(fragment.requireActivity(), new GoogleSignInHelper.Callback() {
+    private static void startGoogle(Fragment fragment, AuthViewModel viewModel, String nonce) {
+        GoogleSignInHelper.signIn(fragment.requireActivity(), nonce, new GoogleSignInHelper.Callback() {
             @Override
             public void onIdToken(String idToken) {
                 viewModel.signInWithGoogle(idToken);

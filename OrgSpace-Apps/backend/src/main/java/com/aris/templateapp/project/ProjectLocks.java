@@ -60,6 +60,14 @@ class ProjectLocks {
         return write(projectId, userId, deviceId, now);
     }
 
+    /** Tanpa mengambil kunci: tolak jika orang lain sedang memegang kunci aktif ({@code PROJECT_LOCKED}). */
+    void requireFreeFor(UUID projectId, UUID userId) {
+        Optional<Holder> holder = current(projectId, true);
+        if (holder.isPresent() && !holder.get().userId().equals(userId) && holder.get().expiresAt().isAfter(clock.instant())) {
+            throw locked(holder.get());
+        }
+    }
+
     /** Admin/Pemilik mengambil alih kunci orang lain (pemegang lama mendapat LOCK_LOST saat menyinkron). */
     Instant takeOver(UUID projectId, UUID userId, String deviceId) {
         current(projectId, true);

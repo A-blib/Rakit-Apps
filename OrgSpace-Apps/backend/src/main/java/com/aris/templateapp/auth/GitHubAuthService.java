@@ -9,6 +9,7 @@ import com.aris.templateapp.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -28,8 +29,15 @@ import java.util.UUID;
  * Kenapa tidak langsung mengirim token di deep link? URL deep link bisa terbaca app lain atau tercatat di log.
  * Tiket berumur 2 menit, sekali pakai, dan baru menjadi token lewat request HTTPS biasa.
  * <p>
- * Class ini sengaja TIDAK {@code @Transactional}: setiap langkah berjalan di transaksinya sendiri, sehingga
- * error di satu langkah bisa ditangkap lalu diubah menjadi redirect {@code ?error=KODE}.
+ * Pola PKCE: app membuat {@code codeVerifier} acak yang tidak pernah keluar dari HP, dan hanya mengirim hash-nya
+ * ({@code codeChallenge}) saat meminta URL login. Tiket hanya bisa ditukar dengan verifier itu. Ini menutup tiga celah:
+ * app lain yang mendaftarkan skema {@code templateapp://} menangkap tiket (akun diambil alih); URL callback hasil
+ * login GitHub penyerang dikirim ke korban (korban masuk ke akun penyerang); dan URL "sambungkan GitHub" milik
+ * penyerang dibuka korban (GitHub korban tersambung ke akun penyerang). Penyambungan dari Pengaturan karena itu tidak
+ * terjadi di callback, tetapi saat app yang login menukar tiket {@code LINK_RESULT} ({@link #completeLinkFromSettings}).
+ * <p>
+ * {@link #handleCallback} sengaja TIDAK {@code @Transactional}: setiap langkah berjalan di transaksinya sendiri,
+ * sehingga error di satu langkah bisa ditangkap lalu diubah menjadi redirect {@code ?error=KODE}.
  */
 @Slf4j
 @Service
@@ -49,9 +57,10 @@ public class GitHubAuthService {
     private final AppProperties properties;
 
     /** URL login GitHub untuk masuk/daftar. linkToken (opsional) dibawa lewat state sampai callback. */
-    public String authorizeUrlForLogin(String linkToken) {
+    public String authorizeUrlForLogin(String linkToken, String codeChallenge) {
         Map<String, Object> payload = new HashMap<>();
         payload.put(KEY_PURPOSE, PURPOSE_LOGIN);
+        payload.put(AuthTicketService.KEY_CODE_CHALLENGE, codeChallenge);
         if (linkToken != null && !linkToken.isBlank()) {
             payload.put(KEY_LINK_TOKEN, linkToken);
         }
@@ -59,8 +68,8 @@ public class GitHubAuthService {
     }
 
     /** URL login GitHub untuk menyambungkan GitHub ke user yang sudah login (dari Pengaturan). */
-    public String authorizeUrlForLinking(UUID userId) {
-        Map<String, Object> payload = Map.of(KEY_PURPOSE, PURPOSE_LINK);
+    public String authorizeUrlForLinking(UUID userId, String codeChallenge) {
+        Map<String, Object> payload = Map.of(KEY_PURPOSE, PURPOSE_LINK, AuthTicketService.KEY_CODE_CHALLENGE, codeChallenge);
         return gitHubClient.authorizeUrl(ticketService.issue(AuthTicketType.GITHUB_STATE, userId, payload));
     }
 
@@ -73,12 +82,14 @@ public class GitHubAuthService {
                 return redirect(Map.of("error", ErrorCode.SOCIAL_AUTH_FAILED.name()));
             }
             SocialProfile profile = gitHubClient.fetchProfile(code);
+            String codeChallenge = stateTicket.payloadString(AuthTicketService.KEY_CODE_CHALLENGE);
 
             if (PURPOSE_LINK.equals(stateTicket.payloadString(KEY_PURPOSE))) {
-                User user = userRepository.findById(stateTicket.getUserId())
-                        .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED));
-                accountLinkingService.linkToUser(user, profile);
-                return redirect(Map.of("result", "linked"));
+                // Belum disambungkan di sini: browser yang membuka callback belum tentu milik user yang memulai.
+                Map<String, Object> pending = AccountLinkingService.identityPayload(profile);
+                pending.put(AuthTicketService.KEY_CODE_CHALLENGE, codeChallenge);
+                return redirect(Map.of("linkTicket",
+                        ticketService.issue(AuthTicketType.LINK_RESULT, stateTicket.getUserId(), pending)));
             }
 
             AccountLinkingService.SignInResult result = accountLinkingService.signIn(profile);
@@ -87,11 +98,26 @@ public class GitHubAuthService {
                 accountLinkingService.completePendingLink(result.user(), linkToken);
             }
             String loginTicket = ticketService.issue(AuthTicketType.LOGIN_RESULT, result.user().getId(),
-                    Map.of(KEY_IS_NEW_USER, result.isNewUser()));
+                    Map.of(KEY_IS_NEW_USER, result.isNewUser(), AuthTicketService.KEY_CODE_CHALLENGE, codeChallenge));
             return redirect(Map.of("ticket", loginTicket));
         } catch (ApiException e) {
             return redirectForError(e);
         }
+    }
+
+    /**
+     * Langkah akhir "sambungkan GitHub" dari Pengaturan: hanya app yang memulai alur (punya verifier) dan sedang login
+     * sebagai user yang sama yang bisa menyambungkan identitas GitHub di tiket.
+     */
+    @Transactional
+    public void completeLinkFromSettings(UUID userId, String rawTicket, String codeVerifier) {
+        AuthTicket ticket = ticketService.consume(AuthTicketType.LINK_RESULT, rawTicket, ErrorCode.TICKET_INVALID);
+        ticketService.requireVerifier(ticket, codeVerifier);
+        if (!userId.equals(ticket.getUserId())) {
+            throw new ApiException(ErrorCode.LINK_USER_MISMATCH);
+        }
+        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED));
+        accountLinkingService.linkToUser(user, AccountLinkingService.profileFrom(ticket));
     }
 
     private URI redirectForError(ApiException e) {

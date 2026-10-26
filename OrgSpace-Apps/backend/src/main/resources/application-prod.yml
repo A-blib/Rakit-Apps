@@ -6,6 +6,25 @@ springdoc:
   swagger-ui:
     enabled: false
 
+# Alamat publik WAJIB diisi di production: nilai bawaan localhost dari application.yml dibuang di sini, lalu
+# ProductionConfigCheck menolak menyalakan backend jika masih kosong/localhost (pesannya menyebut variabel mana).
+app:
+  github:
+    redirect-uri: ${GITHUB_REDIRECT_URI}
+  sites:
+    domain: ${SITES_DOMAIN}
+    url-scheme: ${SITES_URL_SCHEME:https}
+    hosting-url: ${SITES_HOSTING_URL}
+    public-ip: ${SITES_PUBLIC_IP}
+    custom-target: ${SITES_CUSTOM_TARGET}
+
+# Backend ada di belakang Caddy (dan Hosting untuk formulir), jadi getRemoteAddr() selalu 127.0.0.1. "native" membuat
+# Tomcat memakai IP asli dari X-Forwarded-For, tetapi hanya jika request datang dari proxy internal (127.0.0.1,
+# jaringan privat); pengunjung internet tidak bisa memalsukannya karena Caddy menimpa header itu. Tanpa ini, batas login
+# per IP berlaku untuk SEMUA user sekaligus dan IP pengirim formulir tidak bisa dilacak.
+server:
+  forward-headers-strategy: native
+
 logging:
   level:
     root: INFO

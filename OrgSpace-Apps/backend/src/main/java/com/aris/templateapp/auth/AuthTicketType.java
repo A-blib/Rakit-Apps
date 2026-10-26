@@ -14,7 +14,11 @@ public enum AuthTicketType implements PersistableEnum {
     /** Hasil login GitHub yang ditukar app menjadi token lewat {@code /auth/github/exchange}. */
     LOGIN_RESULT(Duration.ofMinutes(2)),
     /** Identitas yang menunggu disambungkan ke akun lama setelah user membuktikan kepemilikan akun itu. */
-    LINK(Duration.ofMinutes(10));
+    LINK(Duration.ofMinutes(10)),
+    /** Hasil login GitHub dari Pengaturan; ditukar app lewat {@code /users/me/identities/github/exchange}. */
+    LINK_RESULT(Duration.ofMinutes(2)),
+    /** Nonce yang ditanam Google ke ID token; dicoret saat ID token dipakai, sehingga token tidak bisa dipakai ulang. */
+    GOOGLE_NONCE(Duration.ofMinutes(5));
 
     private final Duration ttl;
 
@@ -26,7 +30,7 @@ public enum AuthTicketType implements PersistableEnum {
         return ttl;
     }
 
-    // Di database nilainya sama dengan nama konstanta (huruf besar), sesuai CHECK constraint V4.
+    // Di database nilainya sama dengan nama konstanta (huruf besar), sesuai CHECK constraint V4 (diperluas V31, V32).
     @Override
     public String value() {
         return name();
