@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PORTAL_URL, PUBLIC_BACKEND_URL } from "@/lib/config";
 import { Globe, Server, CheckCircle2, ArrowRight, ShieldCheck, Cpu, ExternalLink } from "lucide-react";
 
 export default async function HostingGatewayPage({
@@ -8,7 +9,7 @@ export default async function HostingGatewayPage({
   searchParams?: Promise<{ info?: string }>;
 }) {
   const params = await searchParams;
-  const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || "http://localhost:3000";
+  const portalUrl = PORTAL_URL;
 
   // Perilaku seperti Vercel (vercel.app -> vercel.com):
   // Jika root diakses tanpa parameter ?info=true, arahkan langsung ke Portal Utama
@@ -16,7 +17,7 @@ export default async function HostingGatewayPage({
     redirect(portalUrl);
   }
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+  const backendUrl = PUBLIC_BACKEND_URL;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between">

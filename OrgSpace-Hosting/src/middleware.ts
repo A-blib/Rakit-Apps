@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { BACKEND_API_URL, HOSTING_DOMAIN, PORTAL_URL } from "@/lib/config";
 
+// Domain utama dari NEXT_PUBLIC_HOSTING_DOMAIN (bukan ditulis "orgspace.app"), plus alamat laptop.
 const DEFAULT_HOSTS = new Set([
   "localhost:3001",
   "127.0.0.1:3001",
-  "orgspace.app",
-  "www.orgspace.app",
+  HOSTING_DOMAIN,
+  `www.${HOSTING_DOMAIN}`,
 ]);
 
 /**
@@ -26,7 +28,7 @@ export async function middleware(request: NextRequest) {
     
     // Cek mapping custom domain via backend
     try {
-      const backendUrl = process.env.BACKEND_API_URL || "http://localhost:8080";
+      const backendUrl = BACKEND_API_URL;
       const res = await fetch(
         `${backendUrl}/api/public/sites/resolve-domain?domain=${encodeURIComponent(cleanHost)}`,
         { cache: "no-store" }
@@ -51,7 +53,7 @@ export async function middleware(request: NextRequest) {
   if (pathname === "/") {
     const isInfoRequested = request.nextUrl.searchParams.get("info") === "true";
     if (!isInfoRequested) {
-      const portalUrl = process.env.NEXT_PUBLIC_PORTAL_URL || "http://localhost:3000";
+      const portalUrl = PORTAL_URL;
       return NextResponse.redirect(new URL(portalUrl), 307);
     }
   }

@@ -1,7 +1,6 @@
 import { getSiteRenderData } from "./api";
 import { MODULE_RUNTIME, STORAGE_SHIM } from "./site-runtime";
-
-const BACKEND_URL = process.env.BACKEND_API_URL || "http://localhost:8080";
+import { BACKEND_API_URL as BACKEND_URL } from "./config";
 
 /**
  * Semua website user tayang di satu domain (orgspace.app/{slug}). Header sandbox membuat browser menjalankan halaman
@@ -114,6 +113,9 @@ export async function serveAsset(slug: string, path: string): Promise<Response> 
       "Content-Security-Policy": SANDBOX,
       "Cache-Control": "public, max-age=300",
       "X-Content-Type-Options": "nosniff",
+      // Halaman sandbox ber-origin anonim: font (@font-face) dan script modul dari situ wajib lolos CORS.
+      // File template memang publik dan tanpa cookie, jadi aman dibuka untuk semua origin.
+      "Access-Control-Allow-Origin": "*",
     },
   });
 }
