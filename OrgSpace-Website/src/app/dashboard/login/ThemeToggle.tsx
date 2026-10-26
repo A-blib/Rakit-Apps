@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
@@ -23,6 +23,19 @@ function getServerSnapshot(): string {
 export function ThemeToggle() {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const isDark = theme !== "light";
+
+  // Sinkronisasi kelas tema ke tag <html> saat inisialisasi dan saat berganti mode
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  }, [isDark]);
 
   const toggleTheme = () => {
     const nextTheme = isDark ? "light" : "dark";

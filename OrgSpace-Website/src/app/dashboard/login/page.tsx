@@ -34,13 +34,6 @@ export default async function LoginPage({ searchParams }: PageProps<"/dashboard/
         style={{ backgroundImage: "radial-gradient(circle at 50% 0%, #e0f2fe 0%, #f8fafc 70%)" }}
       />
 
-      {/* Script inline instan untuk mencegah flash tema saat SSR */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `(function(){try{var t=localStorage.getItem("orgspace_theme")||"dark";if(t==="light"){document.documentElement.classList.add("light");document.documentElement.classList.remove("dark");document.documentElement.setAttribute("data-theme","light");}else{document.documentElement.classList.add("dark");document.documentElement.classList.remove("light");document.documentElement.setAttribute("data-theme","dark");}}catch(e){}})();`,
-        }}
-      />
-
       {/* Particle Background Container */}
       <ParticleBackground />
 
