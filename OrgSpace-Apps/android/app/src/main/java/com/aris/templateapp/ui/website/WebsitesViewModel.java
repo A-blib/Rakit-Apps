@@ -109,6 +109,9 @@ public class WebsitesViewModel extends ViewModel {
         // dipilih (mis. dari banner Beranda) dipertahankan.
         if (switched) {
             query.setValue(WebsiteQuery.initial());
+            // Daftar ruang kerja lama tidak boleh tampil sambil menunggu daftar yang baru.
+            items.clear();
+            lastPage = null;
         }
         refresh();
     }
@@ -131,10 +134,10 @@ public class WebsitesViewModel extends ViewModel {
 
     public void refresh() {
         int request = ++generation;
-        items.clear();
-        lastPage = null;
         loadingMore = false;
         if (organizationId == null) {
+            items.clear();
+            lastPage = null;
             loadingFirstPage = false;
             publish(null);
             return;
@@ -150,6 +153,10 @@ public class WebsitesViewModel extends ViewModel {
                     return;
                 }
                 loadingFirstPage = false;
+                // Daftar lama baru diganti saat hasil datang: mengosongkannya di awal membuat layar berkedip
+                // (daftar → loading → daftar) setiap tab dibuka atau kembali dari halaman kelola.
+                items.clear();
+                lastPage = null;
                 if (result.getStatus() == Resource.Status.SUCCESS) {
                     accept(result.getData());
                     publish(null);

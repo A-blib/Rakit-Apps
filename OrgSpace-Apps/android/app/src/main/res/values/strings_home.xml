@@ -64,4 +64,62 @@ SEBELUM PENGURUS LAMA PAMIT
 
 SETELAH SERAH TERIMA
 Pemilik baru bisa mengubah peran pengurus lain dan mengeluarkan anggota yang sudah tidak aktif. Semua perubahan tercatat di Riwayat aktivitas."</string>
+
+    <string name="guide_publish_body">"Website yang diterbitkan bisa dibuka siapa saja lewat link orgspace.app/nama-website.
+
+MENERBITKAN (Admin &amp; Pemilik)
+1. Buka tab Website, lalu ketuk kartu website.
+2. Ketuk Terbitkan. Saat pertama kali, pilih nama website. Nama ini menjadi link dan tidak bisa diganti lagi agar link lama tetap jalan.
+3. Tunggu sampai status menjadi Online, lalu ketuk link untuk membukanya.
+
+SETELAH MENGEDIT
+Website yang sudah Online tidak berubah sendiri. Setelah mengedit, ketuk Terbitkan lagi. Kartu website bertanda Ada perubahan jika editanmu belum diterbitkan.
+
+EDITOR
+Editor tidak bisa menerbitkan langsung. Ketuk Minta diterbitkan, lalu Admin atau Pemilik akan menerbitkannya.
+
+PORTAL PENGURUS
+Berita, agenda, galeri, dan isian formulir diatur dari Portal Pengurus di link-website/admin, bisa dibuka dari browser HP atau laptop. Perubahan di Portal langsung tampil tanpa perlu terbit ulang."</string>
+
+    <string name="guide_domain_body">"Selain link gratis orgspace.app/nama-website, website bisa dibuka dari domain milik organisasi, misalnya osis-smansa.sch.id atau web.pramuka-gudep07.my.id.
+
+YANG DIPERLUKAN
+• Website sudah Online.
+• Domain yang sudah dibeli (mis. .my.id, .sch.id, .or.id, .com) dan akses ke panel DNS tempat membelinya.
+• Peran Admin atau Pemilik.
+
+LANGKAH
+1. Buka tab Website, ketuk kartu website, lalu pilih Domain.
+2. Ketik domainmu, lalu ketuk Sambungkan Domain.
+3. Salin record yang muncul ke panel DNS domainmu:
+   • Subdomain (mis. web.osis.sch.id): record CNAME ke custom.orgspace.app.
+   • Domain utama (mis. osis.sch.id): record A ke alamat IP yang ditampilkan.
+   • Wajib untuk keduanya: record TXT _orgspace-verify berisi kode verifikasi. Ini bukti domain itu milikmu.
+4. Kembali ke OrgSpace, lalu ketuk Periksa &amp; Aktifkan DNS.
+
+PERLU DITUNGGU
+Perubahan DNS butuh beberapa menit sampai beberapa jam. Jika belum terdeteksi, coba periksa lagi nanti. Setelah aktif, link orgspace.app tetap bisa dipakai.
+
+MELEPAS DOMAIN
+Ketuk Lepas Domain kapan saja. Website kembali hanya bisa dibuka dari link orgspace.app."</string>
+
+    <string name="guide_host_zip_body">"Website juga bisa diunduh sebagai file ZIP (HTML, CSS, gambar), lalu kamu onlinekan di hosting milikmu sendiri.
+
+MENGUNDUH ZIP
+1. Buka website di editor (tab Website → kartu website → Edit tampilan).
+2. Ketuk menu ⋮, lalu Export. Atau pilih Cek kelengkapan → Export.
+3. Simpan ZIP ke HP atau bagikan langsung, mis. ke Google Drive.
+
+PILIHAN HOSTING
+• Netlify Drop (gratis): buka app.netlify.com/drop di laptop, ekstrak ZIP, lalu seret foldernya ke halaman itu.
+• GitHub Pages (gratis): unggah isi ZIP ke repository GitHub, lalu aktifkan Pages di Settings.
+• Hosting berbayar (cPanel): buka File Manager, unggah ZIP ke folder public_html, lalu Extract.
+Pastikan file index.html berada langsung di folder utama, bukan di dalam folder lain.
+
+YANG PERLU DIKETAHUI
+ZIP berisi tampilan website saja. Fitur dinamis OrgSpace tidak ikut: Portal Pengurus, berita, agenda dan modul lain dari Portal, formulir pendaftaran, serta statistik hanya jalan jika website diterbitkan di OrgSpace. Untuk website yang selalu terbaru, pakai Terbitkan dan domain sendiri."</string>
+
+    <string name="guide_invite_action">Undang anggota sekarang</string>
+    <string name="guide_invite_need_org">Undangan hanya untuk ruang kerja organisasi. Pilih atau buat organisasi dulu dari nama ruang kerja di atas Beranda.</string>
+    <string name="guide_invite_not_allowed">Hanya Admin dan Pemilik yang bisa mengundang anggota. Minta mereka membuat kode undangan.</string>
 </resources>

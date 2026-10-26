@@ -19,12 +19,20 @@
             android:background="@color/color_surface_subtle">
 
             <ImageView
+                android:id="@+id/thumbnail_placeholder"
                 android:layout_width="@dimen/space_8"
                 android:layout_height="@dimen/space_8"
                 android:layout_gravity="center"
                 android:importantForAccessibility="no"
                 android:src="@drawable/ic_web"
                 app:tint="@color/color_primary" />
+
+            <ImageView
+                android:id="@+id/thumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no"
+                android:scaleType="centerCrop" />
         </FrameLayout>
 
         <com.google.android.material.divider.MaterialDivider

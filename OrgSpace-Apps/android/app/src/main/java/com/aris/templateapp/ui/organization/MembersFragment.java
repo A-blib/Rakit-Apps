@@ -37,6 +37,9 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class MembersFragment extends Fragment {
 
+    /** Argumen opsional: true = lembar undangan langsung dibuka (dari panduan "Ajak pengurus lain"). */
+    public static final String ARG_OPEN_INVITE = "openInvite";
+
     private FragmentMembersBinding binding;
     private MembersViewModel viewModel;
     /** Pesan untuk aksi yang sedang berjalan, ditampilkan saat aksi selesai. */
@@ -54,11 +57,7 @@ public class MembersFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(MembersViewModel.class);
         viewModel.start(OrganizationArgs.id(this));
         binding.toolbar.setNavigationOnClickListener(v -> NavHostFragment.findNavController(this).navigateUp());
-        binding.inviteButton.setOnClickListener(v -> {
-            if (getChildFragmentManager().findFragmentByTag(InviteSheet.TAG) == null) {
-                new InviteSheet().show(getChildFragmentManager(), InviteSheet.TAG);
-            }
-        });
+        binding.inviteButton.setOnClickListener(v -> showInvite());
 
         viewModel.getState().observe(getViewLifecycleOwner(), resource -> {
             switch (resource.getStatus()) {
@@ -92,11 +91,27 @@ public class MembersFragment extends Fragment {
         });
     }
 
+    private void showInvite() {
+        if (getChildFragmentManager().findFragmentByTag(InviteSheet.TAG) == null) {
+            new InviteSheet().show(getChildFragmentManager(), InviteSheet.TAG);
+        }
+    }
+
     private void bind(MembersViewModel.State state) {
         Organization org = state.organization;
         boolean manage = org.canManage();
         binding.memberCount.setText(getString(R.string.org_members_count, state.members.size(), org.maxMembers));
         binding.inviteButton.setVisibility(manage ? View.VISIBLE : View.GONE);
+        Bundle args = requireArguments();
+        if (args.getBoolean(ARG_OPEN_INVITE)) {
+            // Hanya sekali: argumen dihapus agar tidak terbuka lagi saat layar dibuat ulang.
+            args.remove(ARG_OPEN_INVITE);
+            if (manage) {
+                showInvite();
+            } else {
+                Snackbar.make(binding.getRoot(), R.string.guide_invite_not_allowed, Snackbar.LENGTH_LONG).show();
+            }
+        }
         binding.invitationsSection.setVisibility(manage && !state.invitations.isEmpty() ? View.VISIBLE : View.GONE);
 
         binding.invitationList.removeAllViews();

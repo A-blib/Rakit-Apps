@@ -66,6 +66,15 @@ public class ProjectEntity {
     public Long lastExportedAt;
 
     /**
+     * ID website di server setelah terbit pertama. Terbit berikutnya mengirim ID ini agar memperbarui website yang
+     * sama; tanpa ID, server selalu membuat website baru (dulu dicocokkan menurut nama, sehingga website lain di
+     * ruang kerja yang sama bisa tertimpa).
+     */
+    @Nullable
+    @ColumnInfo(name = "server_project_id")
+    public String serverProjectId;
+
+    /**
      * true untuk project dari tombol debug "Isi project contoh" lama (dihapus di fase W3 karena website kini
      * disimpan di server). Kolomnya dibiarkan agar struktur Room tidak berubah sampai tabel ini diganti cache
      * project cloud (fase T).

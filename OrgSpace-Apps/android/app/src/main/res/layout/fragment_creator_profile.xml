@@ -9,13 +9,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Tersembunyi sampai data user terbaca, agar kartu bawah tidak tampil dulu lalu terdorong (lihat bindUser). -->
     <LinearLayout
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingHorizontal="@dimen/screen_padding_horizontal"
         android:paddingTop="@dimen/space_4"
-        android:paddingBottom="@dimen/space_8">
+        android:paddingBottom="@dimen/space_8"
+        android:visibility="invisible">
 
         <!-- TAMU -->
         <com.google.android.material.card.MaterialCardView

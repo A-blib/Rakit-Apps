@@ -147,6 +147,7 @@
     <string name="publish_success_status_online">Online 🟢</string>
     <string name="publish_success_open_button">Buka Website</string>
     <string name="publish_success_copy_button">Salin Tautan</string>
+    <string name="publish_success_missing_images">Foto %1$s tidak ikut terbit karena filenya sudah tidak ada di HP ini, jadi website memakai foto contoh. Pilih ulang foto itu di editor, lalu terbitkan lagi.</string>
     <string name="publish_success_copied">Tautan website berhasil disalin!</string>
     <string name="publish_success_close_button">Selesai</string>
 </resources>

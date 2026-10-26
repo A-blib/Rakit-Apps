@@ -4,6 +4,7 @@ import com.aris.templateapp.data.remote.dto.AuthResponseDto;
 import com.aris.templateapp.data.remote.dto.GitHubAuthorizeRequestDto;
 import com.aris.templateapp.data.remote.dto.GoogleLoginRequestDto;
 import com.aris.templateapp.data.remote.dto.LoginRequestDto;
+import com.aris.templateapp.data.remote.dto.NonceResponseDto;
 import com.aris.templateapp.data.remote.dto.RefreshTokenRequestDto;
 import com.aris.templateapp.data.remote.dto.RegisterRequestDto;
 import com.aris.templateapp.data.remote.dto.TicketExchangeRequestDto;
@@ -24,6 +25,10 @@ public interface AuthApi {
 
     @POST("auth/login")
     Call<AuthResponseDto> login(@Body LoginRequestDto body);
+
+    /** Nonce sekali pakai yang ditanam Google ke ID token; tanpa ini /auth/google menolak token. */
+    @POST("auth/google/nonce")
+    Call<NonceResponseDto> googleNonce();
 
     @POST("auth/google")
     Call<AuthResponseDto> google(@Body GoogleLoginRequestDto body);

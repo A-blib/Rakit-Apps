@@ -3,6 +3,7 @@ package com.aris.templateapp.data.repository;
 import androidx.annotation.WorkerThread;
 
 import com.aris.templateapp.core.network.ApiErrorParser;
+import com.aris.templateapp.core.storage.GitHubVerifierStore;
 import com.aris.templateapp.core.storage.SessionStore;
 import com.aris.templateapp.core.storage.TokenStorage;
 import com.aris.templateapp.core.util.Resource;
@@ -12,6 +13,8 @@ import com.aris.templateapp.data.model.LoginMethod;
 import com.aris.templateapp.data.model.User;
 import com.aris.templateapp.data.model.UserRole;
 import com.aris.templateapp.data.remote.api.UserApi;
+import com.aris.templateapp.data.remote.dto.TicketExchangeRequestDto;
+import com.aris.templateapp.data.remote.dto.GitHubAuthorizeRequestDto;
 import com.aris.templateapp.data.remote.dto.ActiveModeRequestDto;
 import com.aris.templateapp.data.remote.dto.CreatorOnboardingRequestDto;
 import com.aris.templateapp.data.remote.dto.GoogleIdTokenRequestDto;
@@ -42,6 +45,7 @@ import retrofit2.Response;
 @Singleton
 public class UserRepository {
 
+    private final GitHubVerifierStore gitHubVerifiers;
     private final UserApi userApi;
     private static final MediaType PNG = MediaType.get("image/png");
 
@@ -51,7 +55,8 @@ public class UserRepository {
 
     @Inject
     public UserRepository(UserApi userApi, SessionStore sessionStore, TokenStorage tokenStorage,
-                          ApiErrorParser errorParser) {
+                          ApiErrorParser errorParser, GitHubVerifierStore gitHubVerifiers) {
+        this.gitHubVerifiers = gitHubVerifiers;
         this.userApi = userApi;
         this.sessionStore = sessionStore;
         this.tokenStorage = tokenStorage;
@@ -121,17 +126,25 @@ public class UserRepository {
         return executeIdentities(userApi.linkGoogle(new GoogleIdTokenRequestDto(idToken)));
     }
 
-    /** URL login GitHub untuk menyambungkan GitHub ke akun ini (hasilnya lewat deep link ?result=linked). */
+    /** URL login GitHub untuk menyambungkan GitHub ke akun ini (hasilnya lewat deep link ?linkTicket=...). */
     @WorkerThread
     public Resource<String> linkGitHubUrl() {
         try {
-            Response<UrlResponseDto> response = userApi.linkGitHubUrl().execute();
+            Response<UrlResponseDto> response = userApi.linkGitHubUrl(
+                    new GitHubAuthorizeRequestDto(null, gitHubVerifiers.startFlow())).execute();
             UrlResponseDto body = response.body();
             return response.isSuccessful() && body != null && body.url != null
                     ? Resource.success(body.url) : Resource.error(errorParser.parse(response));
         } catch (IOException e) {
             return Resource.error(errorParser.parse(e));
         }
+    }
+
+    /** Menyelesaikan penyambungan GitHub dengan tiket dari deep link dan verifier alur ini. */
+    @WorkerThread
+    public Resource<List<Identity>> exchangeGitHubLink(String linkTicket) {
+        return executeIdentities(userApi.exchangeGitHubLink(
+                new TicketExchangeRequestDto(linkTicket, gitHubVerifiers.takeVerifier())));
     }
 
     /** Melepas metode login; mengembalikan daftar terbaru. */

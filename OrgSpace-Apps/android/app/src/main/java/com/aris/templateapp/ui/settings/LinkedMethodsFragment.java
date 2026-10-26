@@ -59,6 +59,12 @@ public class LinkedMethodsFragment extends Fragment {
 
         viewModel.getIdentities().observe(getViewLifecycleOwner(), this::render);
         viewModel.isBusy().observe(getViewLifecycleOwner(), busy -> binding.list.setAlpha(busy ? 0.5f : 1f));
+        viewModel.getGoogleNonce().observe(getViewLifecycleOwner(), event -> {
+            String nonce = event.getContentIfNotHandled();
+            if (nonce != null) {
+                openGoogle(nonce);
+            }
+        });
         viewModel.getOpenUrl().observe(getViewLifecycleOwner(), event -> {
             String url = event.getContentIfNotHandled();
             if (url != null) {
@@ -146,7 +152,11 @@ public class LinkedMethodsFragment extends Fragment {
             viewModel.startLinkGitHub();
             return;
         }
-        GoogleSignInHelper.signIn(requireActivity(), new GoogleSignInHelper.Callback() {
+        viewModel.startLinkGoogle();
+    }
+
+    private void openGoogle(String nonce) {
+        GoogleSignInHelper.signIn(requireActivity(), nonce, new GoogleSignInHelper.Callback() {
             @Override
             public void onIdToken(String idToken) {
                 viewModel.linkGoogle(idToken);

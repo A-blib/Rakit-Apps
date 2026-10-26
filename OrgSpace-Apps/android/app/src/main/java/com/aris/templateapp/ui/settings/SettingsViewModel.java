@@ -12,6 +12,7 @@ import com.aris.templateapp.core.util.Resource;
 import com.aris.templateapp.data.model.ApiError;
 import com.aris.templateapp.data.model.Identity;
 import com.aris.templateapp.data.model.LoginMethod;
+import com.aris.templateapp.data.repository.AuthRepository;
 import com.aris.templateapp.data.repository.UserRepository;
 
 import java.util.List;
@@ -24,19 +25,22 @@ import dagger.hilt.android.lifecycle.HiltViewModel;
 @HiltViewModel
 public class SettingsViewModel extends ViewModel {
 
+    private final AuthRepository authRepository;
     private final UserRepository userRepository;
     private final AppExecutors executors;
 
     private final MutableLiveData<Resource<List<Identity>>> identities = new MutableLiveData<>();
     private final MutableLiveData<Boolean> busy = new MutableLiveData<>(false);
     private final MutableLiveData<Event<String>> openUrl = new MutableLiveData<>();
+    private final MutableLiveData<Event<String>> googleNonce = new MutableLiveData<>();
     private final MutableLiveData<Event<ApiError>> failure = new MutableLiveData<>();
     private final MutableLiveData<Event<LoginMethod>> linked = new MutableLiveData<>();
     private final MutableLiveData<Event<LoginMethod>> unlinked = new MutableLiveData<>();
 
     @Inject
-    public SettingsViewModel(UserRepository userRepository, AppExecutors executors) {
+    public SettingsViewModel(UserRepository userRepository, AuthRepository authRepository, AppExecutors executors) {
         this.userRepository = userRepository;
+        this.authRepository = authRepository;
         this.executors = executors;
         load();
     }
@@ -47,6 +51,11 @@ public class SettingsViewModel extends ViewModel {
 
     public LiveData<Boolean> isBusy() {
         return busy;
+    }
+
+    /** Nonce siap: layar membuka pilihan akun Google untuk disambungkan (Event). */
+    public LiveData<Event<String>> getGoogleNonce() {
+        return googleNonce;
     }
 
     public LiveData<Event<String>> getOpenUrl() {
@@ -70,6 +79,20 @@ public class SettingsViewModel extends ViewModel {
         executors.networkIO().execute(() -> identities.postValue(userRepository.identities()));
     }
 
+    /** Meminta nonce ke backend sebelum pilihan akun Google dibuka (ID token tanpa nonce ditolak backend). */
+    public void startLinkGoogle() {
+        busy.setValue(true);
+        executors.networkIO().execute(() -> {
+            Resource<String> nonce = authRepository.googleNonce();
+            busy.postValue(false);
+            if (nonce.getStatus() == Resource.Status.SUCCESS) {
+                googleNonce.postValue(new Event<>(nonce.getData()));
+            } else {
+                failure.postValue(new Event<>(nonce.getError()));
+            }
+        });
+    }
+
     public void linkGoogle(String idToken) {
         runListChange(() -> userRepository.linkGoogle(idToken), LoginMethod.GOOGLE, linked);
     }
@@ -78,7 +101,7 @@ public class SettingsViewModel extends ViewModel {
         runListChange(() -> userRepository.unlink(method), method, unlinked);
     }
 
-    /** Meminta URL login GitHub khusus penyambungan; hasilnya datang lewat deep link ?result=linked. */
+    /** Meminta URL login GitHub khusus penyambungan; hasilnya datang lewat deep link ?linkTicket=... */
     public void startLinkGitHub() {
         busy.setValue(true);
         executors.networkIO().execute(() -> {
@@ -92,11 +115,14 @@ public class SettingsViewModel extends ViewModel {
         });
     }
 
-    /** Deep link setelah menyambungkan GitHub: ?result=linked atau ?error=IDENTITY_IN_USE / KODE lain. */
+    /**
+     * Deep link setelah login GitHub untuk penyambungan: ?linkTicket=... ditukar ke backend (baru di sinilah GitHub
+     * tersambung; IDENTITY_IN_USE dll. datang dari exchange), atau ?error=KODE.
+     */
     public void onGitHubCallback(Uri uri) {
-        if ("linked".equals(uri.getQueryParameter("result"))) {
-            linked.setValue(new Event<>(LoginMethod.GITHUB));
-            load();
+        String linkTicket = uri.getQueryParameter("linkTicket");
+        if (linkTicket != null) {
+            runListChange(() -> userRepository.exchangeGitHubLink(linkTicket), LoginMethod.GITHUB, linked);
         } else if (uri.getQueryParameter("error") != null) {
             failure.setValue(new Event<>(ApiError.of(uri.getQueryParameter("error"))));
         }

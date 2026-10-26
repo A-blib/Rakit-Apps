@@ -26,6 +26,9 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
  * <p>
  * {@code serverClientId} = Client ID tipe WEB. Google memasukkannya ke "audience" idToken,
  * sehingga backend (yang memeriksa audience yang sama) mau menerima token itu.
+ * <p>
+ * {@code nonce} dari backend (POST /auth/google/nonce) ikut ditandatangani Google di dalam idToken; backend hanya
+ * menerima token dengan nonce itu sekali.
  */
 public final class GoogleSignInHelper {
 
@@ -44,12 +47,14 @@ public final class GoogleSignInHelper {
     private GoogleSignInHelper() {
     }
 
-    public static void signIn(Activity activity, Callback callback) {
+    public static void signIn(Activity activity, String nonce, Callback callback) {
         if (BuildConfig.GOOGLE_WEB_CLIENT_ID.isEmpty()) {
             callback.onError(R.string.error_google_not_configured);
             return;
         }
-        GetSignInWithGoogleOption option = new GetSignInWithGoogleOption.Builder(BuildConfig.GOOGLE_WEB_CLIENT_ID).build();
+        GetSignInWithGoogleOption option = new GetSignInWithGoogleOption.Builder(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                .setNonce(nonce)
+                .build();
         GetCredentialRequest request = new GetCredentialRequest.Builder().addCredentialOption(option).build();
 
         CredentialManager.create(activity).getCredentialAsync(activity, request, new CancellationSignal(),

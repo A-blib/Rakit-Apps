@@ -22,6 +22,7 @@ import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.databinding.FragmentCreatorDashboardBinding;
 import com.aris.templateapp.ui.common.AppBarAccount;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
+import com.aris.templateapp.ui.common.DashboardPager;
 import com.aris.templateapp.ui.common.KeyboardAwareBottomBar;
 import com.aris.templateapp.ui.editor.EditorNav;
 import com.aris.templateapp.ui.website.WebsitesViewModel;
@@ -124,7 +125,7 @@ public class CreatorDashboardFragment extends Fragment {
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), backToHome);
 
         binding.pager.setAdapter(new CreatorTabsAdapter(this));
-        binding.pager.setOffscreenPageLimit(TABS.length - 1);
+        DashboardPager.enter(this, binding.pager, TABS.length);
         binding.pager.registerOnPageChangeCallback(pageChange);
         binding.bottomNav.setOnItemSelectedListener(item -> {
             int position = indexOf(item.getItemId());

@@ -135,6 +135,11 @@ public class GalleryFragment extends Fragment {
         binding.sortButton.setOnClickListener(this::showSortMenu);
 
         viewModel.getState().observe(getViewLifecycleOwner(), this::render);
+        // Tab ini dibuat di belakang layar sebelum dibuka; ambil daftar sekarang agar saat dibuka langsung tampil,
+        // bukan skeleton sekejap lalu daftar (terlihat berkedip).
+        if (viewModel.getState().getValue() == null) {
+            viewModel.refresh();
+        }
         viewModel.getLoadMoreFailed().observe(getViewLifecycleOwner(), event -> {
             var error = event.getContentIfNotHandled();
             if (error != null) {

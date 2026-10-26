@@ -153,6 +153,8 @@ public class CreatorProfileFragment extends Fragment {
 
     private void bindUser(@Nullable User user) {
         boolean loggedIn = user != null;
+        // User dibaca di thread latar; sebelum itu semua bagian masih "gone" dan isi layar bergeser saat muncul.
+        binding.content.setVisibility(View.VISIBLE);
         binding.guestSection.setVisibility(loggedIn ? View.GONE : View.VISIBLE);
         binding.userSection.setVisibility(loggedIn ? View.VISIBLE : View.GONE);
         binding.modeSection.setVisibility(loggedIn ? View.VISIBLE : View.GONE);

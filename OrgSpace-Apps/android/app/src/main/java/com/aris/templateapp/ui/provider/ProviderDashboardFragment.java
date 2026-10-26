@@ -19,6 +19,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.aris.templateapp.R;
 import com.aris.templateapp.databinding.FragmentProviderDashboardBinding;
 import com.aris.templateapp.ui.common.CurrentUserViewModel;
+import com.aris.templateapp.ui.common.DashboardPager;
 import com.aris.templateapp.ui.common.HomeNavigator;
 import com.aris.templateapp.ui.common.KeyboardAwareBottomBar;
 import com.aris.templateapp.ui.creator.CreatorDashboardFragment;
@@ -87,7 +88,7 @@ public class ProviderDashboardFragment extends Fragment {
         // Tab bisa dipilih lewat bottom navigation ATAU digeser ke samping (ViewPager2).
         // Semua tab dibiarkan hidup (offscreenPageLimit = 3) agar isi & posisi scroll tiap tab tetap utuh.
         binding.pager.setAdapter(new ProviderTabsAdapter(this));
-        binding.pager.setOffscreenPageLimit(TABS.length - 1);
+        DashboardPager.enter(this, binding.pager, TABS.length);
         binding.pager.registerOnPageChangeCallback(pageChange);
         binding.bottomNav.setOnItemSelectedListener(item -> {
             int position = indexOf(item.getItemId());
