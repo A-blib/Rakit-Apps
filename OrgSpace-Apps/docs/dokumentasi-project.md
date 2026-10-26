@@ -323,18 +323,26 @@ App menerima ACCOUNT_LINK_REQUIRED (linkToken, existingMethods=["google"])
 
 ```
  App                         Backend                              GitHub
-  │ POST /auth/github/authorize-url ─►│ buat tiket GITHUB_STATE (10 mnt)  │
+  │ buat codeVerifier acak (tetap di HP)                                    │
+  │ POST /auth/github/authorize-url {codeChallenge} ─►│ tiket GITHUB_STATE (10 mnt) + challenge
   │◄──────────── { url } ─────────────│                                   │
   │ buka url di Custom Tab ───────────┼──────────────────────────────────►│ user login & setuju
   │                                   │◄── GET /auth/github/callback?code&state
   │                                   │ cek state, tukar code, logika 7 di atas
   │                                   │ buat tiket LOGIN_RESULT (2 mnt)
   │◄── redirect templateapp://auth/callback?ticket=XXX ───────────────────│
-  │ POST /auth/github/exchange {ticket} ─►│                               │
+  │ POST /auth/github/exchange {ticket, codeVerifier} ─►│ hash(verifier) == challenge?
   │◄──────────── AuthResponse ────────│                                   │
 ```
 
 - **State** mencegah serangan CSRF: callback hanya diterima kalau state-nya dibuat oleh backend kita dan belum pernah dipakai.
+- **PKCE (`codeChallenge`/`codeVerifier`, sejak 26 Oktober 2026):** state saja tidak mengikat alur ke app yang
+  memulainya. Tanpa PKCE: (1) app lain yang mendaftarkan skema `templateapp://` bisa menangkap tiket lalu menukarnya
+  (akun diambil alih); (2) penyerang bisa mengirim URL callback hasil login GitHub-nya ke korban, sehingga app korban
+  masuk ke akun penyerang (login CSRF); (3) URL "sambungkan GitHub" milik penyerang yang dibuka korban menyambungkan
+  GitHub korban ke akun penyerang. Sekarang app membuat `codeVerifier` acak (`GitHubVerifierStore`, tidak pernah
+  dikirim sebelum exchange), backend menyimpan `codeChallenge` = BASE64URL(SHA-256(verifier)) di tiket, dan kedua
+  endpoint exchange menolak verifier yang tidak cocok (`TICKET_INVALID`). Kedua sisi diuji dengan contoh RFC 7636.
 - **Client secret GitHub hanya ada di backend.** App tidak pernah melihatnya.
 - **Kenapa deep link membawa tiket, bukan token?** URL deep link bisa terbaca app lain atau tercatat di riwayat. Tiket hanya berumur 2 menit, sekali pakai, dan baru ditukar menjadi token lewat request biasa.
 - Kalau gagal, redirect berisi `?error=KODE`. Untuk penyambungan: `?error=ACCOUNT_LINK_REQUIRED&linkToken=...&methods=google`.
@@ -347,6 +355,10 @@ App menerima ACCOUNT_LINK_REQUIRED (linkToken, existingMethods=["google"])
 | `GITHUB_STATE` | 10 menit | `authorize-url` | callback GitHub |
 | `LOGIN_RESULT` | 2 menit | callback GitHub berhasil | `/auth/github/exchange` |
 | `LINK` | 10 menit | `ACCOUNT_LINK_REQUIRED` | login berikutnya yang membawa `linkToken` |
+| `LINK_RESULT` | 2 menit | callback GitHub dari Pengaturan | `/users/me/identities/github/exchange` (JWT pemilik + verifier) |
+| `GOOGLE_NONCE` | 5 menit | `POST /auth/google/nonce` | `GoogleTokenVerifier`: nonce di dalam ID token dicoret (transaksi sendiri, `consumeNow`) |
+
+- Tiket yang kedaluwarsa lebih dari sehari dihapus tiap malam pukul 03.45 (`AuthTicketService.deleteExpired`).
 
 - Sama seperti refresh token, yang disimpan hanya **hash** tiketnya.
 - `issue` memakai `@Transactional(propagation = REQUIRES_NEW)`: tiket langsung tersimpan di transaksi tersendiri. Ini penting karena tiket LINK dibuat tepat sebelum service melempar `ACCOUNT_LINK_REQUIRED`. Tanpa transaksi tersendiri, error itu akan me-rollback tiketnya.
@@ -354,7 +366,9 @@ App menerima ACCOUNT_LINK_REQUIRED (linkToken, existingMethods=["google"])
 ### Metode login terhubung (Pengaturan)
 
 - `GET /users/me/identities`: daftar metode (`local`, `google`, `github`).
-- `POST /users/me/identities/google` dan `.../github/authorize-url`: menyambungkan secara manual. Kecocokan email **tidak** diperlukan, karena user sudah membuktikan kepemilikan kedua akun dengan masuk ke keduanya (skenario 8: email GitHub berbeda atau privat).
+- `POST /users/me/identities/google` dan `.../github/authorize-url` + `.../github/exchange`: menyambungkan secara manual.
+  GitHub baru tersambung saat app menukar `linkTicket` dari deep link dengan JWT user yang memulai dan verifier-nya
+  (`LINK_USER_MISMATCH` jika tiket milik akun lain). Kecocokan email **tidak** diperlukan, karena user sudah membuktikan kepemilikan kedua akun dengan masuk ke keduanya (skenario 8: email GitHub berbeda atau privat).
 - Ditolak dengan `IDENTITY_IN_USE` kalau akun Google/GitHub itu sudah dipakai akun lain, atau akun ini sudah punya Google/GitHub yang lain.
 - `DELETE /users/me/identities/{provider}`: ditolak dengan `LAST_IDENTITY` kalau itu metode terakhir. Baris user dikunci (`findByIdForUpdate`) supaya dua request hapus yang bersamaan tidak sama-sama lolos.
 
@@ -446,13 +460,15 @@ Coba semuanya di Swagger UI: http://localhost:8080/swagger-ui.html
 | `POST /api/auth/refresh` | – | `{refreshToken}` | `AuthResponse` | ✅ Fase 02 |
 | `POST /api/auth/logout` | – | `{refreshToken}` | `204` | ✅ Fase 02 |
 | `GET /api/users/me` | ✔ | – | `UserResponse` | ✅ Fase 02 |
+| `POST /api/auth/google/nonce` | – | – | `{nonce}` (maks 30/menit per IP) | ✅ 26 Okt 2026 |
 | `POST /api/auth/google` | – | `{idToken, linkToken?}` | `AuthResponse` / `409 ACCOUNT_LINK_REQUIRED` | ✅ Fase 03 |
-| `POST /api/auth/github/authorize-url` | – | `{linkToken?}` | `{url}` | ✅ Fase 03 |
+| `POST /api/auth/github/authorize-url` | – | `{linkToken?, codeChallenge}` | `{url}` | ✅ Fase 03 |
 | `GET /api/auth/github/callback` | – | query `code`, `state`, `error` | `302` ke deep link | ✅ Fase 03 |
-| `POST /api/auth/github/exchange` | – | `{ticket}` | `AuthResponse` | ✅ Fase 03 |
+| `POST /api/auth/github/exchange` | – | `{ticket, codeVerifier}` | `AuthResponse` | ✅ Fase 03 |
 | `GET /api/users/me/identities` | ✔ | – | `[{provider, email, createdAt}]` | ✅ Fase 03 |
 | `POST /api/users/me/identities/google` | ✔ | `{idToken}` | daftar identitas | ✅ Fase 03 |
-| `POST /api/users/me/identities/github/authorize-url` | ✔ | – | `{url}` | ✅ Fase 03 |
+| `POST /api/users/me/identities/github/authorize-url` | ✔ | `{codeChallenge}` | `{url}` | ✅ Fase 03 |
+| `POST /api/users/me/identities/github/exchange` | ✔ | `{ticket, codeVerifier}` | daftar identitas | ✅ 26 Okt 2026 |
 | `DELETE /api/users/me/identities/{provider}` | ✔ | – | `204` / `409 LAST_IDENTITY` | ✅ Fase 03 |
 | `POST /api/users/me/onboarding/creator` | ✔ | `{displayName, websitePurpose?, organizationName?}` | `UserResponse` | ✅ Fase 04 |
 | `POST /api/users/me/onboarding/provider` | ✔ | `{creatorName, bio?, portfolioUrl?, specialties?, agreedToTerms}` | `UserResponse` / `409 PROVIDER_PROFILE_EXISTS` | ✅ Fase 04 |
@@ -800,13 +816,14 @@ Tombol Google → GoogleSignInHelper.signIn(activity)
 ### GitHub (Custom Tabs + deep link)
 
 ```
-Tombol GitHub → POST /auth/github/authorize-url → { url }
+Tombol GitHub → GitHubVerifierStore.startFlow() → POST /auth/github/authorize-url { codeChallenge } → { url }
    → GitHubSignInHelper.open(url): Custom Tab (Chrome di dalam app)
    → user login GitHub → GitHub memanggil backend (localhost:8080 lewat adb reverse)
    → backend redirect ke templateapp://auth/callback?ticket=...
    → Android membuka MainActivity (intent-filter deep link, launchMode singleTask → onNewIntent)
    → MainActivity → AuthDeepLinks.publish(uri) → layar Masuk/Daftar → AuthViewModel.onGitHubCallback
-   → POST /auth/github/exchange { ticket } → masuk
+   → POST /auth/github/exchange { ticket, codeVerifier } → masuk
+   (Pengaturan → sambungkan GitHub: deep link ?linkTicket=... → POST /users/me/identities/github/exchange)
 ```
 
 - **Intent filter** di `AndroidManifest.xml` (`scheme="templateapp" host="auth" path="/callback"`, kategori `BROWSABLE`) membuat browser boleh membuka app lewat alamat itu.
@@ -1809,6 +1826,309 @@ Lalu hapus folder `backend/uploads/templates/{id}` yang sama.
 
 Perbaikan ikut: PUT/DELETE `/api/public/sites/**` dulu ditolak filter Security (token portal bukan token app), jadi hapus
 item/berita/pengurus dari Portal gagal 401. Sekarang diizinkan di filter; controller tetap memeriksa token portal.
+
+### Perbaikan UX app, template Pramuka, dan panduan (20 Oktober 2026)
+Template **Pramuka Tunas Rimba** (`OrgSpace-Templates/pramuka-tunas-rimba/`, 8 halaman, modul `agenda`/`jadwal`/`galeri`/
+`prestasi`/`pembina`, berita `kegiatan`, form `pendaftaran`) diupload lewat fitur Upload app, diterbitkan ke
+`pramuka-tunas-rimba`, lalu diuji lewat API Portal Pengurus dan pengunjung (14 dari 15 skenario lulus; approve pendaftar
+belum ada fiturnya). Gambar template ilustrasi buatan sendiri (PIL), tanpa foto anak asli dan tanpa lambang resmi.
+
+| Temuan | Perbaikan |
+|---|---|
+| Tab Website berkedip setiap dibuka/kembali dari halaman kelola: `refresh()` mengosongkan daftar sebelum data baru datang | `WebsitesViewModel`: daftar lama dipertahankan sampai hasil datang; dikosongkan hanya saat pindah ruang kerja |
+| Kartu website & Lanjutkan tanpa foto | `WebsiteQueries`: thumbnail project kosong → pakai `templates.thumbnail_url` template asal |
+| Kartu Template populer di Beranda tanpa foto | `item_gallery_card.xml` + `GalleryAdapter.cards` memuat thumbnail |
+| Tab Profil kadang "muncul dari atas" (bagian user tampil belakangan) | `fragment_creator_profile`: isi disembunyikan sampai user pertama terbaca |
+| Transisi layar awal → dashboard tidak terlihat (main thread macet ±1,2 dtk membuat 4 tab sekaligus) | `ui/common/DashboardPager`: transisi ditunda sampai tab pertama siap, tab lain dibuat setelah transisi |
+| Daftar geser samping di Beranda direbut ViewPager2 | `ui/common/PagerAwareSwipe` dipakai `continue_list`, `recommend_list`, dan chip filter |
+| Tab Template berkedip (skeleton) saat pertama dibuka | `GalleryFragment`: daftar dimuat saat tab dibuat di belakang layar |
+| "Tandai semua" ikut menandai isi modul dinamis (`data-ws-item`, `data-ws-org`, …) | `assets/upload/mark.js` `suggest()` melewati elemen modul |
+| "Hubungkan" hanya menghubungkan satu elemen per ketukan | `UploadMarkFragment`: "Hubungkan semua" menghubungkan semua kembaran sekaligus lalu bar saran hilang |
+| Font template (`@font-face`) tidak pernah termuat di website tayang (halaman sandbox ber-origin anonim, font butuh CORS) | `OrgSpace-Hosting/src/lib/site-page.ts` `serveAsset`: `Access-Control-Allow-Origin: *` |
+| Panduan Terbitkan, Domain sendiri, Mengonlinekan ZIP masih "Segera hadir" | Isi ditulis di `strings_home.xml`; panduan Ajak pengurus lain punya tombol **Undang anggota sekarang** (membuka Anggota + lembar undangan) |
+
+Belum dibangun: status/approve pendaftar di Kotak Masuk Portal, ganti ZIP pada draft upload, versi template (perbaikan
+template baru berlaku setelah upload ulang). Chip thumbnail "Otomatis" di langkah Info tidak tampil terpilih (belum diperbaiki).
+
+## 33b. Keamanan: validasi isi saat publish langsung (26 Oktober 2026)
+
+**Masalah:** `POST /api/projects/publish-direct` menyimpan `content` dari HP tanpa `ContentValidator`. Nilai `theme`
+ditulis ke `<style id="orgspace-theme">`, dan jsoup **tidak** meng-escape isi `<style>`. Nilai seperti
+`red;}</style><script>...</script>` menjadi script di website tayang. Semua website ada di satu domain
+(`orgspace.app/{slug}`), jadi script itu bisa membaca token Portal Pengurus website lain dari browser. `styles` dan
+`image` masuk ke atribut `style`/`url('...')`: tidak bisa menjadi script (atribut di-escape), tetapi bisa menyisipkan CSS.
+
+**Perbaikan:**
+| Lapisan | Isi |
+|---|---|
+| Pintu masuk (`SitePublishService.publishDirect`) | Isi divalidasi `ProjectService.validateContent` (aturan sama dengan `PUT /projects/{id}/content`) setelah foto terunggah. Gagal → 400 `VALIDATION_ERROR`, tidak ada yang tersimpan. |
+| Foto yang filenya tidak ada di HP | Keputusan Aris: isian foto dibuang, website memakai foto contoh template, publish tetap jalan. Kunci isiannya dikembalikan di `missingImages`; app menampilkan banner peringatan berisi label fotonya di layar "Website Berhasil Diterbitkan" (`PublishSuccessDialog`) agar user memilih ulang foto lalu terbit lagi. |
+| Penjaga kedua (`SiteBuildService`) | Saat build, nilai tema/warna/angka/gambar dicek lagi (`ContentValidator.isSafe*`, `isAssetRef`). Yang tidak lolos dilewati, karena isi lama di database mungkin sudah tercemar. |
+
+**Cek data lama** (jalankan di database production, lalu terbitkan ulang website yang muncul):
+```sql
+SELECT p.id, p.name, t.key, t.value
+  FROM projects p, jsonb_each_text(coalesce(p.content->'theme', '{}')) t
+ WHERE t.value !~ '^#[0-9a-fA-F]{6}$' AND t.value !~ '^\d{1,3}(\.\d{1,2})?(px|rem|em|%)$';
+```
+
+## 33c. Penyimpanan rilis: publish ulang tidak menggandakan ukuran (26 Oktober 2026)
+
+**Masalah:** setiap publish menyalin seluruh website ke `data/sites/data/{siteId}/releases/{versi}/`, walau yang
+berubah hanya satu teks. Rilis lama tidak pernah dihapus dan tidak dihitung kuota, jadi disk tumbuh tanpa batas
+(template 20 MB × 30 kali publish = 600 MB untuk satu website).
+
+**Perbaikan (`SiteBuildService` + `SiteStorage`):**
+| Langkah | Isi |
+|---|---|
+| File yang sama dipakai bersama | Sebelum hasil build dipindah ke folder rilis, setiap file dibandingkan dengan file di rilis aktif (`Files.mismatch`). Jika isinya sama persis, file diganti **hardlink** ke file lama (`SiteStorage.linkUnchangedFiles`). Folder rilis tetap utuh, tetapi isi file itu tersimpan sekali di disk. Publish ulang hanya menambah ruang sebesar file yang berubah (biasanya HTML dan foto baru). |
+| Retensi D4 | Setelah publish berhasil, hanya 3 rilis terakhir + rilis aktif (jika berbeda) yang disimpan (`app.sites.keep-releases`, bawaan 3). Baris `site_releases` dihapus di transaksi yang sama; foldernya dihapus setelah transaksi berhasil (`afterCommit`). |
+
+**Kenapa hardlink aman:** satu isi file di disk bisa punya beberapa nama (path). Isi baru benar-benar hilang setelah
+nama terakhirnya dihapus. Jadi menghapus `releases/1/` tidak merusak `releases/4/` yang menautkan file yang sama.
+Syaratnya, folder rilis tidak pernah diubah setelah dibuat, dan semua rilis ada di satu disk. Di sistem file tanpa
+hardlink (mis. FAT), file tetap disalin biasa; publish tetap jalan, hanya tidak hemat ruang.
+
+**Paket template provider tidak tersentuh:** `uploads/templates/{templateId}/package.zip` adalah sumber setiap
+build; rilis hanyalah hasil masakannya. Menghapus rilis lama tidak memengaruhi galeri, user lain, maupun isi editor
+(tabel `projects`).
+
+**Rilis lama yang sudah ada** di server dihapus otomatis saat website itu dipublish lagi.
+
+### Cara menyajikan website: hanya lewat OrgSpace-Hosting (keputusan Aris, 26 Oktober 2026)
+
+Rancangan awal (`alur-publish-website.md` 2.2–2.4) memakai Caddy `file_server` yang membaca symlink
+`{SITES_ROOT}/hosts/{host}` → folder rilis. Sejak revisi 19 Oktober, website disajikan OrgSpace-Hosting
+(`orgspace.app/{slug}`), dan hasil build bergantung padanya: foto di `/{slug}/_media/{id}`, data modul dinamis yang
+disisipkan saat halaman diminta, formulir lewat `/api/...`, serta header sandbox. Lewat `file_server` ketiganya rusak.
+
+Karena itu kode symlink `hosts/` dihapus (`SiteBuildService`, `SitePublishService.unpublish/republish`,
+`SiteDomainService.verify/removeDomain`). Uji di dev DB sebelum dihapus: website dan domain kustomnya tetap tayang
+saat folder `hosts/` disembunyikan, dan HTML yang tayang sama dengan rilis aktif walau symlink domain kustom masih
+menunjuk rilis lama.
+
+```
+Browser → Caddy (HTTPS; sertifikat domain kustom via /internal/caddy/ask) → OrgSpace-Hosting :3001 → backend :8080
+```
+
+Contoh konfigurasi Caddy: `docs/deploy/Caddyfile`. Jalur backend `/sites/**` (penyaji lama tanpa sandbox) dan
+`/internal/**` ditutup di domain API. Folder `hosts/` lama di laptop dev boleh dihapus.
+
+## 33d. Pembersih foto yatim (26 Oktober 2026)
+
+**Masalah:** foto website (`project_assets`) tidak pernah dihapus. Foto lama yang diganti user, atau foto Portal
+yang diganti/dihapus, tetap tersimpan selamanya dan **ikut dihitung kuota** 300 MB per ruang kerja. File di disk dari
+project/organisasi yang dihapus juga tertinggal (barisnya hilang lewat `ON DELETE CASCADE`, filenya tidak).
+
+**Perbaikan:** job otomatis `ProjectAssetCleanup` di dalam backend (`@Scheduled`, setiap hari **03.30** zona
+`APP_TIMEZONE`, setengah jam setelah `UploadMaintenance`). Tidak perlu cron atau perintah manual di VPS; log-nya:
+`journalctl -u orgspace-backend | grep "foto yatim"`.
+
+| Tahap | Isi |
+|---|---|
+| 1. Baris | Satu `DELETE` menghapus baris yang berumur > 24 jam dan **tidak dirujuk** di: isi project, thumbnail, favicon/gambar share, cadangan isi, snapshot rilis yang disimpan, item koleksi Portal, berita |
+| 2. File | File di folder aset yang tidak dirujuk baris mana pun dan tidak diubah > 24 jam dihapus (`ProjectAssetStorage.deleteFilesNotIn`) |
+
+- **Jeda 24 jam:** foto diunggah lebih dulu daripada isi yang merujuknya disimpan (editor, Portal).
+- **File dipakai bersama:** nama file = `{organisasi}/{sha256}`, jadi foto yang sama di beberapa website satu
+  organisasi hanya satu file. File baru dihapus setelah baris terakhirnya hilang. Saat file dipakai ulang,
+  `write()` memperbarui waktu ubahnya agar tidak terhapus di sela unggahan yang belum di-commit.
+- **Kuota** dihitung per file unik (`DISTINCT ON (storage_path)`), sehingga foto yang sama tidak terhitung ganda.
+- **Tempat baru yang menyimpan id/URL foto wajib ditambahkan ke `ProjectAssetCleanup.ORPHAN_ROWS`**, kalau tidak
+  foto yang masih tampil ikut terhapus.
+
+## 33e. Data formulir pengunjung hanya untuk Pemilik & Admin (26 Oktober 2026)
+
+**Masalah:** aturan `revisi-fondasi-orgspace.md` 3.1 ("Lihat dan unduh Data masuk": Pemilik ✓, Admin ✓, Editor —)
+sudah ada sebagai `OrgAction.VIEW_SUBMISSIONS`, tetapi tidak dipakai. Editor bisa membaca nama, kelas, dan nomor
+WhatsApp pendaftar lewat app (`GET /api/projects/{id}/submissions` memakai `OrgAction.VIEW`) dan lewat Portal
+Pengurus (`GET /api/public/sites/{slug}/admin/submissions` hanya memeriksa "anggota"). Portal juga mengembalikan
+entity `FormSubmission` apa adanya, termasuk **IP dan User-Agent** pengunjung.
+
+**Perbaikan:**
+- `SitePublishService.getSubmissions` memakai `OrgAction.VIEW_SUBMISSIONS` (Editor → 403 `ROLE_NOT_ALLOWED`).
+- Endpoint Portal memanggil `SitePublishService.getSubmissions` yang sama, jadi aturan peran dan bentuk respons
+  (`FormSubmissionResponse`, tanpa IP/User-Agent) hanya ada di satu tempat.
+- Portal Pengurus (OrgSpace-Hosting `[slug]/admin/page.tsx`): tab "Kotak Masuk Form" disembunyikan untuk Editor,
+  kartu "Formulir Masuk" di Ringkasan tetap menampilkan jumlah tetapi tidak bisa diklik.
+
+## 33f. Publish langsung tidak lagi menimpa website lain bernama sama (26 Oktober 2026)
+
+**Masalah:** jika HP tidak mengirim `projectId` (selalu terjadi untuk website baru dari template), `publishDirect`
+mencari project menurut **nama** di ruang kerja tujuan dan menimpa isinya. Dua anggota (atau satu user) yang membuat
+website dari template yang sama → nama sama → website pertama tertimpa isi website kedua, dan slug pilihan pembuat
+kedua diabaikan. Penimpaan ini juga melewati kunci edit. `checkSlug` mencocokkan nama dengan cara yang sama, sehingga
+website baru "mewarisi" slug terkunci milik website lain.
+
+**Perbaikan:**
+| Sisi | Isi |
+|---|---|
+| Backend `publishDirect` | Tanpa `projectId` = selalu website baru, nama unik lewat `WebsiteService.uniqueName` ("Nama (2)"). Dengan `projectId`, terbit ditolak `PROJECT_LOCKED` jika anggota lain sedang memegang kunci edit aktif (`ProjectLocks.requireFreeFor`). |
+| Backend `checkSlug` | Tanpa `projectId` = website baru (tidak ada slug terkunci). `ProjectRepository.findByOrganizationIdAndName` dihapus. |
+| Android | Kolom baru `projects.server_project_id` (Room versi 4, auto-migrasi dari 3). Diisi setelah terbit pertama (atau saat baris project dibuat jika terbit sebelum perubahan pertama), lalu dipakai editor sebagai `projectId` untuk terbit berikutnya. Project hasil duplikat di HP sengaja tidak mewarisi ID ini. |
+
+**Catatan peralihan:** project di HP yang sudah pernah terbit sebelum perubahan ini belum menyimpan ID server. Terbit
+pertama dari project itu membuat website baru; untuk memperbarui website lama, buka dari halaman kelola website.
+
+## 33g. Keamanan login dan pengurus Portal (26 Oktober 2026)
+
+**Masalah:**
+1. Login app (`POST /api/auth/login`, juga dipakai portal web untuk akun admin) dan login Portal Pengurus
+   (`POST /api/public/sites/{slug}/auth/login`) tidak punya batas percobaan.
+2. Login Portal membalas `NOT_ORG_MEMBER` hanya jika password **benar**, sehingga Portal website mana pun bisa dipakai
+   menguji tebakan password akun OrgSpace siapa saja. Lama respons juga membedakan email terdaftar/tidak.
+3. Portal bisa memasukkan akun OrgSpace mana pun ke organisasi lewat email tanpa persetujuan; pesan "email belum
+   punya akun" membocorkan email yang terdaftar.
+
+**Perbaikan:**
+| No | Isi |
+|---|---|
+| 1 | `AttemptLimiter.checkLogin(ip, email)`: maks **10/menit per email** (`app.auth.login-max-per-email`) dan **30/menit per IP** (`app.auth.login-max-per-ip`, lebih longgar karena satu sekolah bisa berbagi IP). Berlaku untuk login app dan Portal, dengan hitungan per email yang sama. Lewat batas → 429 `TOO_MANY_ATTEMPTS`. Kunci yang tidak dipakai 10 menit dibuang dari memori tiap 5 menit. IP asli di belakang Caddy dibaca lewat `server.forward-headers-strategy: native` di `application-prod.yml` (bagian 33i). |
+| 2 | Login Portal memakai `AuthService.verifyLocalPassword` (hash palsu yang sama dengan login app). Email tidak ada, password salah, dan "bukan pengurus" mendapat jawaban identik: 401 `INVALID_CREDENTIALS` "Email atau password salah, atau akun ini bukan pengurus website ini." |
+| 3 | `POST /api/public/sites/{slug}/admin/members` dihapus. Gantinya `POST/GET/DELETE /api/public/sites/{slug}/admin/invitations[/{id}]` yang memakai `InvitationService` (kode undangan app). Penerima menjadi pengurus hanya setelah memasukkan kode di app (Gabung organisasi). Portal: form "Undang Pengurus" (pilih peran → kode + tombol salin + cara memakai); isian password sementara dihapus. |
+
+**Batasan:** hitungan percobaan disimpan di memori satu proses (cukup selama backend satu salinan). Penyerang yang
+terus menebak satu email ikut menahan login pemilik email itu, paling lama satu menit setelah serangan berhenti.
+
+## 33h. Tidak ada alamat localhost di production (26 Oktober 2026)
+
+**Masalah:** Portal Pengurus dialihkan ke `http://localhost:3001/{slug}/admin` yang tertulis langsung di
+`PublicSiteController`. Selain itu, jika variabel alamat lupa diisi di server, backend, Hosting, dan portal web diam-diam
+memakai nilai bawaan localhost (link website yang dikirim ke app, Portal Pengurus di browser, portal web di Vercel).
+
+**Perbaikan: gagal sejak awal (fail fast).** Di laptop localhost tetap dipakai otomatis; di production program
+menolak jalan dan menyebut variabel yang kurang.
+| Bagian | Isi |
+|---|---|
+| Backend | Redirect Portal memakai `SITES_HOSTING_URL`. `application-prod.yml` membuang nilai bawaan localhost; `ProductionConfigCheck` (`@Profile("prod")`) menolak startup jika `SITES_HOSTING_URL`, `SITES_DOMAIN`, `SITES_PUBLIC_IP`, `SITES_CUSTOM_TARGET`, atau `GITHUB_REDIRECT_URI` kosong/localhost. Catatan: placeholder tanpa nilai saja tidak cukup, karena Spring Boot membiarkannya sebagai teks `${NAMA}` saat mengikat properti. |
+| OrgSpace-Hosting | Semua alamat di `src/lib/config.ts` (dulu 7 nilai cadangan tersebar). `next.config.ts` menghentikan `npm run build` production jika `BACKEND_API_URL`, `NEXT_PUBLIC_BACKEND_URL`, `NEXT_PUBLIC_PORTAL_URL`, atau `NEXT_PUBLIC_HOSTING_DOMAIN` kosong. Middleware membaca domain utama dari `NEXT_PUBLIC_HOSTING_DOMAIN` (dulu `orgspace.app` tertulis langsung). |
+| OrgSpace-Website | `next.config.ts` menghentikan build production (Vercel) jika `ORGSPACE_API_URL` kosong. |
+| Lain-lain | Jumlah rilis yang disimpan dibaca dari `app.sites.keep-releases` (dulu angka 3 di `SiteBuildService`). |
+
+## 33i. IP asli pengunjung dan batas formulir publik (26 Oktober 2026)
+
+**Masalah:** di production backend ada di belakang Caddy (dan Hosting untuk formulir), sehingga
+`request.getRemoteAddr()` selalu `127.0.0.1`. Akibatnya batas login per IP (33g) berlaku untuk **semua user sekaligus**
+(saat ramai semua orang mendapat "Terlalu banyak percobaan"), IP pengirim formulir tidak bisa dilacak, dan formulir
+publik tidak punya batas sama sekali (bot bisa membanjiri kotak masuk).
+
+**Perbaikan:**
+- `application-prod.yml`: `server.forward-headers-strategy: native`. Tomcat memakai IP dari `X-Forwarded-For` hanya
+  jika request datang dari proxy internal (127.0.0.1, jaringan privat); Caddy menimpa header itu, jadi pengunjung
+  internet tidak bisa memalsukan IP. Ditulis di yml (bukan environment) agar tidak terlewat saat deploy.
+- Formulir publik: `AttemptLimiter.checkFormSubmission` maks **30 kiriman/menit per IP per website**
+  (`app.forms.max-per-ip-per-minute`); lewat batas → 429 `TOO_MANY_ATTEMPTS`. 30 dipilih Aris agar satu kelas di lab
+  komputer (satu IP) bisa mendaftar bersamaan.
+- Test `ForwardedClientIpIntegrationTest` memakai HTTP sungguhan (mode `native` dikerjakan Tomcat, tidak lewat MockMvc).
+- Pesan untuk pengunjung (tampil di bawah formulir website lewat `site-runtime.ts`/`DynamicForm`): "Terlalu banyak
+  kiriman dari jaringan ini. Tunggu sekitar 1 menit, lalu kirim lagi." Isian formulir tidak dikosongkan.
+
+### Uji Caddy di laptop
+`docs/deploy/uji-caddy-lokal.sh <slug> [domain-kustom]` menjalankan salinan Caddyfile production di port 8880/8443
+(tanpa sudo, sertifikat lokal) lalu memeriksa: API ke backend, `/sites/*` dan `/internal/*` ditutup, website dan
+domain kustom ke Hosting dengan isi yang sama, dan domain tak terdaftar ditolak `ask`. Diuji 26 Oktober 2026 dengan
+Caddy v2.11.7: semua lolos, termasuk rantai IP Caddy → Hosting → backend (`X-Forwarded-For` palsu dari pengunjung
+diabaikan) dan batas 30 kiriman formulir.
+
+## 33j. Nonce Google: setiap ID token hanya bisa dipakai sekali (26 Oktober 2026)
+
+**Masalah:** ID token Google berlaku sekitar 1 jam dan backend menerimanya berkali-kali. Siapa pun yang mendapat
+salinannya bisa masuk sebagai pemiliknya tanpa HP-nya selama token belum kedaluwarsa.
+
+**Perbaikan (seperti absen: nama dicoret setelah hadir):**
+1. App meminta nonce: `POST /api/auth/google/nonce` (tiket `GOOGLE_NONCE`, hash disimpan, berlaku 5 menit, dibatasi
+   30/menit per IP).
+2. `GoogleSignInHelper` memasang nonce ke `GetSignInWithGoogleOption.setNonce(...)`; Google menanamnya di dalam ID token
+   dan ikut menandatanganinya (tidak bisa diganti).
+3. `GoogleTokenVerifier` mewajibkan nonce itu ada di daftar server, lalu mencoretnya di transaksi sendiri
+   (`consumeNow`), sehingga tetap terpakai walau login sesudahnya gagal. Berlaku untuk login Google dan menyambungkan
+   Google dari Pengaturan.
+
+Android: `AuthViewModel.startGoogle()` dan `SettingsViewModel.startLinkGoogle()` meminta nonce dulu (pola sama dengan
+`startGitHub()`), lalu layar membuka pilihan akun Google. Test: `GoogleNonceIntegrationTest` (sekali pakai, tanpa/palsu
+ditolak, tetap tercoret walau transaksi dibatalkan, pembersihan tiket kedaluwarsa).
+
+## 33k. Publish langsung hanya dari template yang tayang (26 Oktober 2026)
+
+**Masalah:** galeri, pembuatan website dari app, dan unduh paket sudah hanya menerima template `published` dari
+provider aktif. Tetapi `POST /api/projects/publish-direct` memakai `sourceTemplateId` dari request tanpa memeriksa
+status, lalu build mengekstrak `package.zip` template itu. Paket tidak dihapus saat template diturunkan, jadi request
+buatan sendiri bisa membuat website baru dari template `disabled` (yang mungkin diturunkan karena isinya berbahaya).
+ID template asal-asalan diam-diam menjadi halaman bawaan.
+
+**Perbaikan (`SitePublishService.publishDirect`):**
+- Website baru: `sourceTemplateId` wajib lolos `TemplatePackageService.visible` (aturan galeri); selain itu 404.
+- Website lama: template asal tidak bisa diganti lewat publish ulang (400 `VALIDATION_ERROR`). Jika templatenya
+  kemudian diturunkan, website lama **tetap boleh** diterbitkan ulang (keputusan Aris), agar organisasi yang tidak
+  bersalah tidak terkunci.
+
+## 33l. Daftar/login pertama yang terkirim dua kali tidak lagi error 500 (26 Oktober 2026)
+
+**Masalah:** daftar email dan login pertama Google/GitHub memakai pola "cek dulu, lalu simpan". Dua request dengan
+email/identitas yang sama yang tiba hampir bersamaan (tombol diketuk dua kali, request dikirim ulang) sama-sama lolos
+pengecekan; yang kedua lalu ditolak index unik (`ux_users_email_lower`, `UNIQUE(provider, provider_user_id)`) dan menjadi
+500. Data tetap aman (tidak pernah ada akun kembar), tetapi user melihat "Terjadi kesalahan" padahal akunnya terbuat.
+
+**Perbaikan:** `common/persistence/AdvisoryLocks` (`pg_advisory_xact_lock`, lepas otomatis saat transaksi selesai).
+- `AuthService.register` mengunci per email → request kedua menunggu, lalu mendapat 409 `EMAIL_ALREADY_USED`.
+- `AccountLinkingService.signIn` mengunci per identitas (dan per email terverifikasi, kunci yang sama dengan daftar
+  email) → request kedua menunggu, lalu langsung masuk ke akun yang baru dibuat.
+
+Test (`AuthFlowIntegrationTest`, `SocialAuthIntegrationTest`) mengirim dua request serentak, 5 putaran. Sudah dibuktikan
+gagal dengan 500 jika kunci dimatikan.
+
+## 33m. Berita Portal memakai DTO, bukan entity (26 Oktober 2026)
+
+**Aturan AGENTS.md 7.4:** jangan mengembalikan Entity langsung. Entity mengirim **semua kolom** tabel; kolom internal
+ikut bocor tanpa disengaja (contoh nyata: `FormSubmission` dulu mengirim IP & User-Agent pengunjung, 33e) dan kolom baru
+otomatis ikut keluar.
+
+**Perbaikan:** `GET/POST /api/public/sites/{slug}/admin/news` mengembalikan `NewsResponse(id, title, summary, content,
+imageUrl, publishedAt)` (persis field yang dipakai Portal), tanpa `organizationId`/`createdBy`/`createdAt`/`updatedAt`.
+Isian berita juga divalidasi sesuai kolom `site_news`: judul maks 200, ringkasan dan alamat gambar maks 500 karakter
+(dulu ditolak database menjadi 500). Pemeriksaan semua controller: tidak ada lagi endpoint yang mengembalikan entity.
+
+## 33n. Ringkasan Portal dihitung di database (26 Oktober 2026)
+
+`GET /api/public/sites/{slug}/admin/stats` dulu memuat **semua** isian formulir, berita, dan item modul (lengkap dan
+diurutkan) ke memori hanya untuk `.size()`, setiap kali Portal dibuka atau berita/item ditambah. Sekarang memakai
+`countBySiteId` / `countByOrganizationId` (Spring Data membuat `SELECT count(*)` dari nama method), jadi database hanya
+mengirim angka. Test: `portalSummaryCountsSubmissionsNewsAndModuleItems`.
+
+Catatan: `/render/{slug}` tetap memuat semua berita organisasi karena memang ditampilkan; jika berita sudah ribuan,
+perlu halaman bertahap (pagination).
+
+## 33o. CORS hanya untuk Portal Pengurus (26 Oktober 2026)
+
+**Latar:** satu-satunya kode browser yang memanggil backend langsung adalah Portal Pengurus (`{hosting}/{slug}/admin`).
+App Android dan server portal web bukan browser; formulir website lewat `/api/forms` Hosting (CORS-nya sendiri). Dulu
+backend mengizinkan semua asal (`*`): aman selama login memakai header Authorization, tetapi menjadi celah jika suatu saat
+login memakai cookie.
+
+**Sekarang (`security/CorsOriginPolicy`):** header `Access-Control-Allow-Origin` hanya diberikan untuk
+`SITES_HOSTING_URL` dan varian `www.`-nya, serta domain kustom berstatus `active` (`site_domains`). Asal lain, termasuk
+`null` dari halaman website yang di-sandbox, tidak mendapat header (browser menolak membaca jawaban). Request tanpa
+`Origin` (app Android, server) tidak terpengaruh. Test: `CorsIntegrationTest`.
+
+## 33p. Portal Pengurus dipisah dari PublicSiteController (26 Oktober 2026)
+
+`PublicSiteController` dulu 942 baris berisi 30 endpoint untuk lima urusan; lima masalah keamanan hari ini ada di sana.
+Sekarang dipecah tanpa mengubah alamat endpoint (Portal, Hosting, dan app tidak perlu diubah):
+
+| Class | Isi |
+|---|---|
+| `PublicSiteController` | Website publik: render untuk Hosting, resolve-domain, ask Caddy, aset/foto, koleksi publik, kiriman formulir, jalur lama `/sites/**` |
+| `PortalAuthController` | Login Portal dan `auth/me` |
+| `PortalContentController` | Ringkasan, data formulir, berita, koleksi modul, unggah foto |
+| `PortalMemberController` | Anggota dan undangan; ubah peran & keluarkan anggota lewat `MemberService` (sama dengan app) |
+| `PortalAccess` | Satu tempat: cari website dari slug + periksa token Portal & keanggotaan |
+
+Perubahan perilaku yang disengaja (dikunci test `portalMemberChangesUseTheSameRulesAndActivityLogAsTheApp`):
+- Pemilik terakhir tidak bisa diturunkan/dikeluarkan lewat Portal (`LAST_OWNER`); dulu bisa.
+- Ubah peran/keluarkan anggota lewat Portal tercatat di log aktivitas.
+- PUT anggota tanpa `role` tidak mengubah peran (dulu jatuh ke Editor); jabatan maks 60 karakter (dulu 500).
+- `@CrossOrigin("*")` dihapus: dulu menambah izin `*` untuk request biasa ke endpoint website publik, melewati
+  `CorsOriginPolicy` (33o). Test: `CorsIntegrationTest.publicSiteEndpointsDoNotGrantEveryOriginEither`.
 
 ## 34. Glosarium
 
