@@ -10,6 +10,9 @@ public interface FormSubmissionRepository extends JpaRepository<FormSubmission, 
 
     List<FormSubmission> findBySiteIdOrderByCreatedAtDesc(UUID siteId);
 
+    /** SELECT count(*): untuk angka ringkasan Portal, tanpa memuat isi formulir. */
+    long countBySiteId(UUID siteId);
+
     List<FormSubmission> findBySiteIdAndFormNameOrderByCreatedAtDesc(UUID siteId, String formName);
 
     /** Jumlah isian per form: [nama form, jumlah]. Hanya angka, isi form tidak pernah tampil publik. */

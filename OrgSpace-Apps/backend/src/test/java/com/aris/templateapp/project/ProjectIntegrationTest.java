@@ -26,6 +26,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -57,6 +61,8 @@ class ProjectIntegrationTest {
     @Autowired private TemplateRepository templateRepository;
     @Autowired private DemoPackages demoPackages;
     @Autowired private TransactionTemplate tx;
+    @Autowired private ProjectAssetCleanup cleanup;
+    @Autowired private ProjectAssetStorage assetStorage;
 
     private Account owner;
     private Account editor;
@@ -215,7 +221,66 @@ class ProjectIntegrationTest {
                 .andExpect(jsonPath("$.code").value("STORAGE_LIMIT_REACHED"));
     }
 
+    @Test
+    void nightlyCleanupDeletesOnlyPhotosNoLongerUsedAnywhere() throws Exception {
+        String id = JsonPath.read(send(owner, post("/api/organizations/" + orgId + "/projects"), create("hp-a"))
+                .andReturn().getResponse().getContentAsString(), "$.website.id");
+        String other = JsonPath.read(send(owner, post("/api/organizations/" + orgId + "/projects"), create("hp-a"))
+                .andReturn().getResponse().getContentAsString(), "$.website.id");
+        String inContent = asset(id, png(50));
+        String thumbnail = asset(id, png(51));
+        String inBackup = asset(id, png(52));
+        String orphan = asset(id, png(53));
+        String fresh = asset(id, png(54));
+        // Foto yang sama di website lain: satu file di disk, dua baris.
+        String sameFileElsewhere = asset(other, png(53));
+
+        send(owner, put("/api/projects/" + id + "/content"),
+                body(0, "{\"fields\":{\"foto_hero\":{\"image\":\"asset:" + inContent + "\"}}}", 0)).andExpect(status().isOk());
+        send(owner, put("/api/projects/" + other + "/content"),
+                body(0, "{\"fields\":{\"foto_hero\":{\"image\":\"asset:" + sameFileElsewhere + "\"}}}", 0)).andExpect(status().isOk());
+        jdbc.update("UPDATE projects SET thumbnail_asset_id = ?::uuid WHERE id = ?::uuid", thumbnail, id);
+        jdbc.update("INSERT INTO project_content_backups (project_id, content, reason) VALUES (?::uuid, ?::jsonb, 'conflict')",
+                id, "{\"fields\":{\"foto_hero\":{\"image\":\"asset:" + inBackup + "\"}}}");
+
+        // Semua sudah lewat jeda 24 jam, kecuali foto yang baru diunggah.
+        jdbc.update("UPDATE project_assets SET created_at = now() - interval '2 days' WHERE id <> ?::uuid", fresh);
+        Path orphanFile = assetFile(orphan);
+        Files.setLastModifiedTime(orphanFile, FileTime.from(Instant.now().minus(Duration.ofDays(2))));
+        // File tertinggal dari project yang sudah dihapus (barisnya hilang lewat cascade).
+        Path leftover = orphanFile.resolveSibling("tertinggal.webp");
+        Files.write(leftover, png(55));
+        Files.setLastModifiedTime(leftover, FileTime.from(Instant.now().minus(Duration.ofDays(2))));
+        Path freshLeftover = orphanFile.resolveSibling("baru-ditulis.webp");
+        Files.write(freshLeftover, png(56));
+
+        cleanup.run();
+
+        assertThat(jdbc.queryForList("SELECT id::text FROM project_assets WHERE project_id IN (?::uuid, ?::uuid)", String.class, id, other))
+                .containsExactlyInAnyOrder(inContent, thumbnail, inBackup, fresh, sameFileElsewhere);
+        assertThat(orphanFile).as("file masih dipakai website lain").exists();
+        assertThat(leftover).as("file tanpa baris").doesNotExist();
+        assertThat(freshLeftover).as("file tanpa baris yang baru ditulis").exists();
+
+        // Setelah website lain berhenti memakainya, baris dan file ikut terhapus.
+        send(owner, put("/api/projects/" + other + "/content"), body(1, "{\"fields\":{}}", 0)).andExpect(status().isOk());
+        cleanup.run();
+        assertThat(orphanFile).doesNotExist();
+        send(owner, get("/api/assets/" + inContent), null).andExpect(status().isOk());
+    }
+
     // ---------- pembantu ----------
+
+    private String asset(String projectId, byte[] png) throws Exception {
+        return JsonPath.read(upload(owner, "/api/projects/" + projectId + "/assets",
+                        new MockMultipartFile("file", "foto.png", "image/png", png))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.assetId");
+    }
+
+    private Path assetFile(String assetId) {
+        return assetStorage.file(jdbc.queryForObject("SELECT storage_path FROM project_assets WHERE id = ?::uuid",
+                String.class, assetId));
+    }
 
     private record Account(UUID id, String token) {
     }

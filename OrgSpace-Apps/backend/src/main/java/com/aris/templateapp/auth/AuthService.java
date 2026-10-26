@@ -7,6 +7,7 @@ import com.aris.templateapp.auth.dto.RefreshTokenRequest;
 import com.aris.templateapp.auth.dto.RegisterRequest;
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
+import com.aris.templateapp.common.persistence.AdvisoryLocks;
 import com.aris.templateapp.common.util.Emails;
 import com.aris.templateapp.security.GoogleTokenVerifier;
 import com.aris.templateapp.security.JwtService;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /** Daftar, masuk (email, Google, hasil GitHub), refresh, dan keluar. */
@@ -33,6 +36,7 @@ public class AuthService {
     private final AccountLinkingService accountLinkingService;
     private final AuthTicketService ticketService;
     private final GoogleTokenVerifier googleTokenVerifier;
+    private final AdvisoryLocks advisoryLocks;
 
     /**
      * Hash palsu untuk dicocokkan saat email tidak ditemukan. Tujuannya agar waktu respons
@@ -44,7 +48,9 @@ public class AuthService {
     public AuthService(UserRepository userRepository, UserIdentityRepository identityRepository,
                        RefreshTokenService refreshTokenService, UserService userService, JwtService jwtService,
                        PasswordEncoder passwordEncoder, AccountLinkingService accountLinkingService,
-                       AuthTicketService ticketService, GoogleTokenVerifier googleTokenVerifier) {
+                       AuthTicketService ticketService, GoogleTokenVerifier googleTokenVerifier,
+                       AdvisoryLocks advisoryLocks) {
+        this.advisoryLocks = advisoryLocks;
         this.userRepository = userRepository;
         this.identityRepository = identityRepository;
         this.refreshTokenService = refreshTokenService;
@@ -60,6 +66,9 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request, String deviceName) {
         String email = Emails.normalize(request.email());
+        // Daftar dengan email yang sama yang datang bersamaan (mis. tombol diketuk dua kali) diantrekan, sehingga yang
+        // kedua melihat akun pertama dan mendapat EMAIL_ALREADY_USED, bukan error 500 dari index unik.
+        advisoryLocks.lockEmail(email);
         // Dicek terhadap tabel users (bukan hanya identitas local), agar email yang sudah dipakai
         // lewat Google/GitHub juga tidak bisa didaftarkan ulang sebagai akun terpisah.
         if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
@@ -100,10 +109,14 @@ public class AuthService {
         return issueTokens(result.user(), deviceName, result.isNewUser());
     }
 
-    /** Menukar tiket LOGIN_RESULT dari deep link GitHub menjadi token. Tiket hanya bisa dipakai sekali. */
+    /**
+     * Menukar tiket LOGIN_RESULT dari deep link GitHub menjadi token. Tiket hanya bisa dipakai sekali, dan hanya oleh
+     * app yang memulai login (punya codeVerifier; lihat GitHubAuthService).
+     */
     @Transactional
-    public AuthResponse exchangeLoginTicket(String rawTicket, String deviceName) {
+    public AuthResponse exchangeLoginTicket(String rawTicket, String codeVerifier, String deviceName) {
         AuthTicket ticket = ticketService.consume(AuthTicketType.LOGIN_RESULT, rawTicket, ErrorCode.TICKET_INVALID);
+        ticketService.requireVerifier(ticket, codeVerifier);
         User user = userRepository.findById(ticket.getUserId())
                 .orElseThrow(() -> new ApiException(ErrorCode.TICKET_INVALID));
         boolean isNewUser = Boolean.parseBoolean(ticket.payloadString(GitHubAuthService.KEY_IS_NEW_USER));
@@ -120,6 +133,26 @@ public class AuthService {
     @Transactional
     public void logout(RefreshTokenRequest request) {
         refreshTokenService.revoke(request.refreshToken());
+    }
+
+    /**
+     * Memeriksa email + password akun lokal tanpa membocorkan apa pun: email tidak terdaftar, akun tanpa password
+     * (Google/GitHub), dan password salah memberi hasil yang sama dengan lama proses yang sama. Dipakai login Portal
+     * Pengurus, yang sengaja tidak memberi petunjuk "masuk dengan Google" seperti login app.
+     *
+     * @return ID user jika password cocok
+     */
+    @Transactional(readOnly = true)
+    public Optional<UUID> verifyLocalPassword(String email, String password) {
+        UserIdentity local = identityRepository
+                .findByProviderAndProviderUserId(IdentityProvider.LOCAL, Emails.normalize(email))
+                .orElse(null);
+        if (local == null || local.getPasswordHash() == null) {
+            passwordEncoder.matches(password, dummyPasswordHash);
+            return Optional.empty();
+        }
+        return passwordEncoder.matches(password, local.getPasswordHash())
+                ? Optional.of(local.getUser().getId()) : Optional.empty();
     }
 
     /** Langkah 4 bagian 6.3: jika request membawa linkToken, sambungkan identitas yang tertunda. */

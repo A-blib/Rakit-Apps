@@ -1,5 +1,7 @@
 package com.aris.templateapp.security;
 
+import com.aris.templateapp.auth.AuthTicketService;
+import com.aris.templateapp.auth.AuthTicketType;
 import com.aris.templateapp.auth.IdentityProvider;
 import com.aris.templateapp.auth.SocialProfile;
 import com.aris.templateapp.common.exception.ApiException;
@@ -22,6 +24,11 @@ import java.util.List;
  * Yang dicek library Google: tanda tangan memakai kunci publik Google (diunduh & di-cache otomatis),
  * penerbit {@code accounts.google.com}, belum kedaluwarsa, dan audience = Web Client ID kita.
  * Cek audience penting: tanpa itu, idToken yang dibuat untuk app LAIN juga akan diterima.
+ * <p>
+ * Nonce: ID token berlaku sekitar 1 jam, jadi tanpa nonce siapa pun yang mendapat salinannya bisa masuk sebagai pemiliknya
+ * berulang kali. App meminta nonce ke {@code POST /api/auth/google/nonce}, Credential Manager menanamnya ke dalam token
+ * (ikut ditandatangani Google), lalu di sini nonce itu wajib ada di daftar server dan langsung dicoret. Setiap ID token
+ * hanya bisa dipakai sekali. Berlaku untuk login Google dan menyambungkan Google dari Pengaturan.
  */
 @Slf4j
 @Component
@@ -29,8 +36,10 @@ public class GoogleTokenVerifier {
 
     private final GoogleIdTokenVerifier verifier;
     private final boolean configured;
+    private final AuthTicketService ticketService;
 
-    public GoogleTokenVerifier(AppProperties properties) {
+    public GoogleTokenVerifier(AppProperties properties, AuthTicketService ticketService) {
+        this.ticketService = ticketService;
         String webClientId = properties.google().webClientId();
         this.configured = webClientId != null && !webClientId.isBlank();
         this.verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance())
@@ -54,8 +63,13 @@ public class GoogleTokenVerifier {
         if (token == null) {
             throw new ApiException(ErrorCode.SOCIAL_AUTH_FAILED);
         }
+        return toProfile(token.getPayload());
+    }
 
-        GoogleIdToken.Payload payload = token.getPayload();
+    /** Isi token yang tanda tangan, penerbit, audience, dan masa berlakunya sudah dicek library Google. */
+    SocialProfile toProfile(GoogleIdToken.Payload payload) {
+        // Dicoret di transaksi sendiri: tetap terpakai walau login sesudahnya gagal (mis. ACCOUNT_LINK_REQUIRED).
+        ticketService.consumeNow(AuthTicketType.GOOGLE_NONCE, payload.getNonce(), ErrorCode.SOCIAL_AUTH_FAILED);
         return new SocialProfile(
                 IdentityProvider.GOOGLE,
                 payload.getSubject(),

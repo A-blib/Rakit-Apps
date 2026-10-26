@@ -36,16 +36,10 @@ class SiteDomainServiceTest {
     private SiteRepository siteRepository;
 
     @Mock
-    private SiteReleaseRepository siteReleaseRepository;
-
-    @Mock
     private SiteDomainRepository siteDomainRepository;
 
     @Mock
     private OrganizationAccess access;
-
-    @Mock
-    private SiteStorage siteStorage;
 
     private AppProperties properties;
     private Clock clock;
@@ -83,7 +77,7 @@ class SiteDomainServiceTest {
                 allowDnsBypass
         );
         properties = new AppProperties(null, null, null, "templateapp", "Asia/Jakarta", null, null, null, sitesProp, null, null);
-        return new SiteDomainService(siteRepository, siteReleaseRepository, siteDomainRepository, access, siteStorage, properties, clock);
+        return new SiteDomainService(siteRepository, siteDomainRepository, access, properties, clock);
     }
 
     private void asOwner() {

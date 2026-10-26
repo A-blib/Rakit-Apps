@@ -14,12 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import tools.jackson.databind.json.JsonMapper;
-
-import java.util.List;
 
 /**
  * Aturan akses HTTP: endpoint auth, public sites, dan Swagger UI terbuka, sisanya wajib membawa access token.
@@ -41,6 +36,7 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final JsonMapper jsonMapper;
+    private final CorsOriginPolicy corsOriginPolicy;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -48,7 +44,7 @@ public class SecurityConfig {
                 // API dipanggil app Android dengan token, bukan form browser ber-cookie,
                 // jadi proteksi CSRF dan session server tidak diperlukan.
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsOriginPolicy))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Izinkan preflight OPTIONS dari browser untuk CORS
@@ -84,18 +80,6 @@ public class SecurityConfig {
                 // Filter JWT dipasang sebelum filter login bawaan Spring agar user sudah dikenali lebih dulu.
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(false);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
     }
 
     /**

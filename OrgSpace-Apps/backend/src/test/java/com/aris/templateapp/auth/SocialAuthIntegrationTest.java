@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,6 +54,10 @@ class SocialAuthIntegrationTest {
     @MockitoSpyBean
     private GitHubOAuthClient gitHubClient;
 
+    /** codeVerifier milik app di HP yang memulai alur GitHub; app lain/penyerang tidak memilikinya. */
+    private static final String VERIFIER = "verifier-app-di-hp-" + "x".repeat(40);
+    private static final String ATTACKER_VERIFIER = "verifier-penyerang-" + "y".repeat(40);
+
     @Test
     void googleCreatesAccountOnFirstLoginAndReusesItAfterwards() throws Exception {
         String email = uniqueEmail();
@@ -69,6 +74,25 @@ class SocialAuthIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.isNewUser").value(false))
                 .andExpect(jsonPath("$.user.id").value((String) JsonPath.read(first, "$.user.id")));
+    }
+
+    @Test
+    void firstGoogleLoginSentTwiceAtOnceLogsBothIntoOneNewAccount() throws Exception {
+        for (int round = 0; round < 5; round++) {
+            String email = uniqueEmail();
+            String idToken = "tok-ganda-" + round;
+            googleReturns(idToken, googleProfile("g-" + UUID.randomUUID(), email));
+
+            List<String> responses = AuthFlowIntegrationTest.concurrently(() -> {
+                var response = google(idToken, null).andReturn().getResponse();
+                assertThat(response.getStatus()).as(response.getContentAsString()).isEqualTo(200);
+                return response.getContentAsString();
+            });
+            // Yang kedua menunggu yang pertama, lalu masuk ke akun yang sama (bukan error 500, bukan akun kedua).
+            assertThat(responses.stream().map(r -> (String) JsonPath.read(r, "$.user.id")).distinct()).hasSize(1);
+            assertThat(responses.stream().map(r -> (Boolean) JsonPath.read(r, "$.isNewUser")))
+                    .containsExactlyInAnyOrder(true, false);
+        }
     }
 
     @Test
@@ -178,7 +202,7 @@ class SocialAuthIntegrationTest {
         // Akun GitHub lain yang belum dipakai bisa disambungkan.
         String freshGitHubId = String.valueOf(System.nanoTime());
         assertThat(gitHubLinkFromSettings(accessToken, "code-3", gitHubProfile(freshGitHubId, null, false))
-                .getFirst("result")).isEqualTo("linked");
+                .getFirst("error")).isNull();
         identities(accessToken).andExpect(jsonPath("$[*].provider", containsInAnyOrder("local", "github")));
     }
 
@@ -200,6 +224,54 @@ class SocialAuthIntegrationTest {
         exchange(ticket)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("TICKET_INVALID"));
+    }
+
+    @Test
+    void interceptedLoginTicketIsUselessWithoutTheAppVerifier() throws Exception {
+        // App lain di HP menangkap deep link templateapp://auth/callback?ticket=..., atau penyerang mengirim URL
+        // callback hasil login GitHub-nya ke korban: keduanya tidak punya verifier app yang memulai login.
+        String ticket = gitHubLogin("code-curi", gitHubProfile(String.valueOf(System.nanoTime()), null, false), null)
+                .getFirst("ticket");
+        exchange(ticket, ATTACKER_VERIFIER)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("TICKET_INVALID"));
+        // Tanpa verifier sama sekali: ditolak validasi.
+        mockMvc.perform(post("/api/auth/github/exchange").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"ticket\":\"%s\"}".formatted(ticket)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+        // URL login tanpa codeChallenge tidak dibuat.
+        mockMvc.perform(post("/api/auth/github/authorize-url").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void linkUrlFromAnotherAccountCannotAttachTheVictimsGitHub() throws Exception {
+        String attacker = JsonPath.read(register(uniqueEmail()), "$.accessToken");
+        String victim = JsonPath.read(register(uniqueEmail()), "$.accessToken");
+        // Penyerang membuat URL "sambungkan GitHub" dari akunnya, korban membukanya dan login dengan GitHub korban.
+        String linkTicket = linkTicketFor(linkUrl(attacker, ATTACKER_VERIFIER), "code-korban",
+                gitHubProfile(String.valueOf(System.nanoTime()), null, false));
+
+        // Callback tidak lagi langsung menyambungkan.
+        identities(attacker).andExpect(jsonPath("$[*].provider", containsInAnyOrder("local")));
+        // Korban (atau app-nya) menukar tiket: bukan pemilik tiket dan tidak punya verifier penyerang.
+        linkExchange(victim, linkTicket, VERIFIER)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("TICKET_INVALID"));
+        identities(attacker).andExpect(jsonPath("$[*].provider", containsInAnyOrder("local")));
+        identities(victim).andExpect(jsonPath("$[*].provider", containsInAnyOrder("local")));
+    }
+
+    @Test
+    void linkTicketIsOnlyForTheAccountThatStartedLinking() throws Exception {
+        String owner = JsonPath.read(register(uniqueEmail()), "$.accessToken");
+        String other = JsonPath.read(register(uniqueEmail()), "$.accessToken");
+        String linkTicket = linkTicketFor(linkUrl(owner, VERIFIER), "code-milik",
+                gitHubProfile(String.valueOf(System.nanoTime()), null, false));
+        linkExchange(other, linkTicket, VERIFIER)
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("LINK_USER_MISMATCH"));
     }
 
     @Test
@@ -249,18 +321,46 @@ class SocialAuthIntegrationTest {
         return callback(code, stateOf(authorizeUrl(linkToken)), null);
     }
 
+    /**
+     * Pengaturan → sambungkan GitHub sampai selesai (callback lalu app menukar linkTicket). Hasilnya meniru deep link
+     * lama agar test tetap ringkas: {@code error} berisi kode error dari exchange, atau kosong jika berhasil.
+     */
     private MultiValueMap<String, String> gitHubLinkFromSettings(String accessToken, String code, SocialProfile profile)
             throws Exception {
-        doReturn(profile).when(gitHubClient).fetchProfile(code);
-        String url = JsonPath.read(mockMvc.perform(post("/api/users/me/identities/github/authorize-url")
-                        .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
+        String linkTicket = linkTicketFor(linkUrl(accessToken, VERIFIER), code, profile);
+        String response = linkExchange(accessToken, linkTicket, VERIFIER).andReturn().getResponse().getContentAsString();
+        MultiValueMap<String, String> result = new org.springframework.util.LinkedMultiValueMap<>();
+        if (response.contains("\"code\"")) {
+            result.add("error", JsonPath.read(response, "$.code"));
+        }
+        return result;
+    }
+
+    private String linkUrl(String accessToken, String verifier) throws Exception {
+        return JsonPath.read(mockMvc.perform(post("/api/users/me/identities/github/authorize-url")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"codeChallenge\":\"%s\"}".formatted(AuthTicketService.challengeOf(verifier))))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(), "$.url");
-        return callback(code, stateOf(url), null);
+    }
+
+    private String linkTicketFor(String linkUrl, String code, SocialProfile profile) throws Exception {
+        doReturn(profile).when(gitHubClient).fetchProfile(code);
+        String linkTicket = callback(code, stateOf(linkUrl), null).getFirst("linkTicket");
+        assertThat(linkTicket).isNotBlank();
+        return linkTicket;
+    }
+
+    private ResultActions linkExchange(String accessToken, String linkTicket, String verifier) throws Exception {
+        return mockMvc.perform(post("/api/users/me/identities/github/exchange")
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"ticket\":\"%s\",\"codeVerifier\":\"%s\"}".formatted(linkTicket, verifier)));
     }
 
     private String authorizeUrl(String linkToken) throws Exception {
-        String body = linkToken == null ? "{}" : "{\"linkToken\":\"%s\"}".formatted(linkToken);
+        String challenge = AuthTicketService.challengeOf(VERIFIER);
+        String body = linkToken == null ? "{\"codeChallenge\":\"%s\"}".formatted(challenge)
+                : "{\"linkToken\":\"%s\",\"codeChallenge\":\"%s\"}".formatted(linkToken, challenge);
         return JsonPath.read(mockMvc.perform(post("/api/auth/github/authorize-url")
                         .contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk())
@@ -284,8 +384,12 @@ class SocialAuthIntegrationTest {
     }
 
     private ResultActions exchange(String ticket) throws Exception {
+        return exchange(ticket, VERIFIER);
+    }
+
+    private ResultActions exchange(String ticket, String verifier) throws Exception {
         return mockMvc.perform(post("/api/auth/github/exchange").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"ticket\":\"%s\"}".formatted(ticket)));
+                .content("{\"ticket\":\"%s\",\"codeVerifier\":\"%s\"}".formatted(ticket, verifier)));
     }
 
     private String register(String email) throws Exception {

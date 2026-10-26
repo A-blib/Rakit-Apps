@@ -1,6 +1,7 @@
 package com.aris.templateapp.project;
 
 import com.aris.templateapp.config.AppProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -12,10 +13,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.HexFormat;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 /**
  * File gambar website di disk ({@code PROJECT_ASSETS_DIR/{orgId}/{sha256}.{ext}}). Nama file = hash isinya, jadi
@@ -24,6 +30,7 @@ import java.util.UUID;
  * Server tidak bisa menulis WebP (Java bawaan hanya membaca PNG/JPEG), jadi gambar disimpan apa adanya setelah jenisnya
  * diperiksa dari isi file (bukan dari nama/header yang dikirim HP). HP sudah memperkecil dan mengompres ke WebP 80.
  */
+@Slf4j
 @Component
 public class ProjectAssetStorage {
 
@@ -77,11 +84,48 @@ public class ProjectAssetStorage {
                 Path temp = Files.createTempFile(target.getParent(), "upload", ".tmp");
                 Files.write(temp, bytes);
                 Files.move(temp, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                // File dipakai lagi oleh baris baru yang belum di-commit: waktu ubahnya diperbarui agar pembersih
+                // file tanpa baris (ProjectAssetCleanup, jeda 24 jam) tidak menghapusnya di sela itu.
+                Files.setLastModifiedTime(target, FileTime.from(Instant.now()));
             }
         } catch (IOException e) {
             throw new UncheckedIOException("Gambar website gagal disimpan", e);
         }
         return relative.toString();
+    }
+
+    /**
+     * Menghapus file di folder aset yang tidak dirujuk baris {@code project_assets} mana pun dan tidak diubah sejak
+     * {@code olderThan}. Menangkap file dari baris yang dihapus pembersih foto yatim, dan file yang tertinggal saat
+     * project/organisasi dihapus (barisnya hilang lewat ON DELETE CASCADE, filenya tidak).
+     *
+     * @param used path relatif yang masih dirujuk (format sama dengan hasil {@link #write})
+     * @return jumlah file yang dihapus
+     */
+    public int deleteFilesNotIn(Set<String> used, Instant olderThan) {
+        if (!Files.isDirectory(root)) {
+            return 0;
+        }
+        List<Path> files;
+        try (Stream<Path> stream = Files.walk(root)) {
+            files = stream.filter(Files::isRegularFile).toList();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Folder aset tidak bisa dibaca", e);
+        }
+        int deleted = 0;
+        for (Path file : files) {
+            try {
+                if (!used.contains(root.relativize(file).toString())
+                        && Files.getLastModifiedTime(file).toInstant().isBefore(olderThan)) {
+                    Files.delete(file);
+                    deleted++;
+                }
+            } catch (IOException e) {
+                log.warn("File aset {} gagal dihapus", file, e);
+            }
+        }
+        return deleted;
     }
 
     public Path file(String storagePath) {

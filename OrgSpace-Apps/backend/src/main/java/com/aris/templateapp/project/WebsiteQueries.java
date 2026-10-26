@@ -86,6 +86,7 @@ public class WebsiteQueries {
               LEFT JOIN site_domains sd ON sd.site_id = s.id AND sd.status = 'active'
               LEFT JOIN project_locks l ON l.project_id = p.id AND l.expires_at > now()
               LEFT JOIN users lu ON lu.id = l.user_id
+              LEFT JOIN templates t ON t.id = p.source_template_id
             """;
 
     private static final String COLUMNS = """
@@ -93,7 +94,8 @@ public class WebsiteQueries {
                    p.created_at, p.updated_at, u.display_name AS updated_by_name,
                    s.slug, s.status AS site_status, sd.hostname AS custom_domain,
                    (s.id IS NOT NULL AND r.id IS NOT NULL AND p.content_updated_at > r.created_at) AS changed,
-                   l.user_id AS lock_user_id, l.expires_at AS lock_expires_at, lu.display_name AS lock_name
+                   l.user_id AS lock_user_id, l.expires_at AS lock_expires_at, lu.display_name AS lock_name,
+                   t.thumbnail_url AS template_thumbnail_url
             """;
 
     private final JdbcClient jdbc;
@@ -223,7 +225,8 @@ public class WebsiteQueries {
                 rs.getBoolean("changed"),
                 siteUrl,
                 rs.getInt("missing_count"),
-                thumbnail == null ? null : "/api/assets/" + thumbnail,
+                // Belum ada thumbnail sendiri: kartu memakai gambar template asalnya (null untuk Rakit sendiri).
+                thumbnail != null ? "/api/assets/" + thumbnail : rs.getString("template_thumbnail_url"),
                 rs.getObject("source_template_id", UUID.class),
                 toInstant(rs.getTimestamp("created_at")),
                 toInstant(rs.getTimestamp("updated_at")),

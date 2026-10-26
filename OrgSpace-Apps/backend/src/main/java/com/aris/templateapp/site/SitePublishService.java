@@ -30,12 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.Normalizer;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -77,7 +75,8 @@ public class SitePublishService {
     private final SiteBuildService siteBuildService;
     private final TemplateEventService templateEventService;
     private final com.aris.templateapp.project.ProjectService projectService;
-    private final SiteStorage siteStorage;
+    private final com.aris.templateapp.project.WebsiteService websiteService;
+    private final com.aris.templateapp.gallery.TemplatePackageService templatePackages;
     private final SiteDomainRepository siteDomainRepository;
     private final AppProperties properties;
     private final Clock clock;
@@ -105,31 +104,46 @@ public class SitePublishService {
 
         final Organization chosenOrg = targetOrg;
 
-        // 2. Cari atau buat Project di ruang kerja yang dipilih
+        // 2. Website lama (projectId dari HP) atau website BARU. Dulu website dicari menurut nama, sehingga website
+        //    lain di ruang kerja yang sama (mis. dari template yang sama) ikut tertimpa isinya.
         String projectName = request.name() != null && !request.name().isBlank() ? request.name().trim() : "Website Saya";
-        Project project = existing != null ? existing : projectRepository.findByOrganizationIdAndName(chosenOrg.getId(), projectName)
-                .orElseGet(() -> {
-                    Project p = new Project(chosenOrg.getId(), projectName, ProjectMode.TEMPLATE, userId);
-                    p.setSourceTemplateId(request.sourceTemplateId());
-                    p.setTemplateVersion(request.templateVersion());
-                    return p;
-                });
-
-        if (request.sourceTemplateId() != null) {
-            project.setSourceTemplateId(request.sourceTemplateId());
+        //    Template asal dipilih saat website dibuat dan tidak bisa diganti lewat publish ulang.
+        Project project;
+        if (existing != null) {
+            projectService.requireNotLockedByOthers(existing.getId(), userId);
+            if (request.sourceTemplateId() != null && !request.sourceTemplateId().equals(existing.getSourceTemplateId())) {
+                throw new ApiException(ErrorCode.VALIDATION_ERROR, "Template website ini tidak bisa diganti.");
+            }
+            // Template yang kemudian diturunkan provider/admin tetap boleh dipakai website lama (keputusan Aris),
+            // agar website organisasi yang sudah ada tidak terkunci.
+            project = existing;
+        } else {
+            project = new Project(chosenOrg.getId(), websiteService.uniqueName(chosenOrg.getId(), projectName),
+                    ProjectMode.TEMPLATE, userId);
+            if (request.sourceTemplateId() != null) {
+                // Aturan yang sama dengan galeri: hanya template tayang dari provider aktif. Dulu ID template apa pun
+                // diterima, sehingga website baru bisa dibangun dari paket template yang sudah diturunkan (disabled).
+                project.setSourceTemplateId(templatePackages.visible(request.sourceTemplateId()).getId());
+            }
         }
+
         if (request.templateVersion() != null) {
             project.setTemplateVersion(request.templateVersion());
         }
-        project.setContent(request.content() != null ? request.content() : Map.of());
         project.setMissingCount(request.missingCount() != null ? request.missingCount() : 0);
         project.setContentUpdatedAt(clock.instant());
         project.touch(userId);
+        // Disimpan dulu tanpa isi baru: project baru butuh ID untuk aset fotonya.
         project = projectRepository.saveAndFlush(project);
-        if (!images.isEmpty()) {
-            project.setContent(withUploadedImages(project.getContent(), project.getId(), userId, images));
-            project = projectRepository.saveAndFlush(project);
-        }
+
+        // Isi dari HP tidak dipercaya: nilai tema masuk mentah ke <style> website, jadi tanpa validasi isi bisa
+        // menyisipkan <script> yang membaca sesi Portal Pengurus website lain (semua website satu domain).
+        List<String> missingImages = new ArrayList<>();
+        Map<String, Object> content = withUploadedImages(request.content() != null ? request.content() : Map.of(),
+                project.getId(), userId, images, missingImages);
+        projectService.validateContent(project, content);
+        project.setContent(content);
+        project = projectRepository.saveAndFlush(project);
 
         // 3. Cari atau buat Site di ruang kerja yang dipilih
         Site site = siteRepository.findByProjectId(project.getId()).orElse(null);
@@ -177,7 +191,8 @@ public class SitePublishService {
                 url,
                 port,
                 site.getStatus(),
-                version
+                version,
+                missingImages
         );
     }
 
@@ -187,16 +202,24 @@ public class SitePublishService {
      */
     @SuppressWarnings("unchecked")
     private Map<String, Object> withUploadedImages(Map<String, Object> content, UUID projectId, UUID userId,
-                                                   Map<String, byte[]> images) {
+                                                   Map<String, byte[]> images, List<String> missingImages) {
         Map<String, String> refs = new HashMap<>();
         images.forEach((path, bytes) -> refs.put(path, "asset:" + projectService.saveSiteMedia(projectId, userId, bytes).assetId()));
         Map<String, Object> copy = new HashMap<>(content);
         if (copy.get("fields") instanceof Map<?, ?> fields) {
             Map<String, Object> newFields = new HashMap<>();
             ((Map<String, Object>) fields).forEach((key, value) -> {
-                if (value instanceof Map<?, ?> v && v.get("image") instanceof String image && refs.containsKey(image)) {
+                if (value instanceof Map<?, ?> v && v.get("image") instanceof String image
+                        && (refs.containsKey(image) || !image.startsWith("asset:"))) {
                     Map<String, Object> field = new HashMap<>((Map<String, Object>) v);
-                    field.put("image", refs.get(image));
+                    if (refs.containsKey(image)) {
+                        field.put("image", refs.get(image));
+                    } else {
+                        // File foto sudah tidak ada di HP (keputusan Aris): pakai foto contoh template, bukan
+                        // menolak publish. Kuncinya dikembalikan di respons agar HP bisa memberi tahu user.
+                        field.remove("image");
+                        missingImages.add(key);
+                    }
                     newFields.put(key, field);
                 } else {
                     newFields.put(key, value);
@@ -213,8 +236,6 @@ public class SitePublishService {
      */
     @Transactional(readOnly = true)
     public SlugCheckResponse checkSlug(UUID userId, String name, UUID organizationId, UUID projectId, String slug) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED));
         String projectName = name != null && !name.isBlank() ? name.trim() : "Website Saya";
         Optional<Site> existing;
         if (projectId != null) {
@@ -223,9 +244,8 @@ public class SitePublishService {
             access.require(project.getOrganizationId(), userId, OrgAction.VIEW);
             existing = siteRepository.findByProjectId(projectId);
         } else {
-            existing = findTargetOrg(user, organizationId)
-                    .flatMap(org -> projectRepository.findByOrganizationIdAndName(org.getId(), projectName))
-                    .flatMap(project -> siteRepository.findByProjectId(project.getId()));
+            // Tanpa projectId = website baru; tidak dicocokkan menurut nama (lihat publishDirect).
+            existing = Optional.empty();
         }
         if (existing.isPresent()) {
             String locked = existing.get().getSlug();
@@ -337,14 +357,6 @@ public class SitePublishService {
         site.setUpdatedAt(clock.instant());
         site = siteRepository.save(site);
 
-        // Hapus symlink di direktori hosts jika ada
-        Path hostsDir = Path.of(properties.sites().storageRootDir()).resolve("hosts");
-        Path symlink = hostsDir.resolve(site.getSlug() + "." + properties.sites().domain());
-        try {
-            Files.deleteIfExists(symlink);
-        } catch (IOException ignored) {
-        }
-
         log.info("Website {} telah dinonaktifkan (unpublish) oleh user {}", site.getSlug(), userId);
         return toSiteResponse(site);
     }
@@ -367,27 +379,13 @@ public class SitePublishService {
             throw new ApiException(ErrorCode.SITE_NOT_PUBLISHED, "Website belum memiliki rilis untuk diaktifkan.");
         }
 
-        SiteRelease release = siteReleaseRepository.findById(site.getCurrentReleaseId())
+        siteReleaseRepository.findById(site.getCurrentReleaseId())
                 .orElseThrow(() -> new ApiException(ErrorCode.RELEASE_NOT_FOUND, "Rilis aktif tidak ditemukan"));
 
         site.setStatus("online");
         site.setPublishedAt(clock.instant());
         site.setUpdatedAt(clock.instant());
         site = siteRepository.save(site);
-
-        // Pasang kembali symlink ke rilis aktif
-        Path hostsDir = Path.of(properties.sites().storageRootDir()).resolve("hosts");
-        try {
-            Files.createDirectories(hostsDir);
-            Path symlink = hostsDir.resolve(site.getSlug() + "." + properties.sites().domain());
-            Path target = siteStorage.releasePath(site.getId(), release.getVersion());
-            Files.deleteIfExists(symlink);
-            try {
-                Files.createSymbolicLink(symlink, target);
-            } catch (UnsupportedOperationException | IOException ignored) {
-            }
-        } catch (IOException ignored) {
-        }
 
         log.info("Website {} telah diaktifkan kembali (republish) oleh user {}", site.getSlug(), userId);
         return toSiteResponse(site);
@@ -419,7 +417,8 @@ public class SitePublishService {
     public List<FormSubmissionResponse> getSubmissions(UUID projectId, UUID userId, String formName) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ApiException(ErrorCode.PROJECT_NOT_FOUND));
-        access.require(project.getOrganizationId(), userId, OrgAction.VIEW);
+        // Isian pengunjung (nama, kelas, nomor WhatsApp) hanya untuk Pemilik & Admin; Editor hanya mengedit website.
+        access.require(project.getOrganizationId(), userId, OrgAction.VIEW_SUBMISSIONS);
 
         Site site = siteRepository.findByProjectId(projectId)
                 .orElseThrow(() -> new ApiException(ErrorCode.SITE_NOT_PUBLISHED));

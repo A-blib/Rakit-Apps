@@ -1,6 +1,8 @@
 package com.aris.templateapp.user;
 
 import com.aris.templateapp.auth.GitHubAuthService;
+import com.aris.templateapp.auth.dto.GitHubAuthorizeRequest;
+import com.aris.templateapp.auth.dto.TicketExchangeRequest;
 import com.aris.templateapp.auth.dto.UrlResponse;
 import com.aris.templateapp.config.OpenApiConfig;
 import com.aris.templateapp.security.CurrentUser;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @Tag(name = "Metode login", description = "Metode login yang tersambung ke akun (Pengaturan)")
 @SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
@@ -47,10 +50,20 @@ public class IdentityController {
     }
 
     @Operation(summary = "Buat URL login GitHub untuk menyambungkan GitHub ke akun ini",
-            description = "Setelah login di GitHub, callback redirect ke ?result=linked atau ?error=IDENTITY_IN_USE.")
+            description = "Setelah login di GitHub, callback redirect ke ?linkTicket=...; app menukarnya lewat /github/exchange.")
     @PostMapping("/github/authorize-url")
-    public UrlResponse linkGitHubUrl() {
-        return new UrlResponse(gitHubAuthService.authorizeUrlForLinking(currentUser.id()));
+    public UrlResponse linkGitHubUrl(@Valid @RequestBody GitHubAuthorizeRequest request) {
+        return new UrlResponse(gitHubAuthService.authorizeUrlForLinking(currentUser.id(), request.codeChallenge()));
+    }
+
+    @Operation(summary = "Selesaikan penyambungan GitHub dengan tiket dari deep link",
+            description = "400 TICKET_INVALID jika tiket/codeVerifier salah, 403 LINK_USER_MISMATCH jika tiket milik akun lain, "
+                    + "409 IDENTITY_IN_USE jika GitHub itu sudah dipakai akun lain.")
+    @PostMapping("/github/exchange")
+    public List<IdentityResponse> completeGitHubLink(@Valid @RequestBody TicketExchangeRequest request) {
+        UUID userId = currentUser.id();
+        gitHubAuthService.completeLinkFromSettings(userId, request.ticket(), request.codeVerifier());
+        return identityService.list(userId);
     }
 
     @Operation(summary = "Lepaskan metode login (local, google, atau github)",

@@ -6,6 +6,7 @@ import com.aris.templateapp.config.AppProperties;
 import com.aris.templateapp.organization.ActivityService;
 import com.aris.templateapp.organization.Organization;
 import com.aris.templateapp.organization.OrganizationRepository;
+import com.aris.templateapp.project.ContentValidator;
 import com.aris.templateapp.project.Project;
 import com.aris.templateapp.project.ProjectAssetStorage;
 import com.aris.templateapp.project.ProjectRepository;
@@ -20,6 +21,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -29,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -43,13 +47,12 @@ import java.util.zip.ZipInputStream;
 
 /**
  * Membangun website dari data project di cloud menjadi halaman statis utuh (alur-publish-website.md 7.7).
- * Terdiri dari 6 tahap:
+ * Terdiri dari 5 tahap:
  * 1. Kumpulkan data project & aset
  * 2. Susun HTML, injeksi nilai isian & modul dinamis (berita, form)
  * 3. Periksa keamanan & kelengkapan (index.html, batas ukuran)
  * 4. Tulis folder rilis
- * 5. Update symlink host
- * 6. Catat rilis ke database
+ * 5. Catat rilis ke database (website disajikan OrgSpace-Hosting dari rilis aktif)
  */
 @Service
 @RequiredArgsConstructor
@@ -67,6 +70,7 @@ public class SiteBuildService {
     private final ProjectAssetStorage assetStorage;
     private final AppProperties properties;
     private final ActivityService activityService;
+
 
     /** Menjalankan proses kompilasi & build website secara utuh. */
     @Transactional
@@ -137,13 +141,17 @@ public class SiteBuildService {
                 throw new ApiException(ErrorCode.OUTPUT_TOO_LARGE, "Ukuran website melebihi batas " + properties.sites().outputMaxMb() + " MB");
             }
 
-            // Tahap 4: Tulis rilis
+            // Tahap 4: Tulis rilis. File yang sama dengan rilis aktif dipakai bersama (hardlink), bukan disalin ulang.
+            if (site.getCurrentReleaseId() != null) {
+                siteReleaseRepository.findById(site.getCurrentReleaseId()).ifPresent(current -> {
+                    long saved = siteStorage.linkUnchangedFiles(buildId, siteStorage.releasePath(site.getId(), current.getVersion()));
+                    log.info("Website {} versi {}: {} bytes dipakai bersama dengan versi {}", site.getSlug(), nextVersion,
+                            saved, current.getVersion());
+                });
+            }
             siteStorage.promoteTmpToRelease(buildId, site.getId(), nextVersion);
 
-            // Tahap 5: Ganti Symlink / Update status host
-            updateHostSymlink(site, nextVersion);
-
-            // Tahap 6: Catat ke database
+            // Tahap 5: Catat ke database
             SiteRelease release = new SiteRelease(site.getId(), nextVersion, snapshot, build.getKind(), build.getRequestedBy());
             release.setSizeBytes(totalBytes.get());
             release.setFileCount(fileCount.get());
@@ -154,6 +162,7 @@ public class SiteBuildService {
             site.setPublishedAt(Instant.now());
             site.setUpdatedAt(Instant.now());
             siteRepository.save(site);
+            pruneOldReleases(site);
 
             build.setStatus("succeeded");
             build.setReleaseId(release.getId());
@@ -252,7 +261,8 @@ public class SiteBuildService {
                     if (val.containsKey("href")) {
                         el.attr("href", String.valueOf(val.get("href")));
                     }
-                    if (val.containsKey("image")) {
+                    // Hanya asset:{uuid}: nilai lain masuk ke url('...') dan bisa keluar dari CSS.
+                    if (ContentValidator.isAssetRef(val.get("image"))) {
                         String imgVal = String.valueOf(val.get("image"));
                         if (imgVal.startsWith("asset:")) {
                             // Alamat publik di website itu sendiri (/api/assets butuh login anggota ruang kerja).
@@ -280,16 +290,17 @@ public class SiteBuildService {
                 Elements elements = doc.select("[data-key=" + key + "], [data-edit=" + key + "]");
                 for (Element el : elements) {
                     String currentStyle = el.attr("style");
-                    if (styleVals.containsKey("color")) {
+                    // Nilai yang tidak lolos dilewati (bukan menggagalkan build): isi lama di database mungkin tercemar.
+                    if (ContentValidator.isSafeColor(styleVals.get("color"))) {
                         currentStyle = appendOrUpdateStyle(currentStyle, "color", String.valueOf(styleVals.get("color")));
                     }
-                    if (styleVals.containsKey("background-color")) {
+                    if (ContentValidator.isSafeColor(styleVals.get("background-color"))) {
                         currentStyle = appendOrUpdateStyle(currentStyle, "background-color", String.valueOf(styleVals.get("background-color")));
                     }
-                    if (styleVals.containsKey("font-size")) {
+                    if (ContentValidator.isSafeNumber(styleVals.get("font-size"))) {
                         currentStyle = appendOrUpdateStyle(currentStyle, "font-size", styleVals.get("font-size") + "px");
                     }
-                    if (styleVals.containsKey("border-radius")) {
+                    if (ContentValidator.isSafeNumber(styleVals.get("border-radius"))) {
                         currentStyle = appendOrUpdateStyle(currentStyle, "border-radius", styleVals.get("border-radius") + "px");
                     }
                     el.attr("style", currentStyle);
@@ -302,6 +313,10 @@ public class SiteBuildService {
         if (theme != null && !theme.isEmpty()) {
             StringBuilder css = new StringBuilder(":root {");
             for (Map.Entry<String, Object> entry : theme.entrySet()) {
+                // jsoup tidak meng-escape isi <style>: nama/nilai mentah bisa menutup </style> lalu membuka <script>.
+                if (!ContentValidator.isSafeThemeEntry(entry.getKey(), entry.getValue())) {
+                    continue;
+                }
                 css.append(" ").append(entry.getKey()).append(": ").append(entry.getValue()).append(";");
             }
             css.append(" }");
@@ -405,19 +420,34 @@ public class SiteBuildService {
         }
     }
 
-    private void updateHostSymlink(Site site, int version) {
-        Path hostsDir = Path.of(properties.sites().storageRootDir()).resolve("hosts");
-        try {
-            Files.createDirectories(hostsDir);
-            Path symlink = hostsDir.resolve(site.getSlug() + "." + properties.sites().domain());
-            Path target = siteStorage.releasePath(site.getId(), version);
-            Files.deleteIfExists(symlink);
-            try {
-                Files.createSymbolicLink(symlink, target);
-            } catch (UnsupportedOperationException | IOException ignored) {
-                // Jika sistem tidak mendukung symlink di direktori ini, lewati
+    /**
+     * Keputusan D4 (alur-publish-website.md): simpan 3 rilis terakhir + rilis aktif jika berbeda, hapus sisanya.
+     * Tanpa ini setiap publish menambah satu salinan website di disk tanpa batas. Folder dihapus setelah transaksi
+     * berhasil, agar rilis yang masih tercatat di database tidak pernah kehilangan foldernya.
+     */
+    private void pruneOldReleases(Site site) {
+        List<SiteRelease> releases = siteReleaseRepository.findBySiteIdOrderByVersionDesc(site.getId());
+        List<Integer> removed = new ArrayList<>();
+        for (int i = properties.sites().keepReleases(); i < releases.size(); i++) {
+            SiteRelease old = releases.get(i);
+            if (!old.getId().equals(site.getCurrentReleaseId())) {
+                siteReleaseRepository.delete(old);
+                removed.add(old.getVersion());
             }
-        } catch (IOException ignored) {
+        }
+        if (removed.isEmpty()) {
+            return;
+        }
+        Runnable deleteFolders = () -> removed.forEach(version -> siteStorage.deleteRelease(site.getId(), version));
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    deleteFolders.run();
+                }
+            });
+        } else {
+            deleteFolders.run();
         }
     }
 

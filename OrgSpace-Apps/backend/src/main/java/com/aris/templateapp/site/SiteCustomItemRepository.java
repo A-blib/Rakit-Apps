@@ -11,5 +11,7 @@ public interface SiteCustomItemRepository extends JpaRepository<SiteCustomItem, 
 
     List<SiteCustomItem> findBySiteIdOrderByCollectionNameAscSortOrderAscCreatedAtDesc(UUID siteId);
 
+    long countBySiteId(UUID siteId);
+
     void deleteBySiteIdAndCollectionName(UUID siteId, String collectionName);
 }

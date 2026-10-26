@@ -2,6 +2,7 @@ package com.aris.templateapp.auth;
 
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
+import com.aris.templateapp.common.persistence.AdvisoryLocks;
 import com.aris.templateapp.common.persistence.PersistableEnum;
 import com.aris.templateapp.common.util.Emails;
 import com.aris.templateapp.user.User;
@@ -39,6 +40,7 @@ public class AccountLinkingService {
     private final UserRepository userRepository;
     private final UserIdentityRepository identityRepository;
     private final AuthTicketService ticketService;
+    private final AdvisoryLocks advisoryLocks;
 
     /** Hasil masuk lewat Google/GitHub. */
     public record SignInResult(User user, boolean isNewUser) {
@@ -51,6 +53,9 @@ public class AccountLinkingService {
      */
     @Transactional
     public SignInResult signIn(SocialProfile profile) {
+        // Login pertama yang terkirim dua kali diantrekan: yang kedua menunggu, lalu menemukan identitas/akun yang baru
+        // dibuat dan langsung masuk (tanpa kunci keduanya membuat akun, dan yang kedua gagal dengan error 500).
+        advisoryLocks.lockIdentity(profile.provider().value(), profile.providerUserId());
         // 2. Identitas ini sudah pernah dipakai → langsung masuk ke pemiliknya.
         var existing = identityRepository.findByProviderAndProviderUserId(profile.provider(), profile.providerUserId());
         if (existing.isPresent()) {
@@ -64,6 +69,8 @@ public class AccountLinkingService {
         // 3a–b. Hanya email TERVERIFIKASI yang dipakai untuk mencari akun lain.
         String verifiedEmail = Emails.normalize(profile.verifiedEmail());
         if (verifiedEmail != null) {
+            // Kunci yang sama dengan daftar email: daftar email dan login Google/GitHub dengan email yang sama juga antre.
+            advisoryLocks.lockEmail(verifiedEmail);
             var owner = userRepository.findByEmailIgnoreCase(verifiedEmail);
             if (owner.isPresent()) {
                 throw linkRequired(owner.get(), profile);
@@ -89,7 +96,7 @@ public class AccountLinkingService {
         if (!user.getId().equals(ticket.getUserId())) {
             throw new ApiException(ErrorCode.LINK_USER_MISMATCH);
         }
-        attach(user, pendingProfile(ticket));
+        attach(user, profileFrom(ticket));
     }
 
     /**
@@ -118,13 +125,18 @@ public class AccountLinkingService {
         identityRepository.save(UserIdentity.social(user, profile));
     }
 
-    private ApiException linkRequired(User owner, SocialProfile profile) {
+    /** Identitas yang disimpan di tiket (LINK dan LINK_RESULT) sampai disambungkan; dibaca lagi lewat {@link #profileFrom}. */
+    static Map<String, Object> identityPayload(SocialProfile profile) {
         Map<String, Object> pending = new HashMap<>();
         pending.put(KEY_PROVIDER, profile.provider().value());
         pending.put(KEY_PROVIDER_USER_ID, profile.providerUserId());
         pending.put(KEY_EMAIL, Emails.normalize(profile.email()));
         pending.put(KEY_EMAIL_VERIFIED, profile.emailVerified());
-        String linkToken = ticketService.issue(AuthTicketType.LINK, owner.getId(), pending);
+        return pending;
+    }
+
+    private ApiException linkRequired(User owner, SocialProfile profile) {
+        String linkToken = ticketService.issue(AuthTicketType.LINK, owner.getId(), identityPayload(profile));
 
         List<IdentityProvider> methods = identityRepository.findByUserId(owner.getId()).stream()
                 .map(UserIdentity::getProvider)
@@ -137,7 +149,7 @@ public class AccountLinkingService {
                 methods.stream().map(IdentityProvider::value).toList(), linkToken);
     }
 
-    private static SocialProfile pendingProfile(AuthTicket ticket) {
+    static SocialProfile profileFrom(AuthTicket ticket) {
         return new SocialProfile(
                 PersistableEnum.fromValue(IdentityProvider.class, ticket.payloadString(KEY_PROVIDER)),
                 ticket.payloadString(KEY_PROVIDER_USER_ID),
