@@ -3,6 +3,7 @@ import { Logo } from "@/components/Logo";
 import { requireAdmin } from "@/lib/auth/session";
 import { logout } from "../actions";
 import { SidebarNav } from "./SidebarNav";
+import { DashboardThemeToggle } from "./DashboardThemeToggle";
 
 /** Semua halaman di grup (panel) hanya untuk admin; pemeriksaannya di sini (requireAdmin). */
 export default async function PanelLayout({ children }: LayoutProps<"/dashboard">) {
@@ -19,9 +20,9 @@ export default async function PanelLayout({ children }: LayoutProps<"/dashboard"
       .toUpperCase() || "AD";
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col bg-background md:h-screen md:overflow-hidden md:flex-row">
+    <div className="flex min-h-screen flex-1 flex-col bg-background md:h-screen md:overflow-hidden md:flex-row transition-colors duration-200">
       {/* Sidebar: Fixed di desktop (tidak ikut scroll halaman konten utama) */}
-      <aside className="flex flex-col border-b border-border bg-surface md:sticky md:top-0 md:h-screen md:w-64 md:border-r md:border-b-0 shrink-0 z-20 select-none">
+      <aside className="flex flex-col border-b border-border bg-surface md:sticky md:top-0 md:h-screen md:w-64 md:border-r md:border-b-0 shrink-0 z-20 select-none transition-colors duration-200">
         {/* Brand header dengan logo transparan yang menyatu natural */}
         <div className="flex items-center justify-between border-b border-border/80 px-4 py-3.5 shrink-0">
           <Link
@@ -73,24 +74,30 @@ export default async function PanelLayout({ children }: LayoutProps<"/dashboard"
       {/* Main Content Area: Scroll mandiri di desktop */}
       <div className="flex flex-1 flex-col min-w-0 md:h-screen md:overflow-y-auto">
         {/* Top bar sticky */}
-        <header className="sticky top-0 z-10 flex h-13 items-center justify-between border-b border-border bg-surface/90 px-6 backdrop-blur shrink-0">
+        <header className="sticky top-0 z-10 flex h-13 items-center justify-between border-b border-border bg-surface/90 px-6 backdrop-blur shrink-0 transition-colors duration-200">
           <div className="flex items-center gap-2 text-xs text-muted">
             <span className="font-medium text-foreground">Portal Tim</span>
             <span>/</span>
             <span className="text-muted">Monitoring & Manajemen</span>
           </div>
-          <Link
-            href="/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-field border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-surface-subtle hover:text-foreground"
-          >
-            <span>Buka Situs Publik</span>
-            <svg className="size-3 text-muted/70" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-              <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-            </svg>
-          </Link>
+
+          <div className="flex items-center gap-2.5">
+            {/* Tombol Pengalih Mode Terang / Gelap Dashboard */}
+            <DashboardThemeToggle />
+
+            <Link
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-field border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-surface-subtle hover:text-foreground"
+            >
+              <span>Buka Situs Publik</span>
+              <svg className="size-3 text-muted/70" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+              </svg>
+            </Link>
+          </div>
         </header>
 
         {/* Content */}
