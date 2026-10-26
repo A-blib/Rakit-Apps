@@ -2,55 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { getOverview } from "@/lib/api/public";
 import type { PublicOverview } from "@/lib/api/types";
-import { formatNumber } from "@/lib/format";
-import { LeadGenerationForm } from "@/components/LeadGenerationForm";
 
-/**
- * 4 Manfaat Utama Aplikasi Rakit (Value Proposition).
- * Menggunakan ikon minimalis Electric Cyan dan kartu Glassmorphism interaktif.
- */
-const FEATURES = [
-  {
-    title: "Template Siap Pakai",
-    badge: "50+ Desain Khusus",
-    body: "Tak perlu bingung mendesain dari nol. Pilih dari puluhan struktur khusus yang dirancang presisi untuk publikasi OSIS, BEM, kabinet kerja, portfolio komunitas, hingga event akbar.",
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-      </svg>
-    ),
-  },
-  {
-    title: "Edit Semuanya dari HP",
-    badge: "Sentuh & Sesuaikan",
-    body: "Ganti teks profil, perbarui foto dokumentasi, dan ubah palet warna semudah mengunggah story medsos. Antarmuka sentuh intuitif yang dirancang cepat dan tanpa hambatan teknis.",
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    title: "Kolaborasi Tim Pengurus",
-    badge: "Akses Multi-Admin",
-    body: "Bagikan akses peran Pemilik, Admin, dan Editor ke seluruh divisi pengurus. Delegasikan pembaruan artikel dan agenda tanpa khawatir setelan sistem terganggu.",
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
-  },
-  {
-    title: "Otomatis Online",
-    badge: "Hosting & SSL Gratis",
-    body: "Lupakan sewa server rumit atau mengatur DNS. Website langsung terbit dengan alamat resmi organisasimu, terlindungi sertifikat SSL otomatis, dan siap diakses publik seketika.",
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-      </svg>
-    ),
-  },
-];
+import { PainPointsList } from "@/components/PainPointsList";
+import { SectionThreeShowcase } from "@/components/SectionThreeShowcase";
+import { SectionFourWorkspace } from "@/components/SectionFourWorkspace";
+
+
 
 export default async function LandingPage() {
   let overview: PublicOverview | null = null;
@@ -328,311 +285,62 @@ export default async function LandingPage() {
 
       {/* =========================================================================
           SECTION 2: MASIH RIBET KELOLA WEBSITE SENDIRI? (PROBLEM STATEMENT)
-          Terhubung mulus langsung dari Section 1 tanpa garis pembatas atau jarak terpisah
+          Persis Desain Referensi (Dua Kolom Seimbang: Ilustrasi di Kiri, Teks & 6 Poin di Kanan)
          ========================================================================= */}
-      <section className="relative w-full bg-white text-[#0B1E36] pt-6 sm:pt-12 pb-16 sm:pb-24 overflow-hidden">
-        {/* Ornamen Geometris Pojok Kanan Bawah (Menutup rangkaian Hero + Masalah dengan Elegan) */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute bottom-0 right-0 z-0 overflow-hidden hidden sm:block sm:w-36 sm:h-40 md:w-48 md:h-52 lg:w-[220px] lg:h-[240px] select-none sm:opacity-75 md:opacity-100 transition-transform duration-700 hover:scale-[1.01]"
-        >
-          <svg className="w-full h-full rotate-180" viewBox="0 0 240 260" fill="none">
-            <defs>
-              <linearGradient id="navyBR" x1="0" y1="0" x2="60" y2="60" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#051C3F" />
-                <stop offset="100%" stopColor="#0B2654" />
-              </linearGradient>
-              <linearGradient id="cyanFacetBR" x1="60" y1="0" x2="0" y2="84" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#00D4FF" />
-                <stop offset="50%" stopColor="#00A8FF" />
-                <stop offset="100%" stopColor="#0080FF" />
-              </linearGradient>
-              <linearGradient id="royalCoreBR" x1="105" y1="0" x2="0" y2="132" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#0088FF" />
-                <stop offset="35%" stopColor="#0062E4" />
-                <stop offset="100%" stopColor="#003D99" />
-              </linearGradient>
-              <linearGradient id="orangeGradBR" x1="132" y1="0" x2="90" y2="42" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#FFAE00" />
-                <stop offset="50%" stopColor="#FF7500" />
-                <stop offset="100%" stopColor="#FF4000" />
-              </linearGradient>
-              <linearGradient id="lowerStripeBR" x1="58" y1="90" x2="0" y2="160" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#0066E0" />
-                <stop offset="100%" stopColor="#003580" />
-              </linearGradient>
-
-              {/* Efek Neon Glow Halus */}
-              <filter id="glowOrangeBR" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#FF6A00" floodOpacity="0.5" />
-                <feDropShadow dx="0" dy="0" stdDeviation="1.5" floodColor="#FFAA00" floodOpacity="0.6" />
-              </filter>
-              <filter id="glowBlueBR" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="2" stdDeviation="5" floodColor="#0088FF" floodOpacity="0.3" />
-              </filter>
-            </defs>
-
-            {/* 1. Corner Navy Triangle */}
-            <polygon points="0,0 60,0 0,60" fill="url(#navyBR)" />
-
-            {/* 2. Cyan Diagonal Inner Band */}
-            <polygon points="60,0 84,0 0,84 0,60" fill="url(#cyanFacetBR)" />
-
-            {/* 3. Royal Blue Outer Body dengan Step Vertikal */}
-            <g filter="url(#glowBlueBR)">
-              <polygon points="84,0 105,0 74,31 74,58 0,132 0,84" fill="url(#royalCoreBR)" />
-            </g>
-
-            {/* Garis Aksen Kilau (Specular Highlight Sheen) */}
-            <line x1="105" y1="0" x2="74" y2="31" stroke="#E0F7FF" strokeWidth="1.2" strokeLinecap="round" opacity="0.85" />
-            <line x1="74" y1="31" x2="74" y2="58" stroke="#8DE4FF" strokeWidth="1.8" strokeLinecap="round" opacity="0.9" />
-            <line x1="74" y1="58" x2="0" y2="132" stroke="#00C4FF" strokeWidth="1" opacity="0.65" />
-
-            {/* 4. Strip Oranye Melayang dengan Potongan Vertikal & Glow Hangat */}
-            <g filter="url(#glowOrangeBR)">
-              <polygon points="122,0 132,0 90,42 90,32" fill="url(#orangeGradBR)" />
-              <line x1="122" y1="0" x2="90" y2="32" stroke="#FFE6B3" strokeWidth="0.8" opacity="0.7" />
-            </g>
-
-            {/* 5. Strip Biru Melayang dengan Potongan Vertikal */}
-            <polygon points="0,148 58,90 58,102 0,160" fill="url(#lowerStripeBR)" />
-            <line x1="0" y1="148" x2="58" y2="90" stroke="#8DE4FF" strokeWidth="1" opacity="0.6" />
-          </svg>
-        </div>
-
+      <section className="relative w-full overflow-hidden bg-gradient-to-b from-[#FFFFFF] via-[#F8FAFC] to-[#FFFFFF] text-[#0B1E36] py-14 sm:py-20 lg:py-24">
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12">
-            {/* Kolom Kiri: Visual Orang Tertekan dengan Laptop & Sticky Notes (Hampir Full Section) */}
-            <div className="lg:col-span-7 relative flex justify-center lg:justify-start items-center">
-              <div className="relative w-full max-w-2xl lg:max-w-none transition-transform duration-500 hover:scale-[1.01] flex justify-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 lg:gap-8 xl:gap-14">
+            {/* Kolom Kiri: Ilustrasi Orang di Meja Kerja & Sticky Notes (Proporsi Utuh Tanpa Terpotong & Menyatu Mulus) */}
+            <div className="lg:col-span-6 w-full flex items-center justify-center lg:justify-start">
+              <div className="illustration-container w-full max-w-xl lg:max-w-none bg-transparent p-0 border-none shadow-none flex justify-center">
                 <Image
                   src="/images/problem-illustration-clean.png"
                   alt="Ilustrasi kesulitan dan kebingungan mengelola website sendiri"
                   width={1602}
                   height={1536}
-                  className="w-full h-auto object-contain select-none drop-shadow-md rounded-2xl lg:rounded-3xl"
+                  className="illustration-fade w-full h-auto object-contain select-none"
+                  style={{
+                    WebkitMaskImage:
+                      "linear-gradient(to right, transparent, black 8%, black 78%, transparent), linear-gradient(to bottom, transparent, black 6%, black 85%, transparent)",
+                    WebkitMaskComposite: "source-in",
+                    maskImage:
+                      "linear-gradient(to right, transparent, black 8%, black 78%, transparent), linear-gradient(to bottom, transparent, black 6%, black 85%, transparent)",
+                    maskComposite: "intersect",
+                  }}
                   priority={false}
                 />
               </div>
             </div>
 
-            {/* Kolom Kanan: Teks & 6 Poin Masalah (Persis Gambar Referensi) */}
-            <div className="lg:col-span-5 text-left z-10 min-w-0">
-              <h2 className="text-2xl xs:text-3xl sm:text-4xl md:text-[44px] lg:text-[48px] font-black tracking-tight text-[#0B1E36] leading-[1.18] sm:leading-[1.12]">
+            {/* Kolom Kanan: Teks & 6 Poin Masalah (Persis Gambar Referensi Tanpa Kotak Card) */}
+            <div className="lg:col-span-6 text-left z-10 min-w-0 w-full">
+              <h2 className="text-3xl sm:text-4xl md:text-[44px] lg:text-[48px] font-black tracking-tight text-[#0B2545] leading-[1.18] sm:leading-[1.12]">
                 Masih ribet kelola<br />
                 website sendiri?
               </h2>
 
-              <p className="mt-4 sm:mt-6 text-sm sm:text-base md:text-lg text-[#475569] leading-relaxed max-w-xl">
+              <p className="mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-[#475569] leading-relaxed max-w-xl">
                 Banyak UMKM dan organisasi kesulitan membuat dan mengelola website karena keterbatasan waktu, tenaga, dan pengetahuan teknis.
               </p>
 
-              {/* Grid 6 Pain Points (2 Kolom x 3 Baris) */}
-              <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 gap-y-6 sm:gap-y-7 gap-x-6 lg:gap-x-8">
-                {/* 1. Makan Waktu */}
-                <div className="flex items-center gap-3.5 group cursor-default">
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] shadow-2xs group-hover:border-[#0099FF] group-hover:bg-[#EFF6FF] group-hover:scale-105 transition-all duration-200">
-                    <svg className="h-6 w-6 text-[#0B1E36] group-hover:text-[#0099FF] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="9" />
-                      <polyline points="12 7 12 12 15 15" />
-                      <path d="M12 3v-1" />
-                      <path d="M16 2l1 1" />
-                      <path d="M8 2l-1 1" />
-                    </svg>
-                  </div>
-                  <span className="text-base sm:text-lg font-bold text-[#0B1E36] group-hover:text-[#0099FF] transition-colors">
-                    Makan Waktu
-                  </span>
-                </div>
-
-                {/* 2. Butuh Skill Teknis */}
-                <div className="flex items-center gap-3.5 group cursor-default">
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] shadow-2xs group-hover:border-[#0099FF] group-hover:bg-[#EFF6FF] group-hover:scale-105 transition-all duration-200">
-                    <svg className="h-6 w-6 text-[#0B1E36] group-hover:text-[#0099FF] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="9" y="3" width="6" height="4" rx="1" />
-                      <rect x="3" y="17" width="5" height="4" rx="1" />
-                      <rect x="10" y="17" width="5" height="4" rx="1" />
-                      <rect x="17" y="17" width="5" height="4" rx="1" />
-                      <path d="M12 7v5" />
-                      <path d="M5.5 17v-3h13v3" />
-                      <path d="M12.5 12v5" />
-                    </svg>
-                  </div>
-                  <span className="text-base sm:text-lg font-bold text-[#0B1E36] group-hover:text-[#0099FF] transition-colors">
-                    Butuh Skill Teknis
-                  </span>
-                </div>
-
-                {/* 3. Biaya Tidak Sedikit */}
-                <div className="flex items-center gap-3.5 group cursor-default">
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] shadow-2xs group-hover:border-[#0099FF] group-hover:bg-[#EFF6FF] group-hover:scale-105 transition-all duration-200">
-                    <svg className="h-6 w-6 text-[#0B1E36] group-hover:text-[#0099FF] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <line x1="16" y1="13" x2="8" y2="13" />
-                      <line x1="16" y1="17" x2="8" y2="17" />
-                      <line x1="10" y1="9" x2="8" y2="9" />
-                    </svg>
-                  </div>
-                  <span className="text-base sm:text-lg font-bold text-[#0B1E36] group-hover:text-[#0099FF] transition-colors">
-                    Biaya Tidak Sedikit
-                  </span>
-                </div>
-
-                {/* 4. Sulit Dikustomisasi */}
-                <div className="flex items-center gap-3.5 group cursor-default">
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] shadow-2xs group-hover:border-[#0099FF] group-hover:bg-[#EFF6FF] group-hover:scale-105 transition-all duration-200">
-                    <svg className="h-6 w-6 text-[#0B1E36] group-hover:text-[#0099FF] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                      <path d="m9.5 12 1.8 1.8 3.5-3.5" />
-                    </svg>
-                  </div>
-                  <span className="text-base sm:text-lg font-bold text-[#0B1E36] group-hover:text-[#0099FF] transition-colors">
-                    Sulit Dikustomisasi
-                  </span>
-                </div>
-
-                {/* 5. Risiko Keamanan */}
-                <div className="flex items-center gap-3.5 group cursor-default">
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] shadow-2xs group-hover:border-[#0099FF] group-hover:bg-[#EFF6FF] group-hover:scale-105 transition-all duration-200">
-                    <svg className="h-6 w-6 text-[#0B1E36] group-hover:text-[#0099FF] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                      <path d="m9 12 2 2 4-4" />
-                    </svg>
-                  </div>
-                  <span className="text-base sm:text-lg font-bold text-[#0B1E36] group-hover:text-[#0099FF] transition-colors">
-                    Risiko Keamanan
-                  </span>
-                </div>
-
-                {/* 6. Tidak Responsif */}
-                <div className="flex items-center gap-3.5 group cursor-default">
-                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] shadow-2xs group-hover:border-[#0099FF] group-hover:bg-[#EFF6FF] group-hover:scale-105 transition-all duration-200">
-                    <svg className="h-6 w-6 text-[#0B1E36] group-hover:text-[#0099FF] transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="5" y="2" width="14" height="20" rx="3" />
-                      <line x1="12" y1="18" x2="12.01" y2="18" strokeWidth="2.5" />
-                    </svg>
-                  </div>
-                  <span className="text-base sm:text-lg font-bold text-[#0B1E36] group-hover:text-[#0099FF] transition-colors">
-                    Tidak Responsif
-                  </span>
-                </div>
-              </div>
-            </div>
-
-
-          </div>
-        </div>
-      </section>
-
-      {/* =========================================================================
-          STATISTIK SOSIAL (Jika Data Backend Tersedia)
-         ========================================================================= */}
-      {overview && (
-        <section aria-label="Rakit dalam angka" className="relative mx-auto max-w-6xl px-4 py-16">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {[
-              ["Organisasi Terdaftar", overview.stats.organizations],
-              ["Website Online Aktif", overview.stats.websitesOnline],
-              ["Template Desain", overview.stats.templates],
-              ["Kreator Komunitas", overview.stats.providers],
-            ].map(([label, value]) => (
-              <div key={label} className="card p-5 text-center border border-[#E2E8F0] bg-white shadow-xs">
-                <p className="text-2xl sm:text-3xl font-extrabold text-[#0B1E36]">
-                  {formatNumber(value as number)}+
-                </p>
-                <p className="mt-1 text-xs font-semibold text-[#64748B] uppercase tracking-wider">{label}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* =========================================================================
-          3. PENJELASAN MANFAAT (VALUE PROPOSITION & BENEFITS)
-         ========================================================================= */}
-      <section id="fitur" className="relative mx-auto max-w-6xl px-4 py-16 sm:py-20">
-        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-14">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0099FF]/30 bg-[#EFF6FF] px-3.5 py-1 text-xs font-bold tracking-wide text-[#0099FF]">
-            KEUNGGULAN UTAMA
-          </span>
-          <h2 className="mt-4 text-2xl sm:text-3xl font-extrabold text-[#0B1E36] md:text-4xl">
-            Semua yang Dibutuhkan Pengurus Organisasi
-          </h2>
-          <p className="mt-3 text-sm text-[#475569] md:text-base">
-            Dirancang khusus untuk memangkas hambatan teknis pengurus agar fokus membangun karya dan program kerja terbaik.
-          </p>
-        </div>
-
-        {/* 4 Kartu Fitur */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((feature) => (
-            <div key={feature.title} className="group/card flex flex-col justify-between p-5 sm:p-6 rounded-2xl border border-[#E2E8F0] bg-white shadow-xs hover:border-[#0099FF]/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              <div>
-                {/* Ikon Minimalis Biru Terang */}
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl border border-[#DBEAFE] bg-[#EFF6FF] text-[#0099FF] shadow-xs group-hover/card:scale-110 transition-transform">
-                  {feature.icon}
-                </div>
-                <div className="mb-2">
-                  <span className="text-[10px] font-bold text-[#FF7500] uppercase tracking-wider">
-                    {feature.badge}
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-[#0B1E36]">{feature.title}</h3>
-                <p className="mt-2 text-xs leading-relaxed text-[#475569]">{feature.body}</p>
-              </div>
-
-              <div className="mt-6 border-t border-[#F1F5F9] pt-3">
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#0099FF] hover:underline cursor-pointer">
-                  Pelajari selengkapnya <span>→</span>
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* =========================================================================
-          4. LEAD GENERATION FORM (FORMULIR AKSES AWAL / DEMO)
-         ========================================================================= */}
-      <section id="akses-awal" className="relative mx-auto max-w-6xl px-4 py-16 sm:py-20">
-        <LeadGenerationForm />
-      </section>
-
-      {/* =========================================================================
-          5. FINAL CALL-TO-ACTION (BAGIAN BAWAH)
-         ========================================================================= */}
-      <section className="relative mx-auto max-w-6xl px-4 pt-8 pb-24 sm:pb-28">
-        <div className="relative overflow-hidden rounded-3xl border border-[#0099FF]/20 bg-gradient-to-r from-[#07152B] to-[#0C2E5B] p-6 sm:p-10 md:p-14 shadow-2xl text-white">
-          {/* Ambient Lighting Overlay properly contained */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl select-none">
-            <div className="absolute top-0 right-0 h-48 w-48 sm:h-72 sm:w-72 rounded-full bg-[#00A3FF]/20 blur-2xl sm:blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-48 w-48 sm:h-72 sm:w-72 rounded-full bg-[#FF7500]/20 blur-2xl sm:blur-3xl" />
-          </div>
-
-          <div className="relative z-1 max-w-3xl">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-bold text-[#00D4FF]">
-              LANGKAH BERIKUTNYA
-            </span>
-            <h2 className="mt-4 text-2xl sm:text-3xl font-extrabold text-white md:text-5xl leading-tight">
-              Siap merakit masa depan digital organisasimu hari ini?
-            </h2>
-            <p className="mt-4 text-sm sm:text-base text-white/80 md:text-lg">
-              Buktikan bahwa memiliki website resmi berkelas profesional tidak butuh keahlian koding rumit atau anggaran jutaan rupiah. Mulai langkah pertamamu sekarang.
-            </p>
-
-            {/* Tombol Aksi Sejajar (Dual CTA) */}
-            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-              <a href="#akses-awal" className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FF7A00] to-[#FFA000] px-6 text-sm sm:text-base font-bold text-white shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-95 transition-all text-center">
-                Mulai Merakit Sekarang
-              </a>
-              <Link href="/docs" className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 text-sm sm:text-base font-semibold text-white backdrop-blur-md hover:bg-white/20 hover:border-white/50 transition-all active:scale-95 text-center">
-                Lihat Cara Kerjanya ▷
-              </Link>
+              {/* Grid 6 Pain Points dengan animasi staggered dari bawah ke atas */}
+              <PainPointsList />
             </div>
           </div>
         </div>
       </section>
+
+
+
+      {/* =========================================================================
+          3. SHOWCASE MOCKUP SMARTPHONE BERPUTAR & INTERAKTIF (FITUR UTAMA)
+         ========================================================================= */}
+      <SectionThreeShowcase />
+
+      {/* =========================================================================
+          4. SECTION 4: WEBSITE BUILDER CTA WORKSPACE
+         ========================================================================= */}
+      <SectionFourWorkspace androidDownloadUrl={overview?.androidDownloadUrl} />
     </div>
   );
 }
