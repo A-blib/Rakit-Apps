@@ -1,11 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getOverview } from "@/lib/api/public";
+import { getLandingTemplates, getLatestUpdates, getOverview } from "@/lib/api/public";
 import type { PublicOverview } from "@/lib/api/types";
 
 import { PainPointsList } from "@/components/PainPointsList";
 import { SectionThreeShowcase } from "@/components/SectionThreeShowcase";
 import { SectionFourWorkspace } from "@/components/SectionFourWorkspace";
+import { FeaturedTemplates } from "@/components/FeaturedTemplates";
+import { LatestUpdates } from "@/components/LatestUpdates";
 
 
 
@@ -16,6 +18,7 @@ export default async function LandingPage() {
   } catch {
     // Landing tetap tampil walau backend sedang mati; angka saja yang disembunyikan.
   }
+  const [featuredTemplates, latestUpdates] = await Promise.all([getLandingTemplates(), getLatestUpdates()]);
 
   return (
     <div className="relative overflow-hidden bg-white text-foreground w-full">
@@ -336,6 +339,12 @@ export default async function LandingPage() {
           3. SHOWCASE MOCKUP SMARTPHONE BERPUTAR & INTERAKTIF (FITUR UTAMA)
          ========================================================================= */}
       <SectionThreeShowcase />
+
+      {/* Template unggulan pilihan admin (contoh awal, lihat komponennya) */}
+      <FeaturedTemplates templates={featuredTemplates} />
+
+      {/* Info terbaru OrgSpace pilihan admin (contoh awal, lihat komponennya) */}
+      <LatestUpdates updates={latestUpdates} />
 
       {/* =========================================================================
           4. SECTION 4: WEBSITE BUILDER CTA WORKSPACE

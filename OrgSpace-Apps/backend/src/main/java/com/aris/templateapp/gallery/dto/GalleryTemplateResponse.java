@@ -11,6 +11,7 @@ import java.util.UUID;
  *
  * @param downloads   total download sejak tayang ("dipakai N kali": dihitung saat website pertama terbit/diexport)
  * @param contentTags "Isi template" untuk label "Punya: Struktur · Berita · Kontak"
+ * @param previewUrl  halaman preview di OrgSpace-Hosting (data contoh, ter-sandbox), untuk tombol "Lihat preview"
  */
 public record GalleryTemplateResponse(
         UUID id,
@@ -20,5 +21,6 @@ public record GalleryTemplateResponse(
         String creatorName,
         long downloads,
         Instant publishedAt,
-        List<String> contentTags) {
+        List<String> contentTags,
+        String previewUrl) {
 }

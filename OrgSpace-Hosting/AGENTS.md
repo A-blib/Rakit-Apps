@@ -23,6 +23,14 @@ Sistem ke-3: **Sistem Hosting Publik ("Tempat Web User Nebeng")**.
      jangan diubah tanpa memperbarui Panduan Modul Dinamis). Halaman publik selalu tampil sebagai tamu; sesi
      pengurus hanya di `/[slug]/admin`.
    - Mode `assembled` (rakit sendiri): `CustomRenderer` di `/rakit/[slug]`.
+   - Preview template galeri: `/demo/[id]/` (`src/app/demo/**`, `servePreviewPage`/`servePreviewAsset`). File dari
+     `GET /api/public/templates/{id}/files/**`, data contoh dari `GET /api/public/templates/{id}/preview`. Header
+     sandbox sama dengan website terbit; form tidak dikirim (`data.preview`). Tanpa login, token, atau data user.
+     Slug `demo` dicadangkan di backend (`RESERVED_SLUGS`), jadi tidak bentrok dengan website user.
+   - Portal Pengurus = `src/components/PortalPengurus.tsx`, dipakai `/[slug]/admin` (API backend) dan
+     `/demo/[id]/admin` (API palsu di memori, `src/lib/demo-portal.ts`, login demo publik `DEMO_LOGIN`). Ubah Portal di
+     komponen itu agar demo ikut sama. Portal demo tidak boleh memanggil backend atau memakai `localStorage` token.
+   - Test tanpa library: `npm test` (`node --test src/lib/*.test.mts`).
    - `/api/forms/...` sengaja ber-CORS `*` (dipanggil dari halaman sandbox, tanpa cookie/token).
 4. **Port Default:**
    - Server development berjalan pada port **3001** (`next dev -p 3001`).

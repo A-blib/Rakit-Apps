@@ -57,6 +57,24 @@ const MENU: MenuItem[] = [
     ),
   },
   {
+    href: "/dashboard/landing",
+    label: "Konten Landing",
+    icon: (active) => (
+      <svg className={`size-4.5 shrink-0 ${active ? "text-primary" : "text-muted"}`} viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/info",
+    label: "Info Terbaru",
+    icon: (active) => (
+      <svg className={`size-4.5 shrink-0 ${active ? "text-primary" : "text-muted"}`} viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.276A1 1 0 0018 15V3z" clipRule="evenodd" />
+      </svg>
+    ),
+  },
+  {
     href: "/dashboard/system",
     label: "Sistem",
     icon: (active) => (

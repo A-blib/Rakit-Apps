@@ -21,6 +21,7 @@ export class ApiError extends Error {
 
 export interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  /** Objek dikirim sebagai JSON; FormData dikirim apa adanya (multipart, mis. unggah gambar). */
   body?: unknown;
   /** Access token admin/user. Kosong untuk endpoint publik. */
   token?: string;
@@ -41,7 +42,8 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
     }
   }
   const headers: Record<string, string> = { ...CLIENT_HEADER, Accept: "application/json" };
-  if (options.body !== undefined) {
+  const isForm = options.body instanceof FormData;
+  if (options.body !== undefined && !isForm) {
     headers["Content-Type"] = "application/json";
   }
   if (options.token) {
@@ -52,7 +54,7 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
     response = await fetch(url, {
       method: options.method ?? "GET",
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body: options.body === undefined ? undefined : isForm ? (options.body as FormData) : JSON.stringify(options.body),
       ...(options.revalidate !== undefined && !options.token
         ? { next: { revalidate: options.revalidate } }
         : { cache: "no-store" as const }),

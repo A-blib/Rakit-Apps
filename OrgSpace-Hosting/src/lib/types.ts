@@ -84,3 +84,14 @@ export interface SiteRenderData {
   stats?: Record<string, number>;
   org?: Record<string, string>;
 }
+
+/** Data contoh preview template (GET /api/public/templates/{id}/preview); semua isinya buatan backend. */
+export interface TemplatePreviewData {
+  templateId: string;
+  name: string;
+  news: NewsItem[];
+  collections: Record<string, Array<Record<string, unknown>>>;
+  modules: Record<string, Record<string, FieldType>>;
+  stats: Record<string, number>;
+  org: Record<string, string>;
+}

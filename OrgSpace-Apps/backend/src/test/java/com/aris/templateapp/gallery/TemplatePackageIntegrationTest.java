@@ -160,6 +160,42 @@ class TemplatePackageIntegrationTest {
     }
 
     @Test
+    void guestPreviewsTemplateFilesWithSampleDataOnly() throws Exception {
+        UUID id = publish(DemoPackages.SEKOLAH, "Profil Sekolah", OrgCategory.OSIS_MPK);
+
+        mockMvc.perform(get("/api/public/templates/" + id + "/preview"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Profil Sekolah"))
+                .andExpect(jsonPath("$.news.length()").value(TemplatePreviewService.SAMPLE_ITEMS))
+                .andExpect(jsonPath("$.org.email").value("halo@example.com"));
+        mockMvc.perform(get("/api/public/templates/" + id + "/files/css/style.css"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, "text/css"))
+                .andExpect(header().string("Content-Security-Policy", "sandbox"));
+        mockMvc.perform(get("/api/public/templates/" + id + "/files/tidak-ada.html")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/templates?size=1"))
+                .andExpect(jsonPath("$.items[0].previewUrl").value("http://localhost:3001/demo/" + id + "/"));
+
+        jdbc.update("UPDATE templates SET status = 'disabled' WHERE id = ?", id);
+        mockMvc.perform(get("/api/public/templates/" + id + "/preview")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/public/templates/" + id + "/files/index.html")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void previewSampleItemsFollowFieldTypes() {
+        Map<String, String> fields = new java.util.LinkedHashMap<>();
+        fields.put("nama", "teks");
+        fields.put("foto", "gambar");
+        fields.put("jumlah", "angka");
+        fields.put("tautan", "link");
+        var items = TemplatePreviewService.sampleItems(fields);
+
+        assertThat(items).hasSize(TemplatePreviewService.SAMPLE_ITEMS);
+        assertThat(items.get(1)).containsEntry("nama", "Nama contoh 2").containsEntry("jumlah", "20")
+                .containsEntry("tautan", "#").doesNotContainKey("foto");
+    }
+
+    @Test
     void templateWithoutPackageHasNoSizeAndNoPackage() throws Exception {
         UUID id = jdbc.queryForObject("""
                 INSERT INTO templates (provider_id, name, category, status, published_at)

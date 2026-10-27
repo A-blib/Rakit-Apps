@@ -1,4 +1,5 @@
 import { getSiteRenderData } from "./api";
+import type { NewsItem, TemplatePreviewData } from "./types";
 import { MODULE_RUNTIME, STORAGE_SHIM } from "./site-runtime";
 import { BACKEND_API_URL as BACKEND_URL } from "./config";
 
@@ -17,7 +18,10 @@ const NOT_FOUND_HTML = `<!doctype html><html lang="id"><head><meta charset="utf-
 <div><h1>Website belum tayang</h1><p>Alamat ini belum diterbitkan atau sedang dinonaktifkan oleh pemiliknya.</p></div>
 </body></html>`;
 
-function notFound(): Response {
+/** Id template galeri (UUID); dicek sebelum dipakai di URL backend. */
+export const isTemplateId = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+export function notFoundPage(): Response {
   return new Response(NOT_FOUND_HTML, {
     status: 404,
     headers: { "Content-Type": "text/html; charset=utf-8", "Content-Security-Policy": SANDBOX },
@@ -34,32 +38,20 @@ function assetUrl(slug: string, path: string): string {
   return `${BACKEND_URL}/api/public/sites/${encodeURIComponent(slug)}/assets/${encoded}`;
 }
 
-/** Halaman HTML template (index.html, tentang.html, ...) beserta modul dinamisnya. */
-export async function servePage(slug: string, file: string): Promise<Response> {
-  const site = await getSiteRenderData(slug);
-  if (!site || site.status !== "online") return notFound();
-  // Mode rakit sendiri dirender React (CustomRenderer), bukan file template.
-  if (site.mode === "assembled") return new Response(null, { status: 307, headers: { Location: `/rakit/${slug}` } });
+/** Berita dalam nama field modul (judul, ringkasan, ...) yang dipakai template. */
+function moduleNews(news: NewsItem[]) {
+  return news.map((n) => ({
+    judul: n.title,
+    ringkasan: n.summary,
+    konten: n.content,
+    tanggal: n.publishedAt,
+    foto: n.imageUrl,
+    detail: `#berita-${n.id}`,
+  }));
+}
 
-  const res = await fetch(assetUrl(slug, file), { cache: "no-store" });
-  if (!res.ok) return notFound();
-  let html = await res.text();
-
-  const data = {
-    slug: site.slug,
-    news: (site.news || []).map((n) => ({
-      judul: n.title,
-      ringkasan: n.summary,
-      konten: n.content,
-      tanggal: n.publishedAt,
-      foto: n.imageUrl,
-      detail: `#berita-${n.id}`,
-    })),
-    collections: site.collections || {},
-    stats: site.stats || {},
-    org: site.org || {},
-  };
-
+/** Halaman template + runtime modul, selalu dengan header sandbox. Dipakai website terbit dan preview template. */
+function pageResponse(html: string, data: unknown, extraHeaders: Record<string, string> = {}): Response {
   const head = `<script>${STORAGE_SHIM}</script>`;
   html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (tag) => tag + head) : head + html;
   const tail = `<script type="application/json" id="orgspace-data">${embedJson(data)}</script><script>${MODULE_RUNTIME}</script>`;
@@ -71,8 +63,46 @@ export async function servePage(slug: string, file: string): Promise<Response> {
       "Content-Security-Policy": SANDBOX,
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
+      ...extraHeaders,
     },
   });
+}
+
+/** File pendukung apa adanya. SVG bisa berisi script, jadi ikut di-sandbox. */
+async function fileResponse(source: string, cacheControl: string): Promise<Response> {
+  const res = await fetch(source, { cache: "no-store" });
+  if (!res.ok || !res.body) return notFoundPage();
+  return new Response(res.body, {
+    headers: {
+      "Content-Type": res.headers.get("content-type") || "application/octet-stream",
+      "Content-Security-Policy": SANDBOX,
+      "Cache-Control": cacheControl,
+      "X-Content-Type-Options": "nosniff",
+      // Halaman sandbox ber-origin anonim: font (@font-face) dan script modul dari situ wajib lolos CORS.
+      // File template memang publik dan tanpa cookie, jadi aman dibuka untuk semua origin.
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+}
+
+/** Halaman HTML template (index.html, tentang.html, ...) beserta modul dinamisnya. */
+export async function servePage(slug: string, file: string): Promise<Response> {
+  const site = await getSiteRenderData(slug);
+  if (!site || site.status !== "online") return notFoundPage();
+  // Mode rakit sendiri dirender React (CustomRenderer), bukan file template.
+  if (site.mode === "assembled") return new Response(null, { status: 307, headers: { Location: `/rakit/${slug}` } });
+
+  const res = await fetch(assetUrl(slug, file), { cache: "no-store" });
+  if (!res.ok) return notFoundPage();
+  const data = {
+    slug: site.slug,
+    news: moduleNews(site.news || []),
+    collections: site.collections || {},
+    stats: site.stats || {},
+    org: site.org || {},
+  };
+
+  return pageResponse(await res.text(), data);
 }
 
 /**
@@ -84,15 +114,15 @@ export async function serveMedia(slug: string, id: string): Promise<Response> {
   if (id === "logo") {
     // Logo organisasi bisa diganti kapan saja, jadi tidak boleh disimpan lama seperti foto modul.
     const site = await getSiteRenderData(slug);
-    if (!site || site.status !== "online") return notFound();
+    if (!site || site.status !== "online") return notFoundPage();
     source = `${BACKEND_URL}/api/organizations/${site.organizationId}/logo`;
   } else if (/^[0-9a-f-]{36}$/i.test(id)) {
     source = `${BACKEND_URL}/api/public/sites/${encodeURIComponent(slug)}/media/${id}`;
   } else {
-    return notFound();
+    return notFoundPage();
   }
   const res = await fetch(source, { cache: "no-store" });
-  if (!res.ok || !res.body) return notFound();
+  if (!res.ok || !res.body) return notFoundPage();
   return new Response(res.body, {
     headers: {
       "Content-Type": res.headers.get("content-type") || "application/octet-stream",
@@ -103,19 +133,38 @@ export async function serveMedia(slug: string, id: string): Promise<Response> {
   });
 }
 
-/** File pendukung template (CSS, JS, gambar, font) apa adanya. SVG bisa berisi script, jadi ikut di-sandbox. */
+/** File pendukung template (CSS, JS, gambar, font). */
 export async function serveAsset(slug: string, path: string): Promise<Response> {
-  const res = await fetch(assetUrl(slug, path), { cache: "no-store" });
-  if (!res.ok || !res.body) return notFound();
-  return new Response(res.body, {
-    headers: {
-      "Content-Type": res.headers.get("content-type") || "application/octet-stream",
-      "Content-Security-Policy": SANDBOX,
-      "Cache-Control": "public, max-age=300",
-      "X-Content-Type-Options": "nosniff",
-      // Halaman sandbox ber-origin anonim: font (@font-face) dan script modul dari situ wajib lolos CORS.
-      // File template memang publik dan tanpa cookie, jadi aman dibuka untuk semua origin.
-      "Access-Control-Allow-Origin": "*",
-    },
-  });
+  return fileResponse(assetUrl(slug, path), "public, max-age=300");
+}
+
+function previewFileUrl(templateId: string, path: string): string {
+  const encoded = path.split("/").map(encodeURIComponent).join("/");
+  return `${BACKEND_URL}/api/public/templates/${encodeURIComponent(templateId)}/files/${encoded}`;
+}
+
+/**
+ * Preview template dari galeri (/demo/{id}/) dengan data contoh dari backend. Sandbox-nya sama dengan website
+ * terbit, jadi JavaScript template tidak bisa membaca token Portal Pengurus di origin Hosting. Form tidak dikirim.
+ */
+export async function servePreviewPage(templateId: string, file: string): Promise<Response> {
+  const res = await fetch(`${BACKEND_URL}/api/public/templates/${encodeURIComponent(templateId)}/preview`, { cache: "no-store" });
+  if (!res.ok) return notFoundPage();
+  const sample = (await res.json()) as TemplatePreviewData;
+  const page = await fetch(previewFileUrl(templateId, file), { cache: "no-store" });
+  if (!page.ok) return notFoundPage();
+
+  const data = {
+    slug: `demo/${templateId}`,
+    preview: true,
+    news: moduleNews(sample.news),
+    collections: sample.collections,
+    stats: sample.stats,
+    org: sample.org,
+  };
+  return pageResponse(await page.text(), data, { "X-Robots-Tag": "noindex" });
+}
+
+export async function servePreviewAsset(templateId: string, path: string): Promise<Response> {
+  return fileResponse(previewFileUrl(templateId, path), "public, max-age=300");
 }

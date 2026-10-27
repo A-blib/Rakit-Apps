@@ -91,6 +91,7 @@ export const MODULE_RUNTIME = `(function(){
   document.querySelectorAll("form[data-ws-form],[data-ws-form] form").forEach(function(form){
     form.addEventListener("submit",function(e){
       e.preventDefault();
+      if(d.preview){ notice(form,true,"Ini preview template: formulir tidak dikirim."); return; }
       var name=form.getAttribute("data-ws-form")||form.closest("[data-ws-form]").getAttribute("data-ws-form");
       var btn=form.querySelector('[type="submit"]'), label=btn?(btn.value||btn.textContent):"";
       if(btn){ btn.disabled=true; if(btn.tagName==="INPUT") btn.value="Mengirim..."; else btn.textContent="Mengirim..."; }

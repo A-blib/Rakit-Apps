@@ -9,6 +9,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -52,6 +53,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponse> handleTooLarge(MaxUploadSizeExceededException ex) {
         return build(ErrorCode.UPLOAD_TOO_LARGE, "Ukuran file terlalu besar.", null);
+    }
+
+    /** Nilai path/query salah format (mis. id bukan UUID): kesalahan pemanggil, bukan bug server. */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return build(ErrorCode.VALIDATION_ERROR, ErrorCode.VALIDATION_ERROR.defaultMessage(),
+                Map.of(ex.getName(), "Format tidak valid"));
     }
 
     @ExceptionHandler(MissingServletRequestPartException.class)

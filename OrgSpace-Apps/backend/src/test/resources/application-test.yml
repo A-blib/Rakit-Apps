@@ -20,6 +20,9 @@ app:
   org:
     # Logo test ditulis ke folder build, bukan ke backend/data/ milik backend dev.
     logo-dir: target/test-org-logos
+  landing:
+    # Gambar hero test ditulis ke folder build, bukan ke backend/data/ milik backend dev.
+    image-dir: target/test-landing
   users:
     # Foto profil test ditulis ke folder build, bukan ke backend/data/ milik backend dev.
     avatar-dir: target/test-user-avatars

@@ -75,6 +75,9 @@ app:
     android-download-url: ${PORTAL_ANDROID_DOWNLOAD_URL:}
     feedback-daily-limit: ${PORTAL_FEEDBACK_DAILY_LIMIT:10}
     usage-flush-seconds: ${PORTAL_USAGE_FLUSH_SECONDS:60}
+  # Gambar hero landing page portal web yang diunggah admin (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/landing.
+  landing:
+    image-dir: ${LANDING_IMAGE_DIR:./data/landing}
   seed:
     # Seeder demo template provider (hanya profile dev). Mati secara bawaan; nyalakan dengan
     # --app.seed.demo-templates=true saat menjalankan backend. Lihat README "Data demo provider".

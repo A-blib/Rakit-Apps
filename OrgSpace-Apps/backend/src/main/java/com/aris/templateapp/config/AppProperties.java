@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Semua pengaturan milik app (prefix {@code app.} di application.yml) dalam satu tempat bertipe jelas,
@@ -183,6 +184,11 @@ public record AppProperties(
          */
         public String urlOf(String slug) {
             return hostingUrl + "/" + slug;
+        }
+
+        /** Preview template di OrgSpace-Hosting; "demo" dicadangkan sebagai slug, jadi tidak bentrok dengan website user. */
+        public String previewUrlOf(UUID templateId) {
+            return hostingUrl + "/demo/" + templateId + "/";
         }
     }
 
