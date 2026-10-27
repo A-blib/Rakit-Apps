@@ -58,6 +58,63 @@ export interface PublicOverview {
   androidDownloadUrl: string | null;
 }
 
+/** Isi hero landing page (GET /public/landing/hero, /admin/landing/hero). */
+export interface LandingHero {
+  headline: string;
+  /** Lanjutan judul yang diberi warna aksen. */
+  headlineHighlight: string;
+  subheadline: string;
+  primaryCtaLabel: string;
+  secondaryCtaLabel: string;
+  secondaryCtaUrl: string;
+  /** Maks 3 poin singkat di bawah tombol. */
+  highlights: string[];
+  imageAlt: string;
+  /** null = belum ada gambar unggahan; landing memakai gambar bawaan /images/orgspace-workspace-hero.png. */
+  imageUpdatedAt: IsoDateTime | null;
+  updatedAt: IsoDateTime;
+}
+
+export type LandingHeroRequest = Omit<LandingHero, "imageUpdatedAt" | "updatedAt">;
+
+export type PortalUpdateCategory = "fitur" | "optimasi" | "desain" | "lainnya";
+
+/** Info terbaru OrgSpace (GET /public/updates, /admin/updates). */
+export interface PortalUpdate {
+  id: Uuid;
+  category: PortalUpdateCategory;
+  status: "draft" | "published";
+  title: string;
+  /** Ringkasan untuk kartu landing (maks 300). */
+  summary: string;
+  /** Isi lengkap Markdown; null di daftar, terisi di detail. */
+  content: string | null;
+  imageAlt: string | null;
+  /** null = tanpa gambar. Gambar lewat rute web /update-image/[id]?v= (hanya yang tayang). */
+  imageUpdatedAt: IsoDateTime | null;
+  /** Tanggal pertama kali tayang; null = belum pernah tayang. */
+  publishedAt: IsoDateTime | null;
+  /** Lama tampil di publik (hari) sejak pertama tayang; null = tanpa batas. */
+  displayDays: number | null;
+  /** publishedAt + displayDays; lewat waktu ini info tidak tampil di publik (tetap ada di dashboard). */
+  expiresAt: IsoDateTime | null;
+  /** true = tayang tapi sudah lewat masa tampil (dihitung jam server). */
+  expired: boolean;
+  updatedAt: IsoDateTime;
+}
+
+export interface PortalUpdateRequest {
+  category: PortalUpdateCategory;
+  title: string;
+  summary: string;
+  /** Markdown, maks 20.000 karakter. HTML mentah tidak dirender. */
+  content: string;
+  imageAlt: string | null;
+  published: boolean;
+  /** 1–3650 hari; null = tanpa batas. */
+  displayDays: number | null;
+}
+
 export type DocCategoryValue =
   | "mulai" | "ruang-kerja" | "website" | "template" | "terbit" | "provider" | "akun" | "faq";
 export type DocAudience = "all" | "creator" | "provider";
@@ -110,6 +167,8 @@ export interface GalleryTemplate {
   downloads: number;
   publishedAt: IsoDateTime;
   contentTags: string[];
+  /** Halaman preview di OrgSpace-Hosting (data contoh, ter-sandbox). Buka di tab baru atau iframe; jangan tambah allow-same-origin. */
+  previewUrl: string;
 }
 
 // ---------- Admin ----------

@@ -497,6 +497,7 @@ Script template berjalan **sebelum** OrgSpace mengisi modul. Jika script-mu perl
 function mulai() {
   // Data modul (salinan): window.orgspace.data
   //   .slug          nama website
+  //   .preview       true jika halaman ini preview template di galeri (data contoh, form tidak dikirim)
   //   .news          pengumuman/berita: [{ judul, ringkasan, konten, tanggal, foto, detail }]
   //   .collections   modul kustom: { prestasi: [{ judul, tingkat, ... }], agenda: [...] }
   //   .stats         angka: { pengurus: 12, berita: 5, prestasi: 18, "form.pendaftaran": 40 }
@@ -514,7 +515,7 @@ else document.addEventListener("orgspace:siap", mulai);
   diurutkan per tanggal + hitung mundur, lightbox galeri, form 2 langkah, pencarian pengurus, tema gelap).
 - Tanggal modul (\`data-ws-type="tanggal"\`) di data mentah berbentuk \`2026-10-19\`; teks di kartu sudah diubah menjadi
   "19 Oktober 2026". Pakai data mentah untuk menghitung atau mengurutkan.
-- Event ini hanya ada di website yang tayang di OrgSpace. Di preview app atau file ZIP export, \`window.orgspace\` tidak ada, jadi tulis script yang tetap aman tanpa data (mis. filter tidak dibuat).
+- Event ini ada di website yang tayang di OrgSpace dan di preview galeri (\`orgspace.app/demo/{id}/\`, berisi data contoh). Di preview app atau file ZIP export, \`window.orgspace\` tidak ada, jadi tulis script yang tetap aman tanpa data (mis. filter tidak dibuat).
 
 ## Banyak halaman
 

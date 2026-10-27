@@ -11,6 +11,11 @@ import type {
   FeedbackDetail,
   FeedbackStatus,
   FeedbackSummary,
+  GalleryTemplate,
+  LandingHero,
+  LandingHeroRequest,
+  PortalUpdate,
+  PortalUpdateRequest,
   Overview,
   PageResponse,
   SenderRole,
@@ -74,4 +79,44 @@ export const adminApi = {
   updateDoc: (token: string, id: string, request: DocRequest) =>
     apiFetch<DocDetail>(`/admin/docs/${id}`, { token, method: "PUT", body: request }),
   deleteDoc: (token: string, id: string) => apiFetch<void>(`/admin/docs/${id}`, { token, method: "DELETE" }),
+
+  // ---------- hero landing page ----------
+  landingHero: (token: string) => apiFetch<LandingHero>("/admin/landing/hero", { token }),
+  updateLandingHero: (token: string, request: LandingHeroRequest) =>
+    apiFetch<LandingHero>("/admin/landing/hero", { token, method: "PUT", body: request }),
+  /** PNG/JPG maks 2 MB; backend memperkecil maks 1600 px. */
+  uploadHeroImage: (token: string, file: File) => {
+    const body = new FormData();
+    body.set("file", file);
+    return apiFetch<LandingHero>("/admin/landing/hero/image", { token, method: "POST", body });
+  },
+  deleteHeroImage: (token: string) =>
+    apiFetch<LandingHero>("/admin/landing/hero/image", { token, method: "DELETE" }),
+
+  // ---------- info terbaru ----------
+  updates: (token: string) => apiFetch<PortalUpdate[]>("/admin/updates", { token }),
+  update: (token: string, id: string) => apiFetch<PortalUpdate>(`/admin/updates/${encodeURIComponent(id)}`, { token }),
+  createUpdate: (token: string, request: PortalUpdateRequest) =>
+    apiFetch<PortalUpdate>("/admin/updates", { token, method: "POST", body: request }),
+  saveUpdate: (token: string, id: string, request: PortalUpdateRequest) =>
+    apiFetch<PortalUpdate>(`/admin/updates/${encodeURIComponent(id)}`, { token, method: "PUT", body: request }),
+  setUpdatePublished: (token: string, id: string, published: boolean) =>
+    apiFetch<PortalUpdate>(`/admin/updates/${encodeURIComponent(id)}/published`, { token, method: "PUT", body: { published } }),
+  deleteUpdate: (token: string, id: string) =>
+    apiFetch<void>(`/admin/updates/${encodeURIComponent(id)}`, { token, method: "DELETE" }),
+  /** PNG/JPG maks 2 MB; backend memperkecil maks 1600 px. */
+  uploadUpdateImage: (token: string, id: string, file: File) => {
+    const body = new FormData();
+    body.set("file", file);
+    return apiFetch<PortalUpdate>(`/admin/updates/${encodeURIComponent(id)}/image`, { token, method: "POST", body });
+  },
+  deleteUpdateImage: (token: string, id: string) =>
+    apiFetch<PortalUpdate>(`/admin/updates/${encodeURIComponent(id)}/image`, { token, method: "DELETE" }),
+
+  // ---------- template unggulan landing page ----------
+  /** Untuk memilih, jelajahi galeri per halaman dengan getTemplates() di lib/api/public.ts. */
+  landingTemplates: (token: string) => apiFetch<GalleryTemplate[]>("/admin/landing/templates", { token }),
+  /** Mengganti seluruh daftar (maks 12); urutan array = urutan tampil. */
+  updateLandingTemplates: (token: string, templateIds: string[]) =>
+    apiFetch<GalleryTemplate[]>("/admin/landing/templates", { token, method: "PUT", body: { templateIds } }),
 };
