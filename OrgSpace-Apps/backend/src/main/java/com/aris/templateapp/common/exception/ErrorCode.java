@@ -67,6 +67,10 @@ public enum ErrorCode {
     FEEDBACK_CLOSED(HttpStatus.CONFLICT, "Percakapan ini sudah ditutup. Kirim kritik & saran baru, ya."),
     DOC_NOT_FOUND(HttpStatus.NOT_FOUND, "Artikel tidak ditemukan."),
     DOC_SLUG_TAKEN(HttpStatus.CONFLICT, "Alamat artikel (slug) sudah dipakai artikel lain."),
+    LANDING_IMAGE_INVALID(HttpStatus.BAD_REQUEST, "Gambar hero harus PNG atau JPG."),
+    LANDING_TEMPLATE_INVALID(HttpStatus.BAD_REQUEST, "Ada template yang tidak tayang di galeri. Muat ulang daftar, lalu pilih lagi."),
+    UPDATE_NOT_FOUND(HttpStatus.NOT_FOUND, "Info terbaru tidak ditemukan."),
+    UPDATE_IMAGE_INVALID(HttpStatus.BAD_REQUEST, "Gambar info harus PNG atau JPG."),
     // Publish & Hosting website (docs/rancangan/alur-publish-website.md bagian 7.3)
     SITE_NOT_PUBLISHED(HttpStatus.NOT_FOUND, "Website belum diterbitkan atau sedang tidak aktif."),
     SITE_SUSPENDED(HttpStatus.FORBIDDEN, "Website ini sedang ditangguhkan oleh sistem."),

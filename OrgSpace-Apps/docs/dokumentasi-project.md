@@ -1949,7 +1949,7 @@ entity `FormSubmission` apa adanya, termasuk **IP dan User-Agent** pengunjung.
 - `SitePublishService.getSubmissions` memakai `OrgAction.VIEW_SUBMISSIONS` (Editor → 403 `ROLE_NOT_ALLOWED`).
 - Endpoint Portal memanggil `SitePublishService.getSubmissions` yang sama, jadi aturan peran dan bentuk respons
   (`FormSubmissionResponse`, tanpa IP/User-Agent) hanya ada di satu tempat.
-- Portal Pengurus (OrgSpace-Hosting `[slug]/admin/page.tsx`): tab "Kotak Masuk Form" disembunyikan untuk Editor,
+- Portal Pengurus (OrgSpace-Hosting `src/components/PortalPengurus.tsx`, dulu `[slug]/admin/page.tsx`): tab "Kotak Masuk Form" disembunyikan untuk Editor,
   kartu "Formulir Masuk" di Ringkasan tetap menampilkan jumlah tetapi tidak bisa diklik.
 
 ## 33f. Publish langsung tidak lagi menimpa website lain bernama sama (26 Oktober 2026)
@@ -2129,6 +2129,132 @@ Perubahan perilaku yang disengaja (dikunci test `portalMemberChangesUseTheSameRu
 - PUT anggota tanpa `role` tidak mengubah peran (dulu jatuh ke Editor); jabatan maks 60 karakter (dulu 500).
 - `@CrossOrigin("*")` dihapus: dulu menambah izin `*` untuk request biasa ke endpoint website publik, melewati
   `CorsOriginPolicy` (33o). Test: `CorsIntegrationTest.publicSiteEndpointsDoNotGrantEveryOriginEither`.
+
+## 33q. Fondasi: hero landing page bisa diubah dari dashboard (26 Oktober 2026)
+
+Fondasi (Aris) sudah siap; tampilan (halaman dashboard + menyambungkan landing page) dikerjakan tim web.
+
+| Bagian | Isi |
+|---|---|
+| Data | `V33__create_landing_hero.sql`: tabel `landing_hero` selalu satu baris (id = 1), nilai awal = teks hero sekarang |
+| Backend | `portal/LandingHeroController` + `LandingHeroService`; gambar di `LANDING_IMAGE_DIR` (`hero.png`). Endpoint: `portal-web.md` bagian 5 |
+| Web: data | `getLandingHero()` (publik, ada teks cadangan saat backend mati), `adminApi.landingHero / updateLandingHero / uploadHeroImage / deleteHeroImage`, tipe `LandingHero` & `LandingHeroRequest` |
+| Web: aksi | Server Action `saveLandingHero` di `dashboard/actions.ts` (untuk `useActionState`, hasil `FormState.success` bila berhasil) |
+| Web: gambar | Rute `/hero-image` meneruskan PNG dari backend; `heroImageSrc(hero)` di `lib/format.ts` memilih gambar unggahan atau bawaan |
+
+Nama field form `saveLandingHero`: `headline`, `headlineHighlight`, `subheadline`, `primaryCtaLabel`,
+`secondaryCtaLabel`, `secondaryCtaUrl`, `highlights` (satu poin per baris, maks 3), `imageAlt`, `image` (file,
+opsional), `resetImage` (checkbox "kembali ke gambar bawaan"). Error per field ada di `FormState.fieldErrors[nama]`.
+
+Contoh awal (diminta Aris): `dashboard/(panel)/landing/HeroForm.tsx` + menu "Konten Landing" di `SidebarNav`.
+
+Tugas tim web:
+1. Merapikan/merombak halaman `dashboard/(panel)/landing` (contoh awal di atas).
+2. Landing page (`(site)/page.tsx`) membaca `getLandingHero()` menggantikan teks/gambar hero yang ditulis langsung.
+   Gambar unggahan: `<Image src={heroImageSrc(hero)} unoptimized />` (sudah diperkecil backend).
+3. Sticky note di atas gambar hanya pas untuk gambar bawaan; sembunyikan bila `hero.imageUpdatedAt` terisi.
+
+Aturan yang dijaga fondasi: gambar PNG/JPG maks 2 MB (dicek juga di Server Action), diperkecil maks 1600 px tanpa
+dipotong, ditulis ulang PNG (`SquareImages.shrink`); Server Action dinaikkan ke 3 MB di `next.config.ts` (bawaan
+1 MB); link tombol kedua harus diawali `/`, `#`, atau `http(s)://` (mencegah `javascript:`).
+Test: `PortalIntegrationTest.landingHeroEditedByAdmin`.
+
+## 33r. Fondasi: template unggulan di landing page (26 Oktober 2026)
+
+Admin memilih template dari galeri untuk dipajang di landing ("website seperti ini yang akan kamu dapatkan").
+Hanya template galeri (tabel `templates`, tayang + provider aktif) yang bisa dipilih; website user tidak pernah ikut.
+
+**Batas aman:** landing tidak memuat seluruh galeri. Admin menjelajah galeri per halaman ("wadah") lewat
+`GET /api/templates?page=&size=` (size 1–50, ada `totalPages`, `q`, `category`), dan yang disimpan hanya daftar
+pilihannya, maks 12 (`V34__create_landing_templates.sql`). Landing membaca maks 12 kartu, di-cache 5 menit di server
+Next.js, jadi jumlah pengunjung tidak menambah beban database.
+
+| Bagian | Isi |
+|---|---|
+| Backend | `portal/LandingTemplateController` + `LandingTemplateService`; query di `GalleryQueries.landing()` / `countVisible()` (aturan "tayang" tetap satu: `VISIBLE`) |
+| Web: data | `getLandingTemplates()` (publik, kosong bila backend mati), `getTemplates({ q, category, sort, page, size })` untuk wadah, `adminApi.landingTemplates / updateLandingTemplates` |
+| Web: aksi | Server Action `saveLandingTemplates(templateIds: string[])` (dipanggil dari komponen; hasil `FormState`) |
+| Web: gambar | Rute `/template-thumbnail/[id]` meneruskan thumbnail dari backend; `templateThumbnailSrc(template)` di `lib/format.ts` |
+| Contoh awal | `components/FeaturedTemplates.tsx` dipasang di landing antara section 3 dan 4. Sengaja polos; tim web bebas merombak |
+
+Contoh awal dashboard: `dashboard/(panel)/landing/FeaturedPicker.tsx` (daftar dipajang + urutkan + wadah galeri
+16 per halaman dengan pencarian; pilihan belum tersimpan tetap ada saat pindah wadah).
+
+Tugas tim web: merapikan halaman pemilih dan section landing.
+Tombol preview: pakai `previewUrl` di setiap kartu (lihat 33s).
+Test: `PortalIntegrationTest.landingTemplatesPickedByAdmin`, unit test `SquareImagesTest`.
+
+## 33s. Fondasi: preview template untuk pengunjung (27 Oktober 2026)
+
+Pengunjung landing bisa membuka template galeri seperti website jadi, dengan data contoh, tanpa login.
+Tahap 1: tampilan website (`/demo/{id}/`). Tahap 2: Portal Pengurus demo (`/demo/{id}/admin`), dibuka dari link
+"Masuk pengurus" template atau langsung.
+
+| Bagian | Isi |
+|---|---|
+| Backend | `gallery/TemplatePreviewController` + `TemplatePreviewService`: `GET /api/public/templates/{id}/preview` (data contoh) dan `GET /api/public/templates/{id}/files/**` (satu file dari `package.zip`). 404 jika template tidak tayang |
+| Data contoh | Dibuat dari modul `data-ws-*` di semua halaman paket (`PublicSiteController.templateModules`): 3 item per modul, 3 berita, profil "Organisasi Contoh" (email `example.com`). Field gambar sengaja kosong agar foto contoh template dipakai |
+| Hosting | `/demo/{id}/` (`src/app/demo/**`) menyajikan file paket + runtime modul yang sama dengan website terbit. Form tidak dikirim (`window.orgspace.data.preview = true`) |
+| Web | `GalleryTemplate.previewUrl` (juga di `GET /api/templates` dan landing) = `{SITES_HOSTING_URL}/demo/{id}/` |
+
+**Keamanan (kenapa template tidak bisa mencuri token):**
+- Halaman dan file preview selalu memakai header `Content-Security-Policy: sandbox` tanpa `allow-same-origin`. Browser
+  menjalankan JavaScript template sebagai origin anonim, jadi template tidak bisa membaca `localStorage` Hosting (token
+  Portal Pengurus `orgspace_site_token_*`), cookie, atau website user lain.
+- Dashboard OrgSpace-Website ada di origin lain dan tokennya di cookie httpOnly, jadi tidak terjangkau sama sekali.
+- Data contoh dibuat dari nol; tidak ada data organisasi, anggota, atau website user yang dibaca.
+- Path file dicari sebagai nama entri ZIP (bukan path disk), id wajib UUID di Hosting; `..` ditolak.
+- Preview diberi `X-Robots-Tag: noindex`.
+
+**Tahap 2: Portal Pengurus demo**
+
+| Bagian | Isi |
+|---|---|
+| Komponen | Portal Pengurus dipindah ke `src/components/PortalPengurus.tsx` (props `slug`, `siteHref`, `api`, `demo?`). `/{slug}/admin` memberi `api` = backend; `/demo/{id}/admin` memberi `api` palsu, jadi tampilan demo selalu sama dengan Portal asli |
+| Data | `src/lib/demo-portal.ts` `createDemoApi(sample)`: berita, modul, kotak masuk form, pengurus, kode undangan, foto (alamat `blob:`), semuanya di memori tab. Muat ulang = kembali ke data contoh |
+| Login demo | `demo@orgspace.app` / `demo1234` (`DEMO_LOGIN`), ditampilkan di layar login + tombol "Isi akun demo". Tidak ada di database dan tidak pernah dikirim ke backend |
+| Batas | Perubahan di Portal demo tidak muncul di halaman preview website (preview dirender server dari data contoh backend) |
+
+Keamanan tahap 2: Portal demo tidak memanggil backend sama sekali setelah halaman dimuat (dicek di browser: 0 request ke
+backend), tokennya hanya teks `"demo"` di state React, dan `localStorage` tidak disentuh, jadi sesi pengurus asli di
+origin Hosting tidak tertimpa. Test: `npm test` di OrgSpace-Hosting (`src/lib/demo-portal.test.mts`).
+
+Contoh awal (permintaan Aris): tombol "Lihat preview" di kartu landing (`FeaturedTemplates.tsx`) membuka
+`template.previewUrl` di tab baru (`target="_blank" rel="noopener noreferrer"`). Tugas tim web: merapikan tombol itu
+dan menambahkannya di pemilih dashboard bila perlu. Boleh juga di `<iframe>`: header sandbox tetap berlaku
+di dalam iframe, tapi jangan menambah `allow-same-origin` jika memberi atribut `sandbox` sendiri.
+Test: `TemplatePackageIntegrationTest.guestPreviewsTemplateFilesWithSampleDataOnly`, `previewSampleItemsFollowFieldTypes`.
+
+## 33t. Fondasi: info terbaru OrgSpace di landing page (27 Oktober 2026)
+
+Tim internal menulis info terbaru (fitur baru, optimasi, desain ulang, lainnya) dari dashboard. Landing menampilkan
+3 info tayang terbaru sebagai kartu ringkas. Tombol "Lihat detail" membuka `/info/{id}` di tab baru, berisi isi lengkap.
+Tanpa info tayang, section menulis "Belum ada informasi terbaru."
+
+| Bagian | Isi |
+|---|---|
+| Data | `V35__create_portal_updates.sql`: `category`, `title`, `summary` (kartu), `content` (Markdown, detail), `status` draft/published, gambar (`image_updated_at` + `image_alt`), `published_at` (tanggal tayang pertama, tetap saat disunting) |
+| Backend | `portal/PortalUpdateController` + `PortalUpdateService`. Publik hanya melihat yang tayang; daftar tanpa `content` agar landing ringan. Gambar ditulis ulang PNG maks 1600 px (`SquareImages`, sama dengan hero) di `{app.landing.image-dir}/updates/{id}.png` |
+| Web: data | `getLatestUpdates(limit)`, `getUpdate(id)`, `getUpdateImage(id)` di `lib/api/public.ts`; `adminApi.updates / update / createUpdate / saveUpdate / deleteUpdate / uploadUpdateImage / deleteUpdateImage`; type `PortalUpdate`, `PortalUpdateRequest` |
+| Web: aksi | `saveUpdate(id \| null, state, form)` (simpan + gambar, lalu ke daftar), `setUpdatePublished(id, published)` (`PUT /admin/updates/{id}/published`), `deleteUpdate(id)` |
+| Web: gambar | Rute `/update-image/[id]?v=`; `updateImageSrc(update)`, `UPDATE_CATEGORY_LABEL`, `formatDate` di `lib/format.ts` |
+| Contoh awal | `components/LatestUpdates.tsx` (landing, setelah template unggulan), `(site)/info/[id]/page.tsx` (detail), `dashboard/(panel)/info/**` (daftar dengan tombol Sembunyikan/Tampilkan, Ubah & Hapus per baris, tulis, ubah; status draft tampil sebagai "Disembunyikan") + menu "Info Terbaru". Hapus lewat `DeleteUpdateButton` selalu minta konfirmasi karena permanen |
+
+Keamanan: isi Markdown dirender `components/Markdown.tsx` (HTML mentah tidak dirender, jadi `<script>` tidak jalan;
+dicek), draft tidak bisa dibuka publik (detail & gambar 404), gambar ditulis ulang PNG (isi tersembunyi terbuang), dan
+semua endpoint tulis di `/api/admin/**` (AdminGuard).
+
+Sekalian diperbaiki (berlaku semua endpoint): id path yang bukan UUID dulu 500 `INTERNAL_ERROR` + stack trace di log,
+sekarang 400 `VALIDATION_ERROR` (`GlobalExceptionHandler.handleTypeMismatch`).
+
+**Lama tampil** (`V36__portal_updates_display_days.sql`): admin mengisi jumlah hari (1–3650, kosong = tanpa batas),
+dihitung sejak pertama tayang. Lewat masanya, info otomatis tidak terlihat di publik (landing, detail, gambar: 404),
+tapi **tetap ada di dashboard** dengan label "Berakhir" dan bisa diperpanjang (ubah jumlah hari) atau dihapus manual.
+Tidak ada job terjadwal: aturan dicek di setiap query publik (`VISIBLE` di `PortalUpdateService`), jadi tepat waktu
+tanpa menunggu job jalan. Backend mengirim `expiresAt` dan `expired` (dihitung jam server).
+
+Tugas tim web: merapikan tiga tampilan contoh awal di atas.
+Test: `PortalIntegrationTest.portalUpdatesWrittenByAdminAndShownWhenPublished`, `portalUpdateHiddenFromPublicAfterDisplayDays`.
 
 ## 34. Glosarium
 

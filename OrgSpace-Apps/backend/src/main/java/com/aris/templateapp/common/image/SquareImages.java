@@ -15,9 +15,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 /**
- * Pengolah gambar persegi bersama (logo organisasi, foto profil). File asli tidak pernah disimpan atau disajikan:
- * gambar dibaca ulang, dipotong persegi di tengah, diperkecil, lalu ditulis ulang sebagai PNG. Dengan begitu isi
- * tersembunyi di file (mis. script dalam SVG atau data setelah akhir gambar) ikut terbuang.
+ * Pengolah gambar bersama (logo organisasi, foto profil, gambar hero landing page). File asli tidak pernah disimpan
+ * atau disajikan: gambar dibaca ulang, diperkecil (logo & foto profil juga dipotong persegi di tengah), lalu ditulis
+ * ulang sebagai PNG. Dengan begitu isi tersembunyi di file (mis. script dalam SVG atau data setelah akhir gambar)
+ * ikut terbuang.
  * <p>
  * PNG dipakai, bukan WebP, karena Java bawaan belum bisa menulis WebP dan library tambahan belum disetujui.
  */
@@ -62,6 +63,20 @@ public final class SquareImages {
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
         g.drawImage(source, 0, 0, target, target, x, y, x + side, y + side, null);
+        g.dispose();
+        return result;
+    }
+
+    /** Memperkecil agar sisi terpanjang maks {@code maxSidePx}, tanpa dipotong (mis. gambar hero landing page). */
+    public static BufferedImage shrink(BufferedImage source, int maxSidePx) {
+        double scale = Math.min(1.0, (double) maxSidePx / Math.max(source.getWidth(), source.getHeight()));
+        int width = Math.max(1, (int) Math.round(source.getWidth() * scale));
+        int height = Math.max(1, (int) Math.round(source.getHeight() * scale));
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = result.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.drawImage(source, 0, 0, width, height, null);
         g.dispose();
         return result;
     }

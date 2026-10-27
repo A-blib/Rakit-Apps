@@ -1,6 +1,7 @@
 package com.aris.templateapp.gallery;
 
 import com.aris.templateapp.common.persistence.PersistableEnum;
+import com.aris.templateapp.config.AppProperties;
 import com.aris.templateapp.gallery.dto.GalleryTemplateResponse;
 import com.aris.templateapp.organization.OrgCategory;
 import lombok.RequiredArgsConstructor;
@@ -8,8 +9,10 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Array;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -56,30 +59,42 @@ public class GalleryQueries {
             """;
 
     private final JdbcClient jdbc;
+    private final AppProperties properties;
+
+    private static final String CARD_COLUMNS = """
+            SELECT t.id, t.name, t.category, t.thumbnail_url, t.published_at, p.creator_name, t.content_tags,
+                   (SELECT count(*) FROM template_events e
+                     WHERE e.template_id = t.id AND e.type = 'download') AS downloads
+            """;
 
     public List<GalleryTemplateResponse> list(OrgCategory category, String search, SortOrder sort, int page, int size) {
-        String sql = """
-                SELECT t.id, t.name, t.category, t.thumbnail_url, t.published_at, p.creator_name, t.content_tags,
-                       (SELECT count(*) FROM template_events e
-                         WHERE e.template_id = t.id AND e.type = 'download') AS downloads
-                """ + VISIBLE + filters(category, search)
+        String sql = CARD_COLUMNS + VISIBLE + filters(category, search)
                 + " ORDER BY " + sort.orderBy + " LIMIT :limit OFFSET :offset";
         return params(jdbc.sql(sql), category, search)
                 .param("limit", size)
                 .param("offset", page * size)
-                .query((rs, row) -> {
-                    Timestamp published = rs.getTimestamp("published_at");
-                    return new GalleryTemplateResponse(
-                            rs.getObject("id", UUID.class),
-                            rs.getString("name"),
-                            PersistableEnum.fromValue(OrgCategory.class, rs.getString("category")),
-                            rs.getString("thumbnail_url"),
-                            rs.getString("creator_name"),
-                            rs.getLong("downloads"),
-                            published == null ? null : published.toInstant(),
-                            contentTags(rs.getArray("content_tags")));
-                })
+                .query((rs, row) -> card(rs))
                 .list();
+    }
+
+    /**
+     * Template unggulan landing page (tabel {@code landing_templates}) menurut urutan pilihan admin. Template yang
+     * sudah tidak tayang ikut tersembunyi, sama seperti di galeri.
+     */
+    public List<GalleryTemplateResponse> landing() {
+        return jdbc.sql(CARD_COLUMNS + VISIBLE + """
+                         AND t.id IN (SELECT template_id FROM landing_templates)
+                       ORDER BY (SELECT sort_order FROM landing_templates WHERE template_id = t.id)""")
+                .query((rs, row) -> card(rs))
+                .list();
+    }
+
+    /** Berapa id yang tayang di galeri; dipakai untuk menolak template draft/tersembunyi. */
+    public long countVisible(Collection<UUID> ids) {
+        return jdbc.sql("SELECT count(*) " + VISIBLE + " AND t.id IN (:ids)")
+                .param("ids", ids)
+                .query(Long.class)
+                .single();
     }
 
     /** Total download satu template, angka yang sama dengan kartu galeri. */
@@ -115,6 +130,21 @@ public class GalleryQueries {
             spec = spec.param("search", "%" + escaped + "%");
         }
         return spec;
+    }
+
+    private GalleryTemplateResponse card(ResultSet rs) throws SQLException {
+        Timestamp published = rs.getTimestamp("published_at");
+        UUID id = rs.getObject("id", UUID.class);
+        return new GalleryTemplateResponse(
+                id,
+                rs.getString("name"),
+                PersistableEnum.fromValue(OrgCategory.class, rs.getString("category")),
+                rs.getString("thumbnail_url"),
+                rs.getString("creator_name"),
+                rs.getLong("downloads"),
+                published == null ? null : published.toInstant(),
+                contentTags(rs.getArray("content_tags")),
+                properties.sites().previewUrlOf(id));
     }
 
     private static List<String> contentTags(Array array) throws SQLException {

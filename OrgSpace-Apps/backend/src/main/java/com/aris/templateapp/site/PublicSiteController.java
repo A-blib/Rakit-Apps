@@ -233,7 +233,7 @@ public class PublicSiteController {
      * Koleksi data-ws-list/collection di template beserta field dan jenisnya; berita diisi lewat tab Berita,
      * jadi tidak ikut. Jenis: img = gambar, data-ws-link = link, selain itu data-ws-type atau teks.
      */
-    static Map<String, Map<String, String>> templateModules(String html) {
+    public static Map<String, Map<String, String>> templateModules(String html) {
         Map<String, Map<String, String>> modules = new LinkedHashMap<>();
         if (html == null) {
             return modules;

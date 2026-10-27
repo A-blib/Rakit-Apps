@@ -130,6 +130,12 @@ Semua berprefix `/api`. Contoh lengkap & coba langsung: Swagger UI `http://local
 | `GET /public/docs` | `{ categories: [{ value, label, articles: [DocSummary] }] }` — hanya artikel tayang, kategori kosong tidak dikirim |
 | `GET /public/docs/{slug}` | `DocDetail` (isi Markdown); 404 `DOC_NOT_FOUND` jika tidak ada / masih draft |
 | `GET /templates?sort=popular&size=6` | Galeri template (sudah ada sejak fase 13) |
+| `GET /public/landing/hero` | `LandingHero` (teks hero + `imageUpdatedAt`, null = gambar bawaan web; cache 1 menit) |
+| `GET /public/landing/templates` | `GalleryTemplate[]` template unggulan pilihan admin (maks 12, urutan admin; yang sudah tidak tayang ikut hilang; cache 5 menit). Thumbnail lewat rute web `/template-thumbnail/[id]?v=`. `previewUrl` = halaman preview di OrgSpace-Hosting (`{SITES_HOSTING_URL}/demo/{id}/`, data contoh, ter-sandbox); buka dengan `target="_blank" rel="noopener"` |
+| `GET /public/landing/hero/image` | PNG gambar hero unggahan; 404 jika masih gambar bawaan. Web meneruskannya lewat rute `/hero-image?v=` |
+| `GET /public/updates?limit=3` | `PortalUpdate[]` info terbaru yang tayang dan belum lewat `displayDays` (terbaru dulu, `limit` 1–12, `content` = null; cache 1 menit). Kosong = landing menulis "Belum ada informasi terbaru." |
+| `GET /public/updates/{id}` | `PortalUpdate` dengan `content` (Markdown); 404 `UPDATE_NOT_FOUND` jika draft / tidak ada, 400 jika id bukan UUID |
+| `GET /public/updates/{id}/image` | PNG gambar info yang tayang; 404 jika tanpa gambar / draft. Web meneruskannya lewat rute `/update-image/[id]?v=` |
 
 ### 5.2 Pengirim kritik & saran (login, dipakai app Android nanti)
 
@@ -164,10 +170,25 @@ Semua berprefix `/api`. Contoh lengkap & coba langsung: Swagger UI `http://local
 | `POST /admin/docs` | `DocRequest` | 201; 409 `DOC_SLUG_TAKEN` |
 | `PUT /admin/docs/{id}` | `DocRequest` (semua field) | `DocDetail` |
 | `DELETE /admin/docs/{id}` | – | 204 |
+| `GET /admin/landing/hero` | – | `LandingHero` |
+| `PUT /admin/landing/hero` | `LandingHeroRequest` (semua field; `highlights` maks 3, `secondaryCtaUrl` diawali `/`, `#`, atau `http(s)://`) | `LandingHero` |
+| `POST /admin/landing/hero/image` | multipart `file` (PNG/JPG maks 2 MB; diperkecil maks 1600 px, ditulis ulang PNG) | `LandingHero`; 400 `LANDING_IMAGE_INVALID` |
+| `DELETE /admin/landing/hero/image` | – | `LandingHero` (kembali ke gambar bawaan web) |
+| `GET /admin/landing/templates` | – | `GalleryTemplate[]` template unggulan. Untuk memilih, jelajahi galeri per halaman: `GET /templates?page=&size=(1–50)&q=&category=&sort=` |
+| `GET /admin/updates` | – | `PortalUpdate[]` semua info (draft & tayang, terakhir diubah dulu, `content` = null) |
+| `GET /admin/updates/{id}` | – | `PortalUpdate` dengan `content` |
+| `POST /admin/updates` | `PortalUpdateRequest` `{ category: fitur\|optimasi\|desain\|lainnya, title (≤120), summary (≤300), content (Markdown ≤20.000), imageAlt?, published, displayDays? (1–3650 hari sejak pertama tayang, null = tanpa batas) }` | 201 `PortalUpdate` (+ `expiresAt`, `expired`) |
+| `PUT /admin/updates/{id}` | `PortalUpdateRequest` (semua field). `publishedAt` = tanggal pertama tayang, tidak berubah saat disunting | `PortalUpdate` |
+| `PUT /admin/updates/{id}/published` | `{ published: boolean }` (tombol Tampilkan/Sembunyikan; isi & tanggal tayang pertama tetap) | `PortalUpdate` |
+| `DELETE /admin/updates/{id}` | – | 204 (gambar ikut dihapus) |
+| `POST /admin/updates/{id}/image` | multipart `file` (PNG/JPG maks 2 MB; diperkecil maks 1600 px, ditulis ulang PNG) | `PortalUpdate`; 400 `UPDATE_IMAGE_INVALID` |
+| `DELETE /admin/updates/{id}/image` | – | `PortalUpdate` |
+| `PUT /admin/landing/templates` | `{ templateIds: uuid[] }` (maks 12, tanpa duplikat, urutan = urutan tampil; mengganti semua) | `GalleryTemplate[]`; 400 `LANDING_TEMPLATE_INVALID` jika ada yang tidak tayang |
 
 ### 5.4 Kode error baru
 
-`ADMIN_ONLY` (403), `FEEDBACK_NOT_FOUND` (404), `FEEDBACK_CLOSED` (409), `DOC_NOT_FOUND` (404), `DOC_SLUG_TAKEN` (409).
+`ADMIN_ONLY` (403), `FEEDBACK_NOT_FOUND` (404), `FEEDBACK_CLOSED` (409), `DOC_NOT_FOUND` (404), `DOC_SLUG_TAKEN` (409), `LANDING_IMAGE_INVALID` (400), `LANDING_TEMPLATE_INVALID` (400), `UPDATE_NOT_FOUND` (404), `UPDATE_IMAGE_INVALID` (400).
+Path/query yang salah format (mis. id bukan UUID) = 400 `VALIDATION_ERROR` dengan `fieldErrors.{nama}` (dulu 500).
 Kode lain yang mungkin muncul: `UNAUTHORIZED`, `VALIDATION_ERROR` (+ `fieldErrors`), `TOO_MANY_ATTEMPTS`,
 `INVALID_CREDENTIALS`, `USE_SOCIAL_LOGIN`.
 
@@ -181,6 +202,7 @@ Kode lain yang mungkin muncul: `UNAUTHORIZED`, `VALIDATION_ERROR` (+ `fieldError
 | `PORTAL_ANDROID_DOWNLOAD_URL` | `backend/.env` | kosong | Link tombol unduh app di landing; kosong = tombol "segera hadir" |
 | `PORTAL_FEEDBACK_DAILY_LIMIT` | `backend/.env` | 10 | Batas feedback baru per user per 24 jam |
 | `PORTAL_USAGE_FLUSH_SECONDS` | `backend/.env` | 60 | Jeda tulis statistik dari memori ke database |
+| `LANDING_IMAGE_DIR` | `backend/.env` | `./data/landing` | Folder gambar hero unggahan admin |
 
 ---
 
