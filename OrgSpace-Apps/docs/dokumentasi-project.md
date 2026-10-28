@@ -2428,6 +2428,32 @@ upload), encoding non-UTF-8 hanya peringatan, alamat publish bukan `localhost:80
 masih "segera hadir" ditandai jujur. Semua tautan antar-artikel dicek (tidak ada yang rusak).
 Test: `PortalIntegrationTest` (skema v39; tes kategori kosong kini memakai `akun` karena `terbit` sudah berisi).
 
+## 33ab. Tampilan Portal Pengurus lewat `portal.json` (28 Oktober 2026)
+
+Keputusan Aris: provider (kreator template) boleh mengatur **tampilan** Portal Pengurus, bukan fiturnya, lewat file
+`portal.json` opsional di folder paling luar ZIP template (opsi "skema deklaratif"; opsi plugin iframe dan edit langsung
+di halaman tidak dipilih untuk versi awal). Portal tanpa file ini juga berubah: setiap modul jadi menu sendiri.
+
+| Bagian | Cara kerja |
+|---|---|
+| Validasi | `site/PortalConfig.java`: satu pembaca untuk dua tempat. Cek upload memakai daftar error-nya (`upload/check/PortalRules`, kode baru `PORTAL_CONFIG_INVALID`, maks. 10 pesan). Render memakai hasil bersihnya (hanya bagian valid). Kunci asing ditolak agar salah ketik ketahuan; nama modul/field harus ada di HTML (`PublicSiteController.templateModules`); warna hex wajib kontras ≥ 3:1 dengan putih; gambar header harus ada di ZIP |
+| Data ke Hosting | Field baru `portal` di `SiteRenderResponse` (`GET /api/public/sites/render/{slug}`, dibaca dari folder rilis) dan `TemplatePreviewResponse` (preview galeri, dibaca dari paket) |
+| Portal | `OrgSpace-Hosting/src/components/PortalPengurus.tsx` + `src/lib/portal-config.ts` (logika murni + test). Navigasi tab atas diganti **sidebar**; menu "Modul Kustom" dihapus, setiap modul jadi menu sendiri. Data modul yang sudah tidak ada di template masuk grup "Data tidak dipakai template" (hanya ubah/hapus) |
+| Pilihan provider | `theme` (primary, accent, radius), `layout.sidebar` (kiri/kanan, lebar, bisa digeser), `layout.header` (minimal/banner + gambar, judul, subjudul), `nav` (urutan, grup, label, 31 ikon), `modules` (label, deskripsi, tampilan kartu/tabel, field judul/subjudul/gambar, label & bantuan field, grup field), `mobile` (drawer/menu bawah, maks. 4 menu) |
+| Dikunci OrgSpace | Login, akun & peran, tombol keluar, Lihat Website, mode gelap, warna error/sukses, Kotak Masuk tetap hanya Pemilik/Admin. Tidak ada HTML/CSS/JS provider di Portal |
+| Mode gelap | Warna provider dicampur putih agar terbaca di latar gelap. Campuran dihitung di JavaScript (`mix` di `portal-config.ts`) menjadi hex biasa, bukan CSS `color-mix()` yang belum ada di Chrome < 111 |
+| Batas ukuran | `portal.json` maksimal 64 KB (`PortalConfig.MAX_SIZE`): ditolak saat upload, diabaikan saat render/preview, agar file besar tidak di-parse ulang di setiap render |
+| Dokumentasi | Artikel `tampilan-portal-pengurus` (`V40__dokumentasi_tampilan_portal.sql`, cadangan di `docs-data.ts`), paket `contoh-modul-orgspace/docs/05-tampilan-portal.md` (ZIP dibuat ulang), contoh nyata `OrgSpace-Templates/pramuka-tunas-rimba/portal.json` |
+
+Dihapus dari Portal: isian "nama modul baru" dan tombol "+ Tambah Field". Data yang tidak ada di template tidak tampil di
+website, jadi keduanya hanya membuat data yatim.
+
+Uji (28 Oktober 2026): ZIP Pramuka + `portal.json` diupload sebagai `demo-provider` lewat API → lolos tanpa error/peringatan;
+versi dengan warna terlalu terang, kunci `posisi`, dan modul `kalender` → ditolak dengan 3 pesan jelas. Template dikirim,
+tayang, diterbitkan ke `tunas-rimba-portal` (akun `dummy1`, kredensial Portal `pemilik.rimba`), diisi lewat API Portal,
+lalu Portal dicek di Firefox headless (desktop terang/gelap, HP menu bawah + drawer) dan Portal demo tanpa `portal.json`.
+Test: `PortalConfigTest`, ZIP uji `PORTAL_CONFIG_INVALID`, `npm test` Hosting (`portal-config.test.mts`).
+
 ## 34. Glosarium
 
 | Istilah | Arti singkat |

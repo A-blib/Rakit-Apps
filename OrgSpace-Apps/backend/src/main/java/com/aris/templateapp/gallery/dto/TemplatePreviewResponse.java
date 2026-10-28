@@ -18,5 +18,6 @@ public record TemplatePreviewResponse(
         Map<String, List<Map<String, Object>>> collections,
         Map<String, Map<String, String>> modules,
         Map<String, Long> stats,
-        Map<String, String> org) {
+        Map<String, String> org,
+        Map<String, Object> portal) {
 }

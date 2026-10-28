@@ -53,7 +53,7 @@ export function createDemoApi(sample: TemplatePreviewData): PortalApi {
     const [first, area, resource, a, b] = path.split("?")[0].split("/");
 
     if (first === "render") {
-      return json({ name: sample.name, organizationName: sample.org.nama, modules: sample.modules });
+      return json({ name: sample.name, organizationName: sample.org.nama, modules: sample.modules, portal: sample.portal });
     }
     if (area === "auth" && resource === "login" && method === "POST") {
       const ok = String(body?.username).toLowerCase() === DEMO_LOGIN.username && body?.password === DEMO_LOGIN.password;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createElement, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   LayoutDashboard,
@@ -21,15 +21,53 @@ import {
   ArrowUp,
   ArrowDown,
   ImagePlus,
-  Globe,
   Menu,
   X,
   Eye,
   EyeOff,
   Sun,
   Moon,
+  Calendar,
+  User,
+  Trophy,
+  Award,
+  Star,
+  Image as ImageIcon,
+  Camera,
+  Target,
+  Flag,
+  BookOpen,
+  GraduationCap,
+  Briefcase,
+  Handshake,
+  Heart,
+  MapPin,
+  Megaphone,
+  ClipboardList,
+  FileText,
+  Folder,
+  List,
+  Tent,
+  Compass,
+  Music,
+  Sparkles,
+  Mail,
+  Link as LinkIcon,
+  type LucideIcon,
 } from "lucide-react";
 import type { FieldType } from "@/lib/types";
+import {
+  bottomNav,
+  buildNav,
+  cardFields,
+  fieldGroups,
+  humanize,
+  moduleLabel,
+  themeCss,
+  type NavId,
+  type NavLink,
+  type PortalConfig,
+} from "@/lib/portal-config";
 
 /** Peran yang sedang masuk. Login Portal memakai kredensial peran organisasi (bukan akun OrgSpace pribadi). */
 interface AdminUser {
@@ -66,14 +104,45 @@ interface ModuleField {
   fixed?: boolean;
 }
 
-const FIELD_TYPE_LABELS: Record<FieldType, string> = {
-  teks: "Teks Singkat",
-  paragraf: "Paragraf",
-  angka: "Angka",
-  tanggal: "Tanggal",
-  link: "Tautan URL",
-  gambar: "Foto",
+/** Ikon yang boleh dipilih provider di portal.json (daftar sama dengan PortalConfig.ICONS di backend). */
+const ICONS: Record<string, LucideIcon> = {
+  "layout-dashboard": LayoutDashboard,
+  inbox: Inbox,
+  newspaper: Newspaper,
+  calendar: Calendar,
+  users: Users,
+  user: User,
+  trophy: Trophy,
+  award: Award,
+  star: Star,
+  image: ImageIcon,
+  camera: Camera,
+  target: Target,
+  flag: Flag,
+  "book-open": BookOpen,
+  "graduation-cap": GraduationCap,
+  briefcase: Briefcase,
+  handshake: Handshake,
+  heart: Heart,
+  "map-pin": MapPin,
+  megaphone: Megaphone,
+  "clipboard-list": ClipboardList,
+  "file-text": FileText,
+  folder: Folder,
+  list: List,
+  boxes: Boxes,
+  tent: Tent,
+  compass: Compass,
+  music: Music,
+  sparkles: Sparkles,
+  mail: Mail,
+  link: LinkIcon,
 };
+
+const iconOf = (name: string | undefined): LucideIcon => (name && ICONS[name]) || Boxes;
+
+const SIDEBAR_MIN = 200;
+const SIDEBAR_MAX = 400;
 
 /**
  * Optimasi ukuran foto sebelum dikirim ke backend (sisi terpanjang maks 1600px, JPEG quality 85%).
@@ -152,7 +221,20 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
   };
 
   // Dashboard states
-  const [activeTab, setActiveTab] = useState<"overview" | "submissions" | "news" | "collections">("overview");
+  const [activeTab, setActiveTab] = useState<NavId>("overview");
+  const [portal, setPortal] = useState<PortalConfig>({});
+  // Lebar sidebar hasil geser milik pengurus ini (disimpan di browser-nya), bukan pengaturan template.
+  const sidebarKey = demo ? null : `orgspace_portal_sidebar_${slug}`;
+  const [sidebarWidth, setSidebarWidth] = useState<number | null>(() => {
+    // Sidebar baru tampil setelah login (bukan saat render server), jadi membaca localStorage di sini aman.
+    if (!sidebarKey || typeof window === "undefined") return null;
+    try {
+      const saved = Number(localStorage.getItem(sidebarKey));
+      return saved >= SIDEBAR_MIN && saved <= SIDEBAR_MAX ? saved : null;
+    } catch {
+      return null;
+    }
+  });
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [siteName, setSiteName] = useState<string>("");
   const [orgName, setOrgName] = useState<string>("");
@@ -174,9 +256,8 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
   const [collections, setCollections] = useState<Record<string, Array<Record<string, any>>>>({});
   const [loadingCollections, setLoadingCollections] = useState(false);
   const [selectedCol, setSelectedCol] = useState<string>("");
-  const [newColName, setNewColName] = useState("");
   const [templateModules, setTemplateModules] = useState<Record<string, Record<string, FieldType>>>({});
-  const [dynamicFields, setDynamicFields] = useState<ModuleField[]>([{ key: "", value: "", type: "teks" }]);
+  const [dynamicFields, setDynamicFields] = useState<ModuleField[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadingField, setUploadingField] = useState<number | null>(null);
 
@@ -186,13 +267,10 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
   const chooseCollection = (name: string, modules = templateModules) => {
     setSelectedCol(name);
     setEditingId(null);
-    const fields = templateFields(name, modules);
-    if (fields.length > 0) {
-      setDynamicFields(fields);
-    }
+    // Modul yang sudah tidak ada di template tidak punya field: form hanya muncul saat mengubah item lamanya.
+    setDynamicFields(templateFields(name, modules));
   };
 
-  const fieldTypeOf = (colName: string, key: string): FieldType => templateModules[colName]?.[key] || "teks";
   const [submittingColItem, setSubmittingColItem] = useState(false);
 
   // Success / error alerts
@@ -249,10 +327,8 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
         const data = await res.json();
         setSiteName(data.name || data.projectName);
         setOrgName(data.organizationName);
-        const modules: Record<string, Record<string, FieldType>> = data.modules || {};
-        setTemplateModules(modules);
-        const first = Object.keys(modules)[0];
-        if (first) chooseCollection(first, modules);
+        setTemplateModules(data.modules || {});
+        setPortal(data.portal || {});
       }
     } catch (e) {
       console.error("Gagal memuat info website", e);
@@ -322,12 +398,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
         headers: { Authorization: `Bearer ${jwt}` },
       });
       if (res.ok) {
-        const data = await res.json();
-        setCollections(data);
-        const colKeys = Object.keys(data);
-        if (!selectedCol && colKeys.length > 0) {
-          chooseCollection(colKeys[0]);
-        }
+        setCollections(await res.json());
       }
     } catch (e) {
       console.error(e);
@@ -436,11 +507,8 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     e.preventDefault();
     if (!token) return;
 
-    const colName = editingId ? selectedCol : (newColName.trim() || selectedCol).toLowerCase();
-    if (!colName) {
-      showToast("Pilih atau masukkan nama modul koleksi", "error");
-      return;
-    }
+    const colName = selectedCol;
+    if (!colName) return;
 
     const payloadData: Record<string, string> = {};
     dynamicFields.forEach((f) => {
@@ -450,7 +518,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     });
 
     if (Object.keys(payloadData).length === 0) {
-      showToast("Mohon isi minimal satu data atribut field", "error");
+      showToast("Isi minimal satu kolom", "error");
       return;
     }
 
@@ -467,11 +535,9 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
       });
 
       if (res.ok) {
-        showToast(editingId ? "Perubahan item berhasil disimpan!" : `Item berhasil ditambahkan ke modul '${colName}'!`);
-        setNewColName("");
+        showToast(editingId ? "Perubahan berhasil disimpan!" : `Data baru ditambahkan ke ${moduleLabel(portal, colName)}!`);
         setEditingId(null);
-        setDynamicFields(dynamicFields.map((f) => ({ ...f, value: "" })));
-        setSelectedCol(colName);
+        setDynamicFields(templateFields(colName));
         loadCollections(token);
         loadStats(token);
       } else {
@@ -506,10 +572,6 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     }
   };
 
-  const addDynamicField = () => {
-    setDynamicFields([...dynamicFields, { key: "", value: "", type: "teks" }]);
-  };
-
   const updateField = (index: number, change: Partial<ModuleField>) => {
     setDynamicFields((fields) => fields.map((f, i) => (i === index ? { ...f, ...change } : f)));
   };
@@ -522,15 +584,13 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
       }
     });
     setEditingId(item.id);
-    setNewColName("");
     setDynamicFields(fields);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    const fields = templateFields(selectedCol);
-    setDynamicFields(fields.length > 0 ? fields : dynamicFields.map((f) => ({ ...f, value: "" })));
+    setDynamicFields(templateFields(selectedCol));
   };
 
   const handleUploadPhoto = async (index: number, file: File | undefined) => {
@@ -580,14 +640,31 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     }
   };
 
-  const removeDynamicField = (index: number) => {
-    setDynamicFields(dynamicFields.filter((_, i) => i !== index));
+  const openNav = (id: NavId) => {
+    setActiveTab(id);
+    if (id.startsWith("mod:")) chooseCollection(id.slice(4));
+    setMobileSidebarOpen(false);
   };
+
+  const saveSidebarWidth = (width: number) => {
+    const clamped = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Math.round(width)));
+    setSidebarWidth(clamped);
+    if (!sidebarKey) return;
+    try {
+      localStorage.setItem(sidebarKey, String(clamped));
+    } catch {
+      // Tidak tersimpan: lebar kembali ke bawaan saat Portal dibuka lagi.
+    }
+  };
+
+  const themeStyle = themeCss(portal.theme);
+  const themeTag = themeStyle ? <style>{themeStyle}</style> : null;
 
   // 1. Loading Screen
   if (loadingAuth) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center text-foreground transition-colors duration-200">
+        {themeTag}
         <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
         <p className="text-sm font-medium text-muted">Memeriksa sesi pengurus...</p>
       </div>
@@ -598,6 +675,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
   if (!token || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12 antialiased transition-colors duration-200 relative">
+        {themeTag}
         {/* Theme Toggle Button on Login Screen */}
         <div className="absolute top-4 right-4">
           <button
@@ -758,32 +836,288 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     );
   }
 
-  // 3. Authenticated Dashboard View
-  interface TabItem {
-    id: "overview" | "submissions" | "news" | "collections";
-    label: string;
-    icon: React.ComponentType<{ className?: string }>;
-    badge?: number;
-  }
-
+  // 3. Dashboard (sudah masuk)
   // Isian formulir pengunjung (nama, nomor WhatsApp) hanya untuk Pemilik & Admin; server menolak Editor (403).
-  const canViewSubmissions = user?.role === "owner" || user?.role === "admin";
+  const canViewSubmissions = user.role === "owner" || user.role === "admin";
+  const navGroups = buildNav(portal, Object.keys(templateModules), Object.keys(collections), canViewSubmissions);
+  const navLinks = navGroups.flatMap((g) => g.items);
+  const current: NavLink | undefined = navLinks.find((l) => l.id === activeTab) || navLinks[0];
+  const firstModule = navLinks.find((l) => l.id.startsWith("mod:"));
+  const badgeOf = (id: NavId): number | undefined =>
+    id === "submissions"
+      ? stats.submissionsCount
+      : id === "news"
+        ? stats.newsCount
+        : id.startsWith("mod:")
+          ? (collections[id.slice(4)] || []).length
+          : undefined;
 
-  const tabs: TabItem[] = [
-    { id: "overview", label: "Ringkasan", icon: LayoutDashboard },
-    ...(canViewSubmissions
-      ? [{ id: "submissions" as const, label: "Kotak Masuk Form", icon: Inbox, badge: stats.submissionsCount }]
-      : []),
-    { id: "news", label: "Berita & Agenda", icon: Newspaper, badge: stats.newsCount },
-    { id: "collections", label: "Modul Kustom", icon: Boxes, badge: stats.customItemsCount },
-  ];
+  const sidebarRight = portal.layout?.sidebar?.position === "right";
+  const resizable = !!portal.layout?.sidebar?.resizable;
+  const width = sidebarWidth ?? portal.layout?.sidebar?.width ?? 256;
+  const header = portal.layout?.header;
+  const bannerImage = header?.variant === "banner" && header.image ? `${siteHref.replace(/\/$/, "")}/${header.image}` : null;
+  const bottomLinks = portal.mobile?.nav === "bottom" ? bottomNav(portal, navGroups) : [];
+  const initials = user.username.substring(0, 2).toUpperCase();
+
+  // Halaman modul: field dari template; modul yang sudah tidak ada di template (modFields kosong) hanya bisa
+  // dilihat, diubah, dan dihapus.
+  const modName = current?.id.startsWith("mod:") ? current.id.slice(4) : null;
+  const modFields = modName ? templateModules[modName] : undefined;
+  const modSettings = modName ? portal.modules?.[modName] : undefined;
+  const modItems = modName ? collections[modName] || [] : [];
+  const card = modFields ? cardFields(modSettings, modFields) : { title: undefined, subtitle: undefined, image: undefined };
+  const fieldLabel = (key: string) => modSettings?.fields?.[key]?.label || humanize(key);
+  const shownValue = (key: string, value: unknown) => {
+    const text = value == null ? "" : String(value);
+    if (modFields?.[key] === "tanggal" && /^\d{4}-\d{2}-\d{2}$/.test(text)) {
+      return new Date(`${text}T00:00:00`).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+    }
+    return text;
+  };
+
+  const startResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = width;
+    const widthAt = (x: number) => startWidth + (sidebarRight ? startX - x : x - startX);
+    const move = (ev: PointerEvent) =>
+      setSidebarWidth(Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, widthAt(ev.clientX))));
+    const up = (ev: PointerEvent) => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      saveSidebarWidth(widthAt(ev.clientX));
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  const resizeByKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const step = e.key === "ArrowRight" ? 16 : e.key === "ArrowLeft" ? -16 : 0;
+    if (!step) return;
+    e.preventDefault();
+    saveSidebarWidth(width + (sidebarRight ? -step : step));
+  };
+
+  const inputClass =
+    "w-full px-3 py-2 text-sm rounded-xl border border-border bg-surface text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition";
+  const actionClass =
+    "w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface-subtle rounded-xl transition";
+  const iconButton = "p-2 text-muted hover:text-foreground hover:bg-surface-subtle rounded-lg transition disabled:opacity-30";
+
+  const navButton = (link: NavLink) => {
+    const Icon = iconOf(link.icon);
+    const active = current?.id === link.id;
+    const badge = badgeOf(link.id);
+    return (
+      <button
+        key={link.id}
+        type="button"
+        onClick={() => openNav(link.id)}
+        aria-current={active ? "page" : undefined}
+        className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
+          active ? "bg-primary text-on-primary shadow-xs" : "text-foreground hover:bg-surface-subtle"
+        }`}
+      >
+        <span className="flex items-center gap-2.5 min-w-0">
+          <Icon className="w-4 h-4 shrink-0" />
+          <span className="truncate">{link.label}</span>
+        </span>
+        {badge !== undefined && badge > 0 && (
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-mono shrink-0 ${
+              active ? "bg-on-primary/20 text-on-primary" : "bg-surface-subtle text-primary border border-border"
+            }`}
+          >
+            {badge}
+          </span>
+        )}
+      </button>
+    );
+  };
+
+  const navList = (
+    <nav className="px-3 py-3 space-y-4" aria-label="Menu Portal">
+      {navGroups.map((group, i) => (
+        <div key={group.title || i} className="space-y-1">
+          {group.title && (
+            <div className="px-3 pb-1 text-[11px] font-semibold text-muted uppercase tracking-wider">{group.title}</div>
+          )}
+          {group.items.map(navButton)}
+        </div>
+      ))}
+    </nav>
+  );
+
+  const branding = (
+    <div className="flex items-center gap-3 min-w-0">
+      <div className="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0">
+        <ShieldCheck className="w-5 h-5" />
+      </div>
+      <div className="min-w-0">
+        <div className="text-sm font-bold text-foreground truncate">{orgName || siteName || "Portal Pengurus"}</div>
+        <div className="text-[11px] text-muted truncate">
+          Portal Pengurus · <span className="font-mono">{slug}</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Akun, tema, lihat website, dan keluar selalu milik OrgSpace (tidak bisa diatur portal.json).
+  const accountActions = (
+    <div className="p-3 border-t border-border space-y-1">
+      <div className="flex items-center gap-2.5 px-3 py-2">
+        <div className="w-8 h-8 rounded-full bg-primary-container border border-border flex items-center justify-center text-xs font-semibold text-on-primary-container shrink-0">
+          {initials}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-semibold text-foreground truncate">{user.username}</div>
+          <div className="text-[10px] uppercase font-mono font-semibold tracking-wider text-muted">{user.role}</div>
+        </div>
+      </div>
+      <button type="button" onClick={toggleTheme} className={actionClass}>
+        {isDarkMode ? <Sun className="w-4 h-4 text-accent" /> : <Moon className="w-4 h-4 text-primary" />}
+        <span>{isDarkMode ? "Mode Terang" : "Mode Gelap"}</span>
+      </button>
+      <Link href={siteHref} target="_blank" className={actionClass}>
+        <ExternalLink className="w-4 h-4 text-muted" />
+        <span>Lihat Website</span>
+      </Link>
+      <button
+        type="button"
+        onClick={() => {
+          setMobileSidebarOpen(false);
+          handleLogout();
+        }}
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-error hover:bg-error/10 rounded-xl transition"
+      >
+        <LogOut className="w-4 h-4" />
+        <span>Keluar dari Portal</span>
+      </button>
+    </div>
+  );
+
+  const itemActions = (item: (typeof modItems)[number], idx: number) => (
+    <div className="flex items-center gap-0.5 shrink-0">
+      <button
+        type="button"
+        onClick={() => handleMoveItem(idx, -1)}
+        disabled={idx === 0}
+        className={iconButton}
+        title="Naikkan urutan"
+        aria-label="Naikkan urutan"
+      >
+        <ArrowUp className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => handleMoveItem(idx, 1)}
+        disabled={idx === modItems.length - 1}
+        className={iconButton}
+        title="Turunkan urutan"
+        aria-label="Turunkan urutan"
+      >
+        <ArrowDown className="w-4 h-4" />
+      </button>
+      <button type="button" onClick={() => startEditItem(item)} className={iconButton} title="Ubah" aria-label="Ubah">
+        <Pencil className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => modName && handleDeleteCollectionItem(modName, item.id)}
+        className="p-2 text-muted hover:text-error hover:bg-error/10 rounded-lg transition"
+        title="Hapus"
+        aria-label="Hapus"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+
+  const fieldInput = (field: ModuleField, idx: number) => {
+    const id = `field-${idx}`;
+    const help = modSettings?.fields?.[field.key]?.help;
+    return (
+      <div key={field.key || idx} className="space-y-1.5">
+        <label htmlFor={field.type === "gambar" ? undefined : id} className="block text-xs font-semibold text-foreground">
+          {fieldLabel(field.key)}
+        </label>
+        {field.type === "paragraf" ? (
+          <textarea
+            id={id}
+            rows={4}
+            value={field.value}
+            onChange={(e) => updateField(idx, { value: e.target.value })}
+            className={inputClass}
+          />
+        ) : field.type === "gambar" ? (
+          <div className="flex items-center gap-3">
+            {field.value ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={field.value}
+                alt={fieldLabel(field.key)}
+                className="w-16 h-16 rounded-xl object-cover border border-border bg-surface"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-xl border border-dashed border-border grid place-items-center text-muted bg-surface">
+                <ImagePlus className="w-5 h-5" />
+              </div>
+            )}
+            <div className="flex-1 space-y-1">
+              <label className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl border border-border bg-surface text-foreground cursor-pointer hover:bg-surface-subtle transition">
+                {uploadingField === idx ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                ) : (
+                  <ImagePlus className="w-3.5 h-3.5" />
+                )}
+                <span>{uploadingField === idx ? "Mengunggah..." : field.value ? "Ganti foto" : "Pilih foto"}</span>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="sr-only"
+                  disabled={uploadingField !== null}
+                  onChange={(e) => {
+                    handleUploadPhoto(idx, e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              {field.value && (
+                <button
+                  type="button"
+                  onClick={() => updateField(idx, { value: "" })}
+                  className="block text-[11px] text-muted hover:text-error transition"
+                >
+                  Hapus foto
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <input
+            id={id}
+            type={field.type === "angka" ? "number" : field.type === "tanggal" ? "date" : field.type === "link" ? "url" : "text"}
+            placeholder={field.type === "link" ? "https://..." : undefined}
+            value={field.value}
+            onChange={(e) => updateField(idx, { value: e.target.value })}
+            className={inputClass}
+          />
+        )}
+        {help && <p className="text-[11px] text-muted leading-snug">{help}</p>}
+      </div>
+    );
+  };
+
+  const moduleLabelText = modName ? moduleLabel(portal, modName) : "";
 
   return (
-    <div className="min-h-screen bg-background text-foreground antialiased flex flex-col font-sans transition-colors duration-200">
-      {/* Toast Notification */}
+    <div className="min-h-screen bg-background text-foreground antialiased font-sans transition-colors duration-200">
+      {themeTag}
       {toast && (
         <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-xs font-semibold transition ${
+          role="status"
+          className={`fixed ${bottomLinks.length ? "bottom-24" : "bottom-6"} md:bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-xs font-semibold transition ${
             toast.type === "success"
               ? "bg-primary text-on-primary border border-primary/30"
               : "bg-error text-white border border-error/50"
@@ -798,955 +1132,649 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
         </div>
       )}
 
-      {demo && (
-        <div className="bg-primary-container text-on-primary-container text-xs text-center px-4 py-2">
-          Mode demo: semua data contoh dan tidak tersimpan.{" "}
-          <Link href={siteHref} className="font-semibold underline">
-            Kembali ke preview website
-          </Link>
-        </div>
-      )}
-
-      {/* Top Header */}
-      <header className="bg-surface border-b border-border sticky top-0 z-30 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-16 flex items-center justify-between gap-3">
-            {/* Mobile Header Bar (md:hidden) */}
-            <div className="flex items-center gap-2.5 min-w-0 md:hidden">
-              {/* Mobile Hamburger Button on the LEFT */}
-              <button
-                type="button"
-                onClick={() => setMobileSidebarOpen(true)}
-                className="p-2 -ml-1 rounded-xl text-foreground hover:bg-surface-subtle transition flex items-center justify-center shrink-0"
-                aria-label="Buka menu navigasi"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-
-              <h1 className="text-sm font-bold text-foreground truncate">
-                {tabs.find((t) => t.id === activeTab)?.label || "Portal Pengurus"}
-              </h1>
-            </div>
-
-            {/* Mobile Actions on the Right (Theme Toggle + User Avatar) */}
-            <div className="flex items-center gap-1.5 md:hidden">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="p-2 rounded-xl text-muted hover:text-foreground hover:bg-surface-subtle transition"
-                aria-label={isDarkMode ? "Ganti ke Mode Terang" : "Ganti ke Mode Gelap"}
-                title={isDarkMode ? "Mode Terang" : "Mode Gelap"}
-              >
-                {isDarkMode ? <Sun className="w-4 h-4 text-accent" /> : <Moon className="w-4 h-4 text-primary" />}
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileSidebarOpen(true)}
-                className="w-8 h-8 rounded-full bg-primary-container border border-border flex items-center justify-center text-xs font-semibold text-on-primary-container"
-                title="Profil & Menu"
-                aria-label="Buka menu pengurus"
-              >
-                {user.username.substring(0, 2).toUpperCase()}
-              </button>
-            </div>
-
-            {/* Desktop Left Branding (hidden md:flex) */}
-            <div className="hidden md:flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-sm font-bold text-foreground truncate">
-                    {orgName || siteName || "Portal Pengurus"}
-                  </h1>
-                  <span className="font-mono text-xs bg-surface-subtle text-primary border border-border px-2 py-0.5 rounded-md shrink-0">
-                    {slug}
-                  </span>
-                </div>
-                <p className="text-xs text-muted truncate">Portal Pengurus Website</p>
-              </div>
-            </div>
-
-            {/* Desktop Actions & User Profile */}
-            <div className="hidden md:flex items-center gap-3">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-muted hover:text-foreground text-xs font-medium transition"
-                aria-label={isDarkMode ? "Ganti ke Mode Terang" : "Ganti ke Mode Gelap"}
-                title={isDarkMode ? "Mode Terang" : "Mode Gelap"}
-              >
-                {isDarkMode ? <Sun className="w-3.5 h-3.5 text-accent" /> : <Moon className="w-3.5 h-3.5 text-primary" />}
-                <span>{isDarkMode ? "Terang" : "Gelap"}</span>
-              </button>
-
-              <Link
-                href={siteHref}
-                target="_blank"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-foreground text-xs font-medium transition"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Lihat Website</span>
-              </Link>
-
-              <div className="h-5 w-px bg-border" />
-
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-primary-container border border-border flex items-center justify-center text-xs font-semibold text-on-primary-container">
-                  {user.username.substring(0, 2).toUpperCase()}
-                </div>
-                <div className="text-left">
-                  <div className="text-xs font-semibold text-foreground leading-tight">{user.username}</div>
-                  <div className="text-[10px] uppercase font-mono font-semibold tracking-wider text-muted">
-                    {user.role}
-                  </div>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  title="Keluar dari portal"
-                  className="p-2 text-muted hover:text-error hover:bg-error/10 rounded-lg transition ml-1"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop Navigation Bar (Tabs) */}
-          <nav className="hidden md:flex space-x-1 overflow-x-auto border-t border-border -mb-px">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 py-3 px-3.5 text-xs font-medium border-b-2 whitespace-nowrap transition ${
-                    active
-                      ? "border-primary text-primary font-bold"
-                      : "border-transparent text-muted hover:text-foreground hover:border-border-strong"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
-                  {tab.badge !== undefined && tab.badge > 0 && (
-                    <span
-                      className={`ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                        active ? "bg-primary text-on-primary" : "bg-surface-subtle text-primary"
-                      }`}
-                    >
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </header>
-
-      {/* Mobile Off-Canvas Sidebar Drawer with Smooth Transition */}
-      <div
-        className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ease-in-out ${
-          mobileSidebarOpen ? "visible pointer-events-auto" : "invisible pointer-events-none"
-        }`}
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Backdrop Overlay with smooth fade */}
-        <div
-          className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
-            mobileSidebarOpen ? "opacity-100" : "opacity-0"
+      <div className={`flex min-h-screen ${sidebarRight ? "flex-row-reverse" : ""}`}>
+        {/* Sidebar desktop: posisi, lebar, dan bisa digeser diatur portal.json (layout.sidebar). */}
+        <aside
+          className={`hidden md:flex flex-col shrink-0 bg-surface border-border sticky top-0 h-screen ${
+            sidebarRight ? "border-l" : "border-r"
           }`}
-          onClick={() => setMobileSidebarOpen(false)}
-          aria-hidden="true"
-        />
-
-        {/* Drawer Panel with smooth slide-in from left */}
-        <div
-          className={`fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-surface border-r border-border shadow-2xl flex flex-col justify-between z-50 transform transition-transform duration-300 ease-out ${
-            mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          style={{ width }}
         >
-            <div className="flex flex-col flex-1 overflow-y-auto">
-              {/* Organization Branding prominently showcased inside Sidebar */}
-              <div className="p-4 border-b border-border flex items-start justify-between gap-3 bg-surface">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center font-bold text-sm shadow-xs shrink-0 mt-0.5">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[11px] font-bold text-muted uppercase tracking-wider">
-                      Organisasi
-                    </div>
-                    <div className="text-sm font-bold text-foreground leading-snug break-words">
-                      {orgName || siteName || "Portal Pengurus"}
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span className="font-mono text-[11px] bg-surface-subtle text-primary border border-border px-2 py-0.5 rounded-md font-semibold">
-                        {slug}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+          <div className="h-16 px-4 flex items-center border-b border-border">{branding}</div>
+          <div className="flex-1 overflow-y-auto">{navList}</div>
+          {accountActions}
+          {resizable && (
+            <div
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="Ubah lebar menu"
+              aria-valuemin={SIDEBAR_MIN}
+              aria-valuemax={SIDEBAR_MAX}
+              aria-valuenow={width}
+              tabIndex={0}
+              onPointerDown={startResize}
+              onKeyDown={resizeByKey}
+              title="Geser untuk mengubah lebar menu"
+              className={`absolute top-0 ${sidebarRight ? "-left-1.5" : "-right-1.5"} w-3 h-full cursor-col-resize group z-10 focus:outline-none`}
+            >
+              <span className="block mx-auto w-0.5 h-full bg-transparent group-hover:bg-primary/40 group-focus-visible:bg-primary transition" />
+            </div>
+          )}
+        </aside>
+
+        <div className="flex-1 min-w-0 flex flex-col">
+          {demo && (
+            <div className="bg-primary-container text-on-primary-container text-xs text-center px-4 py-2">
+              Mode demo: semua data contoh dan tidak tersimpan.{" "}
+              <Link href={siteHref} className="font-semibold underline">
+                Kembali ke preview website
+              </Link>
+            </div>
+          )}
+          {/* Bar atas HP */}
+          <header className="md:hidden bg-surface border-b border-border sticky top-0 z-30">
+            <div className="h-14 px-4 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                {bottomLinks.length === 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setMobileSidebarOpen(true)}
+                    className="p-2 -ml-2 rounded-xl text-foreground hover:bg-surface-subtle transition"
+                    aria-label="Buka menu navigasi"
+                  >
+                    <Menu className="w-5 h-5" />
+                  </button>
+                )}
+                <h1 className="text-sm font-bold text-foreground truncate">{current?.label || "Portal Pengurus"}</h1>
+              </div>
+              <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setMobileSidebarOpen(false)}
-                  className="p-1.5 text-muted hover:text-foreground hover:bg-surface-subtle rounded-lg transition shrink-0"
-                  aria-label="Tutup menu"
+                  type="button"
+                  onClick={toggleTheme}
+                  className="p-2 rounded-xl text-muted hover:text-foreground hover:bg-surface-subtle transition"
+                  aria-label={isDarkMode ? "Ganti ke Mode Terang" : "Ganti ke Mode Gelap"}
                 >
-                  <X className="w-4 h-4" />
+                  {isDarkMode ? <Sun className="w-4 h-4 text-accent" /> : <Moon className="w-4 h-4 text-primary" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileSidebarOpen(true)}
+                  className="w-9 h-9 rounded-full bg-primary-container border border-border flex items-center justify-center text-xs font-semibold text-on-primary-container"
+                  aria-label="Buka menu pengurus"
+                >
+                  {initials}
                 </button>
               </div>
+            </div>
+          </header>
 
-              {/* User Profile Card */}
-              <div className="p-3.5 m-3 bg-surface-subtle rounded-xl border border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary-container border border-border flex items-center justify-center text-xs font-bold text-on-primary-container shrink-0">
-                    {user.username.substring(0, 2).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-bold text-foreground truncate leading-tight">{user.username}</div>
-                    <div className="mt-1">
-                      <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-full bg-surface border border-border text-primary">
-                        {user.role}
+          {/* Header banner dari portal.json (layout.header); tanpa itu Portal memakai header minimal. */}
+          {header?.variant === "banner" && (
+            <div className={`relative overflow-hidden ${bannerImage ? "text-white bg-foreground" : "bg-primary text-on-primary"}`}>
+              {bannerImage && (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={bannerImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-linear-to-r from-black/75 via-black/45 to-black/15" />
+                </>
+              )}
+              <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+                <p className="text-[11px] font-semibold uppercase tracking-wider opacity-80">Portal Pengurus</p>
+                <h2 className="text-xl md:text-3xl font-bold tracking-tight mt-1">
+                  {header.title || orgName || siteName}
+                </h2>
+                {header.subtitle && <p className="text-sm md:text-base opacity-90 mt-2 max-w-2xl">{header.subtitle}</p>}
+              </div>
+            </div>
+          )}
+
+          <main
+            className={`max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 md:py-8 flex-1 ${
+              bottomLinks.length ? "pb-28 md:pb-8" : ""
+            }`}
+          >
+            {/* RINGKASAN */}
+            {current?.id === "overview" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">Ringkasan Website</h2>
+                  <p className="text-sm text-muted mt-0.5">Data yang Anda ubah di sini langsung tampil di website.</p>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  {[
+                    {
+                      label: "Formulir Masuk",
+                      value: stats.submissionsCount,
+                      note: "Respon formulir",
+                      icon: Inbox,
+                      go: canViewSubmissions ? ("submissions" as NavId) : null,
+                    },
+                    { label: "Berita", value: stats.newsCount, note: "Artikel aktif", icon: Newspaper, go: "news" as NavId },
+                    {
+                      label: "Data Website",
+                      value: stats.customItemsCount,
+                      note: "Item di semua menu data",
+                      icon: Boxes,
+                      go: firstModule ? firstModule.id : null,
+                    },
+                  ].map((kpi) => (
+                    <button
+                      key={kpi.label}
+                      type="button"
+                      disabled={!kpi.go}
+                      onClick={() => kpi.go && openNav(kpi.go)}
+                      className="text-left bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs transition enabled:hover:border-border-strong disabled:cursor-default"
+                    >
+                      <div className="flex items-center justify-between mb-2 sm:mb-3">
+                        <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-muted">
+                          {kpi.label}
+                        </span>
+                        <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+                          <kpi.icon className="w-4 h-4" />
+                        </div>
+                      </div>
+                      <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">{kpi.value}</div>
+                      <p className="text-[11px] sm:text-xs text-muted mt-1 leading-snug">{kpi.note}</p>
+                    </button>
+                  ))}
+                  <div className="bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs">
+                    <div className="flex items-center justify-between mb-2 sm:mb-3">
+                      <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-muted">
+                        Masuk sebagai
                       </span>
+                      <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+                        <Users className="w-4 h-4" />
+                      </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground capitalize">{user.role}</div>
+                    <p className="text-[11px] sm:text-xs text-muted mt-1 leading-snug font-mono truncate">{user.username}</p>
+                  </div>
+                </div>
+
+                {navLinks.some((l) => l.id.startsWith("mod:")) && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-bold text-foreground">Data website</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                      {navLinks
+                        .filter((l) => l.id.startsWith("mod:"))
+                        .map((l) => {
+                          const Icon = iconOf(l.icon);
+                          const name = l.id.slice(4);
+                          return (
+                            <button
+                              key={l.id}
+                              type="button"
+                              onClick={() => openNav(l.id)}
+                              className="flex items-center gap-3 text-left bg-surface p-4 rounded-2xl border border-border shadow-xs hover:border-border-strong transition"
+                            >
+                              <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+                                <Icon className="w-5 h-5" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="text-sm font-semibold text-foreground truncate">{l.label}</div>
+                                <div className="text-xs text-muted truncate">
+                                  {portal.modules?.[name]?.description || `${(collections[name] || []).length} item`}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
                     </div>
                   </div>
-                </div>
-              </div>
+                )}
 
-              {/* Navigation Menu List */}
-              <div className="px-3 py-1 space-y-1">
-                <div className="px-3 py-1 text-[11px] font-semibold text-muted uppercase tracking-wider">
-                  Menu Utama
-                </div>
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  const active = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => {
-                        setActiveTab(tab.id);
-                        setMobileSidebarOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
-                        active
-                          ? "bg-primary text-on-primary shadow-xs font-bold"
-                          : "text-foreground hover:bg-surface-subtle"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className="w-4 h-4" />
-                        <span>{tab.label}</span>
-                      </div>
-                      {tab.badge !== undefined && tab.badge > 0 && (
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
-                            active ? "bg-white/20 text-white dark:bg-black/20" : "bg-surface-subtle text-primary border border-border"
-                          }`}
-                        >
-                          {tab.badge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Bottom Actions: Theme Toggle, Lihat Website & Tombol Logout */}
-            <div className="p-4 pb-8 border-t border-border space-y-1.5">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="w-full flex items-center justify-between px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface-subtle rounded-xl transition"
-              >
-                <div className="flex items-center gap-2.5">
-                  {isDarkMode ? <Sun className="w-4 h-4 text-accent" /> : <Moon className="w-4 h-4 text-primary" />}
-                  <span>Tema Tampilan</span>
-                </div>
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-surface-subtle text-primary border border-border">
-                  {isDarkMode ? "🌙 Gelap" : "☀️ Terang"}
-                </span>
-              </button>
-
-              <Link
-                href={siteHref}
-                target="_blank"
-                onClick={() => setMobileSidebarOpen(false)}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-medium text-foreground hover:bg-surface-subtle rounded-xl transition"
-              >
-                <ExternalLink className="w-4 h-4 text-muted" />
-                <span>Lihat Website Publik</span>
-              </Link>
-
-              <button
-                onClick={() => {
-                  setMobileSidebarOpen(false);
-                  handleLogout();
-                }}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-error hover:bg-error/10 rounded-xl transition"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Keluar dari Portal</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
-        {/* ========================================================= */}
-        {/* TAB 1: RINGKASAN (OVERVIEW)                                */}
-        {/* ========================================================= */}
-        {activeTab === "overview" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-foreground">Ringkasan Website</h2>
-            </div>
-
-            {/* KPI Cards Grid (2 kolom di mobile: tingkat 1 kiri Formulir, kanan Berita; tingkat 2 kiri Modul, kanan Pengurus) */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div
-                onClick={() => canViewSubmissions && setActiveTab("submissions")}
-                className={`bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs transition ${
-                  canViewSubmissions ? "hover:border-border-strong cursor-pointer" : ""
-                }`}
-              >
-                <div className="flex items-center justify-between text-muted mb-2 sm:mb-3">
-                  <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-muted">
-                    Formulir Masuk
-                  </span>
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
-                    <Inbox className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <div className="bg-surface p-6 rounded-2xl border border-border shadow-xs">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground">Akses Portal</h3>
                   </div>
-                </div>
-                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                  {stats.submissionsCount}
-                </div>
-                <p className="text-[11px] sm:text-xs text-muted mt-1 sm:mt-1.5 leading-snug">
-                  Respon formulir
-                </p>
-              </div>
-
-              <div
-                onClick={() => setActiveTab("news")}
-                className="bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs hover:border-border-strong transition cursor-pointer"
-              >
-                <div className="flex items-center justify-between text-muted mb-2 sm:mb-3">
-                  <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-muted">
-                    Berita & Agenda
-                  </span>
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
-                    <Newspaper className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                  {stats.newsCount}
-                </div>
-                <p className="text-[11px] sm:text-xs text-muted mt-1 sm:mt-1.5 leading-snug">
-                  Artikel aktif
-                </p>
-              </div>
-
-              <div
-                onClick={() => setActiveTab("collections")}
-                className="bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs hover:border-border-strong transition cursor-pointer"
-              >
-                <div className="flex items-center justify-between text-muted mb-2 sm:mb-3">
-                  <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-muted">
-                    Modul Kustom
-                  </span>
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
-                    <Boxes className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                  {stats.customItemsCount}
-                </div>
-                <p className="text-[11px] sm:text-xs text-muted mt-1 sm:mt-1.5 leading-snug">
-                  Item data modul
-                </p>
-              </div>
-
-              <div className="bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs">
-                <div className="flex items-center justify-between text-muted mb-2 sm:mb-3">
-                  <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-muted">
-                    Masuk sebagai
-                  </span>
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
-                    <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </div>
-                </div>
-                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground capitalize">
-                  {user.role}
-                </div>
-                <p className="text-[11px] sm:text-xs text-muted mt-1 sm:mt-1.5 leading-snug font-mono truncate">
-                  {user.username}
-                </p>
-              </div>
-            </div>
-
-            {/* Information & Integration Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-surface p-6 rounded-2xl border border-border shadow-xs">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
-                    <Globe className="w-4 h-4" />
-                  </div>
-                  <h3 className="text-sm font-bold text-foreground">Integrasi Template Otomatis</h3>
-                </div>
-                <p className="text-xs text-muted leading-relaxed mt-2">
-                  Data yang Anda tambahkan di tab <strong>Modul Kustom</strong> dan <strong>Berita & Agenda</strong> akan otomatis disinkronkan ke dalam halaman website publik melalui penanda modul <code className="font-mono text-primary bg-surface-subtle border border-border px-1.5 py-0.5 rounded">data-ws-*</code>.
-                </p>
-                <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs">
-                  <span className="text-muted">Status Penyajian:</span>
-                  <span className="font-medium text-foreground">Dinamis (Sandbox Terisolasi)</span>
-                </div>
-              </div>
-
-              <div className="bg-surface p-6 rounded-2xl border border-border shadow-xs">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <h3 className="text-sm font-bold text-foreground">Keamanan Akses Terpusat</h3>
-                </div>
-                <p className="text-xs text-muted leading-relaxed mt-2">
-                  Portal punya tiga akses: Pemilik, Admin, dan Editor. Username dan password tiap akses diatur Pemilik di app OrgSpace (Kelola organisasi → Akses Portal website) dan berlaku untuk semua website organisasi.
-                </p>
-                <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs">
-                  <span className="text-muted">Peran Anda:</span>
-                  <span className="font-mono font-semibold text-primary uppercase">{user.role}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* TAB 2: KOTAK MASUK FORMULIR (SUBMISSIONS)                 */}
-        {/* ========================================================= */}
-        {activeTab === "submissions" && canViewSubmissions && (
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-foreground">Kotak Masuk Formulir</h2>
-                <p className="text-sm text-muted mt-0.5">
-                  Respon dari pengunjung yang mengisi formulir pendaftaran, kontak, atau feedback pada website.
-                </p>
-              </div>
-              <button
-                onClick={() => token && loadSubmissions(token)}
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-foreground transition"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Segarkan</span>
-              </button>
-            </div>
-
-            {loadingSubmissions ? (
-              <div className="py-16 text-center text-muted">
-                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
-                <p className="text-xs">Memuat formulir masuk...</p>
-              </div>
-            ) : submissions.length === 0 ? (
-              <div className="bg-surface p-12 text-center rounded-2xl border border-border text-muted text-xs shadow-xs">
-                Belum ada data formulir masuk dari pengunjung website.
-              </div>
-            ) : (
-              <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs text-foreground">
-                    <thead className="bg-surface-subtle border-b border-border text-muted font-semibold tracking-wider">
-                      <tr>
-                        <th className="py-3 px-4 font-semibold">Waktu Masuk</th>
-                        <th className="py-3 px-4 font-semibold">Formulir</th>
-                        <th className="py-3 px-4 font-semibold">Data Isian</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {submissions.map((sub) => (
-                        <tr key={sub.id} className="hover:bg-surface-subtle/50 transition">
-                          <td className="py-3 px-4 whitespace-nowrap text-muted font-mono text-xs">
-                            {new Date(sub.createdAt).toLocaleString("id-ID")}
-                          </td>
-                          <td className="py-3 px-4 whitespace-nowrap">
-                            <span className="bg-primary-container text-on-primary-container px-2 py-0.5 rounded font-mono font-semibold text-xs border border-border">
-                              {sub.formName}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex flex-wrap gap-1.5">
-                              {Object.entries(sub.data || {}).map(([k, v]) => (
-                                <div
-                                  key={k}
-                                  className="inline-flex items-center gap-1 bg-surface-subtle border border-border px-2 py-0.5 rounded text-xs"
-                                >
-                                  <span className="font-mono text-muted text-[11px]">{k}:</span>
-                                  <span className="font-medium text-foreground">{String(v)}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <p className="text-xs text-muted leading-relaxed mt-2">
+                    Portal punya tiga akses: Pemilik, Admin, dan Editor. Username dan password tiap akses diatur Pemilik di
+                    app OrgSpace (Kelola organisasi → Akses Portal website) dan berlaku untuk semua website organisasi.
+                  </p>
                 </div>
               </div>
             )}
-          </div>
-        )}
 
-        {/* ========================================================= */}
-        {/* TAB 3: BERITA & AGENDA (NEWS)                             */}
-        {/* ========================================================= */}
-        {activeTab === "news" && (
-          <div className="space-y-5">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-foreground">Berita & Agenda Kegiatan</h2>
-              <p className="text-sm text-muted mt-0.5">
-                Kelola artikel, pengumuman, dan agenda yang tampil pada modul berita website.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Form Terbitkan Berita */}
-              <div className="bg-surface p-6 rounded-2xl border border-border shadow-xs h-fit">
-                <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
-                  <Plus className="w-4 h-4 text-primary" />
-                  <span>Terbitkan Berita / Agenda</span>
-                </h3>
-
-                <form onSubmit={handleCreateNews} className="space-y-4">
+            {/* KOTAK MASUK FORMULIR */}
+            {current?.id === "submissions" && canViewSubmissions && (
+              <div className="space-y-5">
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1.5">
-                      Judul Berita <span className="text-error">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Contoh: Rapat Kerja Anggota 2026"
-                      value={newTitle}
-                      onChange={(e) => setNewTitle(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                    />
+                    <h2 className="text-xl font-bold tracking-tight text-foreground">{current.label}</h2>
+                    <p className="text-sm text-muted mt-0.5">
+                      Isian pengunjung dari formulir di website. Hanya Pemilik dan Admin yang bisa melihatnya.
+                    </p>
                   </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1.5">
-                      Ringkasan Singkat
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Deskripsi singkat yang tampil di beranda..."
-                      value={newSummary}
-                      onChange={(e) => setNewSummary(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1.5">
-                      Konten Lengkap
-                    </label>
-                    <textarea
-                      rows={4}
-                      placeholder="Tuliskan berita lengkap di sini..."
-                      value={newContent}
-                      onChange={(e) => setNewContent(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                    ></textarea>
-                  </div>
-
                   <button
-                    type="submit"
-                    disabled={submittingNews}
-                    className="w-full py-2.5 bg-primary hover:opacity-90 text-on-primary rounded-xl text-xs font-semibold shadow-xs transition disabled:opacity-50"
+                    type="button"
+                    onClick={() => token && loadSubmissions(token)}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-foreground transition shrink-0"
                   >
-                    {submittingNews ? "Menerbitkan..." : "Terbitkan Berita"}
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Segarkan</span>
                   </button>
-                </form>
-              </div>
-
-              {/* List Berita */}
-              <div className="lg:col-span-2 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-foreground">Daftar Berita Aktif</h3>
-                  <span className="text-xs text-muted font-mono">
-                    {newsList.length} Berita
-                  </span>
                 </div>
 
-                {loadingNews ? (
-                  <div className="py-12 text-center text-muted">
+                {loadingSubmissions ? (
+                  <div className="py-16 text-center text-muted">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
-                    <p className="text-xs">Memuat berita...</p>
+                    <p className="text-xs">Memuat formulir masuk...</p>
                   </div>
-                ) : newsList.length === 0 ? (
-                  <div className="bg-surface p-8 text-center rounded-2xl border border-border text-muted text-xs shadow-xs">
-                    Belum ada berita yang diterbitkan.
+                ) : submissions.length === 0 ? (
+                  <div className="bg-surface p-12 text-center rounded-2xl border border-border text-muted text-xs shadow-xs">
+                    Belum ada isian formulir dari pengunjung website.
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {newsList.map((item) => (
-                      <div
-                        key={item.id}
-                        className="bg-surface p-5 rounded-2xl border border-border shadow-xs flex items-start justify-between gap-4 hover:border-border-strong transition"
-                      >
-                        <div className="space-y-1.5 flex-1 min-w-0">
-                          <h4 className="text-sm font-bold text-foreground leading-snug">{item.title}</h4>
-                          {item.summary && (
-                            <p className="text-xs text-muted leading-relaxed">{item.summary}</p>
-                          )}
-                          {item.publishedAt && (
-                            <div className="text-[11px] text-muted/80 font-mono pt-1">
-                              Diterbitkan: {item.publishedAt}
-                            </div>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => handleDeleteNews(item.id)}
-                          className="p-1.5 text-muted hover:text-error hover:bg-error/10 rounded-lg transition shrink-0"
-                          title="Hapus Berita"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
+                  <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-xs">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs text-foreground">
+                        <thead className="bg-surface-subtle border-b border-border text-muted tracking-wider">
+                          <tr>
+                            <th className="py-3 px-4 font-semibold">Waktu Masuk</th>
+                            <th className="py-3 px-4 font-semibold">Formulir</th>
+                            <th className="py-3 px-4 font-semibold">Data Isian</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {submissions.map((sub) => (
+                            <tr key={sub.id} className="hover:bg-surface-subtle/50 transition">
+                              <td className="py-3 px-4 whitespace-nowrap text-muted font-mono text-xs">
+                                {new Date(sub.createdAt).toLocaleString("id-ID")}
+                              </td>
+                              <td className="py-3 px-4 whitespace-nowrap">
+                                <span className="bg-primary-container text-on-primary-container px-2 py-0.5 rounded font-semibold text-xs border border-border">
+                                  {humanize(sub.formName)}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex flex-wrap gap-1.5">
+                                  {Object.entries(sub.data || {}).map(([k, v]) => (
+                                    <div
+                                      key={k}
+                                      className="inline-flex items-center gap-1 bg-surface-subtle border border-border px-2 py-0.5 rounded text-xs"
+                                    >
+                                      <span className="text-muted text-[11px]">{humanize(k)}:</span>
+                                      <span className="font-medium text-foreground">{String(v)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* ========================================================= */}
-        {/* TAB 4: MODUL KUSTOM (COLLECTIONS)                         */}
-        {/* ========================================================= */}
-        {activeTab === "collections" && (
-          <div className="space-y-5">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-foreground">Modul Kustom Dinamis</h2>
-              <p className="text-sm text-muted mt-0.5">
-                Kelola data dinamis seperti prestasi, struktur pengurus, portfolio, atau galeri yang terhubung ke template.
-              </p>
-            </div>
-
-            {/* Collection Tabs Selector */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {Array.from(new Set([...Object.keys(templateModules), ...Object.keys(collections)])).map((colName) => {
-                const count = (collections[colName] || []).length;
-                const isSelected = selectedCol === colName;
-                return (
-                  <button
-                    key={colName}
-                    onClick={() => chooseCollection(colName)}
-                    className={`px-3 py-1.5 text-xs rounded-xl font-mono transition whitespace-nowrap ${
-                      isSelected
-                        ? "bg-primary text-on-primary font-semibold shadow-xs"
-                        : "bg-surface text-foreground border border-border hover:bg-surface-subtle font-medium"
-                    }`}
-                  >
-                    {colName} ({count})
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Form Tambah / Edit Item Modul */}
-              <div className="bg-surface p-6 rounded-2xl border border-border shadow-xs h-fit">
-                <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
-                  {editingId ? <Pencil className="w-4 h-4 text-primary" /> : <Plus className="w-4 h-4 text-primary" />}
-                  <span>{editingId ? "Edit Item Modul" : "Tambah Item Modul"}</span>
-                </h3>
-
-                <form onSubmit={handleCreateCollectionItem} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-foreground mb-1.5">
-                      Nama Modul Koleksi
-                    </label>
-                    <div className="flex gap-2">
-                      <select
-                        value={selectedCol}
-                        disabled={!!editingId}
-                        onChange={(e) => chooseCollection(e.target.value)}
-                        className="w-1/2 px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:bg-surface-subtle transition"
-                      >
-                        {Array.from(new Set([...Object.keys(templateModules), ...Object.keys(collections)])).map((k) => (
-                          <option key={k} value={k}>
-                            {k}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        type="text"
-                        placeholder="Atau nama baru..."
-                        disabled={!!editingId}
-                        value={newColName}
-                        onChange={(e) => setNewColName(e.target.value)}
-                        className="w-1/2 px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                      />
-                    </div>
-                    <span className="text-[11px] text-muted mt-1 block">
-                      Gunakan huruf kecil tanpa spasi (misal: <code className="font-mono text-foreground bg-surface-subtle px-1 py-0.5 rounded border border-border">prestasi</code>, <code className="font-mono text-foreground bg-surface-subtle px-1 py-0.5 rounded border border-border">alumni</code>)
-                    </span>
-                  </div>
-
-                  <div className="pt-3 border-t border-border">
-                    <div className="flex items-center justify-between mb-2.5">
-                      <span className="text-xs font-semibold text-foreground">Atribut Field:</span>
-                      <button
-                        type="button"
-                        onClick={addDynamicField}
-                        className="text-xs text-primary hover:text-primary/80 font-semibold"
-                      >
-                        + Tambah Field
-                      </button>
-                    </div>
-
-                    <div className="space-y-3.5 max-h-[28rem] overflow-y-auto pr-1">
-                      {dynamicFields.map((field, idx) => {
-                        const inputClass = "w-full px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition";
-                        return (
-                          <div key={idx} className="space-y-1.5 bg-surface-subtle/70 p-3 rounded-xl border border-border">
-                            <div className="flex items-center gap-2">
-                              {field.fixed ? (
-                                <span className="flex-1 font-mono text-xs font-semibold text-foreground">{field.key}</span>
-                              ) : (
-                                <input
-                                  type="text"
-                                  placeholder="Nama field (mis: nama)"
-                                  aria-label="Nama field"
-                                  value={field.key}
-                                  onChange={(e) => updateField(idx, { key: e.target.value })}
-                                  className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-border bg-surface text-foreground font-mono placeholder:text-muted/60 focus:outline-none focus:ring-1 focus:ring-primary"
-                                />
-                              )}
-                              {field.fixed ? (
-                                <span className="text-[11px] text-muted bg-surface px-2 py-0.5 rounded border border-border">
-                                  {FIELD_TYPE_LABELS[field.type]}
-                                </span>
-                              ) : (
-                                <select
-                                  aria-label="Jenis field"
-                                  value={field.type}
-                                  onChange={(e) => updateField(idx, { type: e.target.value as FieldType })}
-                                  className="px-2 py-1 text-xs rounded-lg border border-border bg-surface text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                                >
-                                  {Object.entries(FIELD_TYPE_LABELS).map(([type, label]) => (
-                                    <option key={type} value={type}>
-                                      {label}
-                                    </option>
-                                  ))}
-                                </select>
-                              )}
-                              {!field.fixed && dynamicFields.length > 1 && (
-                                <button
-                                  type="button"
-                                  onClick={() => removeDynamicField(idx)}
-                                  aria-label={`Hapus field ${field.key}`}
-                                  className="text-muted hover:text-error p-1"
-                                >
-                                  &times;
-                                </button>
-                              )}
-                            </div>
-
-                            {field.type === "paragraf" ? (
-                              <textarea
-                                rows={3}
-                                placeholder="Isi data teks panjang..."
-                                value={field.value}
-                                onChange={(e) => updateField(idx, { value: e.target.value })}
-                                className={inputClass}
-                              />
-                            ) : field.type === "gambar" ? (
-                              <div className="flex items-center gap-3">
-                                {field.value ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    src={field.value}
-                                    alt={`Foto ${field.key}`}
-                                    className="w-14 h-14 rounded-xl object-cover border border-border bg-surface"
-                                  />
-                                ) : (
-                                  <div className="w-14 h-14 rounded-xl border border-dashed border-border grid place-items-center text-muted bg-surface">
-                                    <ImagePlus className="w-5 h-5" />
-                                  </div>
-                                )}
-                                <div className="flex-1 space-y-1">
-                                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border border-border bg-surface text-foreground cursor-pointer hover:bg-surface-subtle transition">
-                                    {uploadingField === idx ? <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" /> : <ImagePlus className="w-3.5 h-3.5" />}
-                                    <span>{uploadingField === idx ? "Mengunggah..." : field.value ? "Ganti foto" : "Pilih foto"}</span>
-                                    <input
-                                      type="file"
-                                      accept="image/png,image/jpeg,image/webp"
-                                      className="sr-only"
-                                      disabled={uploadingField !== null}
-                                      onChange={(e) => {
-                                        handleUploadPhoto(idx, e.target.files?.[0]);
-                                        e.target.value = "";
-                                      }}
-                                    />
-                                  </label>
-                                  {field.value && (
-                                    <button
-                                      type="button"
-                                      onClick={() => updateField(idx, { value: "" })}
-                                      className="block text-[11px] text-muted hover:text-error transition"
-                                    >
-                                      Hapus foto
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            ) : (
-                              <input
-                                type={field.type === "angka" ? "number" : field.type === "tanggal" ? "date" : field.type === "link" ? "url" : "text"}
-                                placeholder={field.type === "link" ? "https://..." : "Isi nilai data..."}
-                                value={field.value}
-                                onChange={(e) => updateField(idx, { value: e.target.value })}
-                                className={inputClass}
-                              />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={submittingColItem}
-                    className="w-full mt-2 py-2.5 bg-primary hover:bg-primary/90 text-on-primary rounded-xl text-xs font-semibold shadow-xs transition disabled:opacity-50"
-                  >
-                    {submittingColItem ? "Menyimpan..." : editingId ? "Simpan Perubahan" : "Simpan ke Modul"}
-                  </button>
-                  {editingId && (
-                    <button
-                      type="button"
-                      onClick={cancelEdit}
-                      className="w-full py-2 text-xs font-semibold text-muted hover:text-foreground rounded-xl border border-border bg-surface hover:bg-surface-subtle transition"
-                    >
-                      Batal Edit
-                    </button>
-                  )}
-                </form>
-              </div>
-
-              {/* List Data Modul */}
-              <div className="lg:col-span-2 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-foreground">
-                      Data Modul: <span className="font-mono text-primary font-bold">{selectedCol}</span>
-                    </h3>
-                    <p className="text-xs text-muted">
-                      Disajikan ke template via <code className="font-mono text-foreground bg-surface-subtle border border-border px-1 py-0.5 rounded">data-ws-list=&quot;{selectedCol}&quot;</code>
-                    </p>
-                  </div>
-                  <span className="text-xs text-muted font-mono">
-                    {(collections[selectedCol] || []).length} Item
-                  </span>
+            {/* BERITA */}
+            {current?.id === "news" && (
+              <div className="space-y-5">
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">{current.label}</h2>
+                  <p className="text-sm text-muted mt-0.5">Artikel, pengumuman, dan agenda yang tampil di bagian berita website.</p>
                 </div>
 
-                {loadingCollections ? (
-                  <div className="py-12 text-center text-muted">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
-                    <p className="text-xs">Memuat data modul...</p>
-                  </div>
-                ) : !collections[selectedCol] || collections[selectedCol].length === 0 ? (
-                  <div className="bg-surface p-8 text-center rounded-2xl border border-border text-muted text-xs shadow-xs">
-                    Belum ada item dalam modul &ldquo;{selectedCol}&rdquo;.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {collections[selectedCol].map((item, idx, items) => (
-                      <div
-                        key={item.id || idx}
-                        className={`bg-surface p-4 sm:p-5 rounded-2xl border shadow-xs flex items-start justify-between gap-4 transition hover:border-border-strong ${
-                          editingId === item.id ? "border-primary ring-1 ring-primary" : "border-border"
-                        }`}
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                  <div className="bg-surface p-6 rounded-2xl border border-border shadow-xs h-fit xl:sticky xl:top-6">
+                    <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                      <Plus className="w-4 h-4 text-primary" />
+                      <span>Terbitkan Berita</span>
+                    </h3>
+                    <form onSubmit={handleCreateNews} className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label htmlFor="news-title" className="block text-xs font-semibold text-foreground">
+                          Judul <span className="text-error">*</span>
+                        </label>
+                        <input
+                          id="news-title"
+                          type="text"
+                          required
+                          placeholder="Contoh: Rapat Kerja Anggota 2026"
+                          value={newTitle}
+                          onChange={(e) => setNewTitle(e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label htmlFor="news-summary" className="block text-xs font-semibold text-foreground">
+                          Ringkasan
+                        </label>
+                        <input
+                          id="news-summary"
+                          type="text"
+                          placeholder="Tampil di daftar berita"
+                          value={newSummary}
+                          onChange={(e) => setNewSummary(e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label htmlFor="news-content" className="block text-xs font-semibold text-foreground">
+                          Isi lengkap
+                        </label>
+                        <textarea
+                          id="news-content"
+                          rows={5}
+                          value={newContent}
+                          onChange={(e) => setNewContent(e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={submittingNews}
+                        className="w-full py-2.5 bg-primary hover:opacity-90 text-on-primary rounded-xl text-sm font-semibold shadow-xs transition disabled:opacity-50"
                       >
-                        <div className="flex flex-wrap gap-2.5 items-center flex-1 min-w-0">
-                          {Object.entries(item).map(([k, v]) => {
-                            if (k === "id") return null;
-                            if (fieldTypeOf(selectedCol, k) === "gambar") {
-                              return (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  key={k}
-                                  src={String(v)}
-                                  alt={k}
-                                  className="w-12 h-12 rounded-xl object-cover border border-border shrink-0"
-                                />
-                              );
-                            }
+                        {submittingNews ? "Menerbitkan..." : "Terbitkan"}
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="xl:col-span-2 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-foreground">Berita aktif</h3>
+                      <span className="text-xs text-muted font-mono">{newsList.length} berita</span>
+                    </div>
+                    {loadingNews ? (
+                      <div className="py-12 text-center text-muted">
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+                        <p className="text-xs">Memuat berita...</p>
+                      </div>
+                    ) : newsList.length === 0 ? (
+                      <div className="bg-surface p-8 text-center rounded-2xl border border-border text-muted text-xs shadow-xs">
+                        Belum ada berita yang diterbitkan.
+                      </div>
+                    ) : (
+                      newsList.map((item) => (
+                        <div
+                          key={item.id}
+                          className="bg-surface p-5 rounded-2xl border border-border shadow-xs flex items-start justify-between gap-4 hover:border-border-strong transition"
+                        >
+                          <div className="space-y-1.5 flex-1 min-w-0">
+                            <h4 className="text-sm font-bold text-foreground leading-snug">{item.title}</h4>
+                            {item.summary && <p className="text-xs text-muted leading-relaxed">{item.summary}</p>}
+                            {item.publishedAt && (
+                              <div className="text-[11px] text-muted/80 font-mono pt-1">{item.publishedAt}</div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteNews(item.id)}
+                            className="p-2 text-muted hover:text-error hover:bg-error/10 rounded-lg transition shrink-0"
+                            title="Hapus berita"
+                            aria-label="Hapus berita"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* HALAMAN MODUL (satu menu per modul template) */}
+            {modName && (
+              <div className="space-y-5">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+                    {createElement(iconOf(current?.icon), { className: "w-5 h-5" })}
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-bold tracking-tight text-foreground">{current?.label}</h2>
+                    <p className="text-sm text-muted mt-0.5">
+                      {modFields
+                        ? modSettings?.description || `Data ${moduleLabelText} yang tampil di website.`
+                        : "Template yang dipakai sekarang tidak menampilkan data ini lagi. Anda masih bisa mengubah atau menghapusnya."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                  {(modFields || editingId) && (
+                    <div className="bg-surface p-6 rounded-2xl border border-border shadow-xs h-fit xl:sticky xl:top-6">
+                      <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                        {editingId ? <Pencil className="w-4 h-4 text-primary" /> : <Plus className="w-4 h-4 text-primary" />}
+                        <span>{editingId ? `Ubah ${moduleLabelText}` : `Tambah ${moduleLabelText}`}</span>
+                      </h3>
+                      <form onSubmit={handleCreateCollectionItem} className="space-y-5">
+                        {fieldGroups(
+                          modSettings,
+                          dynamicFields.map((f) => f.key)
+                        ).map((group, gi) => (
+                          <fieldset key={group.title || gi} className="space-y-4">
+                            {group.title && (
+                              <legend className="text-[11px] font-semibold text-muted uppercase tracking-wider pb-1">
+                                {group.title}
+                              </legend>
+                            )}
+                            {group.fields.map((key) => {
+                              const idx = dynamicFields.findIndex((f) => f.key === key);
+                              return fieldInput(dynamicFields[idx], idx);
+                            })}
+                          </fieldset>
+                        ))}
+                        <button
+                          type="submit"
+                          disabled={submittingColItem}
+                          className="w-full py-2.5 bg-primary hover:opacity-90 text-on-primary rounded-xl text-sm font-semibold shadow-xs transition disabled:opacity-50"
+                        >
+                          {submittingColItem ? "Menyimpan..." : editingId ? "Simpan Perubahan" : "Simpan"}
+                        </button>
+                        {editingId && (
+                          <button
+                            type="button"
+                            onClick={cancelEdit}
+                            className="w-full py-2 text-xs font-semibold text-muted hover:text-foreground rounded-xl border border-border bg-surface hover:bg-surface-subtle transition"
+                          >
+                            Batal
+                          </button>
+                        )}
+                      </form>
+                    </div>
+                  )}
+
+                  <div className={`space-y-3 ${modFields || editingId ? "xl:col-span-2" : "xl:col-span-3"}`}>
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-foreground">Daftar {moduleLabelText}</h3>
+                      <span className="text-xs text-muted font-mono">{modItems.length} item</span>
+                    </div>
+
+                    {loadingCollections ? (
+                      <div className="py-12 text-center text-muted">
+                        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+                        <p className="text-xs">Memuat data...</p>
+                      </div>
+                    ) : modItems.length === 0 ? (
+                      <div className="bg-surface p-8 text-center rounded-2xl border border-border text-muted text-xs shadow-xs">
+                        Belum ada data. Isi formulir untuk menambahkan yang pertama.
+                      </div>
+                    ) : (
+                      <>
+                        {/* Tabel hanya di layar lebar; HP selalu memakai kartu. */}
+                        {modSettings?.view === "tabel" && modFields && (
+                          <div className="hidden md:block bg-surface rounded-2xl border border-border overflow-hidden shadow-xs">
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left text-xs text-foreground">
+                                <thead className="bg-surface-subtle border-b border-border text-muted">
+                                  <tr>
+                                    {Object.keys(modFields).map((key) => (
+                                      <th key={key} className="py-3 px-4 font-semibold whitespace-nowrap">
+                                        {fieldLabel(key)}
+                                      </th>
+                                    ))}
+                                    <th className="py-3 px-4">
+                                      <span className="sr-only">Aksi</span>
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                  {modItems.map((item, idx) => (
+                                    <tr
+                                      key={item.id || idx}
+                                      className={editingId === item.id ? "bg-primary-container/40" : "hover:bg-surface-subtle/50"}
+                                    >
+                                      {Object.keys(modFields).map((key) => (
+                                        <td key={key} className="py-2.5 px-4 align-middle">
+                                          {modFields[key] === "gambar" ? (
+                                            item[key] ? (
+                                              // eslint-disable-next-line @next/next/no-img-element
+                                              <img
+                                                src={String(item[key])}
+                                                alt=""
+                                                className="w-10 h-10 rounded-lg object-cover border border-border"
+                                              />
+                                            ) : null
+                                          ) : (
+                                            <span className="line-clamp-2">{shownValue(key, item[key])}</span>
+                                          )}
+                                        </td>
+                                      ))}
+                                      <td className="py-2 px-2 text-right">{itemActions(item, idx)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+
+                        <div
+                          className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${
+                            modSettings?.view === "tabel" && modFields ? "md:hidden" : ""
+                          } ${modFields || editingId ? "" : "xl:grid-cols-3"}`}
+                        >
+                          {modItems.map((item, idx) => {
+                            const image = card.image ? item[card.image] : null;
                             return (
                               <div
-                                key={k}
-                                className="inline-flex items-center gap-1.5 bg-surface-subtle border border-border px-2.5 py-1 rounded-lg text-xs max-w-full"
+                                key={item.id || idx}
+                                className={`bg-surface rounded-2xl border shadow-xs overflow-hidden flex flex-col transition hover:border-border-strong ${
+                                  editingId === item.id ? "border-primary ring-1 ring-primary" : "border-border"
+                                }`}
                               >
-                                <span className="font-mono text-muted text-[11px]">{k}:</span>
-                                <span className="font-medium text-foreground truncate">{String(v)}</span>
+                                {image && (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={String(image)} alt="" className="w-full aspect-video object-cover bg-surface-subtle" />
+                                )}
+                                <div className="p-4 flex-1 space-y-1">
+                                  {card.title ? (
+                                    <>
+                                      <h4 className="text-sm font-bold text-foreground leading-snug line-clamp-2">
+                                        {shownValue(card.title, item[card.title]) || "(tanpa judul)"}
+                                      </h4>
+                                      {card.subtitle && item[card.subtitle] && (
+                                        <p className="text-xs text-muted line-clamp-2">{shownValue(card.subtitle, item[card.subtitle])}</p>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {Object.entries(item)
+                                        .filter(([k]) => k !== "id")
+                                        .map(([k, v]) => (
+                                          <span key={k} className="text-xs bg-surface-subtle border border-border px-2 py-0.5 rounded-lg">
+                                            <span className="text-muted">{humanize(k)}:</span> {String(v)}
+                                          </span>
+                                        ))}
+                                    </div>
+                                  )}
+                                </div>
+                                {item.id && (
+                                  <div className="px-2 py-1.5 border-t border-border flex justify-end">{itemActions(item, idx)}</div>
+                                )}
                               </div>
                             );
                           })}
                         </div>
-
-                        {item.id && (
-                          <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              onClick={() => handleMoveItem(idx, -1)}
-                              disabled={idx === 0}
-                              className="p-1.5 text-muted hover:text-foreground hover:bg-surface-subtle rounded-lg transition disabled:opacity-30"
-                              title="Naikkan urutan"
-                              aria-label="Naikkan urutan"
-                            >
-                              <ArrowUp className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleMoveItem(idx, 1)}
-                              disabled={idx === items.length - 1}
-                              className="p-1.5 text-muted hover:text-foreground hover:bg-surface-subtle rounded-lg transition disabled:opacity-30"
-                              title="Turunkan urutan"
-                              aria-label="Turunkan urutan"
-                            >
-                              <ArrowDown className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => startEditItem(item)}
-                              className="p-1.5 text-muted hover:text-foreground hover:bg-surface-subtle rounded-lg transition"
-                              title="Edit item"
-                              aria-label="Edit item"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteCollectionItem(selectedCol, item.id)}
-                              className="p-1.5 text-muted hover:text-error hover:bg-error/10 rounded-lg transition"
-                              title="Hapus item"
-                              aria-label="Hapus item"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      </>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            )}
+          </main>
+        </div>
+      </div>
 
-      </main>
+      {/* Drawer HP: semua menu + akun. Muncul dari sisi yang sama dengan sidebar desktop. */}
+      <div
+        className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ${
+          mobileSidebarOpen ? "visible pointer-events-auto" : "invisible pointer-events-none"
+        }`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu Portal"
+      >
+        <div
+          className={`fixed inset-0 bg-black/60 transition-opacity duration-300 ${mobileSidebarOpen ? "opacity-100" : "opacity-0"}`}
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-hidden="true"
+        />
+        <div
+          className={`fixed inset-y-0 ${sidebarRight ? "right-0 border-l" : "left-0 border-r"} w-72 max-w-[85vw] bg-surface border-border shadow-2xl flex flex-col transform transition-transform duration-300 ease-out ${
+            mobileSidebarOpen ? "translate-x-0" : sidebarRight ? "translate-x-full" : "-translate-x-full"
+          }`}
+        >
+          <div className="h-14 px-4 flex items-center justify-between gap-2 border-b border-border">
+            {branding}
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(false)}
+              className="p-2 text-muted hover:text-foreground hover:bg-surface-subtle rounded-lg transition shrink-0"
+              aria-label="Tutup menu"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">{navList}</div>
+          <div className="pb-[env(safe-area-inset-bottom)]">{accountActions}</div>
+        </div>
+      </div>
+
+      {/* Menu bawah HP (portal.json mobile.nav = "bottom"): maks. 4 menu + Lainnya. */}
+      {bottomLinks.length > 0 && (
+        <nav
+          className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-surface border-t border-border pb-[env(safe-area-inset-bottom)]"
+          aria-label="Menu cepat"
+        >
+          <div className="grid" style={{ gridTemplateColumns: `repeat(${bottomLinks.length + 1}, minmax(0, 1fr))` }}>
+            {bottomLinks.map((link) => {
+              const Icon = iconOf(link.icon);
+              const active = current?.id === link.id;
+              return (
+                <button
+                  key={link.id}
+                  type="button"
+                  onClick={() => openNav(link.id)}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex flex-col items-center justify-center gap-1 min-h-[56px] px-1 text-[10px] font-semibold transition ${
+                    active ? "text-primary" : "text-muted hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="truncate max-w-full">{link.label}</span>
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="flex flex-col items-center justify-center gap-1 min-h-[56px] px-1 text-[10px] font-semibold text-muted hover:text-foreground transition"
+            >
+              <Menu className="w-5 h-5" />
+              <span>Lainnya</span>
+            </button>
+          </div>
+        </nav>
+      )}
     </div>
   );
 }

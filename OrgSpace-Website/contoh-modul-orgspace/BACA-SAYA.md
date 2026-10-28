@@ -11,7 +11,8 @@ contoh-modul-orgspace/
 │   ├── 01-panduan-modul-dinamis.md   ← semua modul data-ws-*
 │   ├── 02-requirement-dan-aturan.md  ← batas ZIP, CDN, daftar kode pengecekan upload
 │   ├── 03-menandai-bagian.md         ← langkah Tandai di app
-│   └── 04-membuat-fitur-kustom.md    ← cara merancang fitur sendiri + resep JavaScript
+│   ├── 04-membuat-fitur-kustom.md    ← cara merancang fitur sendiri + resep JavaScript
+│   └── 05-tampilan-portal.md         ← portal.json: tampilan Portal Pengurus (opsional)
 ├── contoh-template/   ← template contoh sederhana yang memakai semua modul (sudah lolos pengecekan)
 └── template-sinergi/  ← template lengkap & interaktif: 2 halaman, 7 modul kustom + pengumuman, statistik, animasi (sudah lolos pengecekan)
 ```

@@ -58,6 +58,7 @@ public class TemplateChecker {
 
         listener.onStage(CheckStage.HTML_LIBRARY);
         new HtmlRules(ctx).check();
+        new PortalRules(ctx).check();
         ExternalRules external = new ExternalRules(ctx);
         external.check();
         new ReferenceRules(ctx).check();

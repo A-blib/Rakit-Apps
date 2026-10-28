@@ -155,6 +155,7 @@ public class PublicSiteController {
             row.put("id", item.getId());
             collectionsMap.computeIfAbsent(item.getCollectionName(), k -> new ArrayList<>()).add(row);
         }
+        Map<String, Map<String, String>> modules = templateModules(allPagesHtml(releaseDir, compiledHtml));
         return new SiteRenderResponse(
                 site.getId(),
                 site.getProjectId(),
@@ -172,10 +173,29 @@ public class PublicSiteController {
                 forms,
                 collectionsMap,
                 compiledHtml,
-                templateModules(allPagesHtml(releaseDir, compiledHtml)),
+                modules,
                 siteStats(site, org, dbNews.size(), collectionsMap),
-                orgProfile(site, org, owner)
+                orgProfile(site, org, owner),
+                portalConfig(releaseDir, modules)
         );
+    }
+
+    /** portal.json rilis sudah lolos cek upload; tetap dibaca ulang agar Hosting hanya menerima bagian yang valid. */
+    private static Map<String, Object> portalConfig(Path releaseDir, Map<String, Map<String, String>> modules) {
+        Path file = releaseDir.resolve(PortalConfig.FILE_NAME);
+        if (!Files.isRegularFile(file)) {
+            return Map.of();
+        }
+        try {
+            if (Files.size(file) > PortalConfig.MAX_SIZE) {
+                return Map.of();
+            }
+            return PortalConfig.read(Files.readString(file, StandardCharsets.UTF_8), modules,
+                    path -> Files.isRegularFile(releaseDir.resolve(path))).config();
+        } catch (IOException e) {
+            log.warn("Gagal membaca portal.json {}", releaseDir, e);
+            return Map.of();
+        }
     }
 
     /** Semua halaman rilis digabung, agar modul di halaman selain beranda (mis. struktur di tentang.html) ikut terbaca. */
