@@ -1,8 +1,9 @@
 import type { DocDetail, DocTree } from "./api/types";
 
 /**
- * Data dokumentasi komprehensif OrgSpace (fallback & konten mandiri web portal).
- * Mencakup requirement proyek, tools yang didukung, modul sistem & kustom, serta panduan meng-online-kan website.
+ * Cadangan pusat dokumentasi OrgSpace, dipakai saat backend tidak bisa dihubungi atau artikelnya belum ada di server.
+ * Isinya sama dengan migrasi backend V39__dokumentasi_lengkap_oktober.sql; versi yang tampil normalnya dari server
+ * (bisa diedit admin di dashboard).
  */
 
 export const FALLBACK_DOC_TREE: DocTree = {
@@ -11,268 +12,886 @@ export const FALLBACK_DOC_TREE: DocTree = {
       value: "mulai",
       label: "Memulai",
       articles: [
-        {
-          id: "doc-mulai-1",
-          slug: "apa-itu-orgspace",
-          category: "mulai",
-          audience: "all",
-          title: "Apa itu OrgSpace?",
-          summary: "Platform pembuat website organisasi modern tanpa coding langsung dari HP Android.",
-          sortOrder: 10,
-          status: "published",
-          publishedAt: "2026-10-15T00:00:00Z",
-          updatedAt: "2026-10-15T00:00:00Z",
-        },
-        {
-          id: "doc-mulai-2",
-          slug: "memulai-dari-hp",
-          category: "mulai",
-          audience: "all",
-          title: "Memulai dari HP",
-          summary: "Langkah awal memasang aplikasi, login akun, dan membuat ruang kerja organisasi.",
-          sortOrder: 20,
-          status: "published",
-          publishedAt: "2026-10-15T00:00:00Z",
-          updatedAt: "2026-10-15T00:00:00Z",
-        },
+        {"id": "doc-apa-itu-orgspace", "slug": "apa-itu-orgspace", "category": "mulai", "audience": "all", "title": "Apa itu OrgSpace?", "summary": "Platform pembuat website organisasi tanpa coding dari HP Android, lengkap dengan Portal Pengurus untuk mengisi data.", "sortOrder": 10, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-memulai-dari-hp", "slug": "memulai-dari-hp", "category": "mulai", "audience": "all", "title": "Memulai dari HP", "summary": "Pasang app, masuk, membuat atau bergabung ke ruang kerja, dan mengenal menu utama.", "sortOrder": 20, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+      ],
+    },
+    {
+      value: "ruang-kerja",
+      label: "Ruang kerja & anggota",
+      articles: [
+        {"id": "doc-ruang-kerja-dan-peran", "slug": "ruang-kerja-dan-peran", "category": "ruang-kerja", "audience": "creator", "title": "Ruang Kerja & Peran", "summary": "Jenis ruang kerja, hak Pemilik/Admin/Editor, mengundang anggota dengan kode, dan bergabung.", "sortOrder": 10, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-akses-portal-pengurus", "slug": "akses-portal-pengurus", "category": "ruang-kerja", "audience": "all", "title": "Akses Portal Pengurus", "summary": "Username & password Portal per peran (Pemilik, Admin, Editor): cara mengatur, mengganti, dan mencabut.", "sortOrder": 20, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-pergantian-pengurus", "slug": "pergantian-pengurus", "category": "ruang-kerja", "audience": "creator", "title": "Pergantian Pengurus & Serah Terima", "summary": "Urutan aman saat kepengurusan berganti: undang pengurus baru, serah terima, dan ganti akses Portal.", "sortOrder": 30, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
       ],
     },
     {
       value: "website",
-      label: "Membuat & Meng-online-kan Website",
+      label: "Membuat website",
       articles: [
-        {
-          id: "doc-web-1",
-          slug: "cara-mengonlinekan-website",
-          category: "website",
-          audience: "creator",
-          title: "Panduan Lengkap Meng-online-kan Website",
-          summary: "Alur memilih template, editing live preview, cek kelengkapan, publish langsung ke server, dan akses di browser.",
-          sortOrder: 10,
-          status: "published",
-          publishedAt: "2026-10-15T00:00:00Z",
-          updatedAt: "2026-10-15T00:00:00Z",
-        },
-        {
-          id: "doc-web-2",
-          slug: "membuat-website-dari-template",
-          category: "website",
-          audience: "creator",
-          title: "Penyuntingan Konten & Fitur Editor",
-          summary: "Cara mengubah teks, gambar, navigasi section, mode pratinjau penuh, dan sinkronisasi real-time.",
-          sortOrder: 20,
-          status: "published",
-          publishedAt: "2026-10-15T00:00:00Z",
-          updatedAt: "2026-10-15T00:00:00Z",
-        },
+        {"id": "doc-membuat-website-dari-template", "slug": "membuat-website-dari-template", "category": "website", "audience": "creator", "title": "Mengedit Website dari Template", "summary": "Memilih template, bagian editor, jenis isian, tema, cek kelengkapan, dan menu editor.", "sortOrder": 10, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-kelola-website", "slug": "kelola-website", "category": "website", "audience": "creator", "title": "Kelola Website", "summary": "Daftar website, status, minta diterbitkan, ganti nama, duplikat, hapus, dan bagian halaman Kelola website.", "sortOrder": 20, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+      ],
+    },
+    {
+      value: "terbit",
+      label: "Menerbitkan website",
+      articles: [
+        {"id": "doc-cara-mengonlinekan-website", "slug": "cara-mengonlinekan-website", "category": "terbit", "audience": "creator", "title": "Meng-online-kan Website", "summary": "Publish Langsung ke orgspace.app/nama-website atau unduh ZIP, beserta hal yang perlu diketahui setelah terbit.", "sortOrder": 10, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-portal-pengurus", "slug": "portal-pengurus", "category": "terbit", "audience": "all", "title": "Menggunakan Portal Pengurus", "summary": "Mengisi berita, data modul, dan membaca isian formulir website tanpa terbit ulang.", "sortOrder": 20, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-domain-kustom", "slug": "domain-kustom", "category": "terbit", "audience": "creator", "title": "Memasang Domain Sendiri", "summary": "Menghubungkan domain seperti osis-sman1.sch.id: record DNS, verifikasi, www, dan masalah umum.", "sortOrder": 30, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
       ],
     },
     {
       value: "provider",
-      label: "Penyedia Template (Provider)",
+      label: "Penyedia template",
       articles: [
-        {
-          id: "doc-prov-1",
-          slug: "requirement-project-dan-tools",
-          category: "provider",
-          audience: "provider",
-          title: "Requirement Project & Tools yang Didukung",
-          summary: "Spesifikasi file ZIP, struktur direktori wajib, batas ukuran, editor yang didukung, library CDN, dan aturan keamanan.",
-          sortOrder: 10,
-          status: "published",
-          publishedAt: "2026-10-15T00:00:00Z",
-          updatedAt: "2026-10-15T00:00:00Z",
-        },
-        {
-          id: "doc-prov-2",
-          slug: "modul-sistem-dan-kustom",
-          category: "provider",
-          audience: "provider",
-          title: "Panduan Modul Dinamis",
-          summary: "Pengumuman, formulir, modul kustom, Portal Pengurus, dan JavaScript template. Lengkap dengan paket contoh siap unduh untuk kamu atau AI agent.",
-          sortOrder: 20,
-          status: "published",
-          publishedAt: "2026-10-19T00:00:00Z",
-          updatedAt: "2026-10-19T00:00:00Z",
-        },
-        {
-          id: "doc-prov-4",
-          slug: "membuat-fitur-kustom",
-          category: "provider",
-          audience: "provider",
-          title: "Membuat Fitur Kustom",
-          summary: "Rancang fitur sendiri (agenda, galeri, filter, pencarian) dari modul + CSS + JavaScript, lengkap dengan resep dan batasnya.",
-          sortOrder: 25,
-          status: "published",
-          publishedAt: "2026-10-19T00:00:00Z",
-          updatedAt: "2026-10-19T00:00:00Z",
-        },
-        {
-          id: "doc-prov-3",
-          slug: "menjadi-penyedia-template",
-          category: "provider",
-          audience: "provider",
-          title: "Aturan Wajib & Rekomendasi Template",
-          summary: "Standar pemeriksaan otomatis (verification engine) agar template lolos kurasi dan siap tayang di galeri.",
-          sortOrder: 30,
-          status: "published",
-          publishedAt: "2026-10-15T00:00:00Z",
-          updatedAt: "2026-10-15T00:00:00Z",
-        },
+        {"id": "doc-menjadi-penyedia-template", "slug": "menjadi-penyedia-template", "category": "provider", "audience": "provider", "title": "Menjadi Penyedia Template", "summary": "Mengaktifkan mode kreator, menu kreator, enam langkah Upload, dan status template.", "sortOrder": 10, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-contoh-template-dan-paket", "slug": "contoh-template-dan-paket", "category": "provider", "audience": "provider", "title": "Contoh Template & Paket Unduhan", "summary": "Unduh paket contoh (template sederhana & lengkap, panduan, instruksi AI agent) dan coba dari upload sampai Portal.", "sortOrder": 15, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-requirement-project-dan-tools", "slug": "requirement-project-dan-tools", "category": "provider", "audience": "provider", "title": "Requirement Project & Aturan Pengecekan", "summary": "Bentuk project, batas ukuran, jenis file, library CDN, keamanan, dan daftar lengkap kode pengecekan upload.", "sortOrder": 20, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-modul-sistem-dan-kustom", "slug": "modul-sistem-dan-kustom", "category": "provider", "audience": "provider", "title": "Panduan Modul Dinamis", "summary": "Pengumuman, formulir, modul kustom, statistik, profil organisasi, Portal Pengurus, dan JavaScript template. Lengkap dengan paket contoh siap unduh.", "sortOrder": 30, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-membuat-fitur-kustom", "slug": "membuat-fitur-kustom", "category": "provider", "audience": "provider", "title": "Membuat Fitur Kustom", "summary": "Rancang fitur sendiri (agenda, galeri, filter, pencarian) dari modul + CSS + JavaScript, lengkap dengan resep dan batasnya.", "sortOrder": 40, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-menandai-bagian-template", "slug": "menandai-bagian-template", "category": "provider", "audience": "provider", "title": "Menandai Bagian Template", "summary": "Langkah Tandai: jenis isian, gaya, tema warna, hubungan ke profil organisasi, dan aturan elemen modul.", "sortOrder": 50, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
       ],
     },
     {
       value: "faq",
-      label: "Tanya Jawab & Bantuan",
+      label: "Tanya jawab",
       articles: [
-        {
-          id: "doc-faq-1",
-          slug: "kirim-kritik-dan-saran",
-          category: "faq",
-          audience: "all",
-          title: "Mengirim Kritik & Saran",
-          summary: "Saluran pelaporan bug, usulan fitur, dan feedback pengguna.",
-          sortOrder: 10,
-          status: "published",
-          publishedAt: "2026-10-15T00:00:00Z",
-          updatedAt: "2026-10-15T00:00:00Z",
-        },
+        {"id": "doc-pertanyaan-umum", "slug": "pertanyaan-umum", "category": "faq", "audience": "all", "title": "Tanya Jawab Umum", "summary": "Solusi masalah yang sering terjadi: undangan, Portal Pengurus, terbit, domain, dan pengecekan template.", "sortOrder": 10, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
+        {"id": "doc-kirim-kritik-dan-saran", "slug": "kirim-kritik-dan-saran", "category": "faq", "audience": "all", "title": "Mengirim Kritik & Saran", "summary": "Cara melaporkan masalah dan memberi masukan agar cepat ditangani.", "sortOrder": 20, "status": "published", "publishedAt": "2026-10-28T00:00:00Z", "updatedAt": "2026-10-28T00:00:00Z"},
       ],
     },
   ],
 };
 
 export const FALLBACK_DOC_ARTICLES: Record<string, DocDetail> = {
-  "requirement-project-dan-tools": {
-    id: "doc-prov-1",
-    slug: "requirement-project-dan-tools",
-    category: "provider",
-    categoryLabel: "Penyedia Template (Provider)",
-    audience: "provider",
-    title: "Requirement Project & Tools yang Didukung",
-    summary: "Spesifikasi file ZIP, struktur direktori wajib, batas ukuran, editor yang didukung, library CDN, dan aturan keamanan.",
+  "apa-itu-orgspace": {
+    id: "doc-apa-itu-orgspace",
+    slug: "apa-itu-orgspace",
+    category: "mulai",
+    audience: "all",
+    title: "Apa itu OrgSpace?",
+    summary: "Platform pembuat website organisasi tanpa coding dari HP Android, lengkap dengan Portal Pengurus untuk mengisi data.",
     sortOrder: 10,
     status: "published",
-    publishedAt: "2026-10-15T00:00:00Z",
-    updatedAt: "2026-10-15T00:00:00Z",
-    body: `# Requirement Project & Tools yang Didukung
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Memulai",
+    body: `## OrgSpace dalam satu menit
 
-Halaman ini merangkum seluruh persyaratan teknis berkas template website, perkakas pengembangan (*developer tools*) yang didukung, serta aturan validasi yang diterapkan oleh **OrgSpace Template Verification Engine**.
+OrgSpace adalah app Android untuk membuat website organisasi (OSIS, BEM, himpunan, UKM, Pramuka, komunitas) **tanpa menulis kode**.
 
----
+- Pilih template buatan kreator, lalu ganti teks, foto, dan warnanya.
+- Kerjakan bersama pengurus lain di satu **ruang kerja** organisasi.
+- Terbitkan website ke \`orgspace.app/nama-website\` secara gratis, atau pasang domain sendiri.
+- Pengurus mengisi berita, agenda, prestasi, dan membaca isian formulir lewat **Portal Pengurus** (\`orgspace.app/nama-website/admin\`) tanpa menerbitkan ulang.
 
-## 1. Requirement Berkas & Proyek (Wajib Dipenuhi)
+## Siapa yang memakai OrgSpace?
 
-Semua template yang diunggah oleh penyedia template (*provider*) ke sistem OrgSpace harus memenuhi kriteria berikut agar dapat lolos tahap verifikasi otomatis:
-
-### A. Format Berkas & Batasan Ukuran
-| Parameter | Nilai Batas | Penjelasan |
+| Peran | Yang dilakukan | Di mana |
 |---|---|---|
-| **Format Berkas** | \`.zip\` (MIME: \`application/zip\`) | Template wajib dikemas ke dalam satu berkas arsip ZIP standar. Format lain (RAR, 7z, TAR) akan ditolak. |
-| **Ukuran Maksimal ZIP** | **20 MB** | Batas maksimal ukuran arsip ZIP yang diunggah. |
-| **Batas Ekstraksi Aman** | **50 MB** | Batas total ukuran seluruh berkas setelah diekstrak (perlindungan terhadap celah *zip bomb*). |
-| **Batas Jumlah Berkas** | **500 berkas** | Jumlah total file di dalam arsip tidak boleh melebihi 500 item. |
-| **Ukuran per Berkas** | **10 MB** | Satu file di dalam ZIP tidak boleh lebih dari 10 MB. Gambar di atas 1 MB mendapat peringatan. |
-| **Jumlah Halaman** | **10 halaman HTML** | Setiap halaman harus bisa dibuka lewat link dari halaman lain. |
-| **Encoding Karakter** | **UTF-8** | Semua berkas HTML, CSS, dan JS wajib ber-encoding UTF-8 tanpa BOM (*Byte Order Mark*). |
+| Pembuat website | Memilih template, mengedit tampilan, menerbitkan | App (mode pembuat website) |
+| Pengurus organisasi | Mengisi data website: berita, modul, formulir masuk | Portal Pengurus di browser |
+| Penyedia template (kreator) | Membuat template HTML/CSS/JS, mengunggah, menandai bagian yang bisa diedit | Komputer + app (mode kreator) |
 
-### B. Struktur Direktori Wajib
-Template wajib memiliki struktur berkas yang teratur dan bersih:
-\`\`\`text
-template-anda.zip/
-├── index.html            ← WAJIB: Halaman beranda di akar direktori (root)
-├── css/
-│   └── style.css         ← Berkas gaya tampilan utama
-├── js/
-│   └── main.js           ← Berkas script logika interaktif (opsional jika statis)
-└── img/                  ← Folder aset media (bisa juga bernama assets/ atau images/)
-    ├── logo.png
-    └── hero.jpg
-\`\`\`
+Satu akun bisa menjadi pembuat website sekaligus kreator template. Pindah mode lewat tab **Profil**.
 
-> **PENTING**: Berkas \`index.html\` **wajib berada langsung di akar ZIP**, bukan di dalam subfolder (misal \`template-saya/index.html\` akan ditolak dengan error \`NO_INDEX\`).
+## Peta dokumentasi
 
-### C. Pemanggilan Aset Internal (Relative Paths)
-- Seluruh tautan ke berkas CSS, JavaScript, gambar, dan font lokal **wajib menggunakan path relatif**.
-- **BENAR**: \`<link rel="stylesheet" href="css/style.css">\` atau \`<img src="img/logo.png">\`.
-- **SALAH**: \`<link rel="stylesheet" href="/css/style.css">\` (path absolut root server) atau \`C:\\Users\\...\\style.css\`.
-
-### D. Larangan Framework SPA Monolitik
-OrgSpace dirancang untuk memuat website statis semantik murni.
-- **DILARANG** mengunggah hasil build framework SPA client-side heavy seperti Next.js, Nuxt, Angular, React SPA (CRA/Vite) atau Svelte kit yang mengeksekusi hydration kosong di HTML.
-- Markup HTML harus memiliki elemen semantik lengkap di dokumen sebelum JavaScript dieksekusi agar ramah SEO dan mudah diproses oleh engine penandaan isian.
-
-### E. Aturan Keamanan & Pencegahan XSS
-- **Dilarang Inline Event Handlers**: Jangan gunakan \`onclick="..."\`, \`onload="..."\`, \`onerror="..."\` di HTML. Gunakan \`addEventListener()\` di berkas JavaScript eksternal.
-- **Dilarang Skema Tautan Berbahaya**: Hindari atribut tautan berbahaya seperti \`href="javascript:..."\` atau \`href="data:..."\`.
-- **Dilarang Script Tracker Pihak Ketiga**: Tidak boleh menyisipkan Google Tag Manager, Meta/Facebook Pixel, Hotjar, atau pelacak analitik tanpa izin.
-- **Penggunaan Iframe Dibatasi**: Iframe hanya diizinkan untuk penyematan video YouTube (\`youtube.com\`, \`youtube-nocookie.com\`) dan peta Google Maps (\`google.com/maps\`).
-- **Dilarang Mengambil/Mengirim Data ke Situs Lain dari JavaScript**: \`fetch("https://...")\`, XHR, WebSocket, dan \`sendBeacon\` ke situs luar ditolak (\`EXT_FETCH\`). Data dinamis diambil dari modul \`data-ws-*\`; \`fetch\` ke file lokal di ZIP (mis. \`data/menu.json\`) boleh.
-- **Dilarang Kode JavaScript Diacak (obfuscated), Service Worker, dan \`import\` library dari CDN di dalam file JS.** Muat library dengan \`<script src>\` di HTML.
-
----
-
-## 2. Tools & Teknologi yang Didukung
-
-Penyedia template bebas menggunakan alur kerja modern selama menghasilkan output berkas yang sesuai dengan standar OrgSpace:
-
-### A. Code Editor yang Direkomendasikan
-- **Visual Studio Code (VS Code)** (Rekomendasi Utama)
-- **Sublime Text**, **WebStorm**, **Cursor**, atau text editor apa pun.
-
-### B. Standar Bahasa Frontend
-- **HTML5 Murni**: Mengutamakan tag semantik seperti \`<header>\`, \`<nav>\`, \`<main>\`, \`<section>\`, \`<article>\`, \`<footer>\`.
-- **CSS3 Modern**: Mendukung Flexbox, CSS Grid, Media Queries (@media), dan CSS Custom Properties (\`:root { --primary-color: #0068D6; }\`).
-- **Vanilla JavaScript (ES6+)**: Menggunakan sintaks modern seperti \`const/let\`, Arrow Functions, Template Literals, dan Async/Await. \`fetch()\` hanya untuk file lokal di dalam ZIP.
-
-### C. Framework CSS & Utilitas (Whitelist CDN)
-- **Tailwind CSS**: Standalone script CDN (\`https://cdn.tailwindcss.com\`) diterima dengan peringatan karena lebih berat; file CSS hasil build Tailwind lebih disarankan.
-- **Bootstrap 5**: CSS & JS bundle via jsDelivr atau cdnjs.
-- **Bulma CSS**
-- **Domain CDN yang Diizinkan**: \`cdn.jsdelivr.net\`, \`cdnjs.cloudflare.com\`, \`unpkg.com\`, \`cdn.tailwindcss.com\`, \`code.jquery.com\`.
-- **Versi wajib lengkap**: tulis versi pasti di URL, mis. \`https://cdn.jsdelivr.net/npm/swiper@11.1.4/swiper-bundle.min.js\`. URL tanpa versi atau \`@latest\` ditolak (\`CDN_VERSION_UNCLEAR\`). Library di luar daftar ini ditolak (\`CDN_NOT_ALLOWED\`).
-
-### D. Library Interaktif Ringan yang Didukung
-- **Slider & Carousel**: Swiper.js, Splide.js.
-- **Animasi Ringan**: AOS (*Animate on Scroll*), GSAP (*GreenSock*). Animasi CSS buatan sendiri (\`@keyframes\`, \`transition\`) selalu boleh.
-- **DOM & Reaktivitas Sederhana**: Alpine.js, jQuery.
-
-### E. Ikonografi & Tipografi
-- **Web Fonts**: Google Fonts (\`fonts.googleapis.com\` / \`fonts.gstatic.com\`, diterima dengan peringatan karena butuh internet), atau font lokal berlisensi SIL OFL di dalam ZIP.
-- **Ikon Paket**: Lucide Icons, Font Awesome 6 (via CDN), Bootstrap Icons, Remix Icon.
-
-### F. Format Aset Media Gambar
-- **Format Didukung**: WebP (Sangat Direkomendasikan), PNG, JPG/JPEG, SVG, ICO, GIF.
-- **Ukuran Ideal**: Di bawah 500 KB per gambar untuk memastikan kecepatan render optimal.
+| Kamu ingin... | Baca |
+|---|---|
+| Mulai memakai app | [Memulai dari HP](/docs/memulai-dari-hp) |
+| Mengajak pengurus lain | [Ruang kerja & peran](/docs/ruang-kerja-dan-peran) |
+| Membuat dan mengedit website | [Mengedit website dari template](/docs/membuat-website-dari-template) |
+| Menerbitkan website | [Meng-online-kan website](/docs/cara-mengonlinekan-website) |
+| Mengisi data website | [Portal Pengurus](/docs/portal-pengurus) |
+| Membuat template sendiri | [Menjadi penyedia template](/docs/menjadi-penyedia-template) |
 `,
   },
-
-  "modul-sistem-dan-kustom": {
-    id: "doc-prov-2",
-    slug: "modul-sistem-dan-kustom",
-    category: "provider",
-    categoryLabel: "Penyedia Template (Provider)",
-    audience: "provider",
-    title: "Panduan Modul Dinamis",
-    summary: "Pengumuman, formulir, modul kustom, Portal Pengurus, dan JavaScript template. Lengkap dengan paket contoh siap unduh untuk kamu atau AI agent.",
+  "memulai-dari-hp": {
+    id: "doc-memulai-dari-hp",
+    slug: "memulai-dari-hp",
+    category: "mulai",
+    audience: "all",
+    title: "Memulai dari HP",
+    summary: "Pasang app, masuk, membuat atau bergabung ke ruang kerja, dan mengenal menu utama.",
     sortOrder: 20,
     status: "published",
-    publishedAt: "2026-10-19T00:00:00Z",
-    updatedAt: "2026-10-19T00:00:00Z",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Memulai",
+    body: `## Langkah awal
+
+1. Pasang app OrgSpace di HP Android (Android 8.0 ke atas).
+2. Buka app. Kamu bisa melihat-lihat galeri template sebagai **tamu** tanpa akun.
+3. Ketuk **Masuk**, lalu pilih **Google**, **GitHub**, atau **email + password**. Akun email baru dibuat lewat menu **Daftar**.
+4. Pilih cara memulai ruang kerja:
+   - **Buat organisasi**: isi nama, kategori (mis. OSIS / MPK, BEM, Pramuka), dan jenjang. Kamu menjadi **Pemilik**.
+   - **Gabung organisasi**: masukkan kode undangan dari pengurus.
+   - **Ruang pribadi**: untuk website pribadi atau portofolio.
+
+## Menu bawah (mode pembuat website)
+
+| Menu | Isi |
+|---|---|
+| Beranda | Ringkasan ruang kerja dan website terakhir |
+| Website | Semua website di ruang kerja aktif: cari, filter status, kelola |
+| **+** | Mulai website baru dari template |
+| Template | Galeri template per kategori organisasi |
+| Profil | Akun, ruang kerja, pindah mode, pengaturan |
+
+Ruang kerja aktif tampil di kiri atas. Ketuk namanya untuk berganti ruang kerja, membuka **Kelola organisasi**, membuat organisasi baru, atau **Gabung organisasi**.
+
+## Akun
+
+- Akun Google, GitHub, dan email dengan email terverifikasi yang sama bisa disambungkan menjadi satu akun.
+- Metode login yang tersambung dilihat di **Profil → Pengaturan → Metode login terhubung**.
+
+> Tips: Portal Pengurus website **tidak** memakai akun ini. Pengurus masuk Portal dengan username + password per peran yang diatur Pemilik organisasi. Lihat [Akses Portal Pengurus](/docs/akses-portal-pengurus).
+`,
+  },
+  "ruang-kerja-dan-peran": {
+    id: "doc-ruang-kerja-dan-peran",
+    slug: "ruang-kerja-dan-peran",
+    category: "ruang-kerja",
+    audience: "creator",
+    title: "Ruang Kerja & Peran",
+    summary: "Jenis ruang kerja, hak Pemilik/Admin/Editor, mengundang anggota dengan kode, dan bergabung.",
+    sortOrder: 10,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Ruang kerja & anggota",
+    body: `## Ruang kerja
+
+Ruang kerja adalah tempat semua website milik satu organisasi beserta pengurusnya. Ada dua jenis:
+
+| Jenis | Untuk | Anggota |
+|---|---|---|
+| **Organisasi** | OSIS, BEM, himpunan, UKM, komunitas | Sampai 30 anggota, lewat kode undangan |
+| **Ruang pribadi** | Website pribadi atau portofolio | Hanya kamu (tidak bisa mengundang atau diserahterimakan) |
+
+Kelola ruang kerja lewat nama ruang kerja di kiri atas → **Kelola organisasi**: Profil organisasi, Anggota, Riwayat aktivitas, Akses Portal website (Pemilik), dan Serah terima (Pemilik).
+
+## Peran dan hak
+
+| Aksi | Editor | Admin | Pemilik |
+|---|:-:|:-:|:-:|
+| Melihat website dan mengedit draft | ✓ | ✓ | ✓ |
+| Meminta Admin menerbitkan website | ✓ | | |
+| Menerbitkan website, mengatur domain | | ✓ | ✓ |
+| Melihat isian formulir pengunjung | | ✓ | ✓ |
+| Mengubah profil organisasi dan logo | | ✓ | ✓ |
+| Mengundang anggota, mengubah peran, mengeluarkan anggota | | ✓ | ✓ |
+| Mengatur akses Portal Pengurus | | | ✓ |
+| Menghapus website, serah terima, menghapus organisasi | | | ✓ |
+
+Admin tidak bisa mengubah atau mengeluarkan Pemilik.
+
+## Mengundang anggota
+
+1. **Kelola organisasi → Anggota → Undang anggota**.
+2. Pilih peran: **Editor** atau **Admin**.
+3. Ketuk **Buat kode undangan**, lalu bagikan kodenya (mis. \`OSIS-7K2P\`).
+
+Aturan kode undangan:
+
+- Satu kode hanya untuk **satu orang** dan berlaku **1 jam**. Buat kode baru untuk setiap orang.
+- Undangan Admin atau Editor baru bisa dibuat setelah **username & password Portal peran itu diatur** (lihat [Akses Portal Pengurus](/docs/akses-portal-pengurus)).
+- Kode yang belum dipakai bisa dicabut dari daftar undangan aktif.
+
+## Bergabung dengan kode
+
+1. Buat akun OrgSpace sendiri (Google, GitHub, atau email).
+2. Ketuk nama ruang kerja di kiri atas → **Gabung organisasi**.
+3. Masukkan kode → **Cek kode**. Pastikan nama organisasi dan peranmu benar.
+4. Isi jabatan (opsional), lalu **Gabung sekarang**.
+
+## Keluar dan menghapus
+
+- **Keluar dari organisasi**: dari Kelola organisasi. Pemilik terakhir harus menyerahkan kepemilikan dulu.
+- **Hapus organisasi** (Pemilik): ketik ulang nama organisasi. Anggota, undangan, dan riwayatnya ikut terhapus permanen.
+- Semua perubahan penting tercatat di **Riwayat aktivitas**.
+`,
+  },
+  "akses-portal-pengurus": {
+    id: "doc-akses-portal-pengurus",
+    slug: "akses-portal-pengurus",
+    category: "ruang-kerja",
+    audience: "all",
+    title: "Akses Portal Pengurus",
+    summary: "Username & password Portal per peran (Pemilik, Admin, Editor): cara mengatur, mengganti, dan mencabut.",
+    sortOrder: 20,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Ruang kerja & anggota",
+    body: `Portal Pengurus (\`orgspace.app/nama-website/admin\`) adalah dashboard di browser untuk mengisi data website. Login Portal **tidak memakai akun OrgSpace pribadi**, tetapi username + password **per peran** milik organisasi.
+
+## Tiga akses Portal
+
+| Akses | Wajib? | Bisa membuka |
+|---|---|---|
+| **Pemilik** | Wajib | Semua tab, termasuk Kotak Masuk Form |
+| **Admin** | Opsional | Semua tab, termasuk Kotak Masuk Form |
+| **Editor** | Opsional | Ringkasan, Berita & Agenda, Modul Kustom (tanpa Kotak Masuk Form) |
+
+- Satu akses berlaku untuk **semua website** di organisasi itu, berapa pun jumlah admin dan editornya.
+- Username adalah "kartu nama" peran: Portal mengenali peran dari username, lalu mencocokkan password **hanya** dengan peran itu. Username Editor + password Admin ditolak walau password Admin benar.
+- Akses organisasi lain dan akun OrgSpace pribadi (email/Google/GitHub) **selalu ditolak**.
+
+## Mengatur akses (Pemilik)
+
+1. Di app: nama ruang kerja → **Kelola organisasi → Akses Portal website** (menu ini hanya tampil untuk Pemilik).
+2. Ketuk **Pemilik (wajib)**, isi username dan password baru, lalu **Simpan**.
+3. Ulangi untuk **Admin** dan **Editor** jika organisasi butuh pengurus lain.
+4. Bagikan username + password suatu peran hanya ke pengurus peran itu.
+
+Aturan isian:
+
+- Username 3–40 karakter: huruf, angka, titik, garis bawah, atau minus. Tidak membedakan huruf besar/kecil. Username ketiga peran harus berbeda.
+- Password 8–72 karakter.
+
+## Lupa atau ingin mencabut akses
+
+- Password **tidak bisa dilihat lagi** setelah disimpan, juga oleh Pemilik. Jika lupa, Pemilik membuat password baru.
+- Saat password suatu peran diganti, **semua yang sedang masuk dengan peran itu langsung keluar**. Cara ini juga dipakai untuk mencabut akses pengurus yang sudah tidak menjabat.
+- Akses Admin/Editor yang belum diatur membuat undangan Admin/Editor di app ditolak.
+
+## Pesan saat login Portal
+
+| Pesan | Artinya |
+|---|---|
+| "Password Portal belum diatur..." | Organisasi belum punya akses Portal sama sekali. Pemilik perlu mengaturnya di app |
+| "Username atau password salah." | Username tidak dikenal di organisasi ini, password salah, atau password milik peran lain |
+| "Terlalu banyak percobaan..." | Tunggu sebentar, lalu coba lagi |
+
+Lihat juga: [Menggunakan Portal Pengurus](/docs/portal-pengurus) dan [Pergantian pengurus](/docs/pergantian-pengurus).
+`,
+  },
+  "pergantian-pengurus": {
+    id: "doc-pergantian-pengurus",
+    slug: "pergantian-pengurus",
+    category: "ruang-kerja",
+    audience: "creator",
+    title: "Pergantian Pengurus & Serah Terima",
+    summary: "Urutan aman saat kepengurusan berganti: undang pengurus baru, serah terima, dan ganti akses Portal.",
+    sortOrder: 30,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Ruang kerja & anggota",
+    body: `Saat kepengurusan berganti (mis. ketua OSIS baru), website dan datanya tetap di organisasi yang sama. Yang dipindahkan hanya kepemilikan dan akses.
+
+## Urutan yang disarankan
+
+1. **Ketua lama** memastikan akses Portal **Admin** (dan Editor bila perlu) sudah diatur. Tanpa itu, undangan ditolak.
+2. **Ketua lama mengundang pengurus baru** dari Kelola organisasi → Anggota → Undang anggota. Setiap orang memakai akun OrgSpace-nya sendiri dan kodenya sendiri (sekali pakai, berlaku 1 jam). Ketua baru diundang sebagai **Admin**.
+3. **Serah terima**: Kelola organisasi → **Serah terima** → pilih ketua baru → pilih peranmu setelahnya (**tetap Admin**, **tetap Editor**, atau **keluar**) → konfirmasi.
+4. **Ketua baru mengeluarkan anggota lama** dari Kelola organisasi → Anggota.
+5. **Ketua baru membuat akses Portal Pemilik** dan **mengganti password Admin & Editor** di Akses Portal website.
+
+## Yang terjadi otomatis saat serah terima
+
+- Penerima menjadi **Pemilik**. Penerima harus sudah menjadi anggota organisasi.
+- **Akses Portal Pemilik dihapus**, jadi ketua lama langsung keluar dari Portal dan ketua baru wajib membuat username & password Pemilik sendiri.
+- Akses Admin dan Editor **tetap berlaku**, tetapi di Akses Portal website tampil peringatan *"ganti password, masih yang lama dari sebelum serah terima"* sampai passwordnya diganti.
+- Serah terima tercatat di Riwayat aktivitas. Hanya Pemilik baru yang bisa mengembalikan kepemilikan.
+
+## Hal yang perlu diingat
+
+- Password Portal tidak diwariskan dan tidak bisa dilihat siapa pun. Ketua baru membuat yang baru.
+- Pengurus lama yang masih tahu password Admin/Editor tetap bisa masuk Portal sampai passwordnya diganti (langkah 5).
+- Ruang pribadi tidak bisa diserahterimakan.
+`,
+  },
+  "membuat-website-dari-template": {
+    id: "doc-membuat-website-dari-template",
+    slug: "membuat-website-dari-template",
+    category: "website",
+    audience: "creator",
+    title: "Mengedit Website dari Template",
+    summary: "Memilih template, bagian editor, jenis isian, tema, cek kelengkapan, dan menu editor.",
+    sortOrder: 10,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Membuat website",
+    body: `Website OrgSpace dibuat dari **template** buatan kreator. Tata letak template sudah dikunci; kamu mengganti teks, foto, link, dan warna pada bagian yang ditandai kreator.
+
+## 1. Memilih template
+
+1. Buka tab **Template** atau ketuk tombol **+** di menu bawah.
+2. Saring per kategori organisasi (OSIS / MPK, BEM, Himpunan, UKM, Pramuka, dan lainnya). Kartu template menampilkan isi yang dimilikinya (mis. struktur kepengurusan, agenda, galeri, formulir).
+3. Ketuk template. File template diunduh ke HP, lalu editor terbuka dengan isi contoh.
+
+## 2. Bagian-bagian editor
+
+| Bagian | Fungsi |
+|---|---|
+| Preview | Tampilan website, langsung berubah saat kamu mengetik |
+| Chip section | **Semua** atau per section (Hero, Tentang, Kontak, ...). \`Hero ✓\` = isian wajibnya lengkap; \`Hero · 2\` = masih 2 yang perlu dilengkapi |
+| Tab **Isi** | Teks, paragraf, foto, link, dan tombol |
+| Tab **Gaya** | Warna, ukuran huruf, dan sudut yang diizinkan kreator, serta **Tema website** (warna utama) |
+| Urungkan / Ulangi | Membatalkan atau mengulang perubahan terakhir |
+| Preview layar penuh | Melihat website seperti pengunjung |
+| Status simpan | \`menyimpan…\` → \`tersimpan\`. Perubahan disimpan otomatis |
+
+## 3. Jenis isian
+
+| Isian | Cara mengisi |
+|---|---|
+| Teks / paragraf | Ketik langsung. Ada batas karakter agar tata letak tidak rusak. Tanda \`*\` = wajib |
+| Foto | **Ganti foto** dari galeri HP. Foto disesuaikan dengan rasio yang tertulis (mis. 16:9). **Kembalikan foto contoh** untuk membatalkan |
+| Link / tombol | Alamat harus diawali \`https://\`, \`http://\`, \`mailto:\`, \`tel:\`, atau \`https://wa.me/\`. **Pakai nomor WhatsApp** membuat link WA dari nomor HP |
+| Warna | Pilih warna atau ketik kode seperti \`#1E3A8A\`. Muncul peringatan jika kontras teks terlalu rendah |
+
+Isian yang terhubung ke **profil organisasi** (nama, logo, kontak, media sosial) terisi otomatis dari Profil organisasi.
+
+## 4. Cek kelengkapan
+
+Menu **⋮ → Cek kelengkapan** menampilkan:
+
+- **Perlu dilengkapi**: isian wajib yang kosong atau link yang tidak valid. Ketuk **Lengkapi sekarang** untuk langsung ke isiannya.
+- **Saran (opsional)**: isian yang masih teks, foto, atau link contoh.
+
+## 5. Menu lain
+
+| Menu | Fungsi |
+|---|---|
+| Export | Membuka **Selesai & Publikasi**: terbitkan atau unduh ZIP (lihat [Meng-online-kan website](/docs/cara-mengonlinekan-website)) |
+| Kembalikan ke isi template | Semua teks, foto, dan gaya kembali seperti template (masih bisa diurungkan) |
+| Ganti nama project | Nama di daftar website |
+| Hapus project | Menghapus project dan foto pilihannya dari HP |
+
+## Tips
+
+- Kerjakan section demi section sampai chip-nya bertanda ✓.
+- Data yang sering berubah (berita, agenda, prestasi, galeri) **tidak** diedit di sini. Data itu diisi pengurus lewat [Portal Pengurus](/docs/portal-pengurus) setelah website terbit.
+- Jika tampil *"Sedang diedit oleh ..."*, pengurus lain sedang membuka editor website itu. Tunggu sampai ia selesai.
+`,
+  },
+  "kelola-website": {
+    id: "doc-kelola-website",
+    slug: "kelola-website",
+    category: "website",
+    audience: "creator",
+    title: "Kelola Website",
+    summary: "Daftar website, status, minta diterbitkan, ganti nama, duplikat, hapus, dan bagian halaman Kelola website.",
+    sortOrder: 20,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Membuat website",
+    body: `Tab **Website** di app berisi semua website ruang kerja aktif. Ketuk sebuah website untuk membuka halaman **Kelola website**.
+
+## Daftar website
+
+- Cari nama website dan saring per status.
+- Status: **Draft** (belum terbit), **Online**, **Dimatikan**, **Ditangguhkan** (oleh tim OrgSpace, disertai alasan).
+- Label *"Ada perubahan belum diterbitkan"* muncul jika website sudah diedit setelah terbit terakhir.
+- *"Sedang diedit oleh ..."* berarti pengurus lain sedang membuka editornya.
+
+## Tombol utama
+
+| Tombol | Siapa | Fungsi |
+|---|---|---|
+| **Edit tampilan** | Semua peran | Membuka editor (lihat [Mengedit website](/docs/membuat-website-dari-template)) |
+| **Minta diterbitkan** | Editor | Mengirim permintaan (dengan catatan opsional) ke Admin. Status permintaan tampil di banner |
+
+Untuk menerbitkan, Pemilik atau Admin memakai **Export → Publish Langsung** dari editor (lihat [Meng-online-kan website](/docs/cara-mengonlinekan-website)).
+
+## Menu ⋮
+
+| Menu | Keterangan |
+|---|---|
+| Ganti nama | Nama website di app. Alamat yang sudah terbit tidak berubah |
+| Duplikat | Membuat salinan untuk dicoba tanpa mengubah aslinya |
+| Hapus | Website yang sudah pernah online ikut menghapus alamatnya; ketik nama website untuk konfirmasi |
+
+## Bagian halaman Kelola website
+
+| Bagian | Status |
+|---|---|
+| **Domain** | Tersedia setelah terbit: alamat bawaan + [domain sendiri](/docs/domain-kustom) |
+| Ringkasan (link, QR code), Riwayat versi, Pengaturan situs | Segera hadir |
+| Konten, Statistik pengunjung, Data masuk | Segera hadir. Sementara itu, berita, modul, dan isian formulir dikelola di [Portal Pengurus](/docs/portal-pengurus) |
+`,
+  },
+  "cara-mengonlinekan-website": {
+    id: "doc-cara-mengonlinekan-website",
+    slug: "cara-mengonlinekan-website",
+    category: "terbit",
+    audience: "creator",
+    title: "Meng-online-kan Website",
+    summary: "Publish Langsung ke orgspace.app/nama-website atau unduh ZIP, beserta hal yang perlu diketahui setelah terbit.",
+    sortOrder: 10,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Menerbitkan website",
+    body: `Website bisa **diterbitkan** ke \`orgspace.app/nama-website\` (gratis, langsung online) atau **diunduh sebagai ZIP** untuk di-hosting sendiri.
+
+## 1. Membuka Selesai & Publikasi
+
+1. Di editor, buka **⋮ → Cek kelengkapan** dan lengkapi isian wajib. Website boleh tetap diekspor sebagai draft, tapi isian kosong akan tampil apa adanya.
+2. Ketuk **Export**. Layar **Selesai & Publikasi** menampilkan dua pilihan: **Publish Langsung** dan **Download as ZIP File**.
+
+## 2. Publish Langsung
+
+1. Isi **Nama website**. Nama ini menjadi alamat: \`orgspace.app/nama-website\`. Gunakan huruf kecil, angka, dan tanda minus; app memberi tahu jika nama sudah dipakai.
+2. Ketuk **Publish Langsung Sekarang**.
+3. Setelah berhasil, muncul dialog **Website Berhasil Diterbitkan!** dengan alamat website, tombol **Buka Website**, **Salin Tautan**, dan **Atur Domain Sendiri**.
+
+Yang perlu diketahui:
+
+- Hanya **Pemilik** dan **Admin** yang bisa menerbitkan. **Editor** memakai **Minta diterbitkan** di halaman Kelola website, lalu Admin yang menerbitkan.
+- Website tersimpan di **ruang kerja aktif** dan tampil di tab **Website** untuk semua anggota.
+- Setelah terbit pertama kali, **nama website dikunci** agar link yang sudah dibagikan tetap jalan.
+- Untuk memperbarui tampilan: edit lagi, lalu Publish Langsung lagi. Alamatnya tetap sama.
+- Foto yang filenya sudah tidak ada di HP diganti foto contoh. App memberi tahu foto mana; pilih ulang foto itu lalu terbitkan lagi.
+- Data modul (berita, agenda, prestasi) dan formulir dikelola di [Portal Pengurus](/docs/portal-pengurus) dan langsung tampil **tanpa terbit ulang**.
+
+> Sebelum membagikan link, minta Pemilik mengatur [akses Portal Pengurus](/docs/akses-portal-pengurus) agar pengurus bisa mengisi data website.
+
+## 3. Download as ZIP File
+
+1. Di bagian **Download as ZIP File**, atur **Nama file** dan **Kompres foto agar ringan** (disarankan).
+2. Ketuk **Download File ZIP** untuk menyimpan ke HP, atau **Bagikan** untuk mengirimnya lewat aplikasi lain.
+
+ZIP berisi HTML, CSS, JS, dan foto yang siap diunggah ke hosting statis mana pun. Bagian modul dinamis (berita, agenda, formulir) di ZIP **tetap menampilkan isi contoh** karena modul hanya bekerja di website yang tayang di OrgSpace.
+
+## 4. Setelah terbit
+
+- [Kelola website](/docs/kelola-website): ganti nama, duplikat, domain, hapus.
+- [Domain sendiri](/docs/domain-kustom): mis. \`osis-sman1.sch.id\`.
+- [Portal Pengurus](/docs/portal-pengurus): mengisi berita, modul, dan membaca formulir.
+`,
+  },
+  "portal-pengurus": {
+    id: "doc-portal-pengurus",
+    slug: "portal-pengurus",
+    category: "terbit",
+    audience: "all",
+    title: "Menggunakan Portal Pengurus",
+    summary: "Mengisi berita, data modul, dan membaca isian formulir website tanpa terbit ulang.",
+    sortOrder: 20,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Menerbitkan website",
+    body: `Portal Pengurus adalah dashboard di browser untuk mengisi **data** website yang sudah terbit: berita, data modul (agenda, prestasi, galeri, dll.), dan isian formulir pengunjung. Perubahan **langsung tampil** di website tanpa terbit ulang.
+
+## Membuka Portal
+
+- Alamat: \`orgspace.app/nama-website/admin\` (atau \`domain-kamu/admin\`). Banyak template juga punya tombol **Masuk Pengurus**.
+- Masuk dengan **username + password akses Portal** dari Pemilik organisasi. Cara mengaturnya: [Akses Portal Pengurus](/docs/akses-portal-pengurus).
+- Sesi berlaku **8 jam** dan hanya untuk website itu. Tombol **Keluar** ada di menu samping.
+
+## Tab
+
+| Tab | Isi | Peran |
+|---|---|---|
+| **Ringkasan** | Jumlah isian formulir, berita, item modul, dan akses yang sedang dipakai | Semua |
+| **Kotak Masuk Form** | Semua kiriman dari formulir website (pendaftaran, aspirasi, dll.) | Pemilik, Admin |
+| **Berita & Agenda** | Tambah dan hapus pengumuman: judul (maks 200), ringkasan (maks 500), dan isi | Semua |
+| **Modul Kustom** | Data modul yang disediakan template | Semua |
+
+## Mengisi Modul Kustom
+
+1. Pilih modul (mis. \`prestasi\`, \`agenda\`, \`galeri\`). Daftar modul dan isiannya dibaca otomatis dari template.
+2. Isi form. Jenis isian mengikuti template: teks singkat, teks panjang, angka, tanggal, link, atau **foto** (diunggah dan diperkecil otomatis).
+3. **Simpan**. Data langsung tampil di website.
+4. Untuk data yang sudah ada: **edit**, **hapus**, atau ubah urutan dengan tombol **naik/turun**. Urutan di Portal sama dengan urutan di website.
+
+Isian yang dikosongkan tetap menampilkan isi contoh dari template. Isi semua isian penting agar teks contoh tidak tampil.
+
+## Yang tidak ada di Portal
+
+- **Mengubah tampilan** (teks hero, foto utama, warna): dilakukan di editor app lalu diterbitkan ulang.
+- **Mengelola anggota**: dari app, Kelola organisasi → Anggota.
+- **Mengatur akses Portal**: dari app, oleh Pemilik.
+
+## Mencoba tanpa akun
+
+Template di galeri Website OrgSpace punya tombol **Preview**. Dari preview, buka \`/admin\` untuk mencoba Portal Pengurus demo (login demo tertera di layar). Data demo hanya ada di tab browser itu dan hilang saat ditutup.
+`,
+  },
+  "domain-kustom": {
+    id: "doc-domain-kustom",
+    slug: "domain-kustom",
+    category: "terbit",
+    audience: "creator",
+    title: "Memasang Domain Sendiri",
+    summary: "Menghubungkan domain seperti osis-sman1.sch.id: record DNS, verifikasi, www, dan masalah umum.",
+    sortOrder: 30,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Menerbitkan website",
+    body: `Setiap website yang terbit mendapat alamat gratis \`orgspace.app/nama-website\`. Kamu juga bisa memakai domain sendiri, mis. \`osis-sman1.sch.id\` atau \`himatif.my.id\`.
+
+## Syarat
+
+- Website sudah **terbit** (bukan draft).
+- Kamu **Pemilik** atau **Admin** organisasi.
+- Kamu punya akses ke panel DNS tempat domain dibeli (mis. Cloudflare, Niagahoster, Domainesia, Rumahweb).
+
+## Langkah
+
+1. Kelola website → **Domain** → isi domain (tanpa \`https://\`), lalu **Sambungkan Domain**.
+2. App menampilkan record DNS yang harus ditambahkan. Ketuk nilainya untuk menyalin.
+
+| Jenis | Host | Kapan |
+|---|---|---|
+| \`A\` | \`@\` | Untuk domain utama (mis. \`osis.id\`) |
+| \`CNAME\` | nama subdomain (mis. \`web\`) | Untuk subdomain (mis. \`web.osis.id\`) |
+| \`TXT\` | \`_orgspace-verify\` (atau \`_orgspace-verify.web\` untuk subdomain) | **Wajib**: bukti domain ini milikmu |
+| \`CNAME www\` / \`A @\` | \`www\` / \`@\` | **Opsional**: agar versi dengan dan tanpa \`www\` sama-sama membuka website |
+
+3. Tambahkan record itu di panel DNS domainmu, simpan, lalu tunggu beberapa menit.
+4. Kembali ke app → **Periksa & Aktifkan DNS**. Jika berhasil, status berubah menjadi **Domain Aktif**.
+
+> Domain berakhiran \`.sch.id\`, \`.my.id\`, \`.ac.id\`, \`.or.id\` dikenali dengan benar: \`osis.sch.id\` dianggap domain utama (record \`A @\`), bukan subdomain.
+
+## Setelah aktif
+
+- \`osis.id\` dan \`www.osis.id\` membuka website yang sama (jika record opsional ditambahkan).
+- OrgSpace memeriksa domain secara berkala. Jika \`A\`/\`CNAME\` belum mengarah ke OrgSpace, domain tetap aktif dengan peringatan di app.
+- Jika record \`TXT\` hilang (mis. domain kedaluwarsa), app menampilkan peringatan. Setelah **7 hari** tetap hilang, domain dilepas otomatis dari website.
+- **Lepas Domain** kapan saja dari layar yang sama. Website tetap bisa dibuka lewat alamat bawaan.
+
+## Masalah umum
+
+| Gejala | Solusi |
+|---|---|
+| "Record TXT verifikasi belum terdeteksi" | DNS butuh beberapa menit sampai beberapa jam. Pastikan host TXT persis seperti di app, lalu periksa lagi |
+| Domain aktif tapi website belum terbuka | Record \`A\`/\`CNAME\` belum benar atau masih propagasi. Lihat peringatan di app |
+| Hanya versi \`www\` (atau tanpa \`www\`) yang terbuka | Tambahkan record opsional pasangannya |
+`,
+  },
+  "menjadi-penyedia-template": {
+    id: "doc-menjadi-penyedia-template",
+    slug: "menjadi-penyedia-template",
+    category: "provider",
+    audience: "provider",
+    title: "Menjadi Penyedia Template",
+    summary: "Mengaktifkan mode kreator, menu kreator, enam langkah Upload, dan status template.",
+    sortOrder: 10,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Penyedia template",
+    body: `Penyedia template (kreator) membuat template website HTML/CSS/JS yang dipakai organisasi lain di OrgSpace. Template-mu tayang di galeri, dipakai pembuat website, lalu datanya diisi pengurus lewat Portal Pengurus.
+
+## Jalur belajar untuk kreator baru
+
+1. **Unduh paket contoh**: [Contoh template & paket unduhan](/docs/contoh-template-dan-paket). Coba unggah contohnya apa adanya.
+2. **Pahami syaratnya**: [Requirement project & aturan pengecekan](/docs/requirement-project-dan-tools).
+3. **Buat bagian dinamis**: [Panduan Modul Dinamis](/docs/modul-sistem-dan-kustom) (\`data-ws-*\`) dan [Membuat fitur kustom](/docs/membuat-fitur-kustom).
+4. **Unggah dan tandai**: langkah di bawah, lalu [Menandai bagian template](/docs/menandai-bagian-template).
+
+## 1. Mengaktifkan mode kreator
+
+1. Masuk ke app dengan akunmu.
+2. Buka **Profil → Jadi kreator template**.
+3. Isi **nama kreator** (wajib), bio (maks 300 karakter), link portofolio/GitHub, dan keahlian, lalu centang persetujuan aturan kreator.
+4. Kirim. Mode kreator **langsung aktif** tanpa menunggu verifikasi.
+
+Pindah mode kapan saja: **Profil → Beralih ke mode kreator / mode pembuat website**. App membuka mode terakhir yang kamu pakai.
+
+## 2. Menu bawah mode kreator
+
+| Menu | Isi |
+|---|---|
+| Beranda | Ringkasan **Aktif**, **Dilihat**, **Didownload**, tren download, dan **Perlu tindakan** (upload gagal, draft hampir dihapus) |
+| Upload | Mengunggah template baru dan melanjutkan draft |
+| Template Anda | Semua templatemu, bisa dikelompokkan dalam folder, dicari, dan disaring per status |
+| Profil | Profil kreator dan pengaturan |
+
+Arti angka: **Dilihat** = berapa kali halaman detail templatemu dibuka pembuat website (7 atau 30 hari). **Didownload** = berapa project dari templatemu yang selesai dan diexport (sekali per project; export oleh pemilik template sendiri tidak dihitung).
+
+## 3. Enam langkah Upload
+
+| Langkah | Yang dilakukan |
+|---|---|
+| **1. Pilih file** | Pilih ZIP (maks 20 MB) dari HP, Drive, atau WhatsApp. App memeriksa sekilas di HP. ZIP dikirim per potongan 1 MB dan bisa dilanjutkan jika koneksi putus |
+| **2. Pengecekan file** | Server memeriksa ZIP dengan [aturan pengecekan](/docs/requirement-project-dan-tools). **Error** menghentikan proses; **peringatan** boleh dilanjutkan. Setiap temuan menampilkan file, baris, dan cara memperbaikinya |
+| **3. Info template** | Nama (3–60 karakter), **kategori** organisasi, **isi template** (profil, struktur, agenda, galeri, ...), deskripsi (20–300 karakter), 1–5 kata kunci, dan thumbnail (otomatis, dari section lain, atau unggah sendiri) |
+| **4. Tandai bagian** | Pilih teks, gambar, link, dan tombol yang boleh diganti pembuat website, per halaman dan per section. Detail: [Menandai bagian template](/docs/menandai-bagian-template) |
+| **5. Coba sebagai pengguna** | Mencoba form edit yang akan dilihat pembuat website, dengan preview langsung. Hanya percobaan, isi contoh template tidak berubah |
+| **6. Kirim** | Ringkasan, centang **hak pakai aset** ("Saya berhak memakai semua gambar, font, dan isi dalam template ini"), lalu Kirim |
+
+Setelah lolos langkah 2, pekerjaan tersimpan sebagai **draft**. Kamu boleh berhenti dan melanjutkan dari tab Upload. Langkah 4 dan 5 bisa bolak-balik.
+
+## 4. Setelah dikirim
+
+1. Status menjadi **Sedang dicek**. Server memeriksa ulang file dan tandaan, menyalin library CDN ke dalam paket template, lalu membuat paket yang dipakai app.
+2. Lolos → **Tayang** di galeri. Peringatan yang tersisa masuk **Perlu tindakan** di Beranda.
+3. Gagal → masuk **Perlu diperbaiki** di tab Upload. Perbaiki file, lalu **Upload file perbaikan**.
+
+## Status template
+
+| Status | Arti |
+|---|---|
+| Draft | Belum dikirim. Maksimal **5 draft**; draft yang 30 hari tidak disentuh dihapus (diingatkan 5 hari sebelumnya) |
+| Sedang dicek | Pengecekan akhir sedang berjalan |
+| Tayang | Tampil di galeri dan bisa dipakai |
+| Tidak lolos | Perlu diperbaiki lalu diunggah ulang |
+| Dinonaktifkan | Tidak tampil di galeri |
+
+> Pengecekan keliru? Laporkan dari layar hasil pengecekan agar tim OrgSpace memeriksanya.
+`,
+  },
+  "contoh-template-dan-paket": {
+    id: "doc-contoh-template-dan-paket",
+    slug: "contoh-template-dan-paket",
+    category: "provider",
+    audience: "provider",
+    title: "Contoh Template & Paket Unduhan",
+    summary: "Unduh paket contoh (template sederhana & lengkap, panduan, instruksi AI agent) dan coba dari upload sampai Portal.",
+    sortOrder: 15,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Penyedia template",
+    body: `Cara tercepat membuat template OrgSpace adalah **mulai dari contoh yang sudah lolos pengecekan**.
+
+## [⬇ Unduh paket contoh (ZIP)](/downloads/contoh-modul-orgspace.zip)
+
+\`\`\`
+contoh-modul-orgspace/
+├── BACA-SAYA.md       ← mulai dari sini
+├── AGENTS.md          ← instruksi untuk AI agent (Codex, Cursor, dll.)
+├── CLAUDE.md          ← sama, untuk Claude Code
+├── docs/
+│   ├── 01-panduan-modul-dinamis.md   ← semua atribut data-ws-*
+│   ├── 02-requirement-dan-aturan.md  ← batas ZIP, CDN, daftar kode pengecekan
+│   ├── 03-menandai-bagian.md         ← langkah Tandai di app
+│   └── 04-membuat-fitur-kustom.md    ← merancang fitur + resep JavaScript
+├── contoh-template/   ← contoh sederhana 1 halaman, semua modul dasar
+└── template-sinergi/  ← contoh lengkap & interaktif, 2 halaman
+\`\`\`
+
+## Dua contoh template
+
+| | \`contoh-template/\` | \`template-sinergi/\` |
+|---|---|---|
+| Halaman | 1 (\`index.html\`) | 2 (\`index.html\`, \`tentang.html\`) |
+| Modul | Pengumuman, \`prestasi\`, \`agenda\` | Pengumuman + 7 modul kustom (program, prestasi, agenda, galeri, testimoni, FAQ, struktur) |
+| Formulir | \`pendaftaran\`, \`aspirasi\` | Pendaftaran 2 langkah, aspirasi |
+| Data otomatis | – | \`data-ws-stat\` (statistik), \`data-ws-org\` (profil organisasi) |
+| JavaScript | Menu HP, filter prestasi per tingkat | Statistik naik saat di-scroll, filter dari data, agenda + hitung mundur, lightbox galeri, pencarian pengurus, tema gelap |
+| Tema | – | Warna utama, aksen, dan sudut di variabel \`:root\` |
+
+## Mencoba contoh dari nol sampai Portal
+
+1. Unduh dan ekstrak paket.
+2. ZIP **isi** folder \`contoh-template/\` sehingga \`index.html\` ada di akar ZIP:
+   - Linux/macOS: \`cd contoh-template && zip -r ../contoh.zip . && cd ..\`
+   - Windows (PowerShell): \`Compress-Archive -Path contoh-template\\* -DestinationPath contoh.zip -Force\`
+3. Di app: mode kreator → **Upload** → pilih \`contoh.zip\` → Info → Tandai minimal 3 elemen (mis. judul hero, deskripsi, logo) → Coba → Kirim.
+4. Pindah ke mode pembuat website, pakai template itu dari galeri, lalu **Publish Langsung**.
+5. Pemilik organisasi mengatur [akses Portal](/docs/akses-portal-pengurus), lalu buka \`orgspace.app/nama-website/admin\` dan isi pengumuman, prestasi, dan agenda. Data langsung tampil di website.
+6. Kirim formulir dari website, lalu lihat isinya di tab **Kotak Masuk Form** Portal.
+
+## Dibantu AI agent
+
+Ekstrak paket, buka foldernya di editor dengan AI agent, lalu beri perintah, misalnya:
+
+> Baca AGENTS.md lalu buatkan template website untuk OSIS SMA bergaya modern, 3 halaman: Beranda, Agenda, dan Tentang. Pengurus harus bisa mengisi agenda, prestasi (bisa difilter per tingkat), galeri foto, dan struktur pengurus. Tambahkan formulir pendaftaran anggota dan angka statistik.
+
+Agent membuat folder \`template/\`, file ZIP, dan daftar elemen yang sebaiknya ditandai di app.
+
+## Coba Portal demo tanpa mengunggah
+
+Setiap template di galeri Website OrgSpace punya tombol **Preview**. Buka \`/admin\` dari preview untuk mencoba Portal Pengurus demo dengan data contoh.
+`,
+  },
+  "requirement-project-dan-tools": {
+    id: "doc-requirement-project-dan-tools",
+    slug: "requirement-project-dan-tools",
+    category: "provider",
+    audience: "provider",
+    title: "Requirement Project & Aturan Pengecekan",
+    summary: "Bentuk project, batas ukuran, jenis file, library CDN, keamanan, dan daftar lengkap kode pengecekan upload.",
+    sortOrder: 20,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Penyedia template",
+    body: `Semua aturan di halaman ini diperiksa otomatis saat Upload langkah 2. **Error** menghentikan upload; **peringatan** boleh dilanjutkan tapi sebaiknya diperbaiki. Setiap temuan menyebut kodenya (mis. \`NO_INDEX\`), file, baris, dan cara memperbaikinya.
+
+## 1. Bentuk project
+
+- **HTML + CSS + JavaScript biasa** (vanilla). Teks dan gambar utama ditulis langsung di HTML, bukan dibuat JavaScript.
+- Hasil build alat seperti Vite, Astro, Eleventy, atau Hugo boleh, asalkan yang diunggah adalah **folder hasil build** (mis. \`dist/\`) yang berisi HTML jadi.
+- **Belum didukung**: hasil build React/Vue/Svelte/Angular/Next.js/Nuxt yang isi halamannya dibuat JavaScript, dan template yang butuh server (PHP).
+
+\`\`\`text
+template-anda.zip
+├── index.html        ← WAJIB di akar ZIP (bukan template-anda/index.html)
+├── tentang.html      ← halaman lain (opsional)
+├── css/style.css
+├── js/main.js        ← opsional
+├── img/...           ← gambar
+└── fonts/...         ← font lokal (opsional)
+\`\`\`
+
+Nama folder \`css/\`, \`js/\`, \`img/\` hanya saran; yang wajib adalah \`index.html\` di akar dan semua path **relatif** (\`css/style.css\`, bukan \`/css/style.css\`).
+
+## 2. Batas ukuran
+
+| Batas | Nilai | Tingkat |
+|---|---|---|
+| Ukuran ZIP | 20 MB | Error |
+| Total setelah diekstrak | 50 MB | Error |
+| Jumlah file | 500 | Error |
+| Ukuran satu file | 10 MB | Error |
+| Halaman HTML | 10 | Error |
+| Satu gambar | > 1 MB | Peringatan |
+| Berat satu halaman | > 5 MB | Peringatan |
+| Satu file CSS | > 1 MB | Peringatan |
+| Gambar base64 di HTML | > 20 KB | Peringatan |
+
+## 3. Jenis file
+
+- **Boleh**: \`html\`, \`htm\`, \`css\`, \`js\`, \`mjs\`, \`png\`, \`jpg\`, \`jpeg\`, \`webp\`, \`gif\`, \`svg\`, \`ico\`, \`woff\`, \`woff2\`, \`ttf\`, \`otf\`, \`txt\`, \`md\`, \`json\` (data lokal, mis. \`fetch("data/menu.json")\`).
+- **Diabaikan** (boleh ikut): \`package.json\`, lockfile, \`*.config.js\`, \`tsconfig.json\`, README, LICENSE.
+- **Ditolak**: PHP; \`scss\`/\`sass\`/\`less\` yang dipakai tanpa di-build; kode sumber \`ts\`/\`tsx\`/\`jsx\`/\`vue\`/\`svelte\` sebagai pengganti hasil build.
+
+## 4. Library dari CDN
+
+- Host yang diizinkan: \`cdn.jsdelivr.net\`, \`cdnjs.cloudflare.com\`, \`unpkg.com\`, \`cdn.tailwindcss.com\`, \`code.jquery.com\`. Google Fonts boleh (peringatan karena butuh internet).
+- Library yang diizinkan: **Tailwind**, **Bootstrap**, **Bulma**, **Alpine.js** (+ collapse, intersect, focus), **jQuery**, **AOS**, **Swiper**, **Splide**, **GSAP**, **Font Awesome**, **Bootstrap Icons**, **Lucide**, **Remix Icon**.
+- Tulis **versi lengkap** di URL: \`https://cdn.jsdelivr.net/npm/swiper@11.1.4/swiper-bundle.min.js\`. Tanpa versi atau \`@latest\` ditolak.
+- Muat library dengan \`<script src>\` / \`<link>\` di HTML, bukan \`import\` dari CDN di dalam file JS.
+- Saat template dikirim, file library **disalin ke dalam paket template**, jadi website tetap jalan walau CDN bermasalah.
+- File library yang disertakan langsung di ZIP juga boleh. Versi terkenal (mis. jQuery 3.7.1, Swiper 11.1.4) dikenali otomatis.
+
+## 5. Keamanan
+
+- Tanpa analytics/pelacak (Google Analytics/Tag Manager, Meta Pixel, Hotjar, Clarity) dan tanpa SDK yang mengambil data dari server (mis. Firebase).
+- JavaScript tidak boleh mengambil atau mengirim data ke situs lain (\`fetch("https://...")\`, XHR, WebSocket, \`sendBeacon\`). Data dinamis memakai [modul \`data-ws-*\`](/docs/modul-sistem-dan-kustom).
+- Form tidak boleh \`action\` ke situs lain, dan halaman tidak boleh berpindah otomatis ke situs lain.
+- \`iframe\` hanya dari YouTube (\`youtube.com\`, \`youtube-nocookie.com\`) dan Google Maps.
+- Dilarang kode diacak (obfuscated), Service Worker, pola penambang kripto, \`<base href>\`, dan atribut khusus app (\`data-edit\`, \`data-key\`, \`data-label\`, \`data-tpl-id\`).
+- **Saat website terbit**, atribut \`onclick\`/\`onload\`/\`onerror\` dsb. dan link \`javascript:\` **dihapus otomatis**. Pasang event dengan \`addEventListener\` di file JS.
+
+## 6. Daftar lengkap pemeriksaan
+
+### Struktur ZIP
+
+| Kode | Tingkat | Arti |
+|---|---|---|
+| \`ZIP_INVALID\` | Error | ZIP rusak atau tidak bisa dibuka |
+| \`ZIP_ENCRYPTED\` | Error | ZIP dikunci password |
+| \`NO_INDEX\` | Error | \`index.html\` tidak ada di akar ZIP |
+| \`ZIP_TOO_LARGE\`, \`EXTRACTED_TOO_LARGE\`, \`TOO_MANY_FILES\`, \`FILE_TOO_LARGE\`, \`TOO_MANY_PAGES\` | Error | Melewati batas di bagian 2 |
+| \`UNSAFE_PATH\` | Error | Nama file berbahaya di dalam ZIP (mis. \`../\`) |
+| \`SOURCE_NOT_BUILT\`, \`UNBUILT_RESOURCE\` | Error | Kode sumber atau SCSS/LESS yang belum di-build |
+| \`SOURCE_FILES_INCLUDED\` | Peringatan | File sumber ikut terunggah (tidak dipakai halaman) |
+| \`CASE_MISMATCH\` | Error | Huruf besar/kecil nama file berbeda dengan yang dipanggil |
+| \`FILE_NAME_STYLE\` | Peringatan | Nama file memakai spasi atau karakter khusus |
+| \`FILE_TYPE_NOT_ALLOWED\` | Error | Jenis file tidak diizinkan |
+| \`SERVER_SCRIPT\` | Error | Template butuh server (PHP) |
+
+### HTML
+
+| Kode | Tingkat | Arti |
+|---|---|---|
+| \`HTML_UNREADABLE\` | Error | File HTML kosong atau tidak bisa dibaca |
+| \`JS_RENDERED_CONTENT\` | Error | Konten utama dibuat oleh JavaScript |
+| \`JS_PARTIAL_CONTENT\` | Peringatan | Sebagian konten dibuat oleh JavaScript (tidak bisa ditandai) |
+| \`COMPONENT_FRAMEWORK\` | Error | Template React/Vue/Svelte belum didukung |
+| \`TOO_FEW_EDITABLE\` | Error | Kurang dari 3 teks/gambar yang bisa ditandai |
+| \`FORM_EXTERNAL_ACTION\` | Error | Form mengirim data ke situs lain |
+| \`AUTO_REDIRECT\` | Error | Halaman berpindah otomatis ke situs lain |
+| \`RESERVED_ATTRIBUTE\` | Error | Memakai atribut khusus app |
+| \`BASE_HREF\` | Error | Ada tag \`<base href>\` |
+| \`PLUGIN_TAG\` | Error | Memakai teknologi plugin lama (\`<object>\`, \`<embed>\`, \`<applet>\`) |
+| \`DYNAMIC_MODULE_INVALID\` | Error | Penanda \`data-ws-*\` tidak valid (lihat [Panduan Modul Dinamis](/docs/modul-sistem-dan-kustom)) |
+| \`NO_VIEWPORT\`, \`NO_TITLE\`, \`IMG_NO_ALT\`, \`CHARSET\`, \`DOCTYPE_LANG\`, \`DUPLICATE_ID\` | Peringatan | Tanpa meta viewport, \`<title>\`, \`alt\` gambar, UTF-8, \`<!DOCTYPE html>\`/\`lang\`, atau ada \`id\` ganda |
+
+### Link dan aset
+
+| Kode | Tingkat | Arti |
+|---|---|---|
+| \`MISSING_ASSET\` | Error | File CSS/JS yang dipanggil tidak ada |
+| \`BROKEN_PAGE_LINK\` | Error | Link ke halaman yang tidak ada |
+| \`MISSING_IMAGE\`, \`BROKEN_ANCHOR\`, \`ORPHAN_PAGE\`, \`HOTLINK_IMAGE\`, \`ROOT_ABSOLUTE_PATH\` | Peringatan | Gambar hilang, \`#anchor\` tanpa \`id\`, halaman tidak bisa dibuka dari menu, gambar diambil dari situs lain, path diawali \`/\` |
+
+### CSS
+
+| Kode | Tingkat | Arti |
+|---|---|---|
+| \`CSS_SCRIPT_TRICK\` | Error | CSS menjalankan script |
+| \`CSS_MISSING_URL\`, \`CSS_SYNTAX\`, \`NOT_RESPONSIVE\`, \`CSS_TOO_LARGE\` | Peringatan | Gambar/font di CSS tidak ada, kesalahan tulis, tidak menyesuaikan layar HP, file terlalu besar |
+
+### Library luar
+
+| Kode | Tingkat | Arti |
+|---|---|---|
+| \`CDN_NOT_ALLOWED\`, \`CDN_VERSION_UNCLEAR\`, \`UNTRUSTED_SOURCE\` | Error | Library di luar daftar, versi tidak jelas, atau script dari situs yang bukan CDN terpercaya |
+| \`JS_CDN_IMPORT\` | Error | \`import\` library dari CDN di dalam file JS |
+| \`TRACKER\`, \`REMOTE_DATA_SDK\`, \`IFRAME_NOT_ALLOWED\` | Error | Pelacak, SDK data server, atau iframe yang tidak diizinkan |
+| \`TAILWIND_PLAY_CDN\`, \`GOOGLE_FONTS\` | Peringatan | Tailwind Play CDN lebih berat; Google Fonts butuh internet |
+
+### JavaScript
+
+| Kode | Tingkat | Arti |
+|---|---|---|
+| \`EXT_FETCH\` | Error | Mengirim/mengambil data ke situs lain |
+| \`HIDDEN_EXTERNAL_LINK\` | Error | Link ke situs luar disembunyikan |
+| \`SERVICE_WORKER\`, \`OBFUSCATED_JS\`, \`CRYPTO_MINER\` | Error | Service Worker, kode diacak, pola penambang kripto |
+| \`JS_EVAL\`, \`STRING_TIMER\`, \`DOCUMENT_WRITE\`, \`POPUP_ON_LOAD\`, \`JS_SYNTAX\`, \`JS_RUNTIME_ERROR\`, \`HORIZONTAL_OVERFLOW\` | Peringatan | \`eval()\`, \`setTimeout\` dengan teks, \`document.write()\`, popup, kesalahan tulis, error saat dijalankan, elemen melebar melewati layar HP |
+
+### Ukuran
+
+| Kode | Tingkat | Arti |
+|---|---|---|
+| \`IMAGE_TOO_LARGE\`, \`PAGE_TOO_HEAVY\` | Peringatan | Gambar > 1 MB, halaman > 5 MB |
+
+## 7. Saran agar template disukai
+
+- \`<meta name="viewport" content="width=device-width, initial-scale=1">\` dan desain rapi di lebar 360 px.
+- \`<!DOCTYPE html>\`, \`<html lang="id">\`, \`<meta charset="utf-8">\`, dan \`<title>\` di setiap halaman.
+- Warna utama, aksen, dan sudut sebagai variabel \`:root\` agar bisa didaftarkan sebagai **tema** (lihat [Menandai bagian template](/docs/menandai-bagian-template)).
+- Gambar WebP/JPG di bawah 500 KB dengan \`alt\` yang jelas; gambar contoh milik sendiri atau berlisensi bebas.
+- Banyak teks dan gambar biasa di luar modul (judul, paragraf, logo, foto) dengan \`id\` jelas (\`hero-judul\`), agar mudah ditandai.
+
+## Editor yang disarankan
+
+VS Code (atau editor apa pun) + ekstensi Live Server untuk melihat hasil di browser. Coba juga di layar HP dengan mode responsif browser.
+`,
+  },
+  "modul-sistem-dan-kustom": {
+    id: "doc-modul-sistem-dan-kustom",
+    slug: "modul-sistem-dan-kustom",
+    category: "provider",
+    audience: "provider",
+    title: "Panduan Modul Dinamis",
+    summary: "Pengumuman, formulir, modul kustom, statistik, profil organisasi, Portal Pengurus, dan JavaScript template. Lengkap dengan paket contoh siap unduh.",
+    sortOrder: 30,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Penyedia template",
     body: `Modul dinamis membuat template HTML biasa bisa diisi data oleh pengurus organisasi: pengumuman, prestasi, agenda, formulir pendaftaran, dan tombol ke Portal Pengurus. Provider **tidak perlu menulis backend, API, atau database**. Cukup tambahkan atribut \`data-ws-*\` ke elemen HTML. JavaScript template sendiri (menu, slider, tab, dark mode) tetap boleh dan ikut jalan.
 
-Contoh sederhana ada di folder \`contoh-template/\`, contoh lengkap & interaktif di \`template-sinergi/\`. Cara merancang fitur sendiri (agenda, galeri, filter, pencarian) beserta resep JavaScript-nya ada di \`docs/04-membuat-fitur-kustom.md\`.
+Contoh sederhana ada di folder \`contoh-template/\`, contoh lengkap & interaktif di \`template-sinergi/\`. Cara merancang fitur sendiri (agenda, galeri, filter, pencarian) beserta resep JavaScript-nya ada di [Membuat fitur kustom](/docs/membuat-fitur-kustom).
 
 ## Unduh paket contoh
 
-[⬇ Unduh contoh-modul-orgspace.zip (223 KB)](/downloads/contoh-modul-orgspace.zip)
+[⬇ Unduh contoh-modul-orgspace.zip (228 KB)](/downloads/contoh-modul-orgspace.zip)
 
 Satu paket berisi template contoh, dokumentasi, dan instruksi untuk AI agent. Berikan paket ini ke AI agent (Claude Code, Codex, Cursor, dll.) sebagai referensi agar ia bisa membuat template yang langsung lolos pengecekan upload.
 
 | Isi paket | Untuk apa |
 |---|---|
 | \`AGENTS.md\` / \`CLAUDE.md\` | Instruksi untuk AI agent: cara kerja produk, apa yang dibaca, aturan, checklist, cara membuat ZIP, dan laporan saran isian Tandai |
-| \`docs/\` | Panduan modul dinamis (halaman ini), aturan wajib, requirement & tools, dan **Membuat Fitur Kustom** (resep JavaScript) |
+| \`docs/\` | Panduan modul dinamis (halaman ini), aturan pengecekan, requirement & tools, **Membuat Fitur Kustom** (resep JavaScript), dan **Menandai bagian** |
 | \`template-sinergi/\` | Template **lengkap & interaktif**: 2 halaman, 7 modul kustom, pengumuman, 2 formulir, statistik, profil organisasi, tema gelap |
 | \`contoh-template/\` | Template **sederhana** satu halaman yang memakai semua jenis modul |
 | \`BACA-SAYA.md\` | Panduan singkat untuk kamu |
@@ -464,17 +1083,16 @@ Pilihan: \`nama\`, \`singkatan\`, \`kategori\`, \`institusi\`, \`kota\`, \`alama
 
 ## Portal Pengurus
 
-Alamat: \`orgspace.app/nama-website/admin\`. Pengurus masuk dengan email dan password akun OrgSpace, dan harus menjadi anggota organisasi pemilik website.
+Alamat: \`orgspace.app/nama-website/admin\`. Pengurus masuk dengan **username dan password akses Portal** organisasi pemilik website. Ada tiga akses: Pemilik (wajib), Admin, dan Editor. Pemilik organisasi mengaturnya di app OrgSpace (Kelola organisasi → Akses Portal website), dan satu akses berlaku untuk semua website organisasi itu. Akun OrgSpace pribadi (email/Google/GitHub) dan akses organisasi lain tidak bisa dipakai di sini.
 
 | Tab | Isi |
 |---|---|
-| Ringkasan | Jumlah isian form, berita, item modul kustom, dan pengurus |
-| Kotak Masuk Form | Semua isian dari setiap \`data-ws-form\` |
+| Ringkasan | Jumlah isian form, berita, item modul kustom, dan akses yang sedang dipakai |
+| Kotak Masuk Form | Semua isian dari setiap \`data-ws-form\` (hanya Pemilik & Admin) |
 | Berita & Agenda | Tambah dan hapus pengumuman |
 | Modul Kustom | Daftar modul dari template beserta field-nya; tambah, edit, hapus, urutkan data, dan unggah foto |
-| Pengurus & Hak Akses | Tambah pengurus (hanya akun OrgSpace yang sudah terdaftar) dan atur perannya |
 
-Sesi Portal Pengurus berlaku 8 jam dan **hanya untuk satu website itu**.
+Sesi Portal Pengurus berlaku 8 jam dan **hanya untuk satu website itu**. Saat Pemilik mengganti password suatu akses, semua yang sedang masuk dengan akses itu langsung keluar.
 
 ## JavaScript template
 
@@ -525,6 +1143,10 @@ Template boleh punya beberapa halaman (\`index.html\`, \`tentang.html\`, \`konta
 - Modul yang sama boleh dipakai di beberapa halaman dan datanya tetap satu. Mis. beranda menampilkan 3 agenda (\`data-ws-limit="3"\`) dengan link ke \`agenda.html\` yang menampilkan semuanya. Portal Pengurus menampilkan gabungan field dari semua halaman.
 - Halaman detail per item (mis. \`agenda/123\`) tidak tersedia. Pakai kartu yang bisa dibuka (\`<details>\` atau dialog) atau \`data-ws-link\` ke link luar.
 
+## Modul dan langkah Tandai
+
+Bagian yang diisi modul **tidak bisa ditandai** di app, karena isinya diganti data saat website tayang: elemen ber-\`data-ws-field\`, \`data-ws-stat\`, \`data-ws-org\`, link/tombol ber-\`data-ws-link\` atau \`data-ws-auth\`, dan teks yang membungkus modul. Teks statis di sekitarnya (judul section, label formulir, teks \`data-ws-empty\`) tetap boleh ditandai. Detail: [Menandai bagian template](/docs/menandai-bagian-template).
+
 ## Cek sebelum upload
 
 - [ ] Setiap \`data-ws-list\` / \`data-ws-collection\` punya **tepat satu** \`data-ws-item\`.
@@ -552,152 +1174,19 @@ Template boleh punya beberapa halaman (\`index.html\`, \`tentang.html\`, \`konta
 | Script hanya melihat kartu contoh, bukan data asli | Jalankan script setelah event \`orgspace:siap\` (bagian JavaScript + data modul). |
 `,
   },
-
-  "cara-mengonlinekan-website": {
-    id: "doc-web-1",
-    slug: "cara-mengonlinekan-website",
-    category: "website",
-    categoryLabel: "Membuat & Meng-online-kan Website",
-    audience: "creator",
-    title: "Panduan Lengkap Meng-online-kan Website",
-    summary: "Alur memilih template, editing live preview, cek kelengkapan, publish langsung ke server, dan akses di browser.",
-    sortOrder: 10,
-    status: "published",
-    publishedAt: "2026-10-15T00:00:00Z",
-    updatedAt: "2026-10-15T00:00:00Z",
-    body: `# Panduan Lengkap Meng-online-kan Website bagi Pembuat Website
-
-Panduan langkah demi langkah bagi pengurus organisasi atau pengguna umum untuk membuat dan mempublikasikan website resmi organisasi secara online melalui aplikasi OrgSpace Android.
-
----
-
-## Tahap 1: Memilih Template di Galeri
-
-1. Buka aplikasi **OrgSpace** di perangkat HP Android Anda.
-2. Pastikan Anda berada di **Mode Pembuat Website** (ditandai dengan nama ruang kerja organisasi di pojok kiri atas).
-3. Buka tab navigasi **Template** di bagian bawah.
-4. Anda dapat mencari template yang sesuai dengan kebutuhan organisasi Anda:
-   - **Filter Kategori**: Pilih kategori organisasi Anda, seperti *OSIS / MPK*, *BEM / DEMA / DPM*, *Unit Kegiatan Mahasiswa (UKM)*, *Ekstrakurikuler*, *Komunitas*, atau *Pendidikan*.
-   - **Badge Modul**: Perhatikan badge pada kartu template (misalnya: *Berita*, *Pendaftaran / Oprec*, *Prestasi*, *Kontak*) untuk mengetahui fitur interaktif yang disediakan template tersebut.
-5. Ketuk kartu template yang Anda minati untuk melihat detail atau langsung menginstansiasi proyek baru.
-
----
-
-## Tahap 2: Penyuntingan Konten di Project Editor
-
-Setelah memilih template, Anda akan langsung diarahkan ke layar **Project Editor** (\`TemplateEditorFragment\`):
-
-### A. Live Preview Interaktif (WebView)
-- Halaman website langsung dirender secara langsung (*real-time*) di area preview tengah.
-- Anda dapat menguji responsivitas dengan tombol di atas preview:
-  - **Tombol "HP"**: Menampilkan simulasi tampilan layar ponsel mobile.
-  - **Tombol "Desktop"**: Menampilkan simulasi tampilan layar lebar komputer/laptop.
-
-### B. Mengubah Teks & Paragraf
-- Pada lembar isian di bawah (Tab **Isi**), pilih section yang ingin diedit (misal: *Hero*, *Tentang*, *Kontak*).
-- Masukkan teks yang sesuai dengan identitas organisasi Anda:
-  - Contoh: Ubah \`Nama Organisasi\` menjadi "Himpunan Mahasiswa Inovasi Digital".
-- Saat Anda mengetik, preview WebView di atas **langsung terupdate secara seketika tanpa perlu me-reload**.
-
-### C. Mengganti Gambar & Banner
-- Ketuk tombol **Ubah Gambar** pada field foto/banner yang ingin diganti.
-- Pilih foto dari galeri HP Anda. Foto akan otomatis dikompresi dengan rasio yang tepat agar website tetap ringan diakses.
-
-### D. Mode Pratinjau Penuh (*Full Screen Preview*)
-- Ketuk ikon layar penuh di pojok kanan atas toolbar untuk menyembunyikan panel form dan melihat website layaknya pengunjung asli.
-- Tekan tombol *Back* HP untuk kembali ke mode edit.
-
----
-
-## Tahap 3: Cek Kelengkapan Proyek
-
-Sebelum menerbitkan website, pastikan semua data penting sudah terisi:
-1. Buka menu titik tiga (⋮) di toolbar kanan atas -> pilih **Cek kelengkapan**.
-2. Sistem akan memvalidasi isian Anda:
-   - Memeriksa field wajib yang belum diisi.
-   - Memberikan status kelayakan: **"Siap export"** atau **"Draft"**.
-   - Menampilkan saran opsional jika masih menggunakan teks contoh default.
-
----
-
-## Tahap 4: Menerbitkan Website ke Publik (*Publishing*)
-
-1. Pada lembar kelengkapan atau menu aplikasi, ketuk tombol utama **Export / Selesai & Publikasi**.
-2. Anda akan disajikan dua opsi:
-   - **Publish Langsung Sekarang**: Menerbitkan website langsung ke server hosting OrgSpace dan menghubungkannya dengan domain organisasi.
-   - **Download as ZIP File**: Mengunduh seluruh berkas web (HTML, CSS, JS, gambar) ke memori HP.
-3. Ketuk **"Publish Langsung Sekarang"**.
-4. Sistem backend OrgSpace akan memproses kompilasi template, menyuntikkan data isian organisasi, dan mengaktifkan endpoint situs publik.
-5. Dialog sukses akan muncul:
-   - **Status**: \`Online 🟢\`
-   - **Port Server**: \`8080\`
-   - **Alamat Website**: \`http://localhost:8080/sites/[nama-website]/index.html\` (atau domain \`orgspace.app/[slug]\`)
-
----
-
-## Tahap 5: Membuka & Mengelola Website Online
-
-1. Ketuk tombol **"Buka Website"** pada dialog sukses publikasi.
-2. Peramban web HP (Google Chrome) akan langsung terbuka dan menampilkan website organisasi Anda yang sudah resmi tayang online dengan kode status \`HTTP 200 OK\`.
-3. **Pengelolaan Lanjutan di Tab Website**:
-   - Website yang sudah online akan tercatat di tab **Website** pada Ruang Pribadi Anda.
-   - Kapan saja Anda ingin memperbarui teks, berita, atau gambar, cukup buka website tersebut dan ketuk tombol **"Edit tampilan"**.
-   - Perubahan yang Anda simpan akan langsung disinkronkan ke website yang sedang tayang online.
-`,
-  },
-
-  "membuat-website-dari-template": {
-    id: "doc-web-2",
-    slug: "membuat-website-dari-template",
-    category: "website",
-    categoryLabel: "Membuat & Meng-online-kan Website",
-    audience: "creator",
-    title: "Penyuntingan Konten & Fitur Editor",
-    summary: "Cara mengubah teks, gambar, navigasi section, mode pratinjau penuh, dan sinkronisasi real-time.",
-    sortOrder: 20,
-    status: "published",
-    publishedAt: "2026-10-15T00:00:00Z",
-    updatedAt: "2026-10-15T00:00:00Z",
-    body: `# Penyuntingan Konten & Fitur Editor Template
-
-Halaman ini membahas fitur-fitur yang tersedia di dalam editor template OrgSpace untuk membantu Anda menyusun tampilan website organisasi secara cepat dan presisi.
-
----
-
-## 1. Penyuntingan Bersama & Kunci Edit (Locking)
-- OrgSpace mengimplementasikan sistem kolaborasi aman: hanya satu pengurus yang dapat membuka editor pada satu website di satu waktu.
-- Anggota lain yang membuka website yang sama akan melihat banner status *"Sedang diedit oleh..."* dan pratinjaunya akan diperbarui otomatis begitu sesi selesai.
-
-## 2. Navigasi Antar Section
-- Chip navigasi di bawah preview memudahkan Anda berpindah bagian secara instan:
-  - Bagian **Semua**: Menampilkan seluruh field isian template.
-  - Bagian per Section (*Hero*, *Tentang*, *Visi Misi*, *Kontak*): Memfilter isian agar Anda fokus mengedit satu area tertentu.
-  - Tanda centang hijau (\`✓\`) menandakan bahwa seluruh field wajib pada section tersebut telah terisi dengan baik.
-
-## 3. Tab Konten & Tab Gaya
-- **Tab Isi**: Mengubah konten esensial seperti nama organisasi, deskripsi visi misi, tautan media sosial, dan banner foto.
-- **Tab Gaya**: Menyesuaikan aksen warna tema, kontras warna tombol, dan tipografi agar serasi dengan identitas visual organisasi Anda.
-
-## 4. Undo dan Redo
-- Salah mengetik atau tidak sengaja mengubah data? Gunakan tombol **Undo (Urungkan)** dan **Redo (Ulangi)** di toolbar atas untuk mengembalikan kondisi sebelumnya tanpa khawatir kehilangan data.
-`,
-  },
-
   "membuat-fitur-kustom": {
-    id: "doc-prov-4",
+    id: "doc-membuat-fitur-kustom",
     slug: "membuat-fitur-kustom",
     category: "provider",
-    categoryLabel: "Penyedia Template (Provider)",
     audience: "provider",
     title: "Membuat Fitur Kustom",
     summary: "Rancang fitur sendiri (agenda, galeri, filter, pencarian) dari modul + CSS + JavaScript, lengkap dengan resep dan batasnya.",
-    sortOrder: 25,
+    sortOrder: 40,
     status: "published",
-    publishedAt: "2026-10-19T00:00:00Z",
-    updatedAt: "2026-10-19T00:00:00Z",
-    body: `# Membuat Fitur Kustom
-
-OrgSpace tidak punya fitur "agenda", "prestasi", atau "galeri" bawaan. Semua fitur seperti itu **dibuat provider sendiri** di
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Penyedia template",
+    body: `OrgSpace tidak punya fitur "agenda", "prestasi", atau "galeri" bawaan. Semua fitur seperti itu **dibuat provider sendiri** di
 dalam template, dari tiga bahan:
 
 | Bahan | Isinya | Ditulis dengan |
@@ -1047,102 +1536,155 @@ Di app OrgSpace: mode **Penyedia Template** → tab **Upload**:
 5. **Coba** lalu **Kirim**. Template tayang di galeri setelah lolos pengecekan akhir.
 `,
   },
-
-  "menjadi-penyedia-template": {
-    id: "doc-prov-3",
-    slug: "menjadi-penyedia-template",
+  "menandai-bagian-template": {
+    id: "doc-menandai-bagian-template",
+    slug: "menandai-bagian-template",
     category: "provider",
-    categoryLabel: "Penyedia Template (Provider)",
     audience: "provider",
-    title: "Aturan Wajib & Rekomendasi Template",
-    summary: "Standar pemeriksaan otomatis (verification engine) agar template lolos kurasi dan siap tayang di galeri.",
-    sortOrder: 30,
+    title: "Menandai Bagian Template",
+    summary: "Langkah Tandai: jenis isian, gaya, tema warna, hubungan ke profil organisasi, dan aturan elemen modul.",
+    sortOrder: 50,
     status: "published",
-    publishedAt: "2026-10-15T00:00:00Z",
-    updatedAt: "2026-10-15T00:00:00Z",
-    body: `# Aturan Wajib & Rekomendasi Template OrgSpace
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Penyedia template",
+    body: `Di langkah **Tandai** (Upload langkah 4), kamu memilih elemen yang boleh diganti pembuat website. Elemen yang tidak ditandai tidak bisa diubah, dan **tata letak selalu terkunci**.
 
-Sebagai penyedia template (*provider*), Anda merancang dan mengunggah template website yang akan digunakan oleh berbagai organisasi (sekolah, komunitas, UKM, BEM, OSIS, dan organisasi publik lainnya). Agar template dapat diverifikasi oleh sistem dan berjalan optimal, patuhi seluruh aturan teknis berikut.
+## Dua jenis isi di template OrgSpace
 
----
+| Jenis | Siapa yang mengisi | Contoh | Cara membuat |
+|---|---|---|---|
+| **Isian Tandai** | Pembuat website, di editor app, lalu diterbitkan | Judul hero, visi-misi, foto utama, teks footer | Elemen HTML biasa, ditandai di app |
+| **Data modul** | Pengurus, di Portal Pengurus, tanpa terbit ulang | Berita, agenda, prestasi, galeri, isian formulir | Atribut [\`data-ws-*\`](/docs/modul-sistem-dan-kustom) di HTML |
 
-## 1. Aturan Wajib (Harus Dipenuhi)
+## Cara menandai
 
-Template yang diunggah harus memenuhi kriteria di bawah ini agar lolos tahap pemeriksaan otomatis (*Template Verification Engine*):
+1. Tandai per **halaman** dan per **section** (ditampilkan seperti slide). Ganti tampilan **HP / Desktop** untuk elemen yang hanya tampil di salah satunya.
+2. Ketuk elemen. Pakai **Induk ↑** / **Anak ↓** untuk memperluas atau mempersempit pilihan, atau pilih dari daftar elemen (untuk menu tersembunyi, isi tab, dan elemen kecil).
+3. Atur isian di lembar bawah, lalu **Simpan**. Tandaan disimpan ke server lewat tombol Simpan, dengan cadangan otomatis di HP.
 
-### A. Format dan Batasan Berkas
-- **Format Arsip**: Berkas harus berformat **ZIP** (\`.zip\`).
-- **Ukuran Maksimal**: Ukuran berkas ZIP maksimal **20 MB**.
-- **Ekspansi Aman**: Ukuran seluruh berkas setelah diekstrak maksimal **50 MB** (pencegahan *zip-bomb*).
-- **Jumlah Berkas**: Maksimal **500 berkas** di dalam arsip, masing-masing maksimal **10 MB**.
-- **Jumlah Halaman**: Maksimal **10 halaman HTML**, saling terhubung lewat link relatif.
+| Pengaturan | Keterangan |
+|---|---|
+| Jenis | **Teks pendek**, **Paragraf**, **Gambar**, **Link**, atau **Tombol** (teks + link). Ditebak otomatis |
+| Label | Wajib. Nama isian di editor, mis. "Judul utama" |
+| Petunjuk | Opsional. Bantuan untuk pembuat website, mis. "Maks 3 kata" |
+| Maks karakter / wajib / rasio gambar | Disarankan otomatis dari isi asli agar tata letak tidak rusak |
+| Juga boleh diubah (gaya) | Warna teks, warna latar, ukuran huruf (dengan rentang), sudut |
+| Hubungkan ke isian lain | Teks yang sama di beberapa tempat (versi HP & desktop, header di semua halaman) menjadi satu isian |
+| Hubungkan ke profil organisasi | Nama, singkatan, logo, institusi, alamat, email, WhatsApp, Instagram, TikTok, YouTube terisi otomatis. Centang **Sembunyikan jika kosong** untuk kontak dan media sosial |
 
-### B. Struktur Berkas Standar
-- **\`index.html\` Wajib di Root**: Berkas \`index.html\` **wajib** berada di akar direktori ZIP (tidak boleh terbungkus di dalam folder induk seperti \`template/index.html\`).
-- **Pemisahan Aset yang Rapi**:
-  - Berkas gaya ditempatkan di folder \`css/\` (misalnya: \`css/style.css\`).
-  - Berkas JavaScript ditempatkan di folder \`js/\` (misalnya: \`js/main.js\`).
-  - Berkas media gambar ditempatkan di folder \`img/\` atau \`assets/\`.
-- **Relatif Path**: Semua pemanggilan berkas internal harus menggunakan path relatif (misal: \`css/style.css\`, bukan \`/css/style.css\` atau path absolut).
+## Tema
 
-### C. Teknologi Frontend Murni (Bukan Framework SPA)
-- Template harus berupa **Vanilla HTML, CSS, dan JavaScript**.
-- **DILARANG** mengunggah proyek hasil kompilasi/bundle framework SPA modern seperti:
-  - Next.js, Nuxt, Remix
-  - React, Vue, Svelte, Angular
-  - Vite / Webpack bundle yang mengeksekusi rendering melalui hydration client-side penuh
-- Website harus memiliki markup HTML semantik yang utuh di sisi dokumen sebelum JavaScript dieksekusi.
+Variabel CSS di \`:root\` (mis. \`--primary\`, \`--accent\`, \`--radius\`) bisa didaftarkan sebagai **tema** dengan jenis **warna** atau **ukuran**. Pembuat website mengubahnya di tab Gaya → **Tema website**, dan seluruh template ikut berubah.
 
-### D. CDN dan Library yang Diizinkan
-Aset eksternal hanya boleh dimuat dari CDN resmi terpercaya yang masuk ke daftar putih (*whitelist*):
-- **Framework CSS & Utilitas**: Tailwind CSS (standalone CDN), Bootstrap 5, Bulma.
-- **Interaktivitas Ringan**: Alpine.js, jQuery, AOS (Animate on Scroll), Swiper, Splide, GSAP.
-- **Ikonografi & Tipografi**: Google Fonts, Font Awesome, Bootstrap Icons, Lucide Icons, Remix Icon.
-- **CDN Host yang Diizinkan**: \`cdn.jsdelivr.net\`, \`cdnjs.cloudflare.com\`, \`unpkg.com\`, \`cdn.tailwindcss.com\`, \`code.jquery.com\`.
-- **Versi Lengkap**: URL library wajib memakai versi pasti (mis. \`swiper@11.1.4\`), bukan tanpa versi atau \`@latest\`.
-- **DILARANG**: Memuat script dari CDN tidak dikenal atau menyertakan SDK backend pihak ketiga seperti Firebase, Supabase, AWS Amplify, dll.
+\`\`\`css
+:root {
+  --primary: #2563eb;
+  --accent: #f59e0b;
+  --radius: 12px;
+}
+.tombol { background: var(--primary); border-radius: var(--radius); }
+\`\`\`
 
-### E. Keamanan Kode & Larangan
-- **Dilarang Inline Event Handlers**: Jangan gunakan \`onload="..."\`, \`onclick="..."\`, \`onerror="..."\`, atau fungsi evaluasi dinamis \`eval()\` di HTML.
-- **Dilarang Skema Tautan Berbahaya**: Hindari atribut \`href="javascript:..."\`.
-- **Dilarang Script Pelacak (Analytics/Tracker)**: Dilarang menyisipkan Google Tag Manager, Facebook Pixel, Hotjar, atau pelacak analytics lainnya.
-- **Iframe Terbatas**: Hanya iframe dari \`youtube.com\`, \`youtube-nocookie.com\`, dan \`google.com/maps\` yang diizinkan.
-- **Tanpa Permintaan ke Situs Lain**: JavaScript tidak boleh \`fetch\`/XHR/WebSocket ke situs luar, dan form tidak boleh \`action\` ke situs lain. Data dinamis memakai modul \`data-ws-*\`.
+## Aturan
 
-### F. Aturan Penandaan Elemen (*Marking*)
-- **Minimal 3 Elemen Bertanda**: Template harus memiliki minimal 3 elemen yang ditandai untuk dapat diedit oleh pembuat website (misalnya: tag identitas organisasi, judul hero, dan deskripsi singkat).
-- **Aturan Pohon & Nesting**: Elemen yang ditandai tidak boleh saling membungkus secara bertingkat (elemen bertanda tidak boleh memiliki anak elemen bertanda teks lain).
+- Minimal **3 isian** sebelum template bisa dikirim, dan minimal satu pilihan **isi template** di langkah Info.
+- **Teks pendek, Paragraf, dan Tombol** mengganti seluruh isi elemen, jadi tidak boleh membungkus elemen lain yang ditandai. **Gambar** dan **Link** hanya mengubah \`src\`/\`href\`, jadi boleh membungkus.
+- Elemen yang dibuat JavaScript (tidak ada di HTML asli) **tidak bisa ditandai**. Tulis isinya langsung di HTML.
+- Elemen modul dinamis **tidak bisa ditandai**, karena isinya diisi otomatis saat website tayang:
+  - elemen ber-\`data-ws-field\`, \`data-ws-stat\`, atau \`data-ws-org\` (beserta isinya);
+  - **Link/Tombol** pada elemen ber-\`data-ws-link\` atau \`data-ws-auth\` (jenis Teks pendek masih boleh);
+  - Teks/Paragraf/Tombol yang **membungkus** modul dinamis.
+- Label formulir, teks \`data-ws-empty\`, dan teks statis lain di dalam kartu tetap boleh ditandai.
 
----
+## Mencoba hasilnya
 
-## 2. Hal Opsional yang Sangat Disarankan
+Di langkah **Coba sebagai pengguna**, kamu melihat form edit persis seperti pembuat website. Isian yang kurang pas bisa langsung dibuka kembali di langkah Tandai.
+`,
+  },
+  "pertanyaan-umum": {
+    id: "doc-pertanyaan-umum",
+    slug: "pertanyaan-umum",
+    category: "faq",
+    audience: "all",
+    title: "Tanya Jawab Umum",
+    summary: "Solusi masalah yang sering terjadi: undangan, Portal Pengurus, terbit, domain, dan pengecekan template.",
+    sortOrder: 10,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Tanya jawab",
+    body: `## Akun & ruang kerja
 
-Penerapan poin-poin berikut akan meningkatkan kualitas, kenyamanan, dan nilai adopsi template Anda oleh organisasi:
+| Pertanyaan | Jawaban |
+|---|---|
+| Kode undangan ditolak | Kode hanya untuk satu orang dan berlaku 1 jam. Minta kode baru ke Admin/Pemilik |
+| Tidak bisa membuat undangan Admin/Editor | Pemilik belum mengatur akses Portal peran itu. Lihat [Akses Portal Pengurus](/docs/akses-portal-pengurus) |
+| Tidak bisa keluar dari organisasi | Kamu Pemilik terakhir. Lakukan [serah terima](/docs/pergantian-pengurus) dulu |
+| Ruang pribadi tidak bisa mengundang | Memang begitu. Buat organisasi jika ingin bekerja bersama |
 
-### A. Desain Responsif & Mobile-First
-- Pastikan template memiliki tag \`<meta name="viewport" content="width=device-width, initial-scale=1.0">\`.
-- Gunakan CSS Media Queries (\`@media (max-width: 768px)\`) agar tata letak tombol, navigasi, dan kartu berita menyesuaikan layar ponsel secara mulus.
+## Portal Pengurus
 
-### B. Variabel CSS (*CSS Custom Properties*)
-- Definisikan warna utama, warna sekunder, dan font di \`:root\` CSS agar memudahkan penyesuaian tema.
-- Contoh:
-  \`\`\`css
-  :root {
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --bg-surface: #ffffff;
-    --text-main: #0f172a;
-    --text-muted: #64748b;
-  }
-  \`\`\`
+| Pertanyaan | Jawaban |
+|---|---|
+| "Password Portal belum diatur" | Pemilik organisasi mengatur username & password di app: Kelola organisasi → Akses Portal website |
+| "Username atau password salah" padahal benar | Pastikan memakai akses Portal organisasi pemilik website itu, bukan akun OrgSpace (email/Google). Username Editor tidak bisa dipakai dengan password Admin |
+| Tiba-tiba keluar dari Portal | Sesi berlaku 8 jam, atau Pemilik baru mengganti password peranmu |
+| Tab Kotak Masuk Form tidak ada | Tab ini hanya untuk Pemilik dan Admin |
+| Data di Portal tidak tampil di website | Pastikan isian sesuai field di template. Isian kosong menampilkan isi contoh |
 
-### C. Struktur Semantik HTML5
-- Gunakan tag \`<header>\`, \`<nav>\`, \`<main>\`, \`<section>\`, \`<article>\`, dan \`<footer>\`.
-- Struktur yang rapi meningkatkan aksesibilitas dan keramahan mesin pencari (SEO).
+## Website
 
-### D. Optimasi Gambar
-- Gunakan format modern seperti WebP atau JPG terkompresi dengan resolusi wajar (di bawah 500 KB per gambar).
-- Sertakan teks alternatif (\`alt="..."\`) pada setiap elemen gambar.
+| Pertanyaan | Jawaban |
+|---|---|
+| Tidak bisa menerbitkan | Hanya Pemilik/Admin. Editor memakai **Minta diterbitkan** |
+| Nama website tidak bisa diganti | Alamat dikunci setelah terbit pertama agar link lama tetap jalan |
+| Foto berubah jadi foto contoh setelah terbit | File foto sudah tidak ada di HP. Pilih ulang foto di editor, lalu terbitkan lagi |
+| Berita/formulir di file ZIP menampilkan isi contoh | Modul dinamis hanya bekerja di website yang tayang di OrgSpace |
+| Domain belum aktif | DNS butuh waktu. Lihat [Domain sendiri](/docs/domain-kustom) |
+
+## Template (kreator)
+
+| Pertanyaan | Jawaban |
+|---|---|
+| \`NO_INDEX\` | \`index.html\` harus di akar ZIP. ZIP **isi** folder, bukan foldernya |
+| \`JS_RENDERED_CONTENT\` / \`COMPONENT_FRAMEWORK\` | Isi halaman dibuat JavaScript (React/Vue/SPA). Tulis konten di HTML |
+| \`CDN_VERSION_UNCLEAR\` / \`CDN_NOT_ALLOWED\` | Tulis versi lengkap di URL dan pakai library dari daftar resmi |
+| \`EXT_FETCH\` | JavaScript mengambil data dari situs lain. Pakai modul \`data-ws-*\` atau file JSON lokal |
+| \`DYNAMIC_MODULE_INVALID\` | Penanda \`data-ws-*\` salah. Lihat "Cek sebelum upload" di [Panduan Modul Dinamis](/docs/modul-sistem-dan-kustom) |
+| Elemen tidak bisa ditandai | Elemen dibuat JavaScript atau berada di modul dinamis. Lihat [Menandai bagian template](/docs/menandai-bagian-template) |
+| Tombol upload baru nonaktif | Sudah ada 5 draft. Selesaikan atau hapus draft dulu |
+| Template tidak muncul di galeri | Status masih Draft, Sedang dicek, atau Tidak lolos. Cek tab Upload dan Template Anda |
+
+Daftar lengkap kode pengecekan: [Requirement project & aturan pengecekan](/docs/requirement-project-dan-tools).
+`,
+  },
+  "kirim-kritik-dan-saran": {
+    id: "doc-kirim-kritik-dan-saran",
+    slug: "kirim-kritik-dan-saran",
+    category: "faq",
+    audience: "all",
+    title: "Mengirim Kritik & Saran",
+    summary: "Cara melaporkan masalah dan memberi masukan agar cepat ditangani.",
+    sortOrder: 20,
+    status: "published",
+    publishedAt: "2026-10-28T00:00:00Z",
+    updatedAt: "2026-10-28T00:00:00Z",
+    categoryLabel: "Tanya jawab",
+    body: `## Mengirim kritik & saran
+
+Menu **Kritik & saran** di app sedang disiapkan. Nantinya kamu bisa memilih jenisnya (bug, saran, pertanyaan, keluhan), menulis pesan, dan menerima balasan tim OrgSpace di percakapan yang sama.
+
+Untuk masalah di **pengecekan upload template** yang menurutmu keliru, gunakan tombol laporkan di layar hasil pengecekan.
+
+## Agar laporan cepat ditangani
+
+- Tulis langkah yang kamu lakukan sebelum masalah muncul.
+- Sebutkan nama website, alamatnya (\`orgspace.app/...\`), atau nama template yang bermasalah.
+- Sertakan pesan error persis seperti yang tampil, dan kode pengecekan jika ada (mis. \`EXT_FETCH\`).
+- Untuk masalah tampilan, sebutkan HP atau browser yang dipakai.
+
+Sebelum melapor, cek dulu [Tanya jawab umum](/docs/pertanyaan-umum).
 `,
   },
 };
@@ -1157,19 +1699,18 @@ export function mergeDocTree(serverTree: DocTree): DocTree {
     articles: [...cat.articles],
   }));
 
+  // Slug dicek di semua kategori: artikel yang dipindah admin ke kategori lain tidak boleh muncul dua kali.
+  const serverSlugs = new Set(serverTree.categories.flatMap((cat) => cat.articles.map((a) => a.slug)));
+
   for (const fallbackCat of FALLBACK_DOC_TREE.categories) {
+    const missing = fallbackCat.articles.filter((art) => !serverSlugs.has(art.slug));
+    if (missing.length === 0) continue;
     let targetCat = mergedCategories.find((c) => c.value === fallbackCat.value);
     if (!targetCat) {
       targetCat = { ...fallbackCat, articles: [] };
       mergedCategories.push(targetCat);
     }
-
-    for (const art of fallbackCat.articles) {
-      const exists = targetCat.articles.some((a) => a.slug === art.slug);
-      if (!exists) {
-        targetCat.articles.push(art);
-      }
-    }
+    targetCat.articles.push(...missing);
   }
 
   return { categories: mergedCategories };

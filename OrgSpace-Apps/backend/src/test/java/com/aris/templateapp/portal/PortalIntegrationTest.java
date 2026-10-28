@@ -174,7 +174,7 @@ class PortalIntegrationTest {
                 .andExpect(jsonPath("$.categoryLabel").value("Memulai"));
 
         String doc = """
-                {"slug":"terbit-pertama","category":"terbit","title":"Menerbitkan website pertama",
+                {"slug":"terbit-pertama","category":"akun","title":"Menerbitkan website pertama",
                  "body":"## Langkah\\n1. Ketuk Terbitkan.","status":"draft"}""";
         String created = send(admin, post("/api/admin/docs"), doc)
                 .andExpect(status().isCreated())
@@ -192,11 +192,11 @@ class PortalIntegrationTest {
                 .andExpect(jsonPath("$.publishedAt").exists());
         mockMvc.perform(get("/api/public/docs/terbit-pertama")).andExpect(status().isOk());
         mockMvc.perform(get("/api/public/docs"))
-                .andExpect(jsonPath("$.categories[*].value").value(hasItem("terbit")));
+                .andExpect(jsonPath("$.categories[*].value").value(hasItem("akun")));
 
         send(admin, delete("/api/admin/docs/" + id), null).andExpect(status().isNoContent());
         mockMvc.perform(get("/api/public/docs"))
-                .andExpect(jsonPath("$.categories[*].value").value(not(hasItem("terbit"))));
+                .andExpect(jsonPath("$.categories[*].value").value(not(hasItem("akun"))));
     }
 
     @Test
@@ -245,7 +245,7 @@ class PortalIntegrationTest {
                 .andExpect(jsonPath("$.lastActiveDay").exists());
         send(admin, get("/api/admin/system"), null)
                 .andExpect(jsonPath("$.databaseOk").value(true))
-                .andExpect(jsonPath("$.schemaVersion").value("36"));
+                .andExpect(jsonPath("$.schemaVersion").value("39"));
     }
 
     @Test
