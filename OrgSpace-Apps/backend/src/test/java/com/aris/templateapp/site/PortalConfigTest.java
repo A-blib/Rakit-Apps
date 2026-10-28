@@ -71,6 +71,14 @@ class PortalConfigTest {
     }
 
     @Test
+    void oversizedFileIsRejectedWithoutParsing() {
+        PortalConfig.Result result = read("{}" + " ".repeat(PortalConfig.MAX_SIZE));
+
+        assertThat(result.config()).isEmpty();
+        assertThat(result.errors()).singleElement().asString().contains("terlalu besar");
+    }
+
+    @Test
     void pathOutsideTemplateIsRejected() {
         PortalConfig.Result result = read("{\"layout\": {\"header\": {\"image\": \"../rahasia.jpg\"}}}");
 

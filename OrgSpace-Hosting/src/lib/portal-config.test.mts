@@ -1,7 +1,7 @@
 // Jalankan: npm test (node --test, tanpa library tambahan).
 import assert from "node:assert/strict";
 import test from "node:test";
-import { bottomNav, buildNav, cardFields, fieldGroups, humanize, themeCss } from "./portal-config.ts";
+import { bottomNav, buildNav, cardFields, fieldGroups, humanize, mix, themeCss } from "./portal-config.ts";
 
 const ids = (groups: ReturnType<typeof buildNav>) => groups.map((g) => [g.title ?? "", g.items.map((i) => i.id)]);
 
@@ -67,6 +67,14 @@ test("tema hanya menerima warna hex dan radius yang wajar", () => {
   const css = themeCss({ primary: "#1E40AF", radius: 6 });
   assert.match(css, /^:root\{--primary:#1E40AF;/);
   assert.match(css, /--radius-xl:6px/);
-  assert.match(css, /:root\.dark\{--primary:color-mix/);
+  // Hex biasa (tanpa color-mix) agar jalan di Chrome lama.
+  assert.match(css, /:root\.dark\{--primary:#[0-9A-F]{6};/);
+  assert.doesNotMatch(css, /color-mix/);
   assert.equal(humanize("nama_kegiatan"), "Nama Kegiatan");
+});
+
+test("campuran warna dihitung sebagai hex", () => {
+  assert.equal(mix("#000000", "#FFFFFF", 0.5), "#808080");
+  assert.equal(mix("#1E40AF", "#FFFFFF", 1), "#1E40AF");
+  assert.equal(mix("#1E40AF", "#FFFFFF", 0), "#FFFFFF");
 });

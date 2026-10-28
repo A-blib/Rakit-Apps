@@ -112,7 +112,7 @@ public class TemplatePreviewService {
                                                     Map<String, Map<String, String>> modules) {
         try (ZipFile zip = new ZipFile(pkg.file().toFile())) {
             ZipEntry entry = zip.getEntry(PortalConfig.FILE_NAME);
-            if (entry == null) {
+            if (entry == null || entry.getSize() > PortalConfig.MAX_SIZE) {
                 return Map.of();
             }
             try (InputStream in = zip.getInputStream(entry)) {

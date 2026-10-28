@@ -187,6 +187,9 @@ public class PublicSiteController {
             return Map.of();
         }
         try {
+            if (Files.size(file) > PortalConfig.MAX_SIZE) {
+                return Map.of();
+            }
             return PortalConfig.read(Files.readString(file, StandardCharsets.UTF_8), modules,
                     path -> Files.isRegularFile(releaseDir.resolve(path))).config();
         } catch (IOException e) {

@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 public final class PortalConfig {
 
     public static final String FILE_NAME = "portal.json";
+    /** Pengaturan yang valid hanya beberapa KB; batas ini mencegah file besar di-parse ulang di setiap render. */
+    public static final int MAX_SIZE = 64 * 1024;
 
     /** Ikon yang tersedia di Portal (nama ikon Lucide). Ikon baru harus ditambahkan juga di Hosting. */
     public static final Set<String> ICONS = Set.of("layout-dashboard", "inbox", "newspaper", "calendar", "users",
@@ -66,6 +68,10 @@ public final class PortalConfig {
 
     private Map<String, Object> root(String json) {
         Map<String, Object> out = new LinkedHashMap<>();
+        if (json.length() > MAX_SIZE) {
+            errors.add("portal.json terlalu besar (maksimal " + MAX_SIZE / 1024 + " KB).");
+            return out;
+        }
         JsonNode root;
         try {
             root = JSON.readTree(json);

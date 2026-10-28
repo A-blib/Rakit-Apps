@@ -2441,7 +2441,8 @@ di halaman tidak dipilih untuk versi awal). Portal tanpa file ini juga berubah: 
 | Portal | `OrgSpace-Hosting/src/components/PortalPengurus.tsx` + `src/lib/portal-config.ts` (logika murni + test). Navigasi tab atas diganti **sidebar**; menu "Modul Kustom" dihapus, setiap modul jadi menu sendiri. Data modul yang sudah tidak ada di template masuk grup "Data tidak dipakai template" (hanya ubah/hapus) |
 | Pilihan provider | `theme` (primary, accent, radius), `layout.sidebar` (kiri/kanan, lebar, bisa digeser), `layout.header` (minimal/banner + gambar, judul, subjudul), `nav` (urutan, grup, label, 31 ikon), `modules` (label, deskripsi, tampilan kartu/tabel, field judul/subjudul/gambar, label & bantuan field, grup field), `mobile` (drawer/menu bawah, maks. 4 menu) |
 | Dikunci OrgSpace | Login, akun & peran, tombol keluar, Lihat Website, mode gelap, warna error/sukses, Kotak Masuk tetap hanya Pemilik/Admin. Tidak ada HTML/CSS/JS provider di Portal |
-| Mode gelap | Warna provider dicampur putih (`color-mix`) agar terbaca di latar gelap |
+| Mode gelap | Warna provider dicampur putih agar terbaca di latar gelap. Campuran dihitung di JavaScript (`mix` di `portal-config.ts`) menjadi hex biasa, bukan CSS `color-mix()` yang belum ada di Chrome < 111 |
+| Batas ukuran | `portal.json` maksimal 64 KB (`PortalConfig.MAX_SIZE`): ditolak saat upload, diabaikan saat render/preview, agar file besar tidak di-parse ulang di setiap render |
 | Dokumentasi | Artikel `tampilan-portal-pengurus` (`V40__dokumentasi_tampilan_portal.sql`, cadangan di `docs-data.ts`), paket `contoh-modul-orgspace/docs/05-tampilan-portal.md` (ZIP dibuat ulang), contoh nyata `OrgSpace-Templates/pramuka-tunas-rimba/portal.json` |
 
 Dihapus dari Portal: isian "nama modul baru" dan tombol "+ Tambah Field". Data yang tidak ada di template tidak tampil di

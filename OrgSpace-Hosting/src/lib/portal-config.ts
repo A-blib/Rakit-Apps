@@ -168,6 +168,22 @@ export function cardFields(settings: ModuleSettings | undefined, fields: Record<
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
 /**
+ * Campuran dua warna hex, `weight` = porsi warna pertama (0–1). Dihitung di sini, bukan dengan CSS color-mix(),
+ * karena color-mix belum ada di Chrome < 111 yang masih dipakai sebagian HP pengurus.
+ */
+export function mix(a: string, b: string, weight: number): string {
+  const channel = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+  return (
+    "#" +
+    [0, 1, 2]
+      .map((i) => Math.round(channel(a, i) * weight + channel(b, i) * (1 - weight)))
+      .map((v) => v.toString(16).padStart(2, "0"))
+      .join("")
+      .toUpperCase()
+  );
+}
+
+/**
  * CSS yang menimpa token warna OrgSpace (globals.css) dan radius Tailwind. Mode gelap memakai warna provider yang
  * dicampur putih agar tetap terbaca di latar gelap. Kosong jika tidak ada tema.
  */
@@ -181,21 +197,21 @@ export function themeCss(theme: PortalConfig["theme"]): string {
     light.push(
       `--primary:${p}`,
       `--on-primary:#FFFFFF`,
-      `--primary-container:color-mix(in srgb,${p} 12%,white)`,
-      `--on-primary-container:color-mix(in srgb,${p} 85%,black)`,
+      `--primary-container:${mix(p, "#FFFFFF", 0.12)}`,
+      `--on-primary-container:${mix(p, "#000000", 0.85)}`,
       `--link:${p}`
     );
     dark.push(
-      `--primary:color-mix(in srgb,${p} 55%,white)`,
+      `--primary:${mix(p, "#FFFFFF", 0.55)}`,
       `--on-primary:#04142B`,
-      `--primary-container:color-mix(in srgb,${p} 40%,#07111F)`,
+      `--primary-container:${mix(p, "#07111F", 0.4)}`,
       `--on-primary-container:#E8F1FD`,
-      `--link:color-mix(in srgb,${p} 50%,white)`
+      `--link:${mix(p, "#FFFFFF", 0.5)}`
     );
   }
   if (a) {
     light.push(`--accent:${a}`, `--on-accent:#FFFFFF`);
-    dark.push(`--accent:color-mix(in srgb,${a} 60%,white)`, `--on-accent:#04142B`);
+    dark.push(`--accent:${mix(a, "#FFFFFF", 0.6)}`, `--on-accent:#04142B`);
   }
   const r = theme.radius;
   if (Number.isInteger(r) && r! >= 0 && r! <= 24) {
