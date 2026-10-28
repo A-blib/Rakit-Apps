@@ -2,22 +2,24 @@ package com.aris.templateapp.site;
 
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
-import com.aris.templateapp.organization.OrganizationMemberRepository;
+import com.aris.templateapp.common.persistence.PersistableEnum;
+import com.aris.templateapp.organization.MemberRole;
+import com.aris.templateapp.organization.OrgAction;
+import com.aris.templateapp.organization.PortalCredentialService;
 import com.aris.templateapp.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
-import java.util.UUID;
 
 /**
- * Satu tempat untuk "website mana" dan "siapa pengurusnya" bagi semua controller Portal Pengurus
- * ({@link PortalAuthController}, {@link PortalContentController}, {@link PortalMemberController}).
+ * Satu tempat untuk "website mana" dan "peran apa yang sedang masuk" bagi semua controller Portal Pengurus
+ * ({@link PortalAuthController}, {@link PortalContentController}).
  * <p>
- * Token Portal (bukan token app) dibuat per website dan hanya berlaku untuk website itu
- * ({@link JwtService#createSiteToken}). Keanggotaan dicek di setiap request, jadi anggota yang dikeluarkan langsung
- * kehilangan akses walau tokennya belum kedaluwarsa. Aturan peran per aksi (mis. data formulir hanya Pemilik/Admin)
- * tetap di service masing-masing (OrgAction), sama dengan jalur app.
+ * Token Portal (bukan token app) dibuat per website dan membawa peran + versi kredensial
+ * ({@link JwtService#createSiteToken}). Versi dicek di setiap request, jadi saat Pemilik mengganti password suatu
+ * peran, semua sesi Portal peran itu langsung keluar walau tokennya belum kedaluwarsa. Aturan peran per aksi
+ * (mis. data formulir hanya Pemilik/Admin) memakai {@link OrgAction}, sama dengan jalur app.
  */
 @Component
 @RequiredArgsConstructor
@@ -26,23 +28,41 @@ public class PortalAccess {
     private static final String BEARER = "Bearer ";
 
     private final SiteRepository siteRepository;
-    private final OrganizationMemberRepository memberRepository;
+    private final PortalCredentialService credentials;
     private final JwtService jwtService;
+
+    /** Peran yang sedang masuk ke Portal sebuah website. */
+    public record PortalSession(MemberRole role, String username) {
+
+        public void require(OrgAction action) {
+            if (!action.allowedFor(role)) {
+                throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED);
+            }
+        }
+    }
 
     public Site site(String slug) {
         return siteRepository.findBySlug(slug.toLowerCase(Locale.ROOT))
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Website tidak ditemukan"));
     }
 
-    /** ID user dari token Portal yang sah untuk website ini dan masih anggota organisasinya. */
-    public UUID requireManager(String authHeader, Site site) {
+    /** Sesi dari token Portal yang sah untuk website ini dan masih memakai kredensial peran yang berlaku. */
+    public PortalSession requireSession(String authHeader, Site site) {
         if (authHeader == null || !authHeader.startsWith(BEARER)) {
             throw new ApiException(ErrorCode.UNAUTHORIZED, "Token autentikasi pengurus diperlukan");
         }
-        UUID userId = jwtService.parseSiteUserId(authHeader.substring(BEARER.length()).trim(), site.getId())
-                .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED, "Sesi login pengurus tidak valid atau telah berakhir"));
-        memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER, "Anda bukan pengurus atau anggota dari organisasi website ini"));
-        return userId;
+        ApiException expired = new ApiException(ErrorCode.UNAUTHORIZED, "Sesi login pengurus tidak valid atau telah berakhir");
+        JwtService.SiteClaims claims = jwtService.parseSiteClaims(authHeader.substring(BEARER.length()).trim(), site.getId())
+                .orElseThrow(() -> expired);
+        MemberRole role;
+        try {
+            role = PersistableEnum.fromValue(MemberRole.class, claims.role());
+        } catch (IllegalArgumentException e) {
+            throw expired;
+        }
+        PortalCredentialService.Match current = credentials.current(site.getOrganizationId(), role)
+                .filter(c -> c.version() == claims.version())
+                .orElseThrow(() -> expired);
+        return new PortalSession(role, current.username());
     }
 }

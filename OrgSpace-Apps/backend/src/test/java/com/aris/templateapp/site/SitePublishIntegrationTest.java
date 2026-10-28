@@ -166,7 +166,9 @@ class SitePublishIntegrationTest {
                 .contains("data-ws-list=\"berita\"")
                 .contains("data-ws-item")
                 .contains("data-ws-form")
-                .doesNotContain("Pelantikan Pengurus");
+                .doesNotContain("Pelantikan Pengurus")
+                // Elemen yang ditulis rapat tetap rapat (tanpa spasi baru yang menggeser inline-block).
+                .contains("<div class=\"kolom\"><div>Kiri</div><div>Kanan</div></div>");
 
         // 4. Pengunjung mengirim formulir pendaftaran secara publik
         mockMvc.perform(post("/api/public/sites/osis-smansa/forms/pendaftaran")
@@ -188,9 +190,7 @@ class SitePublishIntegrationTest {
 
     @Test
     void formSubmissionsAreOnlyForOwnerAndAdminWithoutVisitorIp() throws Exception {
-        mockMvc.perform(post("/api/projects/" + projectId + "/publish").header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"slug\":\"osis-data-masuk\"}"))
-                .andExpect(status().isAccepted());
+        publish("osis-data-masuk");
         mockMvc.perform(post("/api/public/sites/osis-data-masuk/forms/pendaftaran").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nama\":\"Rina\",\"whatsapp\":\"081234567890\"}"))
                 .andExpect(status().isOk());
@@ -212,113 +212,121 @@ class SitePublishIntegrationTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("ROLE_NOT_ALLOWED"));
 
-        // Jalur Portal Pengurus.
+        // Jalur Portal Pengurus: peran berasal dari kredensial Portal yang dipakai masuk.
+        setPortal("owner", "ketua", "rahasia-ketua");
+        setPortal("editor", "editor", "rahasia-editor");
         String submissions = "/api/public/sites/osis-data-masuk/admin/submissions";
-        mockMvc.perform(get(submissions).header(HttpHeaders.AUTHORIZATION, portalToken("osis-data-masuk", creatorEmail)))
+        mockMvc.perform(get(submissions).header(HttpHeaders.AUTHORIZATION, portalToken("osis-data-masuk", "ketua", "rahasia-ketua")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].data.whatsapp").value("081234567890"))
                 .andExpect(jsonPath("$[0].ipAddress").doesNotExist())
                 .andExpect(jsonPath("$[0].userAgent").doesNotExist());
-        mockMvc.perform(get(submissions).header(HttpHeaders.AUTHORIZATION, portalToken("osis-data-masuk", editorEmail)))
+        mockMvc.perform(get(submissions).header(HttpHeaders.AUTHORIZATION, portalToken("osis-data-masuk", "editor", "rahasia-editor")))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("ROLE_NOT_ALLOWED"));
     }
 
     @Test
-    void portalLoginIsLimitedLikeAppLogin() throws Exception {
-        mockMvc.perform(post("/api/projects/" + projectId + "/publish").header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"slug\":\"osis-batas-login\"}"))
-                .andExpect(status().isAccepted());
-        String wrong = "{\"email\":\"" + creatorEmail + "\",\"password\":\"tebakan-salah\"}";
+    void portalLoginIsLimitedPerUsername() throws Exception {
+        publish("osis-batas-login");
+        setPortal("owner", "ketua", "rahasia-ketua");
         for (int i = 0; i < 10; i++) {
-            mockMvc.perform(post("/api/public/sites/osis-batas-login/auth/login").contentType(MediaType.APPLICATION_JSON).content(wrong))
-                    .andExpect(status().isUnauthorized());
+            portalLogin("osis-batas-login", "ketua", "tebakan-salah").andExpect(status().isUnauthorized());
         }
-        mockMvc.perform(post("/api/public/sites/osis-batas-login/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + creatorEmail + "\",\"password\":\"password123\"}"))
+        portalLogin("osis-batas-login", "KETUA", "rahasia-ketua")
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.code").value("TOO_MANY_ATTEMPTS"));
-        // Hitungan sama dengan login app: menebak lewat Portal juga menahan login app untuk email itu.
-        mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + creatorEmail + "\",\"password\":\"password123\"}"))
-                .andExpect(status().isTooManyRequests());
     }
 
     @Test
-    void portalLoginGivesTheSameAnswerWhetherOrNotThePasswordIsRight() throws Exception {
-        mockMvc.perform(post("/api/projects/" + projectId + "/publish").header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"slug\":\"osis-tebak\"}"))
-                .andExpect(status().isAccepted());
-        // Akun OrgSpace yang bukan pengurus website ini.
-        String outsider = "luar-" + UUID.randomUUID().toString().substring(0, 8) + "@orgspace.test";
-        mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"displayName\":\"Luar\",\"email\":\"" + outsider + "\",\"password\":\"password123\"}"))
-                .andExpect(status().isCreated());
+    void portalOnlyAcceptsTheCredentialOfTheRoleNamedByTheUsername() throws Exception {
+        publish("osis-kartu");
+        // Belum ada kredensial sama sekali: arahkan Pemilik ke Kelola organisasi.
+        portalLogin("osis-kartu", "ketua", "rahasia-ketua")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("PORTAL_CREDENTIALS_NOT_SET"));
 
-        String rightPassword = mockMvc.perform(post("/api/public/sites/osis-tebak/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + outsider + "\",\"password\":\"password123\"}"))
+        setPortal("owner", "ketua", "rahasia-ketua");
+        setPortal("admin", "admin", "rahasia-admin");
+        setPortal("editor", "editor", "rahasia-editor");
+
+        // Username = kartu nama peran. Password peran lain ditolak walau benar.
+        String editorWithAdminPassword = portalLogin("osis-kartu", "editor", "rahasia-admin")
                 .andExpect(status().isUnauthorized()).andReturn().getResponse().getContentAsString();
-        String wrongPassword = mockMvc.perform(post("/api/public/sites/osis-tebak/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + outsider + "\",\"password\":\"salah-total\"}"))
+        String unknownUsername = portalLogin("osis-kartu", "bendahara", "rahasia-admin")
                 .andExpect(status().isUnauthorized()).andReturn().getResponse().getContentAsString();
-        String unknownEmail = mockMvc.perform(post("/api/public/sites/osis-tebak/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"tidak-ada-" + UUID.randomUUID() + "@orgspace.test\",\"password\":\"password123\"}"))
-                .andExpect(status().isUnauthorized()).andReturn().getResponse().getContentAsString();
+        assertThat(editorWithAdminPassword).isEqualTo(unknownUsername).contains("INVALID_CREDENTIALS")
+                .contains("Username atau password salah.");
+        // Akun OrgSpace (email + password app) tidak berlaku di Portal.
+        portalLogin("osis-kartu", creatorEmail, "password123").andExpect(status().isUnauthorized());
 
-        assertThat(rightPassword).isEqualTo(wrongPassword).isEqualTo(unknownEmail).contains("INVALID_CREDENTIALS");
-        // Pengurus asli tetap bisa masuk.
-        assertThat(portalToken("osis-tebak", creatorEmail)).startsWith("Bearer ");
-    }
-
-    @Test
-    void portalAddsManagersOnlyThroughInvitationsTheyAccept() throws Exception {
-        mockMvc.perform(post("/api/projects/" + projectId + "/publish").header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"slug\":\"osis-undang\"}"))
-                .andExpect(status().isAccepted());
-        String owner = portalToken("osis-undang", creatorEmail);
-        String guestEmail = "tamu-" + UUID.randomUUID().toString().substring(0, 8) + "@orgspace.test";
-        String guestApp = JsonPath.read(mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"displayName\":\"Tamu\",\"email\":\"" + guestEmail + "\",\"password\":\"password123\"}"))
-                .andReturn().getResponse().getContentAsString(), "$.accessToken");
-
-        // Jalur lama "masukkan langsung lewat email" sudah tidak ada.
-        mockMvc.perform(post("/api/public/sites/osis-undang/admin/members").header(HttpHeaders.AUTHORIZATION, owner)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"email\":\"" + guestEmail + "\"}"))
-                .andExpect(status().isNotFound());
-
-        String created = mockMvc.perform(post("/api/public/sites/osis-undang/admin/invitations").header(HttpHeaders.AUTHORIZATION, owner)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"role\":\"editor\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.role").value("editor"))
+        // Kredensial organisasi lain tidak berlaku di website organisasi ini, walau username & password-nya benar.
+        String otherReg = mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"displayName\":\"Luar\",\"email\":\"luar-" + UUID.randomUUID() + "@orgspace.test\",\"password\":\"password123\"}"))
                 .andReturn().getResponse().getContentAsString();
-        String code = JsonPath.read(created, "$.code");
-        String invitationId = JsonPath.read(created, "$.id");
+        String otherToken = JsonPath.read(otherReg, "$.accessToken");
+        String otherOrg = JsonPath.read(mockMvc.perform(post("/api/organizations").header(HttpHeaders.AUTHORIZATION, "Bearer " + otherToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"type\":\"organization\",\"name\":\"Pramuka Lain\",\"category\":\"osis_mpk\",\"level\":\"sma\",\"institutionName\":\"SMA Lain\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.id");
+        mockMvc.perform(put("/api/organizations/" + otherOrg + "/portal-credentials/owner").header(HttpHeaders.AUTHORIZATION, "Bearer " + otherToken)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"username\":\"pemilik-luar\",\"password\":\"rahasia-luar\"}"))
+                .andExpect(status().isOk());
+        portalLogin("osis-kartu", "pemilik-luar", "rahasia-luar")
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
 
-        // Belum menjadi pengurus sampai ia sendiri menerima undangan di app.
-        mockMvc.perform(post("/api/public/sites/osis-undang/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + guestEmail + "\",\"password\":\"password123\"}"))
+        // Setiap peran masuk dengan kredensialnya sendiri; username tidak peka huruf besar.
+        for (String[] role : new String[][]{{"owner", "KETUA", "rahasia-ketua"}, {"admin", "admin", "rahasia-admin"},
+                {"editor", "Editor", "rahasia-editor"}}) {
+            mockMvc.perform(get("/api/public/sites/osis-kartu/auth/me")
+                            .header(HttpHeaders.AUTHORIZATION, portalToken("osis-kartu", role[1], role[2])))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.user.role").value(role[0]))
+                    .andExpect(jsonPath("$.user.username").value(role[1].toLowerCase()));
+        }
+    }
+
+    @Test
+    void changingARolePasswordSignsOutOnlyThatRole() throws Exception {
+        publish("osis-ganti");
+        setPortal("owner", "ketua", "rahasia-ketua");
+        setPortal("editor", "editor", "rahasia-editor");
+        String owner = portalToken("osis-ganti", "ketua", "rahasia-ketua");
+        String editor = portalToken("osis-ganti", "editor", "rahasia-editor");
+
+        setPortal("editor", "editor", "rahasia-editor-baru");
+
+        String me = "/api/public/sites/osis-ganti/auth/me";
+        mockMvc.perform(get(me).header(HttpHeaders.AUTHORIZATION, editor)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get(me).header(HttpHeaders.AUTHORIZATION, owner)).andExpect(status().isOk());
+        portalLogin("osis-ganti", "editor", "rahasia-editor").andExpect(status().isUnauthorized());
+        portalLogin("osis-ganti", "editor", "rahasia-editor-baru").andExpect(status().isOk());
+        // Token app biasa tidak diterima Portal.
+        mockMvc.perform(get(me).header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void handoverSignsTheOldOwnerOutOfThePortal() throws Exception {
+        publish("osis-serah");
+        setPortal("owner", "ketua", "rahasia-ketua");
+        String oldOwner = portalToken("osis-serah", "ketua", "rahasia-ketua");
+        String reg = mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"displayName\":\"Ketua Baru\",\"email\":\"baru-" + UUID.randomUUID() + "@orgspace.test\",\"password\":\"password123\"}"))
+                .andReturn().getResponse().getContentAsString();
+        jdbc.update("INSERT INTO organization_members (organization_id, user_id, role) VALUES (?, ?::uuid, 'admin')",
+                orgId, JsonPath.read(reg, "$.user.id"));
+
+        mockMvc.perform(post("/api/organizations/" + orgId + "/transfer-ownership").header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"userId\":\"" + JsonPath.read(reg, "$.user.id") + "\",\"keepMeAs\":\"admin\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/public/sites/osis-serah/auth/me").header(HttpHeaders.AUTHORIZATION, oldOwner))
                 .andExpect(status().isUnauthorized());
-        mockMvc.perform(post("/api/invitations/accept").header(HttpHeaders.AUTHORIZATION, "Bearer " + guestApp)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"code\":\"" + code + "\"}"))
-                .andExpect(status().isOk());
-        String guestPortal = portalToken("osis-undang", guestEmail);
-
-        // Editor tidak boleh mengundang; Pemilik melihat dan mencabut undangan, lalu kodenya tidak berlaku lagi.
-        mockMvc.perform(post("/api/public/sites/osis-undang/admin/invitations").header(HttpHeaders.AUTHORIZATION, guestPortal)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"role\":\"editor\"}"))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.code").value("ROLE_NOT_ALLOWED"));
-        mockMvc.perform(get("/api/public/sites/osis-undang/admin/invitations").header(HttpHeaders.AUTHORIZATION, owner))
-                .andExpect(jsonPath("$[?(@.id == '" + invitationId + "')]").isNotEmpty());
-        mockMvc.perform(delete("/api/public/sites/osis-undang/admin/invitations/" + invitationId).header(HttpHeaders.AUTHORIZATION, owner))
-                .andExpect(status().isOk());
-        String lateApp = JsonPath.read(mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"displayName\":\"Telat\",\"email\":\"telat-" + UUID.randomUUID() + "@orgspace.test\",\"password\":\"password123\"}"))
-                .andReturn().getResponse().getContentAsString(), "$.accessToken");
-        mockMvc.perform(post("/api/invitations/accept").header(HttpHeaders.AUTHORIZATION, "Bearer " + lateApp)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"code\":\"" + code + "\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVITATION_INVALID"));
+        portalLogin("osis-serah", "ketua", "rahasia-ketua")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("PORTAL_CREDENTIALS_NOT_SET"));
     }
 
     @Test
@@ -326,7 +334,7 @@ class SitePublishIntegrationTest {
         mockMvc.perform(post("/api/projects/" + projectId + "/publish").header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
                         .contentType(MediaType.APPLICATION_JSON).content("{\"slug\":\"osis-berita\"}"))
                 .andExpect(status().isAccepted());
-        String portal = portalToken("osis-berita", creatorEmail);
+        String portal = ownerPortal("osis-berita");
         String news = "/api/public/sites/osis-berita/admin/news";
 
         mockMvc.perform(post(news).header(HttpHeaders.AUTHORIZATION, portal).contentType(MediaType.APPLICATION_JSON)
@@ -358,7 +366,7 @@ class SitePublishIntegrationTest {
         mockMvc.perform(post("/api/projects/" + projectId + "/publish").header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
                         .contentType(MediaType.APPLICATION_JSON).content("{\"slug\":\"osis-ringkasan\"}"))
                 .andExpect(status().isAccepted());
-        String portal = portalToken("osis-ringkasan", creatorEmail);
+        String portal = ownerPortal("osis-ringkasan");
         for (String nama : List.of("Rina", "Budi")) {
             mockMvc.perform(post("/api/public/sites/osis-ringkasan/forms/pendaftaran").contentType(MediaType.APPLICATION_JSON)
                             .content("{\"nama\":\"" + nama + "\"}"))
@@ -379,62 +387,34 @@ class SitePublishIntegrationTest {
                 .andExpect(jsonPath("$.status").value("online"));
     }
 
-    @Test
-    void portalMemberChangesUseTheSameRulesAndActivityLogAsTheApp() throws Exception {
+    private void publish(String slug) throws Exception {
         mockMvc.perform(post("/api/projects/" + projectId + "/publish").header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"slug\":\"osis-anggota\"}"))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"slug\":\"" + slug + "\"}"))
                 .andExpect(status().isAccepted());
-        String owner = portalToken("osis-anggota", creatorEmail);
-        String ownerId = JsonPath.read(mockMvc.perform(get("/api/public/sites/osis-anggota/auth/me").header(HttpHeaders.AUTHORIZATION, owner))
-                .andReturn().getResponse().getContentAsString(), "$.user.id");
-
-        // Dulu Portal mengizinkan ini, sehingga organisasi bisa kehilangan Pemilik terakhirnya.
-        mockMvc.perform(put("/api/public/sites/osis-anggota/admin/members/" + ownerId).header(HttpHeaders.AUTHORIZATION, owner)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"role\":\"admin\"}"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("LAST_OWNER"));
-
-        // Anggota baru lewat undangan, lalu dijadikan Admin dari Portal: tercatat di log aktivitas seperti di app.
-        String code = JsonPath.read(mockMvc.perform(post("/api/public/sites/osis-anggota/admin/invitations")
-                        .header(HttpHeaders.AUTHORIZATION, owner).contentType(MediaType.APPLICATION_JSON).content("{\"role\":\"editor\"}"))
-                .andReturn().getResponse().getContentAsString(), "$.code");
-        String reg = mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"displayName\":\"Budi\",\"email\":\"budi-" + UUID.randomUUID() + "@orgspace.test\",\"password\":\"password123\"}"))
-                .andReturn().getResponse().getContentAsString();
-        String budiId = JsonPath.read(reg, "$.user.id");
-        mockMvc.perform(post("/api/invitations/accept").header(HttpHeaders.AUTHORIZATION, "Bearer " + JsonPath.read(reg, "$.accessToken"))
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"code\":\"" + code + "\"}"))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(put("/api/public/sites/osis-anggota/admin/members/" + budiId).header(HttpHeaders.AUTHORIZATION, owner)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"role\":\"admin\",\"positionTitle\":\"Sekretaris\"}"))
-                .andExpect(status().isOk());
-        assertThat(jdbc.queryForObject("""
-                SELECT count(*) FROM activity_logs WHERE organization_id = ? AND action = 'member.role_changed' AND target_id = ?::uuid""",
-                Long.class, orgId, budiId)).isOne();
-        // Tanpa isian peran: peran tidak berubah (dulu otomatis diturunkan menjadi Editor).
-        mockMvc.perform(put("/api/public/sites/osis-anggota/admin/members/" + budiId).header(HttpHeaders.AUTHORIZATION, owner)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"positionTitle\":\"Ketua Divisi\"}"))
-                .andExpect(status().isOk());
-        assertThat(jdbc.queryForObject("SELECT role FROM organization_members WHERE organization_id = ? AND user_id = ?::uuid",
-                String.class, orgId, budiId)).isEqualTo("admin");
-        // Jabatan terlalu panjang: 400, bukan 500 dari database.
-        mockMvc.perform(put("/api/public/sites/osis-anggota/admin/members/" + budiId).header(HttpHeaders.AUTHORIZATION, owner)
-                        .contentType(MediaType.APPLICATION_JSON).content("{\"positionTitle\":\"" + "J".repeat(61) + "\"}"))
-                .andExpect(status().isBadRequest());
-
-        mockMvc.perform(delete("/api/public/sites/osis-anggota/admin/members/" + budiId).header(HttpHeaders.AUTHORIZATION, owner))
-                .andExpect(status().isOk());
-        assertThat(jdbc.queryForObject("""
-                SELECT count(*) FROM activity_logs WHERE organization_id = ? AND action = 'member.removed' AND target_id = ?::uuid""",
-                Long.class, orgId, budiId)).isOne();
     }
 
-    private String portalToken(String slug, String email) throws Exception {
-        String login = mockMvc.perform(post("/api/public/sites/" + slug + "/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + email + "\",\"password\":\"password123\"}"))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    /** Pemilik organisasi mengatur kredensial Portal satu peran lewat app. */
+    private void setPortal(String role, String username, String password) throws Exception {
+        mockMvc.perform(put("/api/organizations/" + orgId + "/portal-credentials/" + role)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + creatorToken).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}"))
+                .andExpect(status().isOk());
+    }
+
+    private org.springframework.test.web.servlet.ResultActions portalLogin(String slug, String username, String password) throws Exception {
+        return mockMvc.perform(post("/api/public/sites/" + slug + "/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}"));
+    }
+
+    private String portalToken(String slug, String username, String password) throws Exception {
+        String login = portalLogin(slug, username, password).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         return "Bearer " + JsonPath.read(login, "$.token");
+    }
+
+    /** Kredensial Pemilik bawaan test, lalu token Portal-nya. */
+    private String ownerPortal(String slug) throws Exception {
+        setPortal("owner", "ketua", "rahasia-ketua");
+        return portalToken(slug, "ketua", "rahasia-ketua");
     }
 
     @Test
@@ -444,11 +424,7 @@ class SitePublishIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"slug\":\"osis-portal-modul\"}"))
                 .andExpect(status().isAccepted());
-        String login = mockMvc.perform(post("/api/public/sites/osis-portal-modul/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + creatorEmail + "\",\"password\":\"password123\"}"))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        String portal = "Bearer " + JsonPath.read(login, "$.token");
+        String portal = ownerPortal("osis-portal-modul");
         String base = "/api/public/sites/osis-portal-modul/admin/collections/prestasi";
 
         String first = add(base, portal, "{\"judul\":\"Juara 1 Debat\"}");
@@ -630,6 +606,11 @@ class SitePublishIntegrationTest {
         // Domain kustom dikenali OrgSpace-Hosting lewat resolve-domain, lalu disajikan dari rilis aktif (tanpa hosts/).
         mockMvc.perform(get("/api/public/sites/resolve-domain").param("domain", "osis-hemat.sch.id"))
                 .andExpect(jsonPath("$.slug").value("osis-hemat"));
+        // Pengunjung yang mengetik www. dibawa ke website yang sama, dan Caddy boleh membuat sertifikatnya.
+        mockMvc.perform(get("/api/public/sites/resolve-domain").param("domain", "www.osis-hemat.sch.id"))
+                .andExpect(jsonPath("$.slug").value("osis-hemat"));
+        mockMvc.perform(get("/internal/caddy/ask").param("domain", "www.osis-hemat.sch.id")).andExpect(status().isOk());
+        mockMvc.perform(get("/internal/caddy/ask").param("domain", "lain.osis-hemat.sch.id")).andExpect(status().isNotFound());
     }
 
     @Test
@@ -781,6 +762,7 @@ class SitePublishIntegrationTest {
                     <body>
                       <header><h1>OSIS Website</h1><img data-edit="image" data-key="foto_hero" src="img/hero.png" alt="Hero">
                         <b data-ws-stat="pengurus">0</b> <span data-ws-org="nama">Nama</span></header>
+                      <div class="kolom"><div>Kiri</div><div>Kanan</div></div>
                       <main>
                         <section data-ws-list="berita">
                           <h2>Berita Terbaru</h2>

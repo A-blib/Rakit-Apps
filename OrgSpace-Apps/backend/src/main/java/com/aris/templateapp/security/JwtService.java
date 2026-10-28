@@ -26,6 +26,7 @@ public class JwtService {
 
     /** Klaim token Portal Pengurus: token hanya berlaku untuk satu website, bukan API OrgSpace lain. */
     private static final String SITE_CLAIM = "site";
+    private static final String VERSION_CLAIM = "ver";
     // Portal pengurus tidak punya refresh token; 8 jam cukup untuk satu sesi kerja.
     private static final Duration SITE_TTL = Duration.ofHours(8);
 
@@ -61,15 +62,21 @@ public class JwtService {
         return accessTtl.toSeconds();
     }
 
+    /** Isi token Portal: peran pemegang kredensial dan versi kredensial saat token dibuat. */
+    public record SiteClaims(String role, int version) {
+    }
+
     /**
      * Token Portal Pengurus untuk satu website. Portal berjalan di domain hosting bersama halaman template buatan
      * provider, jadi tokennya dibatasi: tidak bisa dipakai untuk API OrgSpace lain (lihat {@link #parseUserId}).
+     * Isinya peran, bukan user: login Portal memakai kredensial bersama per peran (PortalCredentialService).
      */
-    public String createSiteToken(UUID userId, UUID siteId) {
+    public String createSiteToken(UUID siteId, String role, int version) {
         Instant now = clock.instant();
         return Jwts.builder()
-                .subject(userId.toString())
+                .subject(role)
                 .claim(SITE_CLAIM, siteId.toString())
+                .claim(VERSION_CLAIM, version)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(SITE_TTL)))
                 .signWith(key, Jwts.SIG.HS256)
@@ -81,9 +88,12 @@ public class JwtService {
         return claims(token).filter(c -> c.get(SITE_CLAIM) == null).flatMap(JwtService::subject);
     }
 
-    /** ID user jika token portal sah untuk website {@code siteId}. */
-    public Optional<UUID> parseSiteUserId(String token, UUID siteId) {
-        return claims(token).filter(c -> siteId.toString().equals(c.get(SITE_CLAIM))).flatMap(JwtService::subject);
+    /** Peran dan versi kredensial jika token portal sah untuk website {@code siteId}. */
+    public Optional<SiteClaims> parseSiteClaims(String token, UUID siteId) {
+        return claims(token)
+                .filter(c -> siteId.toString().equals(c.get(SITE_CLAIM)))
+                .filter(c -> c.getSubject() != null && c.get(VERSION_CLAIM) instanceof Integer)
+                .map(c -> new SiteClaims(c.getSubject(), c.get(VERSION_CLAIM, Integer.class)));
     }
 
     private Optional<Claims> claims(String token) {

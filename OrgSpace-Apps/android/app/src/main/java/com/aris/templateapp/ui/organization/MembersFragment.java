@@ -76,6 +76,10 @@ public class MembersFragment extends Fragment {
             }
         });
         viewModel.getFailure().observe(getViewLifecycleOwner(), event -> {
+            // Selama sheet Undang terbuka, error-nya milik sheet itu; Snackbar di sini akan tertutup sheet.
+            if (getChildFragmentManager().findFragmentByTag(InviteSheet.TAG) != null) {
+                return;
+            }
             var error = event.getContentIfNotHandled();
             if (error != null) {
                 Snackbar.make(binding.getRoot(), ErrorMessages.forError(requireContext(), error), Snackbar.LENGTH_LONG)
@@ -118,7 +122,7 @@ public class MembersFragment extends Fragment {
         for (Invitation invitation : state.invitations) {
             ItemInvitationBinding row = ItemInvitationBinding.inflate(getLayoutInflater(), binding.invitationList, true);
             row.text.setText(getString(R.string.invitation_row, getString(WorkspaceUi.roleLabel(invitation.role)),
-                    OrgUi.date(invitation.expiresAt)));
+                    OrgUi.dateTime(invitation.expiresAt)));
             row.revokeButton.setOnClickListener(v -> new MaterialAlertDialogBuilder(requireContext())
                     .setTitle(R.string.invitation_revoke_title)
                     .setMessage(R.string.invitation_revoke_body)

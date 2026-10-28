@@ -15,6 +15,7 @@ public enum OrgAction {
     EDIT_PROFILE(MemberRole.ADMIN),
     MANAGE_MEMBERS(MemberRole.ADMIN),
     DELETE_SITE(MemberRole.OWNER),
+    MANAGE_PORTAL_CREDENTIALS(MemberRole.OWNER),
     TRANSFER_OWNERSHIP(MemberRole.OWNER),
     DELETE_ORGANIZATION(MemberRole.OWNER);
 

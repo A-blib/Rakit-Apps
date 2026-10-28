@@ -16,7 +16,7 @@ const post = (body: unknown, method = "POST") => ({ method, body: JSON.stringify
 
 test("login hanya menerima akun demo", async () => {
   const api = createDemoApi(sample);
-  assert.equal((await api("demo/auth/login", post({ email: "x@y.z", password: "salah" }))).status, 401);
+  assert.equal((await api("demo/auth/login", post({ username: "demo", password: "salah" }))).status, 401);
   const ok = await api("demo/auth/login", post(DEMO_LOGIN));
   assert.equal(ok.status, 200);
   assert.equal((await ok.json()).user.role, "owner");
@@ -34,9 +34,9 @@ test("koleksi bisa ditambah, diubah, diurutkan, dan dihapus di memori", async ()
   assert.deepEqual(stats, { submissionsCount: 3, newsCount: 1, customItemsCount: 2 });
 });
 
-test("pemilik tidak bisa dicabut, data tiap tab terpisah", async () => {
+test("data tiap tab terpisah, dan tidak ada lagi kelola anggota di Portal", async () => {
   const api = createDemoApi(sample);
-  assert.equal((await api("demo/admin/members/demo-pemilik", { method: "DELETE" })).status, 400);
+  assert.equal((await api("demo/admin/members")).status, 404);
   await api("demo/admin/news/n1", { method: "DELETE" });
   assert.equal((await (await api("demo/admin/news")).json()).length, 0);
   assert.equal((await (await createDemoApi(sample)("demo/admin/news")).json()).length, 1);

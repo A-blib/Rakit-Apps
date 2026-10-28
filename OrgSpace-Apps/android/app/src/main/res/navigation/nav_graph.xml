@@ -237,6 +237,14 @@
     </fragment>
 
     <fragment
+        android:id="@+id/portalAccessFragment"
+        android:name="com.aris.templateapp.ui.organization.PortalAccessFragment">
+        <argument
+            android:name="organizationId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
         android:id="@+id/transferOwnershipFragment"
         android:name="com.aris.templateapp.ui.organization.TransferOwnershipFragment">
         <argument

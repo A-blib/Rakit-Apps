@@ -1,5 +1,8 @@
 package com.aris.templateapp.organization;
 
+import com.aris.templateapp.common.exception.ApiException;
+import com.aris.templateapp.common.exception.ErrorCode;
+import com.aris.templateapp.common.persistence.PersistableEnum;
 import com.aris.templateapp.config.OpenApiConfig;
 import com.aris.templateapp.organization.dto.ActivityPageResponse;
 import com.aris.templateapp.organization.dto.CreateInvitationRequest;
@@ -11,6 +14,8 @@ import com.aris.templateapp.organization.dto.MemberResponse;
 import com.aris.templateapp.organization.dto.MemberUpdateRequest;
 import com.aris.templateapp.organization.dto.OrganizationResponse;
 import com.aris.templateapp.organization.dto.OrganizationSummaryResponse;
+import com.aris.templateapp.organization.dto.PortalCredentialRequest;
+import com.aris.templateapp.organization.dto.PortalCredentialResponse;
 import com.aris.templateapp.organization.dto.TransferOwnershipRequest;
 import com.aris.templateapp.organization.dto.UpdateOrganizationRequest;
 import com.aris.templateapp.security.CurrentUser;
@@ -30,6 +35,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -54,6 +60,7 @@ public class OrganizationController {
     private final MemberService memberService;
     private final InvitationService invitationService;
     private final ActivityService activityService;
+    private final PortalCredentialService portalCredentialService;
     private final OrganizationAccess access;
     private final CurrentUser currentUser;
 
@@ -162,6 +169,28 @@ public class OrganizationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void revokeInvitation(@PathVariable UUID id, @PathVariable UUID invitationId) {
         invitationService.revoke(id, currentUser.id(), invitationId);
+    }
+
+    @Operation(summary = "Kredensial Portal Pengurus yang sudah diatur (Pemilik)",
+            description = "Hanya peran dan username; password tidak pernah dikirim.")
+    @GetMapping("/{id}/portal-credentials")
+    public List<PortalCredentialResponse> portalCredentials(@PathVariable UUID id) {
+        return portalCredentialService.list(id, currentUser.id());
+    }
+
+    @Operation(summary = "Atur username & password Portal untuk satu peran (Pemilik)",
+            description = "role = owner/admin/editor. Menyimpan ulang membuat semua sesi Portal peran itu keluar. "
+                    + "409 PORTAL_USERNAME_TAKEN jika username dipakai peran lain.")
+    @PutMapping("/{id}/portal-credentials/{role}")
+    public PortalCredentialResponse savePortalCredential(@PathVariable UUID id, @PathVariable String role,
+                                                         @Valid @RequestBody PortalCredentialRequest request) {
+        MemberRole memberRole;
+        try {
+            memberRole = PersistableEnum.fromValue(MemberRole.class, role);
+        } catch (IllegalArgumentException e) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Peran harus owner, admin, atau editor");
+        }
+        return portalCredentialService.save(id, currentUser.id(), memberRole, request);
     }
 
     @Operation(summary = "Riwayat aktivitas (20 per halaman, terbaru dulu)")

@@ -982,3 +982,16 @@ Keputusan Aris saat memulai:
 - Admin dashboard = akun dengan `users.is_admin = true`, login email + password.
 - Library web yang dipakai: next, react, tailwindcss, react-markdown + remark-gfm. Library npm lain harus ditanyakan dulu.
 - Pengembangan fitur app (fase T3–T8, P2–P7) **ditunda** sampai Aris bilang "lanjutkan pengembangan sebelumnya hingga selesai"; Aris sedang mengubah desain layout.
+
+---
+
+## 21. Tambahan: akses Portal Pengurus per peran (Oktober 2026)
+
+Keputusan Aris (28 Oktober 2026), detail di `docs/dokumentasi-project.md` bab 33z. Untuk hal yang dibahasnya, bagian ini **mengesampingkan** login Portal Pengurus dengan akun OrgSpace dan kelola anggota/undangan dari Portal:
+
+- Setiap organisasi punya tiga kredensial Portal (username + password): **Pemilik (wajib)**, Admin, Editor (opsional). Berlaku untuk Portal semua website organisasi itu. Hanya Pemilik organisasi yang mengatur, dari app (Kelola organisasi → Akses Portal website).
+- Username menentukan peran saat login; password peran lain, kredensial organisasi lain, dan akun OrgSpace pribadi selalu ditolak.
+- Belum ada kredensial sama sekali → Portal menjawab "Password Portal belum diatur"; selain itu login gagal = "Username atau password salah."
+- Undangan Admin/Editor di app ditolak sampai kredensial peran itu diatur. Dialog Terbitkan hanya mengingatkan (tidak memblokir).
+- Tab "Pengurus & Hak Akses" dan kode undangan di Portal dihapus.
+- Serah terima kepemilikan menghapus kredensial Portal Pemilik (Pemilik baru membuat sendiri); Admin/Editor tetap berlaku tetapi ditandai "ganti password" di app.

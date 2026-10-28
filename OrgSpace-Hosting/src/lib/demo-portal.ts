@@ -5,7 +5,7 @@ import type { TemplatePreviewData } from "./types";
  * Akun Portal demo. Sengaja publik (ditampilkan di layar login): tidak ada di database, tidak membuka akun apa pun,
  * dan hanya dicek oleh createDemoApi di browser.
  */
-export const DEMO_LOGIN: DemoLogin = { email: "demo@orgspace.app", password: "demo1234" };
+export const DEMO_LOGIN: DemoLogin = { username: "demo", password: "demo1234" };
 
 type Row = Record<string, unknown> & { id: string };
 
@@ -25,7 +25,7 @@ export function createDemoApi(sample: TemplatePreviewData): PortalApi {
   let seq = 0;
   const newId = () => `demo-${++seq}`;
 
-  const user = { id: "demo-pemilik", name: "Pengurus Demo", email: DEMO_LOGIN.email, role: "owner" };
+  const user = { username: DEMO_LOGIN.username, role: "owner" };
   let news: Row[] = sample.news.map((n) => ({
     id: n.id,
     title: n.title,
@@ -46,13 +46,6 @@ export function createDemoApi(sample: TemplatePreviewData): PortalApi {
       createdAt: daysAgo(i),
     }))
   );
-  let members = [
-    { userId: user.id, name: user.name, email: user.email, role: "owner", positionTitle: "Ketua", joinedAt: daysAgo(90) },
-    { userId: "demo-2", name: "Sekretaris Contoh", email: "sekretaris@example.com", role: "admin", positionTitle: "Sekretaris", joinedAt: daysAgo(60) },
-    { userId: "demo-3", name: "Bendahara Contoh", email: "bendahara@example.com", role: "editor", positionTitle: "Bendahara", joinedAt: daysAgo(45) },
-    { userId: "demo-4", name: "Humas Contoh", email: "humas@example.com", role: "editor", positionTitle: "Humas", joinedAt: daysAgo(30) },
-  ];
-
   return async (path, init = {}) => {
     const method = (init.method || "GET").toUpperCase();
     const body = typeof init.body === "string" ? JSON.parse(init.body) : null;
@@ -63,10 +56,10 @@ export function createDemoApi(sample: TemplatePreviewData): PortalApi {
       return json({ name: sample.name, organizationName: sample.org.nama, modules: sample.modules });
     }
     if (area === "auth" && resource === "login" && method === "POST") {
-      const ok = String(body?.email).toLowerCase() === DEMO_LOGIN.email && body?.password === DEMO_LOGIN.password;
+      const ok = String(body?.username).toLowerCase() === DEMO_LOGIN.username && body?.password === DEMO_LOGIN.password;
       return ok
         ? json({ token: "demo", user })
-        : json({ message: "Email atau password demo salah. Pakai akun demo yang tertera di atas." }, 401);
+        : json({ message: "Username atau password demo salah. Pakai akun demo yang tertera di atas." }, 401);
     }
     if (area === "auth" && resource === "me") return json({ user });
     if (area !== "admin") return json({ message: "Tidak tersedia di demo." }, 404);
@@ -121,19 +114,6 @@ export function createDemoApi(sample: TemplatePreviewData): PortalApi {
         // Foto hanya tampil di tab ini (alamat blob:), tidak pernah diunggah ke mana pun.
         return file instanceof Blob ? json({ url: URL.createObjectURL(file) }) : json({ message: "Pilih file gambar." }, 400);
       }
-      case "members": {
-        if (!a) return json(members);
-        if (a === user.id) return json({ message: "Peran pemilik tidak bisa diubah atau dicabut." }, 400);
-        if (method === "PUT") members = members.map((m) => (m.userId === a ? { ...m, role: body?.role } : m));
-        if (method === "DELETE") members = members.filter((m) => m.userId !== a);
-        return json({ message: "Berhasil." });
-      }
-      case "invitations":
-        return json({
-          code: `DEMO-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-          role: body?.role,
-          expiresAt: new Date(Date.now() + 7 * DAY).toISOString(),
-        }, 201);
     }
     return json({ message: "Tidak tersedia di demo." }, 404);
   };

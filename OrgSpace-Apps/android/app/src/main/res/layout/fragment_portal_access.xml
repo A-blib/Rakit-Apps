@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Akses Portal website: username + password Portal Pengurus untuk Pemilik (wajib), Admin, dan Editor. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="@string/portal_access_title" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ScrollView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="@dimen/space_8">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                    android:paddingBottom="@dimen/space_4"
+                    android:text="@string/portal_access_intro"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/owner_item"
+                    layout="@layout/item_menu_row" />
+
+                <include
+                    android:id="@+id/admin_item"
+                    layout="@layout/item_menu_row" />
+
+                <include
+                    android:id="@+id/editor_item"
+                    layout="@layout/item_menu_row" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="@dimen/screen_padding_horizontal"
+                    android:paddingTop="@dimen/space_4"
+                    android:text="@string/portal_access_note"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/color_muted" />
+            </LinearLayout>
+        </ScrollView>
+
+        <com.aris.templateapp.ui.common.StateView
+            android:id="@+id/state_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+</LinearLayout>

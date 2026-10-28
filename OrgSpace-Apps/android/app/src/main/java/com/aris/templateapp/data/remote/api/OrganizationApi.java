@@ -13,6 +13,8 @@ import com.aris.templateapp.data.remote.dto.LastOrganizationRequestDto;
 import com.aris.templateapp.data.remote.dto.MemberDto;
 import com.aris.templateapp.data.remote.dto.MemberUpdateRequestDto;
 import com.aris.templateapp.data.remote.dto.OrganizationDto;
+import com.aris.templateapp.data.remote.dto.PortalCredentialDto;
+import com.aris.templateapp.data.remote.dto.PortalCredentialRequestDto;
 import com.aris.templateapp.data.remote.dto.OrganizationSummaryDto;
 import com.aris.templateapp.data.remote.dto.TransferOwnershipRequestDto;
 import com.aris.templateapp.data.remote.dto.UpdateOrganizationRequestDto;
@@ -28,6 +30,7 @@ import retrofit2.http.HTTP;
 import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -88,6 +91,13 @@ public interface OrganizationApi {
 
     @DELETE("organizations/{id}/invitations/{invitationId}")
     Call<Void> revokeInvitation(@Path("id") String id, @Path("invitationId") String invitationId);
+
+    @GET("organizations/{id}/portal-credentials")
+    Call<List<PortalCredentialDto>> portalCredentials(@Path("id") String id);
+
+    @PUT("organizations/{id}/portal-credentials/{role}")
+    Call<PortalCredentialDto> savePortalCredential(@Path("id") String id, @Path("role") String role,
+                                                   @Body PortalCredentialRequestDto body);
 
     @GET("organizations/{id}/activities")
     Call<ActivityPageDto> activities(@Path("id") String id, @Query("page") int page);

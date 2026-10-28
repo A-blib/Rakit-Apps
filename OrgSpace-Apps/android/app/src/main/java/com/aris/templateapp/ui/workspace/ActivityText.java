@@ -53,6 +53,8 @@ public final class ActivityText {
                 return new Sentence(R.string.activity_ownership_transferred, actor, nameOr(member, unknownActor));
             case "invitation.created":
                 return new Sentence(R.string.activity_invitation_created, actor, roleLabel(activity.meta("role")));
+            case "portal_credential.saved":
+                return new Sentence(R.string.activity_portal_credential_saved, actor, roleLabel(activity.meta("role")));
             case "invitation.revoked":
                 return new Sentence(R.string.activity_invitation_revoked, actor);
             case "website.renamed":
