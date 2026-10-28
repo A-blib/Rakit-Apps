@@ -51,13 +51,13 @@ public record AppProperties(
      * Ruang kerja organisasi (revisi-fondasi-orgspace.md bagian 3.2 & 4.1).
      *
      * @param maxMembers    batas anggota per organisasi (F4)
-     * @param inviteTtlDays masa berlaku kode undangan (F2)
+     * @param inviteTtlMinutes masa berlaku kode undangan (sekali pakai), bawaan 60
      * @param logoMaxKb     ukuran maksimal file logo yang diunggah
      * @param logoDir       folder logo hasil olahan server (relatif ke folder kerja backend)
      */
     public record Org(
             @Min(2) int maxMembers,
-            @Min(1) int inviteTtlDays,
+            @Min(1) int inviteTtlMinutes,
             @Min(16) int logoMaxKb,
             @NotBlank String logoDir) {
     }

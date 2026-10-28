@@ -15,8 +15,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Tabel {@code organization_invitations}. Satu kode bisa dipakai beberapa orang sampai kedaluwarsa atau
- * dicabut (F2), jadi tidak ada kolom "sudah dipakai".
+ * Tabel {@code organization_invitations}. Satu kode untuk satu orang: berlaku sampai dipakai, kedaluwarsa (1 jam),
+ * atau dicabut (keputusan Aris, 28 Oktober 2026; sebelumnya F2: beberapa orang selama 7 hari).
  */
 @Entity
 @Table(name = "organization_invitations")
@@ -45,6 +45,10 @@ public class OrganizationInvitation {
 
     private Instant revokedAt;
 
+    private Instant usedAt;
+
+    private UUID usedBy;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
@@ -58,7 +62,12 @@ public class OrganizationInvitation {
     }
 
     public boolean isUsable(Instant now) {
-        return revokedAt == null && expiresAt.isAfter(now);
+        return revokedAt == null && usedAt == null && expiresAt.isAfter(now);
+    }
+
+    public void markUsed(UUID userId, Instant now) {
+        usedBy = userId;
+        usedAt = now;
     }
 
     public void revoke(Instant now) {

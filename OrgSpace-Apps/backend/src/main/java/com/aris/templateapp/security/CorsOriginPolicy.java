@@ -72,6 +72,6 @@ public class CorsOriginPolicy implements CorsConfigurationSource {
             return false;
         }
         // shortcut: satu query per request CORS dari domain kustom (Portal saja); cache jika ini mulai terasa lambat.
-        return siteDomainRepository.findByHostnameAndStatus(uri.getHost(), "active").isPresent();
+        return siteDomainRepository.findActiveForHost(uri.getHost()).isPresent();
     }
 }

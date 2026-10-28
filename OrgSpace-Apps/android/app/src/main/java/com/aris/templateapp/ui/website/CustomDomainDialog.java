@@ -171,6 +171,9 @@ public class CustomDomainDialog extends DialogFragment {
             binding.layoutPendingDomain.setVisibility(View.GONE);
             binding.layoutActiveDomain.setVisibility(View.VISIBLE);
             binding.textActiveDomainUrl.setText("https://" + domain.hostname);
+            boolean warning = domain.lastError != null && !domain.lastError.isBlank();
+            binding.textActiveWarning.setText(warning ? domain.lastError : null);
+            binding.textActiveWarning.setVisibility(warning ? View.VISIBLE : View.GONE);
         } else {
             // Pending (Menunggu verifikasi DNS)
             binding.badgeCustomStatus.setText(R.string.custom_domain_status_pending);
@@ -197,8 +200,19 @@ public class CustomDomainDialog extends DialogFragment {
             return;
         }
 
+        // Record A/CNAME pertama wajib; record berikutnya opsional (pasangan www / tanpa www), ditampilkan terpisah.
+        boolean targetShown = false;
+        binding.textOptionalRecord.setVisibility(View.GONE);
         for (DomainInstructionDto inst : instructions) {
-            if ("CNAME".equalsIgnoreCase(inst.type) || "A".equalsIgnoreCase(inst.type)) {
+            boolean target = "CNAME".equalsIgnoreCase(inst.type) || "A".equalsIgnoreCase(inst.type);
+            if (target && targetShown) {
+                binding.textOptionalRecord.setText(getString(R.string.custom_domain_optional_record, inst.note,
+                        inst.type, inst.host, inst.value));
+                binding.textOptionalRecord.setVisibility(View.VISIBLE);
+                continue;
+            }
+            if (target) {
+                targetShown = true;
                 String typeHost = inst.type + " (Host: " + inst.host + ")";
                 binding.textTargetTypeLabel.setText(typeHost);
                 binding.textTargetValue.setText(inst.value);

@@ -426,7 +426,7 @@ Variabel berikut **opsional**: tanpa ditulis pun backend memakai nilai bawaan ya
 
 | Variabel | Bawaan | Untuk |
 |---|---|---|
-| `ORG_MAX_MEMBERS`, `ORG_INVITE_TTL_DAYS`, `ORG_LOGO_MAX_KB`, `ORG_LOGO_DIR` | 30, 7, 1024, `./data/org-logos` | Ruang kerja organisasi (batas anggota, umur kode undangan, logo) |
+| `ORG_MAX_MEMBERS`, `ORG_INVITE_TTL_MINUTES`, `ORG_LOGO_MAX_KB`, `ORG_LOGO_DIR` | 30, 60, 1024, `./data/org-logos` | Ruang kerja organisasi (batas anggota, umur kode undangan sekali pakai dalam menit, logo) |
 | `SITES_DOMAIN`, `SITES_URL_SCHEME` | `sites.localhost:8081`, `http` | Alamat website organisasi yang tampil di tab Website (di VPS diganti domain situs + `https`) |
 | `SITES_MAX_PER_ORG`, `SITES_MAX_PER_PERSONAL` | 5, 5 | Batas website yang punya alamat per ruang kerja |
 

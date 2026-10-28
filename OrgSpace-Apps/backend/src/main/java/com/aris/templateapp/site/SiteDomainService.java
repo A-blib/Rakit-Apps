@@ -14,18 +14,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.InitialDirContext;
 import com.google.common.net.InternetDomainName;
 import java.net.IDN;
 import java.security.SecureRandom;
 import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -40,12 +42,16 @@ public class SiteDomainService {
     private static final Pattern HOSTNAME_PATTERN = Pattern.compile("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$");
     private static final Pattern IP_PATTERN = Pattern.compile("^(\\d{1,3}\\.){3}\\d{1,3}$");
     private static final SecureRandom RANDOM = new SecureRandom();
+    /** Record TXT hilang selama ini → domain dilepas (mis. domain kedaluwarsa lalu dibeli orang lain). */
+    static final Duration RELEASE_AFTER = Duration.ofDays(7);
 
     private final SiteRepository siteRepository;
     private final SiteDomainRepository siteDomainRepository;
     private final OrganizationAccess access;
     private final AppProperties properties;
     private final Clock clock;
+    private final DnsLookup dns;
+    private final VercelDomainClient vercel;
 
     private Site findSite(UUID id) {
         return siteRepository.findById(id)
@@ -126,8 +132,24 @@ public class SiteDomainService {
         requireNotActiveElsewhere(domain.getHostname(), site.getId());
         domain.setStatus("active");
         domain.setActivatedAt(clock.instant());
-        domain.setLastError(null);
+        // Kepemilikan sudah terbukti (TXT); jika A/CNAME belum mengarah ke OrgSpace, domain tetap aktif tapi diberi
+        // peringatan, agar pengguna tidak mengira domainnya sudah bisa dibuka.
+        domain.setLastError(bypassDns && properties.sites().allowDnsBypass() ? null : pointingProblem(domain.getHostname()));
         domain.setFailingSince(null);
+        // Hosting di Vercel hanya melayani domain yang terdaftar di project-nya. Gagal mendaftar = verifikasi dibatalkan
+        // (transaksi digulung balik, domain tetap pending), agar status "aktif" tidak menyesatkan.
+        String providerNote = vercel.addDomain(domain.getHostname());
+        String alternate = alternateHost(domain.getHostname());
+        if (alternate != null) {
+            try {
+                vercel.addDomain(alternate);
+            } catch (ApiException e) {
+                log.warn("Pasangan www {} gagal didaftarkan: {}", alternate, e.getMessage());
+            }
+        }
+        if (providerNote != null) {
+            domain.setLastError(providerNote);
+        }
         domain = siteDomainRepository.save(domain);
 
         log.info("Domain kustom {} untuk website {} BERHASIL diverifikasi dan aktif!", domain.getHostname(), site.getSlug());
@@ -147,7 +169,27 @@ public class SiteDomainService {
         }
 
         siteDomainRepository.delete(domain);
+        if ("active".equals(domain.getStatus())) {
+            releaseFromHosting(domain.getHostname());
+        }
         log.info("Domain kustom {} untuk website {} telah dilepas", domain.getHostname(), site.getSlug());
+    }
+
+    private void releaseFromHosting(String hostname) {
+        vercel.removeDomain(hostname);
+        String alternate = alternateHost(hostname);
+        if (alternate != null) {
+            vercel.removeDomain(alternate);
+        }
+    }
+
+    /** Pasangan www / tanpa www untuk domain utama dan www.domain-utama (sama dengan instruksi DNS opsional). */
+    static String alternateHost(String hostname) {
+        String zone = InternetDomainName.from(hostname).topPrivateDomain().toString();
+        if (hostname.equals(zone)) {
+            return "www." + zone;
+        }
+        return hostname.equals("www." + zone) ? zone : null;
     }
 
     private void requireNotActiveElsewhere(String hostname, UUID siteId) {
@@ -227,28 +269,62 @@ public class SiteDomainService {
     }
 
     private boolean checkDnsTxt(String hostname, String expectedToken) {
-        try {
-            Hashtable<String, String> env = new Hashtable<>();
-            env.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
-            env.put("com.sun.jndi.dns.timeout.initial", "2500");
-            env.put("com.sun.jndi.dns.timeout.retries", "1");
+        return dns.txt(properties.sites().verifyTxtPrefix() + "." + hostname).stream()
+                .anyMatch(expectedToken::equalsIgnoreCase);
+    }
 
-            InitialDirContext ctx = new InitialDirContext(env);
-            String txtHost = properties.sites().verifyTxtPrefix() + "." + hostname;
-            Attributes attrs = ctx.getAttributes(txtHost, new String[]{"TXT"});
-            Attribute txtAttr = attrs.get("TXT");
-            if (txtAttr != null) {
-                for (int i = 0; i < txtAttr.size(); i++) {
-                    String val = txtAttr.get(i).toString().replace("\"", "").trim();
-                    if (expectedToken.equalsIgnoreCase(val)) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.debug("Pemeriksaan DNS TXT untuk {} gagal: {}", hostname, e.getMessage());
+    /** Pesan jika domain belum mengarah ke server OrgSpace (IP publik atau tujuan CNAME), atau null jika sudah. */
+    String pointingProblem(String hostname) {
+        Set<String> actual = dns.addresses(hostname);
+        if (actual.isEmpty()) {
+            return "Domain belum mengarah ke server OrgSpace. Pasang record A/CNAME sesuai petunjuk, lalu tunggu "
+                    + "propagasi DNS (bisa sampai beberapa jam).";
         }
-        return false;
+        Set<String> ours = new HashSet<>(dns.addresses(properties.sites().customTarget()));
+        ours.add(properties.sites().publicIp());
+        if (actual.stream().noneMatch(ours::contains)) {
+            return "Domain masih mengarah ke " + String.join(", ", actual) + ", belum ke server OrgSpace ("
+                    + properties.sites().publicIp() + "). Periksa record A/CNAME di pengaturan DNS.";
+        }
+        return null;
+    }
+
+    /**
+     * Pengecekan berkala domain aktif ({@link SiteDomainMonitor}). Record TXT yang hilang lebih dari
+     * {@link #RELEASE_AFTER} membuat domain dilepas (kembali pending), agar domain yang sudah berpindah pemilik tidak
+     * terkunci di website lama. DNS yang tidak mengarah ke OrgSpace hanya dicatat sebagai peringatan.
+     */
+    @Transactional
+    public void recheck(UUID domainId) {
+        SiteDomain domain = siteDomainRepository.findById(domainId).orElse(null);
+        if (domain == null || !"active".equals(domain.getStatus())) {
+            return;
+        }
+        Instant now = clock.instant();
+        domain.setLastCheckedAt(now);
+        if (checkDnsTxt(domain.getHostname(), domain.getVerificationToken())) {
+            domain.setFailingSince(null);
+            domain.setLastError(pointingProblem(domain.getHostname()));
+        } else {
+            if (domain.getFailingSince() == null) {
+                domain.setFailingSince(now);
+            }
+            Instant releaseAt = domain.getFailingSince().plus(RELEASE_AFTER);
+            if (!now.isBefore(releaseAt)) {
+                domain.setStatus("pending");
+                domain.setActivatedAt(null);
+                releaseFromHosting(domain.getHostname());
+                domain.setLastError("Domain dilepas otomatis karena record TXT verifikasi hilang lebih dari "
+                        + RELEASE_AFTER.toDays() + " hari. Pasang lagi record TXT, lalu tekan Verifikasi.");
+                log.warn("Domain kustom {} dilepas: record TXT hilang sejak {}", domain.getHostname(), domain.getFailingSince());
+            } else {
+                domain.setLastError("Record TXT verifikasi tidak lagi ditemukan. Pasang lagi sebelum "
+                        + DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.of("id", "ID"))
+                        .format(releaseAt.atZone(ZoneId.of(properties.timezone())))
+                        + ", atau domain akan dilepas dari website ini.");
+            }
+        }
+        siteDomainRepository.save(domain);
     }
 
     public DomainResponse toResponse(SiteDomain domain) {
@@ -273,6 +349,14 @@ public class SiteDomainService {
         }
         instructions.add(new DomainInstructionDto("TXT", sub == null ? verifyPrefix : verifyPrefix + "." + sub,
                 domain.getVerificationToken(), "Wajib: bukti bahwa domain ini milikmu"));
+        // osis.id dan www.osis.id dilayani sebagai satu website; record pasangannya opsional.
+        if (sub == null) {
+            instructions.add(new DomainInstructionDto("CNAME", "www", cnameTarget,
+                    "Opsional: agar www." + zone + " juga membuka website ini"));
+        } else if ("www".equals(sub)) {
+            instructions.add(new DomainInstructionDto("A", "@", aTarget,
+                    "Opsional: agar " + zone + " (tanpa www) juga membuka website ini"));
+        }
 
         String slug = siteRepository.findById(domain.getSiteId()).map(Site::getSlug).orElse(null);
         return new DomainResponse(

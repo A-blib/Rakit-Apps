@@ -46,7 +46,7 @@ import java.util.UUID;
 /**
  * Website publik yang sudah tayang: data render untuk OrgSpace-Hosting, domain kustom (resolve-domain, ask Caddy),
  * aset dan foto website, koleksi publik, kiriman formulir pengunjung, dan jalur lama {@code /sites/**}.
- * Portal Pengurus ada di {@link PortalAuthController}, {@link PortalContentController}, {@link PortalMemberController}.
+ * Portal Pengurus ada di {@link PortalAuthController}, {@link PortalContentController}.
  * Tanpa {@code @CrossOrigin}: izin CORS diatur satu tempat di {@code CorsOriginPolicy}.
  */
 @RestController
@@ -59,6 +59,7 @@ public class PublicSiteController {
     /** Jenis isian yang boleh ditulis provider lewat data-ws-type; gambar & link dikenali dari elemennya. */
     private static final java.util.Set<String> FIELD_TYPES = java.util.Set.of("teks", "paragraf", "angka", "tanggal");
 
+    private final VisitorIp visitorIp;
     private final SiteRepository siteRepository;
     private final SiteReleaseRepository siteReleaseRepository;
     private final SiteStorage siteStorage;
@@ -275,7 +276,7 @@ public class PublicSiteController {
         cleanDomain = cleanDomain.split("[/?#:]")[0];
 
         // 1. Cek tabel site_domains apakah terdaftar sebagai domain kustom aktif
-        Optional<SiteDomain> customDomain = siteDomainRepository.findByHostnameAndStatus(cleanDomain, "active");
+        Optional<SiteDomain> customDomain = siteDomainRepository.findActiveForHost(cleanDomain);
         if (customDomain.isPresent()) {
             Site site = siteRepository.findById(customDomain.get().getSiteId()).orElse(null);
             if (site != null && "online".equalsIgnoreCase(site.getStatus())) {
@@ -297,7 +298,7 @@ public class PublicSiteController {
             return ResponseEntity.notFound().build();
         }
         String cleanDomain = domain.toLowerCase(Locale.ROOT).trim().split(":")[0];
-        Optional<SiteDomain> active = siteDomainRepository.findByHostnameAndStatus(cleanDomain, "active");
+        Optional<SiteDomain> active = siteDomainRepository.findActiveForHost(cleanDomain);
         if (active.isPresent()) {
             Site site = siteRepository.findById(active.get().getSiteId()).orElse(null);
             if (site != null && "online".equalsIgnoreCase(site.getStatus())) {
@@ -409,7 +410,7 @@ public class PublicSiteController {
                                           @PathVariable String formName,
                                           @RequestBody Map<String, Object> payload,
                                           HttpServletRequest request) {
-        String ip = request.getRemoteAddr();
+        String ip = visitorIp.of(request);
         attemptLimiter.checkFormSubmission(ip, slug);
         String ua = request.getHeader(HttpHeaders.USER_AGENT);
         publishService.submitForm(slug, formName, payload, ip, ua);
