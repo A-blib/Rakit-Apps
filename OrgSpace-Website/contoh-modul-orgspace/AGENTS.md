@@ -26,6 +26,8 @@ organisasi lain, lalu tayang di `orgspace.app/nama-website`.
 4. `contoh-template/`: contoh **sederhana** satu halaman. Baca jika butuh versi minimal.
 5. `docs/02-requirement-dan-aturan.md`: batas ukuran, jenis file, CDN, keamanan, dan daftar lengkap kode pengecekan upload.
 6. `docs/03-menandai-bagian.md`: langkah Tandai di app, termasuk elemen yang **tidak bisa** ditandai (isi modul dinamis).
+7. `docs/05-tampilan-portal.md`: `portal.json` opsional untuk mengatur tampilan Portal Pengurus (warna, menu, header,
+   kartu/tabel, label field, menu HP). Buat setelah modul selesai; nama modul dan field harus sama dengan HTML.
 
 Tiru cara pemakaian atribut dan pola script-nya, **bukan** desainnya. Jika ada yang bertentangan, `docs/01` dan bagian 3
 file ini yang berlaku.
