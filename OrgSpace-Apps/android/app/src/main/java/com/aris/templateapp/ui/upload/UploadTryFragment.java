@@ -1,9 +1,6 @@
 package com.aris.templateapp.ui.upload;
 
 import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -128,6 +125,17 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
         WizardHeader.bind(binding.header, 5, R.string.upload_step_try, this::close);
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), back);
         binding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(keyboardListener);
+        BottomSheetBehavior.from(binding.sheet).addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View sheet, int state) {
+                fitFormToVisibleSheet();
+            }
+
+            @Override
+            public void onSlide(@NonNull View sheet, float offset) {
+                // Padding dihitung saat sheet berhenti saja, agar form tidak di-layout ulang setiap frame geser.
+            }
+        });
         viewModel = new ViewModelProvider(this).get(TryViewModel.class);
         viewModel.getReady().observe(getViewLifecycleOwner(), this::onReady);
 
@@ -145,7 +153,6 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
             buildForm();
             createWebView();
         });
-        binding.longButton.setOnClickListener(v -> fillLongContent());
         binding.backMarkButton.setOnClickListener(v ->
                 UploadNav.replaceStep(this, R.id.uploadMarkFragment, viewModel.templateId()));
         binding.nextButton.setOnClickListener(v ->
@@ -406,7 +413,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
 
     /**
      * Mode fokus saat keyboard terbuka: hanya judul wizard, strip preview (digulir ke elemen yang diedit), dan isian
-     * yang sedang diketik yang tampil. Pemilih halaman, chip section, pegangan sheet, "Uji isi panjang", dan tombol
+     * yang sedang diketik yang tampil. Pemilih halaman, chip section, pegangan sheet, "Isi asli", dan tombol
      * Kirim/Lanjut menandai disembunyikan sementara. Tanpa ini, form tetap di posisi semula dan kolomnya tertutup
      * keyboard.
      */
@@ -414,6 +421,7 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
         if (binding == null) {
             return;
         }
+        fitFormToVisibleSheet();
         WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(binding.getRoot());
         boolean keyboard = insets != null && insets.isVisible(WindowInsetsCompat.Type.ime());
         if (keyboard == typing) {
@@ -443,6 +451,21 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
             binding.formScroll.post(this::scrollFocusedIntoView);
         } else {
             sheet.setExpandedOffset(getResources().getDimensionPixelSize(R.dimen.try_sheet_expanded_offset));
+        }
+    }
+
+    /**
+     * Sheet form setinggi layar dan digeser ke bawah (setengah terbuka, atau expandedOffset saat terbuka penuh), jadi
+     * bagian bawahnya ada di luar layar. Ruang bawah form ditambah sebesar bagian yang tersembunyi itu, agar isian
+     * terakhir selalu bisa digulir sampai terlihat, berapa pun jumlah isian template.
+     */
+    private void fitFormToVisibleSheet() {
+        View parent = (View) binding.sheet.getParent();
+        int hidden = Math.max(0, binding.sheet.getBottom() - parent.getHeight());
+        int bottom = getResources().getDimensionPixelSize(R.dimen.space_8) + hidden;
+        if (binding.form.getPaddingBottom() != bottom) {
+            binding.form.setPadding(binding.form.getPaddingLeft(), binding.form.getPaddingTop(),
+                    binding.form.getPaddingRight(), bottom);
         }
     }
 
@@ -477,34 +500,6 @@ public class UploadTryFragment extends Fragment implements TryForm.Listener {
     @Override
     public void onEditMark(String key) {
         UploadNav.replaceStep(this, R.id.uploadMarkFragment, viewModel.templateId(), key);
-    }
-
-    /** Uji isi panjang (bagian 8): teks sepanjang batasnya dan gambar dengan rasio berbeda dari aslinya. */
-    private void fillLongContent() {
-        if (ready == null) {
-            return;
-        }
-        boolean wide = true;
-        for (MarkingDto.Field field : ready.marking.fields) {
-            TrySession.Value value = session.value(viewModel.templateId(), field.key);
-            if ("image".equals(field.type)) {
-                value.image = ThumbnailImages.toDataUrl(placeholder(wide));
-                wide = !wide;
-            } else if (!"link".equals(field.type)) {
-                value.text = TryForm.longText(requireContext(), field.maxLength);
-            }
-        }
-        buildForm();
-        applyPreview();
-    }
-
-    /** Gambar uji polos: 3:1 (melebar) atau 1:3 (meninggi), untuk melihat apakah layout tetap rapi. */
-    private Bitmap placeholder(boolean wide) {
-        int w = wide ? 900 : 300;
-        int h = wide ? 300 : 900;
-        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
-        new Canvas(bitmap).drawColor(Color.GRAY);
-        return bitmap;
     }
 
     private void pickPage(View anchor) {

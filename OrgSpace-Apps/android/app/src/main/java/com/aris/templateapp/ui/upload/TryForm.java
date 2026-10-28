@@ -467,15 +467,4 @@ final class TryForm {
     private int px(int dimen) {
         return context.getResources().getDimensionPixelSize(dimen);
     }
-
-    /** Untuk Uji isi panjang: teks sepanjang batas karakter. */
-    static String longText(Context context, @Nullable Integer maxLength) {
-        String unit = context.getString(R.string.try_long_text);
-        int length = maxLength == null ? 200 : maxLength;
-        StringBuilder text = new StringBuilder();
-        while (text.length() < length) {
-            text.append(unit);
-        }
-        return text.substring(0, length).trim();
-    }
 }

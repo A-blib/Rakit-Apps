@@ -25,4 +25,10 @@ public class ElementInfo {
     public List<Integer> markedAncestors = new ArrayList<>();
     /** Nomor elemen bertanda di dalam elemen ini. */
     public List<Integer> markedDescendants = new ArrayList<>();
+    /** Atribut modul dinamis yang mengisi elemen ini otomatis (mis. data-ws-org="nama"), atau null. */
+    public String dynamicFilled;
+    /** data-ws-link / data-ws-auth di elemen ini (href diatur otomatis), atau null. */
+    public String dynamicLink;
+    /** Penanda modul pertama di dalam elemen ini, atau null. */
+    public String wrapsModule;
 }

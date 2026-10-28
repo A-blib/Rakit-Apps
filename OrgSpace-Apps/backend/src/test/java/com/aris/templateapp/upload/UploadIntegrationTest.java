@@ -58,6 +58,9 @@ class UploadIntegrationTest {
     @Autowired
     private UploadMaintenance maintenance;
 
+    @Autowired
+    private InterruptedCheckRecovery recovery;
+
     private String token;
     private UUID providerId;
 
@@ -459,6 +462,37 @@ class UploadIntegrationTest {
             assertThat(System.currentTimeMillis()).as("pengecekan tidak selesai dalam 15 detik").isLessThan(deadline);
             Thread.sleep(100);
         }
+    }
+
+    @Test
+    void checksInterruptedByServerRestartAreClosedOnStartup() throws Exception {
+        UUID upload = stuckCheck("upload-terputus", 2, "2000-01-01");
+        UUID submit = stuckCheck("kirim-terputus", 6, "2000-01-01");
+        // Dimulai setelah server ini menyala (mis. contoh dari seeder dev): masih berjalan, jangan disentuh.
+        UUID running = stuckCheck("baru-mulai", 2, "2999-01-01");
+
+        recovery.recover();
+
+        assertThat(jdbc.queryForMap("SELECT status, wizard_step FROM templates WHERE id = ?", upload))
+                .containsEntry("status", "check_failed").containsEntry("wizard_step", 2);
+        assertThat(jdbc.queryForObject("SELECT status FROM templates WHERE id = ?", String.class, submit)).isEqualTo("draft");
+        assertThat(jdbc.queryForObject("SELECT status FROM templates WHERE id = ?", String.class, running)).isEqualTo("checking");
+        assertThat(jdbc.queryForList("""
+                SELECT c.template_id FROM template_checks c JOIN template_check_issues i ON i.check_id = c.id
+                 WHERE c.status = 'failed' AND i.code = 'CHECK_INTERNAL_ERROR'""", UUID.class))
+                .containsExactlyInAnyOrder(upload, submit);
+        // Template yang gagal sekarang bisa dihapus lagi (sebelumnya terkunci di "checking").
+        send(delete("/api/providers/me/uploads/" + upload), null).andExpect(status().isNoContent());
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM templates WHERE id = ?", Integer.class, upload)).isZero();
+    }
+
+    private UUID stuckCheck(String name, int wizardStep, String startedAt) {
+        UUID id = jdbc.queryForObject("""
+                INSERT INTO templates (provider_id, name, status, wizard_step, source_file_name)
+                VALUES (?, ?, 'checking', ?, ?) RETURNING id""", UUID.class, providerId, name, wizardStep, name + ".zip");
+        jdbc.update("INSERT INTO template_checks (template_id, version, status, stage, created_at) "
+                + "VALUES (?, 1, 'running', 'uploaded', ?::timestamptz)", id, startedAt);
+        return id;
     }
 
     private UUID draftUpdatedAt(String name, Instant updatedAt) {

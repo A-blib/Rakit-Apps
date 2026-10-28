@@ -111,12 +111,15 @@ public class MarkingService {
         }
         Map<String, Set<Integer>> idsByPage = new HashMap<>();
         Map<String, Map<Integer, Integer>> parentsByPage = new HashMap<>();
+        Map<String, TemplateNumbering.Dynamic> dynamicByPage = new HashMap<>();
         for (String page : files.pages()) {
             byte[] html = files.content(page);
             if (html != null) {
-                Map<Integer, Integer> parents = TemplateNumbering.parents(new String(html, StandardCharsets.UTF_8));
+                String text = new String(html, StandardCharsets.UTF_8);
+                Map<Integer, Integer> parents = TemplateNumbering.parents(text);
                 parentsByPage.put(page, parents);
                 idsByPage.put(page, parents.keySet());
+                dynamicByPage.put(page, TemplateNumbering.dynamic(text));
             }
         }
         Set<String> variables = new HashSet<>();
@@ -126,6 +129,7 @@ public class MarkingService {
         }
         MarkingValidator.validate(data, idsByPage, variables);
         MarkingValidator.validateNesting(data, parentsByPage);
+        MarkingValidator.validateDynamic(data, dynamicByPage);
 
         MarkingData ordered = data.inPageOrder();
         template.setMarking(ordered);

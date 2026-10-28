@@ -137,6 +137,9 @@ final class MarkElementSheet {
             }
             bindProfile.run();
             String nested = nestingProblem(fragment, selected, wrappers, inner);
+            if (nested == null) {
+                nested = dynamicProblem(fragment, selected, info);
+            }
             b.nestingWarning.setText(nested);
             b.nestingWarning.setVisibility(nested == null ? View.GONE : View.VISIBLE);
             b.saveButton.setEnabled(nested == null);
@@ -169,6 +172,9 @@ final class MarkElementSheet {
                     .setItems(labels, (d, which) -> {
                         MarkingDto.Field target = linkable.get(which);
                         String nested = nestingProblem(fragment, target.type, wrappers, inner);
+                        if (nested == null) {
+                            nested = dynamicProblem(fragment, target.type, info);
+                        }
                         if (nested != null) {
                             new MaterialAlertDialogBuilder(fragment.requireContext())
                                     .setTitle(R.string.mark_nested_link_title)
@@ -248,6 +254,26 @@ final class MarkElementSheet {
                 labels.add("“" + field.label + "”");
             }
             return fragment.getString(R.string.mark_nested_contains, String.join(", ", labels));
+        }
+        return null;
+    }
+
+    /**
+     * Modul dinamis OrgSpace (data-ws-*) diisi runtime saat website tayang, jadi isian di sana tidak berguna. Aturannya
+     * sama dengan server ({@code MarkingValidator.validateDynamic}).
+     *
+     * @return pesan masalah, atau null jika aman
+     */
+    @Nullable
+    static String dynamicProblem(Fragment fragment, String type, ElementInfo info) {
+        if (info.dynamicFilled != null) {
+            return fragment.getString(R.string.mark_dynamic_filled, info.dynamicFilled);
+        }
+        if (info.dynamicLink != null && ("link".equals(type) || "button".equals(type))) {
+            return fragment.getString(R.string.mark_dynamic_link, info.dynamicLink);
+        }
+        if (info.wrapsModule != null && REPLACES_CONTENT.contains(type)) {
+            return fragment.getString(R.string.mark_dynamic_wraps, info.wrapsModule);
         }
         return null;
     }
