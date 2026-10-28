@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Entities;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -213,6 +214,9 @@ public class SiteBuildService {
             List<Path> htmlFiles = paths.filter(p -> Files.isRegularFile(p) && p.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".html")).toList();
             for (Path htmlFile : htmlFiles) {
                 Document doc = Jsoup.parse(htmlFile.toFile(), "UTF-8");
+                // Spasi asli dipertahankan: pretty print menyisipkan baris baru di antara elemen yang ditulis rapat,
+                // dan celah itu bisa menggeser tata letak inline-block (website beda dengan pratinjau editor).
+                doc.outputSettings().prettyPrint(false);
                 applySeoAndMeta(doc, org, site);
                 applyFieldValues(doc, snapshot, site.getSlug());
                 injectDynamicModules(doc, org, site);
@@ -366,9 +370,11 @@ public class SiteBuildService {
                 formEl.attr("method", "POST");
             } else {
                 // Hanya sediakan fallback jika provider meletakkan kontainer kosong tanpa <form>
+                // Nama organisasi diisi pengguna: di-escape karena ditempel ke HTML mentah di bawah.
                 String formTitle = "pendaftaran".equalsIgnoreCase(formName)
                         ? "Formulir Pendaftaran " + org.getName()
                         : "Kotak Aspirasi & Pesan";
+                formTitle = Entities.escape(formTitle);
 
                 String formHtml = String.format("""
                         <form id="orgspace-dynamic-form-%s" action="/api/public/sites/%s/forms/%s" method="POST" class="orgspace-auto-form">

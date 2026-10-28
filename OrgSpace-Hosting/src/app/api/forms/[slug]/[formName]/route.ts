@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { BACKEND_API_URL } from "@/lib/config";
+import { BACKEND_API_URL, HOSTING_SHARED_KEY } from "@/lib/config";
 
 /**
  * Halaman website user berjalan di sandbox (origin "null"), jadi form-nya memanggil route ini lintas origin.
@@ -32,6 +32,12 @@ export async function POST(
           "Content-Type": "application/json",
           "User-Agent": request.headers.get("user-agent") || "OrgSpace-Hosting-Proxy",
           "X-Forwarded-For": request.headers.get("x-forwarded-for") || "127.0.0.1",
+          // Di Vercel backend hanya melihat IP server Vercel. IP asli pengunjung dikirim bersama kunci rahasia bersama,
+          // dan backend hanya mempercayainya jika kuncinya cocok (VisitorIp di backend).
+          ...(HOSTING_SHARED_KEY && {
+            "X-OrgSpace-Visitor-IP": (request.headers.get("x-forwarded-for") || "").split(",")[0].trim(),
+            "X-OrgSpace-Hosting-Key": HOSTING_SHARED_KEY,
+          }),
         },
         body: JSON.stringify(body),
       }

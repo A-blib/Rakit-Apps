@@ -1,14 +1,11 @@
 package com.aris.templateapp.site;
 
-import com.aris.templateapp.auth.AuthService;
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.organization.AttemptLimiter;
-import com.aris.templateapp.organization.OrganizationMember;
-import com.aris.templateapp.organization.OrganizationMemberRepository;
+import com.aris.templateapp.organization.MemberRole;
+import com.aris.templateapp.organization.PortalCredentialService;
 import com.aris.templateapp.security.JwtService;
-import com.aris.templateapp.user.User;
-import com.aris.templateapp.user.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -19,48 +16,42 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 
-/** Login Portal Pengurus ({@code {hosting}/{slug}/admin}) dengan akun OrgSpace (email + password). */
+/**
+ * Login Portal Pengurus ({@code {hosting}/{slug}/admin}) dengan kredensial Portal organisasi pemilik website
+ * (username + password per peran, diatur Pemilik di app). Akun OrgSpace tidak bisa dipakai di sini.
+ */
 @RestController
 @RequiredArgsConstructor
 public class PortalAuthController {
 
     private final PortalAccess portal;
-    private final AuthService authService;
+    private final PortalCredentialService credentials;
     private final AttemptLimiter attemptLimiter;
     private final JwtService jwtService;
-    private final UserRepository userRepository;
-    private final OrganizationMemberRepository memberRepository;
 
     @PostMapping("/api/public/sites/{slug}/auth/login")
     public Map<String, Object> siteLogin(@PathVariable String slug, @RequestBody Map<String, String> payload,
                                          HttpServletRequest request) {
-        String identifier = payload.get("identifier") != null ? payload.get("identifier") : payload.get("email");
+        String username = payload.get("username");
         String password = payload.get("password");
-        if (identifier == null || password == null || identifier.isBlank() || password.isBlank()) {
-            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Email/username dan password wajib diisi");
+        if (username == null || password == null || username.isBlank() || password.isBlank()) {
+            throw new ApiException(ErrorCode.VALIDATION_ERROR, "Username dan password wajib diisi");
         }
-        // Endpoint publik yang memeriksa password akun OrgSpace mana pun: batasnya sama dengan login app.
-        attemptLimiter.checkLogin(request.getRemoteAddr(), identifier);
         Site site = portal.site(slug);
+        attemptLimiter.checkPortalLogin(request.getRemoteAddr(), site.getOrganizationId(), username);
+        if (!credentials.anySet(site.getOrganizationId())) {
+            throw new ApiException(ErrorCode.PORTAL_CREDENTIALS_NOT_SET);
+        }
+        // Satu jawaban untuk username tak dikenal dan password salah (termasuk password peran lain).
+        PortalCredentialService.Match match = credentials.verify(site.getOrganizationId(), username, password)
+                .orElseThrow(() -> new ApiException(ErrorCode.INVALID_CREDENTIALS, "Username atau password salah."));
 
-        // Satu jawaban untuk semua kegagalan. Dulu "bukan pengurus" (NOT_ORG_MEMBER) hanya muncul jika password BENAR,
-        // sehingga login Portal website mana pun bisa dipakai menguji tebakan password akun OrgSpace siapa saja.
-        ApiException rejected = new ApiException(ErrorCode.INVALID_CREDENTIALS,
-                "Email atau password salah, atau akun ini bukan pengurus website ini.");
-        UUID userId = authService.verifyLocalPassword(identifier, password).orElseThrow(() -> rejected);
-        User user = userRepository.findById(userId).orElseThrow(() -> rejected);
-        OrganizationMember member = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), user.getId())
-                .orElseThrow(() -> rejected);
-
-        String token = jwtService.createSiteToken(user.getId(), site.getId());
         return Map.of(
                 "success", true,
-                "token", token,
-                "user", userInfo(user, member),
+                "token", jwtService.createSiteToken(site.getId(), match.role().value(), match.version()),
+                "user", userInfo(match.role(), match.username()),
                 "site", Map.of(
                         "slug", site.getSlug(),
                         "organizationId", site.getOrganizationId()
@@ -71,21 +62,11 @@ public class PortalAuthController {
     @GetMapping("/api/public/sites/{slug}/auth/me")
     public Map<String, Object> siteAuthMe(@PathVariable String slug,
                                           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
-        Site site = portal.site(slug);
-        UUID userId = portal.requireManager(authHeader, site);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "User tidak ditemukan"));
-        OrganizationMember member = memberRepository.findByOrganizationIdAndUserId(site.getOrganizationId(), userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.NOT_ORG_MEMBER));
-        return Map.of("authenticated", true, "user", userInfo(user, member));
+        PortalAccess.PortalSession session = portal.requireSession(authHeader, portal.site(slug));
+        return Map.of("authenticated", true, "user", userInfo(session.role(), session.username()));
     }
 
-    private static Map<String, Object> userInfo(User user, OrganizationMember member) {
-        return Map.of(
-                "id", user.getId(),
-                "name", user.getDisplayName() != null ? user.getDisplayName() : user.getEmail(),
-                "email", user.getEmail(),
-                "role", member.getRole().name().toLowerCase(Locale.ROOT)
-        );
+    private static Map<String, Object> userInfo(MemberRole role, String username) {
+        return Map.of("username", username, "role", role.value());
     }
 }

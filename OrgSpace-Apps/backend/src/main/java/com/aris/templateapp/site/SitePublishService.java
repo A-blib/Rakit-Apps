@@ -422,10 +422,15 @@ public class SitePublishService {
 
         Site site = siteRepository.findByProjectId(projectId)
                 .orElseThrow(() -> new ApiException(ErrorCode.SITE_NOT_PUBLISHED));
+        return submissionsOf(site.getId(), formName);
+    }
 
+    /** Isian formulir website tanpa IP/User-Agent pengunjung. Pemanggil yang memeriksa peran. */
+    @Transactional(readOnly = true)
+    public List<FormSubmissionResponse> submissionsOf(UUID siteId, String formName) {
         List<FormSubmission> submissions = formName != null && !formName.isBlank()
-                ? formSubmissionRepository.findBySiteIdAndFormNameOrderByCreatedAtDesc(site.getId(), formName)
-                : formSubmissionRepository.findBySiteIdOrderByCreatedAtDesc(site.getId());
+                ? formSubmissionRepository.findBySiteIdAndFormNameOrderByCreatedAtDesc(siteId, formName)
+                : formSubmissionRepository.findBySiteIdOrderByCreatedAtDesc(siteId);
 
         return submissions.stream()
                 .map(s -> new FormSubmissionResponse(s.getId(), s.getSiteId(), s.getFormName(), s.getData(), s.getCreatedAt()))

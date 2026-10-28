@@ -383,7 +383,7 @@ python3 tools/buat-zip-uji.py
 
 **Alamat website.** Website yang terbit tayang lewat OrgSpace-Hosting dengan alamat berbentuk path: `{SITES_HOSTING_URL}/{nama-website}`, mis. `http://localhost:3001/osis-smansa` di laptop dan `https://orgspace.app/osis-smansa` di server. Jalankan OrgSpace-Hosting (`cd ../OrgSpace-Hosting && npm run dev`) agar link bisa dibuka. Nama website dipilih user saat terbit pertama (saran otomatis dari nama project) lalu terkunci agar link yang sudah dibagikan tidak putus. Batas website beralamat per ruang kerja dengan `SITES_MAX_PER_ORG` / `SITES_MAX_PER_PERSONAL` (lihat `.env.example`). Jika saat uji muncul "Batas maksimal 5 website per ruang kerja telah tercapai", naikkan kedua nilai itu di `backend/.env` (mis. `20`) lalu restart backend.
 
-**Logo organisasi.** Logo yang diunggah diolah server (dipotong persegi, maks 512 px, PNG) lalu disimpan di `backend/data/org-logos/` (sudah di `.gitignore`). Atur dengan `ORG_LOGO_DIR`, `ORG_LOGO_MAX_KB`, `ORG_MAX_MEMBERS`, dan `ORG_INVITE_TTL_DAYS` di `.env` (lihat `.env.example`).
+**Logo organisasi.** Logo yang diunggah diolah server (dipotong persegi, maks 512 px, PNG) lalu disimpan di `backend/data/org-logos/` (sudah di `.gitignore`). Atur dengan `ORG_LOGO_DIR`, `ORG_LOGO_MAX_KB`, `ORG_MAX_MEMBERS`, dan `ORG_INVITE_TTL_MINUTES` (kode undangan sekali pakai, bawaan 60 menit) di `.env` (lihat `.env.example`).
 
 ### Profile
 

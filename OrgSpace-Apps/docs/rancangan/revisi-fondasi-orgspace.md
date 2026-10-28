@@ -106,7 +106,7 @@ Hal yang **tetap tidak dibangun**: panel admin web, pembayaran (T6, menunggu kep
 
 ```
 ORG_MAX_MEMBERS=30
-ORG_INVITE_TTL_DAYS=7
+ORG_INVITE_TTL_DAYS=7   # diganti 28 Okt 2026: ORG_INVITE_TTL_MINUTES=60, kode sekali pakai (dokumentasi-project 33x)
 ORG_LOGO_MAX_KB=1024
 ORG_LOGO_DIR=./data/org-logos          # development; di VPS mis. /srv/orgspace/org-logos
 ```

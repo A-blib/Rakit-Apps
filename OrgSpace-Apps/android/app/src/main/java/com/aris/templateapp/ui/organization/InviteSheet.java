@@ -66,7 +66,7 @@ public class InviteSheet extends BottomSheetDialogFragment {
     private void showCode(Invitation invitation) {
         binding.chooseSection.setVisibility(View.GONE);
         binding.codeSection.setVisibility(View.VISIBLE);
-        String until = OrgUi.date(invitation.expiresAt);
+        String until = OrgUi.dateTime(invitation.expiresAt);
         binding.code.setText(invitation.code);
         binding.validUntil.setText(getString(R.string.invite_valid_until, until));
         binding.copyButton.setOnClickListener(v -> {

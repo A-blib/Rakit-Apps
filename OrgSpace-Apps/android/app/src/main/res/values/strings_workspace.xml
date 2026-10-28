@@ -5,7 +5,7 @@
 -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Kode error ruang kerja -->
-    <string name="error_invitation_invalid">Kode undangan ini sudah tidak berlaku. Minta kode baru ke pengurus, ya.</string>
+    <string name="error_invitation_invalid">Kode undangan ini sudah tidak berlaku atau sudah dipakai. Minta kode baru ke pengurus, ya.</string>
     <string name="error_already_member">Kamu sudah jadi anggota organisasi ini.</string>
     <string name="error_org_member_limit">Anggota organisasi ini sudah penuh. Hubungi pengurusnya, ya.</string>
     <string name="error_personal_space_exists">Kamu sudah punya ruang pribadi.</string>
@@ -168,7 +168,7 @@
     <string name="invite_role_admin_desc">Admin juga bisa menerbitkan website, mengatur domain, dan mengundang anggota.</string>
     <string name="invite_create">Buat kode undangan</string>
     <string name="invite_code_label">Kode undangan</string>
-    <string name="invite_valid_until">Berlaku sampai %1$s dan bisa dipakai beberapa orang. Kode ini hanya tampil sekali, jadi bagikan sekarang, ya.</string>
+    <string name="invite_valid_until">Berlaku sampai %1$s dan hanya untuk satu orang. Kode ini hanya tampil sekali, jadi bagikan sekarang, ya.</string>
     <string name="invite_copy">Salin</string>
     <string name="invite_share">Bagikan</string>
     <string name="invite_copied">Kode disalin.</string>
@@ -184,7 +184,7 @@
     <string name="transfer_keep_leave">Keluar dari organisasi</string>
     <string name="transfer_submit">Serahkan kepemilikan</string>
     <string name="transfer_confirm_title">Jadikan %1$s Pemilik?</string>
-    <string name="transfer_confirm_body">Setelah ini hanya Pemilik baru yang bisa mengembalikan kepemilikan.</string>
+    <string name="transfer_confirm_body">Setelah ini hanya Pemilik baru yang bisa mengembalikan kepemilikan. Akses Portal Pemilik dihapus: Pemilik baru membuat username &amp; password Portal sendiri dan sebaiknya mengganti password Admin dan Editor.</string>
     <string name="transfer_done">%1$s sekarang Pemilik %2$s.</string>
     <string name="transfer_no_members">Belum ada anggota lain. Undang pengurus baru dulu, ya.</string>
     <string name="transfer_member_required">Pilih Pemilik baru dulu</string>
@@ -209,4 +209,26 @@
     <string name="activity_website_deleted">%1$s menghapus website %2$s</string>
     <string name="activity_publish_requested">%1$s minta website %2$s diterbitkan</string>
     <string name="activity_other">%1$s melakukan perubahan</string>
+
+    <!-- Akses Portal website (kredensial Portal Pengurus per organisasi, hanya Pemilik) -->
+    <string name="org_menu_portal">Akses Portal website</string>
+    <string name="org_menu_portal_desc">Username &amp; password Portal Pengurus untuk tiap peran</string>
+    <string name="portal_access_title">Akses Portal website</string>
+    <string name="portal_access_intro">Pengurus masuk ke Portal website (alamat-website/admin) dengan username dan password peran di bawah. Berlaku untuk semua website organisasi ini.</string>
+    <string name="portal_access_note">Password tidak bisa dilihat lagi setelah disimpan. Lupa? Atur password baru di sini; semua yang sedang masuk dengan peran itu langsung keluar. Admin dan Editor baru bisa diundang setelah aksesnya diatur.</string>
+    <string name="portal_role_owner">Pemilik (wajib)</string>
+    <string name="portal_role_admin">Admin (opsional)</string>
+    <string name="portal_role_editor">Editor (opsional)</string>
+    <string name="portal_role_set">Username: %1$s · diatur %2$s</string>
+    <string name="portal_role_unset">Belum diatur</string>
+    <string name="portal_role_stale">Username: %1$s · ganti password, masih yang lama dari sebelum serah terima (%2$s)</string>
+    <string name="portal_dialog_title">Akses Portal: %1$s</string>
+    <string name="portal_field_username">Username</string>
+    <string name="portal_field_username_helper">3–40 karakter: huruf, angka, titik, garis bawah, atau minus</string>
+    <string name="portal_field_password">Password baru</string>
+    <string name="portal_field_password_helper">Minimal 8 karakter. Bagikan hanya ke pengurus peran ini.</string>
+    <string name="portal_error_username">Username 3–40 karakter: huruf, angka, titik, garis bawah, atau minus</string>
+    <string name="portal_error_password">Password 8–72 karakter</string>
+    <string name="portal_saved">Akses Portal %1$s disimpan. Sesi Portal lama peran ini sudah keluar.</string>
+    <string name="activity_portal_credential_saved">%1$s mengatur akses Portal untuk %2$s</string>
 </resources>

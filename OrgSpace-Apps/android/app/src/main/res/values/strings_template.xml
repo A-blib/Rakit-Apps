@@ -130,6 +130,7 @@
     <string name="publish_slug_hint">Nama website</string>
     <string name="publish_slug_link">Link: %1$s</string>
     <string name="publish_slug_locked">Sudah terbit di %1$s. Nama website tidak bisa diganti agar link lama tetap jalan.</string>
+    <string name="publish_portal_reminder">Supaya pengurus bisa masuk ke Portal website (alamat-website/admin), Pemilik perlu mengatur username &amp; password tiap peran di Kelola organisasi → Akses Portal website.</string>
     <string name="publish_direct_button">Publish Langsung Sekarang</string>
     <string name="publish_direct_loading">Sedang menerbitkan website ke server…</string>
     <string name="publish_direct_failed">Gagal menerbitkan website: %1$s</string>

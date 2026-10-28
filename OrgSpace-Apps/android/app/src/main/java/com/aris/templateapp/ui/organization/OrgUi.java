@@ -48,6 +48,15 @@ public final class OrgUi {
                 .withZone(ZoneId.systemDefault()).format(instant);
     }
 
+    /** "28 Okt 2026 14.30" dalam zona waktu HP, untuk kode undangan yang hanya berlaku 1 jam. */
+    static String dateTime(@Nullable Instant instant) {
+        if (instant == null) {
+            return "";
+        }
+        return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT).withLocale(INDONESIA)
+                .withZone(ZoneId.systemDefault()).format(instant);
+    }
+
     /** Dialog berisi satu isian teks; {@code onConfirm} menerima teks yang diketik. */
     public static void textDialog(Context context, String title, @Nullable String message, @StringRes int hint,
                            @Nullable String initial, @StringRes int confirm, Consumer<String> onConfirm) {

@@ -37,6 +37,7 @@ public class InvitationService {
     private final OrganizationAccess access;
     private final OrganizationService organizationService;
     private final ActivityService activityService;
+    private final PortalCredentialService portalCredentials;
     private final InvitationCodes codes;
     private final TokenGenerator tokenGenerator;
     private final AttemptLimiter attemptLimiter;
@@ -52,8 +53,13 @@ public class InvitationService {
         if (!OrganizationAccess.canInvite(membership.role(), role)) {
             throw new ApiException(ErrorCode.ROLE_NOT_ALLOWED);
         }
+        // Pengurus yang diundang masuk Portal dengan kredensial peran itu, jadi kredensialnya harus ada dulu.
+        if (!portalCredentials.exists(organizationId, role)) {
+            throw new ApiException(ErrorCode.PORTAL_CREDENTIAL_REQUIRED, "Atur dulu username & password Portal untuk peran "
+                    + (role == MemberRole.ADMIN ? "Admin" : "Editor") + " di Kelola organisasi, lalu undang lagi.");
+        }
         String code = codes.newCode();
-        Instant expiresAt = clock.instant().plus(Duration.ofDays(properties.org().inviteTtlDays()));
+        Instant expiresAt = clock.instant().plus(Duration.ofMinutes(properties.org().inviteTtlMinutes()));
         OrganizationInvitation invitation = invitationRepository.save(new OrganizationInvitation(
                 organizationId, hash(code), role, userId, expiresAt));
         activityService.log(organizationId, userId, "invitation.created", "invitation", invitation.getId(),
@@ -89,7 +95,7 @@ public class InvitationService {
     @Transactional(readOnly = true)
     public InvitationPreviewResponse preview(UUID userId, String code) {
         attemptLimiter.check(userId);
-        OrganizationInvitation invitation = findUsable(code);
+        OrganizationInvitation invitation = findUsable(code, false);
         Organization organization = organizationRepository.findById(invitation.getOrganizationId())
                 .orElseThrow(() -> new ApiException(ErrorCode.INVITATION_INVALID));
         return new InvitationPreviewResponse(organization.getName(), organization.getLogoUrl(), invitation.getRole());
@@ -99,7 +105,7 @@ public class InvitationService {
     @Transactional
     public OrganizationResponse accept(UUID userId, String code, String positionTitle) {
         attemptLimiter.check(userId);
-        OrganizationInvitation invitation = findUsable(code);
+        OrganizationInvitation invitation = findUsable(code, true);
         UUID organizationId = invitation.getOrganizationId();
         Organization organization = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new ApiException(ErrorCode.INVITATION_INVALID));
@@ -114,6 +120,8 @@ public class InvitationService {
         }
         memberRepository.save(new OrganizationMember(organizationId, userId, invitation.getRole(),
                 OrganizationService.blankToNull(positionTitle), clock.instant()));
+        // Sekali pakai: anggota yang sudah ada (ALREADY_MEMBER di atas) tidak menghabiskan kode.
+        invitation.markUsed(userId, clock.instant());
         userRepository.findById(userId).orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED))
                 .setLastOrganizationId(organizationId);
         activityService.log(organizationId, userId, "member.joined", "invitation", invitation.getId(),
@@ -121,13 +129,14 @@ public class InvitationService {
         return organizationService.toResponse(organization, invitation.getRole());
     }
 
-    /** Kode salah, kedaluwarsa, dan dicabut dibalas sama, agar tidak membocorkan kode mana yang pernah ada. */
-    private OrganizationInvitation findUsable(String code) {
+    /** Kode salah, kedaluwarsa, dicabut, dan sudah dipakai dibalas sama, agar tidak membocorkan kode mana yang pernah ada. */
+    private OrganizationInvitation findUsable(String code, boolean lock) {
         String normalized = InvitationCodes.normalize(code);
         if (normalized.length() != InvitationCodes.LENGTH) {
             throw new ApiException(ErrorCode.INVITATION_INVALID);
         }
-        return invitationRepository.findByCodeHash(hash(normalized))
+        String codeHash = hash(normalized);
+        return (lock ? invitationRepository.lockByCodeHash(codeHash) : invitationRepository.findByCodeHash(codeHash))
                 .filter(i -> i.isUsable(clock.instant()))
                 .orElseThrow(() -> new ApiException(ErrorCode.INVITATION_INVALID));
     }

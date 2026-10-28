@@ -134,9 +134,14 @@ File bertanda **FONDASI** hanya diubah setelah koordinasi dengan Aris (lihat `AG
 | Editor menandai `PageProps` merah | Jalankan `npx next typegen` (atau `npm run dev` sekali) |
 | Port 3000 dipakai | `npm run dev -- -p 3001` |
 
-## 7. Paket contoh modul (unduhan dokumentasi)
+## 7. Pusat dokumentasi & paket contoh
 
-Artikel **Panduan Modul Dinamis** (`/docs/modul-sistem-dan-kustom`, isinya di `src/lib/docs-data.ts`) menautkan
+Artikel `/docs` diambil dari backend (tabel `doc_articles`, bisa diedit admin di `/dashboard/docs`). Isi awalnya ditulis
+lewat migrasi backend (terakhir `V39__dokumentasi_lengkap_oktober.sql`, 18 artikel). `src/lib/docs-data.ts` adalah
+**cadangan** dengan isi yang sama, dipakai saat backend tidak bisa dihubungi. Jika mengubah artikel lewat migrasi baru,
+samakan juga cadangannya (escape `` ` `` dan `${` di body).
+
+Artikel **Contoh Template & Paket Unduhan** dan **Panduan Modul Dinamis** menautkan
 `public/downloads/contoh-modul-orgspace.zip`. Sumber isi ZIP ada di folder `contoh-modul-orgspace/`
 (template contoh, `docs/`, `AGENTS.md`/`CLAUDE.md` untuk AI agent). Setelah mengubah folder itu, buat ulang ZIP-nya:
 
@@ -148,12 +153,11 @@ zip -qr public/downloads/contoh-modul-orgspace.zip contoh-modul-orgspace
 Pastikan `contoh-modul-orgspace/contoh-template/` dan `template-sinergi/` tetap lolos pengecekan upload (ZIP isi foldernya
 lalu upload dari app).
 
-File `contoh-modul-orgspace/docs/*.md` adalah sumber isi artikel provider. Body artikel di `src/lib/docs-data.ts` harus sama
-persis (salin isinya, escape `` ` `` dan `${`):
+File `contoh-modul-orgspace/docs/*.md` berisi artikel provider versi offline (link antar-artikel ditulis sebagai teks):
 
 | File | Artikel |
 |---|---|
-| `01-panduan-modul-dinamis.md` | `modul-sistem-dan-kustom` (ditambah bagian "Unduh paket contoh" khusus web) |
-| `02-aturan-wajib-template.md` | `menjadi-penyedia-template` |
-| `03-requirement-dan-tools.md` | `requirement-project-dan-tools` |
+| `01-panduan-modul-dinamis.md` | `modul-sistem-dan-kustom` (versi web ditambah bagian "Unduh paket contoh") |
+| `02-requirement-dan-aturan.md` | `requirement-project-dan-tools` |
+| `03-menandai-bagian.md` | `menandai-bagian-template` |
 | `04-membuat-fitur-kustom.md` | `membuat-fitur-kustom` |

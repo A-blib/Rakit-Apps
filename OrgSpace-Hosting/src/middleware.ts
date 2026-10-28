@@ -9,6 +9,28 @@ const DEFAULT_HOSTS = new Set([
   `www.${HOSTING_DOMAIN}`,
 ]);
 
+// Hasil cek domain kustom disimpan sebentar: satu halaman memuat puluhan file (css, js, gambar) dari domain yang
+// sama, dan tanpa ini setiap file menanyai backend. Domain yang baru aktif/dilepas terlihat paling lambat 60 detik.
+const DOMAIN_TTL_MS = 60_000;
+const DOMAIN_CACHE_MAX = 1000;
+const domainCache = new Map<string, { slug: string | null; until: number }>();
+
+async function slugForDomain(host: string): Promise<string | null> {
+  const now = Date.now();
+  const hit = domainCache.get(host);
+  if (hit && hit.until > now) return hit.slug;
+  const res = await fetch(`${BACKEND_API_URL}/api/public/sites/resolve-domain?domain=${encodeURIComponent(host)}`, {
+    cache: "no-store",
+  });
+  // Gangguan backend tidak disimpan, agar domain tidak "hilang" selama TTL karena error sesaat.
+  if (!res.ok) return null;
+  const data = await res.json();
+  const slug: string | null = data.slug || null;
+  if (domainCache.size >= DOMAIN_CACHE_MAX) domainCache.clear();
+  domainCache.set(host, { slug, until: now + DOMAIN_TTL_MS });
+  return slug;
+}
+
 /**
  * Middleware Custom Domain. Link bawaan berbentuk path (orgspace.app/{slug}), jadi host selain
  * DEFAULT_HOSTS hanya dikenali sebagai domain kustom aktif lalu di-rewrite ke /{slug}.
@@ -24,23 +46,16 @@ export async function middleware(request: NextRequest) {
 
   // Host lain: cek apakah domain kustom milik sebuah website. File template (css/, img/) ikut diarahkan.
   if (host && !DEFAULT_HOSTS.has(host.toLowerCase())) {
-    const cleanHost = host.toLowerCase().split(":")[0];
-    
-    // Cek mapping custom domain via backend
+    // Titik di akhir (osis.id.) adalah bentuk sah nama domain di DNS.
+    const cleanHost = host.toLowerCase().split(":")[0].replace(/\.$/, "");
+
     try {
-      const backendUrl = BACKEND_API_URL;
-      const res = await fetch(
-        `${backendUrl}/api/public/sites/resolve-domain?domain=${encodeURIComponent(cleanHost)}`,
-        { cache: "no-store" }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        if (data.slug) {
-          // Link di halaman yang sudah memuat /{slug} tidak boleh jadi /{slug}/{slug}.
-          const base = `/${data.slug}`;
-          const target = pathname === base || pathname.startsWith(`${base}/`) ? pathname : `${base}${pathname}`;
-          return NextResponse.rewrite(new URL(target, request.url));
-        }
+      const slug = await slugForDomain(cleanHost);
+      if (slug) {
+        // Link di halaman yang sudah memuat /{slug} tidak boleh jadi /{slug}/{slug}.
+        const base = `/${slug}`;
+        const target = pathname === base || pathname.startsWith(`${base}/`) ? pathname : `${base}${pathname}`;
+        return NextResponse.rewrite(new URL(target, request.url));
       }
     } catch (e) {
       console.error("Gagal memeriksa custom domain:", e);

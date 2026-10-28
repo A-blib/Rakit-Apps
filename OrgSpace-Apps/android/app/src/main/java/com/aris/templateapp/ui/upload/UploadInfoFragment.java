@@ -448,7 +448,9 @@ public class UploadInfoFragment extends Fragment {
                         thumbnailSectionName = names[which];
                         capture.captureSection(sections.get(which), bitmap -> onCaptured(bitmap, "section", view));
                     })
-                    .setNegativeButton(R.string.action_cancel, null)
+                    // Batal memilih: halaman yang dimuat untuk daftar section tidak dipakai lagi.
+                    .setNegativeButton(R.string.action_cancel, (d, which) -> capture.destroy())
+                    .setOnCancelListener(d -> capture.destroy())
                     .show();
         });
     }

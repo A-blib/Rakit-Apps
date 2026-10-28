@@ -92,6 +92,11 @@ public class TemplateCheckRunner {
         tx.executeWithoutResult(s -> finish(templateId, checkId, finalResult, finalCrashed));
     }
 
+    /** Pengecekan upload yang terputus (server mati di tengah jalan) ditutup sebagai gagal karena server. */
+    void recoverInterrupted(UUID templateId, UUID checkId) {
+        tx.executeWithoutResult(s -> finish(templateId, checkId, new TemplateChecker.Result(List.of(), null), true));
+    }
+
     private void finish(UUID templateId, UUID checkId, TemplateChecker.Result result, boolean crashed) {
         Template template = templateRepository.findById(templateId).orElse(null);
         TemplateCheck check = checkRepository.findById(checkId).orElse(null);

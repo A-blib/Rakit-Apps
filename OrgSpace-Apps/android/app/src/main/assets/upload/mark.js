@@ -27,6 +27,17 @@
     return s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0;
   }
   // innerText kosong untuk elemen tersembunyi, jadi textContent dipakai sebagai cadangan.
+  // Sama dengan aturan server (TemplateNumbering.dynamic): isi diisi otomatis, href diatur otomatis, penanda modul.
+  var DYN_FILLED = '[data-ws-field],[data-ws-stat],[data-ws-org]';
+  var DYN_MODULE = '[data-ws-list],[data-ws-collection],[data-ws-item],[data-ws-empty],[data-ws-form],' +
+      '[data-ws-field],[data-ws-link],[data-ws-stat],[data-ws-org],[data-ws-auth]';
+  function wsAttr(el) {
+    for (var i = 0; i < el.attributes.length; i++) {
+      var a = el.attributes[i];
+      if (a.name.indexOf('data-ws-') === 0) { return a.value ? a.name + '="' + a.value + '"' : a.name; }
+    }
+    return null;
+  }
   function textOf(el) { return (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim(); }
   function bgImage(el) {
     var bg = window.getComputedStyle(el).backgroundImage;
@@ -166,7 +177,11 @@
         markedAncestors: marks.filter(function (m) { var o = byId(m.id); return m.id !== id && o && o.contains(el); })
           .map(function (m) { return m.id; }),
         markedDescendants: marks.filter(function (m) { var o = byId(m.id); return m.id !== id && o && el.contains(o); })
-          .map(function (m) { return m.id; })
+          .map(function (m) { return m.id; }),
+        // Modul dinamis OrgSpace (data-ws-*), agar lembar Tandai menolak sebelum server menolak.
+        dynamicFilled: el.closest(DYN_FILLED) ? wsAttr(el.closest(DYN_FILLED)) : null,
+        dynamicLink: el.hasAttribute('data-ws-link') || el.hasAttribute('data-ws-auth') ? wsAttr(el) : null,
+        wrapsModule: el.querySelector(DYN_MODULE) ? wsAttr(el.querySelector(DYN_MODULE)) : null
       });
     },
 
@@ -262,6 +277,8 @@
         // Isi modul dinamis (kartu data, profil organisasi, angka, form, login) selalu diganti data OrgSpace saat
         // website tayang, jadi editannya tidak pernah terlihat: jangan disarankan.
         if (el.closest('[data-ws-item],[data-ws-org],[data-ws-stat],[data-ws-form],[data-ws-auth]')) { continue; }
+        // Elemen yang membungkus modul (mis. <p>Email <a data-ws-org="email">) akan menghapus modulnya jika diedit.
+        if (el.querySelector(DYN_MODULE)) { continue; }
         var r = rect(el);
         if (r.top < top - 1 || r.top >= bottom) { continue; }
         var tag = el.tagName.toLowerCase();
@@ -299,6 +316,8 @@
         var el = all[i];
         var id = idOf(el);
         if (id === null || marked[id] || !visible(el)) { continue; }
+        // Modul dinamis (diisi otomatis, atau membungkus modul) tidak boleh disambungkan ke isian.
+        if (el.closest(DYN_FILLED) || el.querySelector(DYN_MODULE)) { continue; }
         var r = rect(el);
         if (r.top < top - 1 || r.top >= bottom) { continue; }
         var t = textOf(el).toLowerCase();

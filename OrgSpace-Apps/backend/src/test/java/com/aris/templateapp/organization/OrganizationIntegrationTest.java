@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -53,6 +54,7 @@ class OrganizationIntegrationTest {
         Account ketua = register("Rina");
         Account sekretaris = register("Budi");
         String orgId = createOsis(ketua);
+        allowEditorInvites(ketua, orgId);
 
         // Pemilik membuat undangan; kode hanya dikirim sekali.
         String code = JsonPath.read(send(ketua, post("/api/organizations/" + orgId + "/invitations"), "{\"role\":\"editor\"}")
@@ -72,9 +74,21 @@ class OrganizationIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.myRole").value("editor"))
                 .andExpect(jsonPath("$.memberCount").value(2));
+        // Sekali pakai: kode yang sudah dipakai tidak berlaku lagi, untuk siapa pun.
         send(sekretaris, post("/api/invitations/accept"), "{\"code\":\"%s\"}".formatted(code))
+                .andExpect(jsonPath("$.code").value("INVITATION_INVALID"));
+        send(register("Penyusup"), post("/api/invitations/accept"), "{\"code\":\"%s\"}".formatted(code))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVITATION_INVALID"));
+        send(ketua, get("/api/organizations/" + orgId + "/invitations"), null).andExpect(jsonPath("$", hasSize(0)));
+        // Anggota yang memasukkan kode baru ditolak tanpa menghabiskan kodenya.
+        String fresh = JsonPath.read(send(ketua, post("/api/organizations/" + orgId + "/invitations"), "{\"role\":\"editor\"}")
+                .andReturn().getResponse().getContentAsString(), "$.code");
+        send(sekretaris, post("/api/invitations/accept"), "{\"code\":\"%s\"}".formatted(fresh))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("ALREADY_MEMBER"));
+        send(register("Bendahara"), post("/api/invitations/accept"), "{\"code\":\"%s\"}".formatted(fresh))
+                .andExpect(status().isOk());
         send(sekretaris, get("/api/users/me"), null).andExpect(jsonPath("$.lastOrganizationId").value(orgId));
 
         // Editor bisa melihat profil tapi tidak bisa mengubah (skenario 9).
@@ -101,8 +115,9 @@ class OrganizationIntegrationTest {
         send(ketua, post("/api/organizations/" + orgId + "/transfer-ownership"),
                 "{\"userId\":\"%s\",\"keepMeAs\":\"leave\"}".formatted(sekretaris.id))
                 .andExpect(status().isNoContent());
+        // Tersisa Sekretaris (Pemilik baru) dan Bendahara (bergabung dengan kode kedua).
         send(sekretaris, get("/api/organizations/" + orgId + "/members"), null)
-                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].role").value("owner"));
         send(ketua, get("/api/organizations/" + orgId), null)
                 .andExpect(status().isForbidden())
@@ -120,6 +135,7 @@ class OrganizationIntegrationTest {
         Account owner = register("Rina");
         Account other = register("Andi");
         String orgId = createOsis(owner);
+        allowEditorInvites(owner, orgId);
         String body = send(owner, post("/api/organizations/" + orgId + "/invitations"), "{\"role\":\"editor\"}")
                 .andReturn().getResponse().getContentAsString();
         String code = JsonPath.read(body, "$.code");
@@ -141,17 +157,110 @@ class OrganizationIntegrationTest {
     }
 
     @Test
+    void invitationCodeExpiresAfterOneHour() throws Exception {
+        Account owner = register("Rina");
+        String orgId = createOsis(owner);
+        allowEditorInvites(owner, orgId);
+        String body = send(owner, post("/api/organizations/" + orgId + "/invitations"), "{\"role\":\"editor\"}")
+                .andReturn().getResponse().getContentAsString();
+        java.time.Duration ttl = java.time.Duration.between(java.time.Instant.now(),
+                java.time.Instant.parse(JsonPath.read(body, "$.expiresAt")));
+        assertThat(ttl).isBetween(java.time.Duration.ofMinutes(59), java.time.Duration.ofMinutes(61));
+    }
+
+    @Test
+    void portalCredentialsAreOwnerOnlyAndGateInvitations() throws Exception {
+        Account owner = register("Rina");
+        Account admin = register("Budi");
+        String orgId = createOsis(owner);
+        String credentials = "/api/organizations/" + orgId + "/portal-credentials";
+
+        // Belum ada kredensial Editor: undangan Editor ditolak, walau pengundangnya Pemilik.
+        send(owner, post("/api/organizations/" + orgId + "/invitations"), "{\"role\":\"editor\"}")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("PORTAL_CREDENTIAL_REQUIRED"));
+
+        send(owner, put(credentials + "/admin"), "{\"username\":\"Admin.OSIS\",\"password\":\"rahasia-admin\"}")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("admin.osis"))
+                .andExpect(jsonPath("$.password").doesNotExist());
+        // Username yang sama tidak boleh dipakai peran lain (username menentukan peran saat login).
+        send(owner, put(credentials + "/editor"), "{\"username\":\"ADMIN.osis\",\"password\":\"rahasia-editor\"}")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("PORTAL_USERNAME_TAKEN"));
+        send(owner, put(credentials + "/editor"), "{\"username\":\"x\",\"password\":\"pendek\"}")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.username").exists())
+                .andExpect(jsonPath("$.fieldErrors.password").exists());
+        send(owner, put(credentials + "/ketua"), "{\"username\":\"ketua\",\"password\":\"rahasia-ketua\"}")
+                .andExpect(status().isBadRequest());
+
+        // Admin organisasi boleh mengundang Admin setelah kredensialnya ada, tapi tidak boleh melihat/mengubah kredensial.
+        String code = JsonPath.read(send(owner, post("/api/organizations/" + orgId + "/invitations"), "{\"role\":\"admin\"}")
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString(), "$.code");
+        send(admin, post("/api/invitations/accept"), "{\"code\":\"%s\"}".formatted(code)).andExpect(status().isOk());
+        send(admin, get(credentials), null).andExpect(status().isForbidden());
+        send(admin, put(credentials + "/owner"), "{\"username\":\"ambil-alih\",\"password\":\"rahasia-baru\"}")
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("ROLE_NOT_ALLOWED"));
+
+        send(owner, get(credentials), null)
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].role").value("admin"))
+                .andExpect(jsonPath("$[0].passwordHash").doesNotExist());
+        send(owner, get("/api/organizations/" + orgId + "/activities"), null)
+                .andExpect(jsonPath("$.items[?(@.action == 'portal_credential.saved')]").isNotEmpty());
+    }
+
+    @Test
+    void handoverRemovesTheOwnerPortalCredentialAndFlagsTheOthers() throws Exception {
+        Account oldOwner = register("Rina");
+        Account newOwner = register("Budi");
+        String orgId = createOsis(oldOwner);
+        String credentials = "/api/organizations/" + orgId + "/portal-credentials";
+        send(oldOwner, put(credentials + "/owner"), "{\"username\":\"ketua-lama\",\"password\":\"rahasia-lama\"}")
+                .andExpect(status().isOk());
+        allowEditorInvites(oldOwner, orgId);
+        String code = JsonPath.read(send(oldOwner, post("/api/organizations/" + orgId + "/invitations"), "{\"role\":\"editor\"}")
+                .andReturn().getResponse().getContentAsString(), "$.code");
+        send(newOwner, post("/api/invitations/accept"), "{\"code\":\"%s\"}".formatted(code)).andExpect(status().isOk());
+
+        send(oldOwner, post("/api/organizations/" + orgId + "/transfer-ownership"),
+                "{\"userId\":\"%s\",\"keepMeAs\":\"leave\"}".formatted(newOwner.id))
+                .andExpect(status().isNoContent());
+
+        // Kredensial Pemilik lama hilang; Editor tetap ada tapi ditandai perlu diganti (pengurus lama tahu password-nya).
+        send(newOwner, get(credentials), null)
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].role").value("editor"))
+                .andExpect(jsonPath("$[0].changeRecommended").value(true));
+        send(newOwner, put(credentials + "/editor"), "{\"username\":\"editor\",\"password\":\"rahasia-baru\"}")
+                .andExpect(jsonPath("$.changeRecommended").value(false));
+        send(newOwner, get(credentials), null).andExpect(jsonPath("$[0].changeRecommended").value(false));
+    }
+
+    private void allowEditorInvites(Account owner, String orgId) throws Exception {
+        send(owner, put("/api/organizations/" + orgId + "/portal-credentials/editor"),
+                "{\"username\":\"editor\",\"password\":\"rahasia-editor\"}")
+                .andExpect(status().isOk());
+    }
+
+    private String newCode(Account owner, String orgId) throws Exception {
+        return JsonPath.read(send(owner, post("/api/organizations/" + orgId + "/invitations"), "{\"role\":\"editor\"}")
+                .andReturn().getResponse().getContentAsString(), "$.code");
+    }
+
+    @Test
     void memberLimitIsEnforced() throws Exception {
         // Batas diturunkan menjadi 3 lewat properti test.
         Account owner = register("Rina");
         String orgId = createOsis(owner);
-        String code = JsonPath.read(send(owner, post("/api/organizations/" + orgId + "/invitations"), "{\"role\":\"editor\"}")
-                .andReturn().getResponse().getContentAsString(), "$.code");
+        allowEditorInvites(owner, orgId);
         for (int i = 0; i < 2; i++) {
-            send(register("Anggota " + i), post("/api/invitations/accept"), "{\"code\":\"%s\"}".formatted(code))
+            send(register("Anggota " + i), post("/api/invitations/accept"), "{\"code\":\"%s\"}".formatted(newCode(owner, orgId)))
                     .andExpect(status().isOk());
         }
-        send(register("Kelebihan"), post("/api/invitations/accept"), "{\"code\":\"%s\"}".formatted(code))
+        send(register("Kelebihan"), post("/api/invitations/accept"), "{\"code\":\"%s\"}".formatted(newCode(owner, orgId)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("ORG_MEMBER_LIMIT"));
     }

@@ -62,6 +62,8 @@ public class OrganizationFragment extends Fragment {
                 R.id.membersFragment);
         bindRow(binding.activityItem, R.drawable.ic_history, R.string.org_menu_activity,
                 R.string.org_menu_activity_desc, R.id.activityFragment);
+        bindRow(binding.portalItem, R.drawable.ic_key, R.string.org_menu_portal, R.string.org_menu_portal_desc,
+                R.id.portalAccessFragment);
         bindRow(binding.transferItem, R.drawable.ic_swap_horiz, R.string.org_menu_transfer,
                 R.string.org_menu_transfer_desc, R.id.transferOwnershipFragment);
         binding.leaveItem.setOnClickListener(v -> confirmLeave());
@@ -130,6 +132,8 @@ public class OrganizationFragment extends Fragment {
         binding.deleteItem.setText(org.personal ? R.string.org_menu_delete_personal : R.string.org_menu_delete);
         binding.membersItem.getRoot().setVisibility(org.personal ? View.GONE : View.VISIBLE);
         binding.transferItem.getRoot().setVisibility(!org.personal && org.isOwner() ? View.VISIBLE : View.GONE);
+        // Hanya Pemilik yang mengatur kredensial Portal (berlaku juga untuk website di ruang pribadi).
+        binding.portalItem.getRoot().setVisibility(org.isOwner() ? View.VISIBLE : View.GONE);
         // Ruang pribadi tidak bisa ditinggalkan (pemiliknya satu-satunya anggota); hapus saja jika tidak dipakai.
         binding.leaveItem.setVisibility(org.personal ? View.GONE : View.VISIBLE);
         binding.deleteItem.setVisibility(org.isOwner() ? View.VISIBLE : View.GONE);

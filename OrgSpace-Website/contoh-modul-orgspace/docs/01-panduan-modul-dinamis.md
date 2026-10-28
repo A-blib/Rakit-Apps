@@ -175,17 +175,16 @@ Pilihan: `nama`, `singkatan`, `kategori`, `institusi`, `kota`, `alamat`, `email`
 
 ## Portal Pengurus
 
-Alamat: `orgspace.app/nama-website/admin`. Pengurus masuk dengan email dan password akun OrgSpace, dan harus menjadi anggota organisasi pemilik website.
+Alamat: `orgspace.app/nama-website/admin`. Pengurus masuk dengan **username dan password akses Portal** organisasi pemilik website. Ada tiga akses: Pemilik (wajib), Admin, dan Editor. Pemilik organisasi mengaturnya di app OrgSpace (Kelola organisasi → Akses Portal website), dan satu akses berlaku untuk semua website organisasi itu. Akun OrgSpace pribadi (email/Google/GitHub) dan akses organisasi lain tidak bisa dipakai di sini.
 
 | Tab | Isi |
 |---|---|
-| Ringkasan | Jumlah isian form, berita, item modul kustom, dan pengurus |
-| Kotak Masuk Form | Semua isian dari setiap `data-ws-form` |
+| Ringkasan | Jumlah isian form, berita, item modul kustom, dan akses yang sedang dipakai |
+| Kotak Masuk Form | Semua isian dari setiap `data-ws-form` (hanya Pemilik & Admin) |
 | Berita & Agenda | Tambah dan hapus pengumuman |
 | Modul Kustom | Daftar modul dari template beserta field-nya; tambah, edit, hapus, urutkan data, dan unggah foto |
-| Pengurus & Hak Akses | Tambah pengurus (hanya akun OrgSpace yang sudah terdaftar) dan atur perannya |
 
-Sesi Portal Pengurus berlaku 8 jam dan **hanya untuk satu website itu**.
+Sesi Portal Pengurus berlaku 8 jam dan **hanya untuk satu website itu**. Saat Pemilik mengganti password suatu akses, semua yang sedang masuk dengan akses itu langsung keluar.
 
 ## JavaScript template
 
@@ -234,6 +233,10 @@ Template boleh punya beberapa halaman (`index.html`, `tentang.html`, `kontak.htm
 - Maksimal 10 halaman HTML, dan setiap halaman harus bisa dibuka dari menu.
 - Modul yang sama boleh dipakai di beberapa halaman dan datanya tetap satu. Mis. beranda menampilkan 3 agenda (`data-ws-limit="3"`) dengan link ke `agenda.html` yang menampilkan semuanya. Portal Pengurus menampilkan gabungan field dari semua halaman.
 - Halaman detail per item (mis. `agenda/123`) tidak tersedia. Pakai kartu yang bisa dibuka (`<details>` atau dialog) atau `data-ws-link` ke link luar.
+
+## Modul dan langkah Tandai
+
+Bagian yang diisi modul **tidak bisa ditandai** di app, karena isinya diganti data saat website tayang: elemen ber-`data-ws-field`, `data-ws-stat`, `data-ws-org`, link/tombol ber-`data-ws-link` atau `data-ws-auth`, dan teks yang membungkus modul. Teks statis di sekitarnya (judul section, label formulir, teks `data-ws-empty`) tetap boleh ditandai. Detail: `docs/03-menandai-bagian.md`.
 
 ## Cek sebelum upload
 

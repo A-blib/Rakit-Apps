@@ -2,6 +2,7 @@ package com.aris.templateapp.site;
 
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
+import com.aris.templateapp.organization.OrgAction;
 import com.aris.templateapp.project.ProjectService;
 import com.aris.templateapp.site.dto.FormSubmissionResponse;
 import com.aris.templateapp.site.dto.NewsResponse;
@@ -51,7 +52,7 @@ public class PortalContentController {
     public Map<String, Object> getAdminStats(@PathVariable String slug,
                                              @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site);
 
         // Dihitung di database (SELECT count(*)): dulu semua baris lengkap dimuat ke memori hanya untuk .size().
         long submissionsCount = formSubmissionRepository.countBySiteId(site.getId());
@@ -71,9 +72,9 @@ public class PortalContentController {
                                                        @RequestParam(required = false) String formName,
                                                        @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        UUID userId = portal.requireManager(authHeader, site);
         // Aturan peran dan bentuk respons (tanpa IP/User-Agent pengunjung) sama dengan jalur app.
-        return publishService.getSubmissions(site.getProjectId(), userId, formName == null ? null : formName.trim());
+        portal.requireSession(authHeader, site).require(OrgAction.VIEW_SUBMISSIONS);
+        return publishService.submissionsOf(site.getId(), formName == null ? null : formName.trim());
     }
 
     // ---------- berita ----------
@@ -82,7 +83,7 @@ public class PortalContentController {
     public List<NewsResponse> getNews(@PathVariable String slug,
                                       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site);
         return siteNewsRepository.findByOrganizationIdOrderByPublishedAtDesc(site.getOrganizationId()).stream()
                 .map(NewsResponse::of)
                 .toList();
@@ -93,7 +94,7 @@ public class PortalContentController {
                                    @RequestBody Map<String, String> payload,
                                    @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        UUID userId = portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site).require(OrgAction.MANAGE_CONTENT);
 
         String title = payload.get("title");
         String summary = payload.get("summary");
@@ -108,7 +109,7 @@ public class PortalContentController {
         requireMaxLength(summary, NEWS_TEXT_MAX, "Ringkasan berita");
         requireMaxLength(imageUrl, NEWS_TEXT_MAX, "Alamat gambar");
 
-        SiteNews news = new SiteNews(site.getOrganizationId(), title.trim(), summary, content, imageUrl, userId);
+        SiteNews news = new SiteNews(site.getOrganizationId(), title.trim(), summary, content, imageUrl, null);
         return NewsResponse.of(siteNewsRepository.save(news));
     }
 
@@ -117,7 +118,7 @@ public class PortalContentController {
                                           @PathVariable UUID newsId,
                                           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site);
 
         SiteNews news = siteNewsRepository.findById(newsId)
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Berita tidak ditemukan"));
@@ -134,7 +135,7 @@ public class PortalContentController {
     public Map<String, List<Map<String, Object>>> getAdminCollections(@PathVariable String slug,
                                                                       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site);
         Map<String, List<Map<String, Object>>> collectionsMap = new LinkedHashMap<>();
         for (SiteCustomItem item : siteCustomItemRepository.findBySiteIdOrderByCollectionNameAscSortOrderAscCreatedAtDesc(site.getId())) {
             collectionsMap.computeIfAbsent(item.getCollectionName(), k -> new ArrayList<>()).add(row(item));
@@ -147,7 +148,7 @@ public class PortalContentController {
                                                              @PathVariable String collectionName,
                                                              @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site);
         String cleanCol = collectionName.toLowerCase(Locale.ROOT).trim();
         return siteCustomItemRepository.findBySiteIdAndCollectionNameOrderBySortOrderAscCreatedAtDesc(site.getId(), cleanCol)
                 .stream().map(PortalContentController::row).toList();
@@ -159,7 +160,7 @@ public class PortalContentController {
                                                  @RequestBody Map<String, Object> itemData,
                                                  @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site);
 
         String cleanCol = collectionName.toLowerCase(Locale.ROOT).trim();
         SiteCustomItem item = new SiteCustomItem(site.getId(), cleanCol, cleanItemData(itemData), 0);
@@ -173,7 +174,7 @@ public class PortalContentController {
                                                     @RequestBody Map<String, Object> itemData,
                                                     @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site);
 
         SiteCustomItem item = siteCustomItemRepository.findById(itemId)
                 .filter(i -> i.getSiteId().equals(site.getId()))
@@ -190,7 +191,7 @@ public class PortalContentController {
                                                  @RequestBody Map<String, List<UUID>> payload,
                                                  @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site);
 
         List<UUID> ids = payload == null ? null : payload.get("ids");
         if (ids == null || ids.isEmpty()) {
@@ -216,7 +217,7 @@ public class PortalContentController {
                                                     @PathVariable UUID itemId,
                                                     @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site);
 
         SiteCustomItem item = siteCustomItemRepository.findById(itemId)
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Item tidak ditemukan"));
@@ -233,14 +234,14 @@ public class PortalContentController {
                                            @RequestPart("file") MultipartFile file,
                                            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
         Site site = portal.site(slug);
-        UUID userId = portal.requireManager(authHeader, site);
+        portal.requireSession(authHeader, site).require(OrgAction.MANAGE_CONTENT);
         byte[] bytes;
         try {
             bytes = file.getBytes();
         } catch (IOException e) {
             throw new ApiException(ErrorCode.ASSET_INVALID);
         }
-        UUID assetId = projectService.saveSiteMedia(site.getProjectId(), userId, bytes).assetId();
+        UUID assetId = projectService.saveSiteMedia(site.getProjectId(), null, bytes).assetId();
         return Map.of("id", assetId, "url", "/" + site.getSlug() + "/_media/" + assetId);
     }
 

@@ -14,6 +14,12 @@ export const PUBLIC_BACKEND_URL = orDev(process.env.NEXT_PUBLIC_BACKEND_URL, "ht
 /** Portal web OrgSpace; tujuan saat domain Hosting dibuka tanpa slug. */
 export const PORTAL_URL = orDev(process.env.NEXT_PUBLIC_PORTAL_URL, "http://localhost:3000");
 
+/**
+ * Kunci rahasia bersama dengan backend (HOSTING_SHARED_KEY, sama persis di kedua sisi). Hanya dibaca di server Hosting,
+ * tidak pernah dikirim ke browser. Kosong = IP pengunjung tidak diteruskan (cukup saat Hosting di VPS di belakang Caddy).
+ */
+export const HOSTING_SHARED_KEY = (process.env.HOSTING_SHARED_KEY || "").trim();
+
 /** Domain utama Hosting (mis. orgspace.app); host lain dianggap domain kustom organisasi. */
 export const HOSTING_DOMAIN = (process.env.NEXT_PUBLIC_HOSTING_DOMAIN || "localhost:3001").toLowerCase();
 

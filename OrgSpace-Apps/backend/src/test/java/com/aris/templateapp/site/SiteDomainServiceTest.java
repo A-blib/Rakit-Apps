@@ -19,7 +19,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +42,12 @@ class SiteDomainServiceTest {
 
     @Mock
     private OrganizationAccess access;
+
+    @Mock(strictness = Mock.Strictness.LENIENT)
+    private DnsLookup dns;
+
+    @Mock(strictness = Mock.Strictness.LENIENT)
+    private VercelDomainClient vercel;
 
     private AppProperties properties;
     private Clock clock;
@@ -77,7 +85,7 @@ class SiteDomainServiceTest {
                 allowDnsBypass
         );
         properties = new AppProperties(null, null, null, "templateapp", "Asia/Jakarta", null, null, null, sitesProp, null, null);
-        return new SiteDomainService(siteRepository, siteDomainRepository, access, properties, clock);
+        return new SiteDomainService(siteRepository, siteDomainRepository, access, properties, clock, dns, vercel);
     }
 
     private void asOwner() {
@@ -124,13 +132,17 @@ class SiteDomainServiceTest {
 
         assertThat(response.hostname()).isEqualTo("www.osissmansa.my.id");
         assertThat(response.status()).isEqualTo("pending");
-        assertThat(response.instructions()).hasSize(2);
+        assertThat(response.instructions()).hasSize(3);
         assertThat(response.instructions().get(0).type()).isEqualTo("CNAME");
         assertThat(response.instructions().get(0).value()).isEqualTo("custom.orgspace.site");
         assertThat(response.instructions().get(1).type()).isEqualTo("TXT");
         assertThat(response.instructions().get(0).host()).isEqualTo("www");
         assertThat(response.instructions().get(1).host()).isEqualTo("_orgspace-verify.www");
         assertThat(response.defaultUrl()).isEqualTo("https://orgspace.app/osis-smansa");
+        // www.X didaftarkan: X (tanpa www) ikut dilayani jika record A-nya dipasang (opsional).
+        assertThat(response.instructions().get(2).type()).isEqualTo("A");
+        assertThat(response.instructions().get(2).host()).isEqualTo("@");
+        assertThat(response.instructions().get(2).note()).startsWith("Opsional");
     }
 
     @Test
@@ -145,6 +157,8 @@ class SiteDomainServiceTest {
         assertThat(response.instructions().get(0).type()).isEqualTo("A");
         assertThat(response.instructions().get(0).host()).isEqualTo("@");
         assertThat(response.instructions().get(1).host()).isEqualTo("_orgspace-verify");
+        assertThat(response.instructions().get(2).type()).isEqualTo("CNAME");
+        assertThat(response.instructions().get(2).host()).isEqualTo("www");
     }
 
     @Test
@@ -198,5 +212,122 @@ class SiteDomainServiceTest {
 
         assertThat(response.status()).isEqualTo("active");
         assertThat(response.activatedAt()).isNotNull();
+    }
+
+    @Test
+    void verifyDomain_warnsWhenDnsDoesNotPointToOrgSpace() {
+        asOwner();
+        UUID domainId = UUID.randomUUID();
+        SiteDomain domain = new SiteDomain(siteId, "osis.id", "token123");
+        domain.setId(domainId);
+        when(siteDomainRepository.findById(domainId)).thenReturn(Optional.of(domain));
+        when(siteDomainRepository.save(any(SiteDomain.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(dns.txt("_orgspace-verify.osis.id")).thenReturn(List.of("token123"));
+        when(dns.addresses("osis.id")).thenReturn(Set.of("1.2.3.4"));
+
+        DomainResponse response = service.verifyDomain(siteId, domainId, userId, false);
+
+        // Kepemilikan terbukti → aktif, tapi pengguna diberi tahu DNS-nya belum mengarah ke OrgSpace.
+        assertThat(response.status()).isEqualTo("active");
+        assertThat(response.lastError()).contains("1.2.3.4").contains("103.175.216.42");
+
+        when(dns.addresses("osis.id")).thenReturn(Set.of("103.175.216.42"));
+        domain.setStatus("pending");
+        assertThat(service.verifyDomain(siteId, domainId, userId, false).lastError()).isNull();
+    }
+
+    @Test
+    void recheck_releasesDomainWhoseTxtIsGoneLongerThanSevenDays() {
+        UUID domainId = UUID.randomUUID();
+        SiteDomain domain = new SiteDomain(siteId, "osis.id", "token123");
+        domain.setId(domainId);
+        domain.setStatus("active");
+        when(siteDomainRepository.findById(domainId)).thenReturn(Optional.of(domain));
+        when(dns.txt("_orgspace-verify.osis.id")).thenReturn(List.of());
+
+        // Hari pertama TXT hilang: masih aktif, diberi peringatan dan tanggal batas.
+        service.recheck(domainId);
+        assertThat(domain.getStatus()).isEqualTo("active");
+        assertThat(domain.getFailingSince()).isEqualTo(clock.instant());
+        assertThat(domain.getLastError()).contains("24 Oktober 2026");
+
+        // Masih hilang setelah 7 hari: dilepas, sehingga pemilik baru domain bisa memakainya.
+        domain.setFailingSince(clock.instant().minus(SiteDomainService.RELEASE_AFTER));
+        service.recheck(domainId);
+        assertThat(domain.getStatus()).isEqualTo("pending");
+        assertThat(domain.getActivatedAt()).isNull();
+    }
+
+    @Test
+    void recheck_txtBackClearsFailure() {
+        UUID domainId = UUID.randomUUID();
+        SiteDomain domain = new SiteDomain(siteId, "osis.id", "token123");
+        domain.setId(domainId);
+        domain.setStatus("active");
+        domain.setFailingSince(clock.instant().minusSeconds(3600));
+        when(siteDomainRepository.findById(domainId)).thenReturn(Optional.of(domain));
+        when(dns.txt("_orgspace-verify.osis.id")).thenReturn(List.of("token123"));
+        when(dns.addresses("osis.id")).thenReturn(Set.of("103.175.216.42"));
+
+        service.recheck(domainId);
+
+        assertThat(domain.getStatus()).isEqualTo("active");
+        assertThat(domain.getFailingSince()).isNull();
+        assertThat(domain.getLastError()).isNull();
+    }
+
+    @Test
+    void verifyRegistersDomainAndItsWwwPairAtHosting() {
+        asOwner();
+        UUID domainId = UUID.randomUUID();
+        SiteDomain domain = new SiteDomain(siteId, "osis.id", "token123");
+        domain.setId(domainId);
+        when(siteDomainRepository.findById(domainId)).thenReturn(Optional.of(domain));
+        when(siteDomainRepository.save(any(SiteDomain.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(dns.txt("_orgspace-verify.osis.id")).thenReturn(List.of("token123"));
+        when(dns.addresses("osis.id")).thenReturn(Set.of("103.175.216.42"));
+        when(vercel.addDomain("osis.id")).thenReturn("Server hosting meminta bukti tambahan: TXT _vercel.osis.id");
+
+        DomainResponse response = service.verifyDomain(siteId, domainId, userId, false);
+
+        verify(vercel).addDomain("osis.id");
+        verify(vercel).addDomain("www.osis.id");
+        // Catatan Vercel diteruskan ke pengguna lewat lastError (tampil di app).
+        assertThat(response.lastError()).contains("_vercel.osis.id");
+    }
+
+    @Test
+    void verifyFailsWhenHostingRejectsTheDomain() {
+        asOwner();
+        UUID domainId = UUID.randomUUID();
+        SiteDomain domain = new SiteDomain(siteId, "osis.id", "token123");
+        domain.setId(domainId);
+        when(siteDomainRepository.findById(domainId)).thenReturn(Optional.of(domain));
+        when(dns.txt("_orgspace-verify.osis.id")).thenReturn(List.of("token123"));
+        when(vercel.addDomain("osis.id")).thenThrow(new ApiException(com.aris.templateapp.common.exception.ErrorCode.DOMAIN_PROVIDER_FAILED));
+
+        assertThatThrownBy(() -> service.verifyDomain(siteId, domainId, userId, false)).isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    void removingActiveDomainReleasesItAtHosting() {
+        asOwner();
+        UUID domainId = UUID.randomUUID();
+        SiteDomain domain = new SiteDomain(siteId, "www.osis.id", "token123");
+        domain.setId(domainId);
+        domain.setStatus("active");
+        when(siteDomainRepository.findById(domainId)).thenReturn(Optional.of(domain));
+
+        service.removeDomain(siteId, domainId, userId);
+
+        verify(vercel).removeDomain("www.osis.id");
+        verify(vercel).removeDomain("osis.id");
+    }
+
+    @Test
+    void alternateHostOnlyForApexAndWww() {
+        assertThat(SiteDomainService.alternateHost("osis.sch.id")).isEqualTo("www.osis.sch.id");
+        assertThat(SiteDomainService.alternateHost("www.osis.sch.id")).isEqualTo("osis.sch.id");
+        assertThat(SiteDomainService.alternateHost("web.osis.sch.id")).isNull();
     }
 }

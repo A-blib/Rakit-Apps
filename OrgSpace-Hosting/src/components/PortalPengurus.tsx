@@ -14,12 +14,9 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  User,
   ShieldCheck,
   RefreshCw,
   Users,
-  UserPlus,
-  Shield,
   Pencil,
   ArrowUp,
   ArrowDown,
@@ -27,20 +24,17 @@ import {
   Globe,
   Menu,
   X,
-  ChevronRight,
   Eye,
   EyeOff,
   Sun,
   Moon,
-  Copy,
 } from "lucide-react";
 import type { FieldType } from "@/lib/types";
 
+/** Peran yang sedang masuk. Login Portal memakai kredensial peran organisasi (bukan akun OrgSpace pribadi). */
 interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
+  username: string;
+  role: "owner" | "admin" | "editor";
 }
 
 interface Stats {
@@ -97,21 +91,12 @@ async function shrinkPhoto(file: File): Promise<Blob> {
   );
 }
 
-interface Member {
-  userId: string;
-  name: string;
-  email: string;
-  role: "owner" | "admin" | "editor";
-  positionTitle?: string;
-  joinedAt: string;
-}
-
 /** Pemanggil API Portal; path relatif terhadap `/api/public/sites/`, mis. "osis/admin/news". */
 export type PortalApi = (path: string, init?: RequestInit) => Promise<Response>;
 
 /** Akun login demo: sengaja publik dan ditampilkan di layar login, tidak membuka akun apa pun. */
 export interface DemoLogin {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -137,7 +122,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
   const [loadingAuth, setLoadingAuth] = useState(true);
 
   // Login form state
-  const [emailInput, setEmailInput] = useState("");
+  const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -167,7 +152,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
   };
 
   // Dashboard states
-  const [activeTab, setActiveTab] = useState<"overview" | "submissions" | "news" | "collections" | "members">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "submissions" | "news" | "collections">("overview");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [siteName, setSiteName] = useState<string>("");
   const [orgName, setOrgName] = useState<string>("");
@@ -209,14 +194,6 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
 
   const fieldTypeOf = (colName: string, key: string): FieldType => templateModules[colName]?.[key] || "teks";
   const [submittingColItem, setSubmittingColItem] = useState(false);
-
-  // Members & Access Control state
-  const [members, setMembers] = useState<Member[]>([]);
-  const [loadingMembers, setLoadingMembers] = useState(false);
-  const [newMemberRole, setNewMemberRole] = useState<"admin" | "editor">("editor");
-  // Kode undangan hanya dikirim server sekali (yang disimpan hash-nya), jadi ditampilkan sampai halaman ditutup.
-  const [invitation, setInvitation] = useState<{ code: string; role: string; expiresAt: string } | null>(null);
-  const [submittingMember, setSubmittingMember] = useState(false);
 
   // Success / error alerts
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -288,104 +265,6 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     loadSubmissions(jwt);
     loadNews(jwt);
     loadCollections(jwt);
-    loadMembers(jwt);
-  };
-
-  const loadMembers = async (jwt: string) => {
-    setLoadingMembers(true);
-    try {
-      const res = await api(`${slug}/admin/members`, {
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setMembers(data);
-      }
-    } catch (e) {
-      console.error("Gagal memuat daftar pengurus", e);
-    } finally {
-      setLoadingMembers(false);
-    }
-  };
-
-  // Pengurus baru diundang lewat kode, bukan dimasukkan langsung: penerima harus menerimanya sendiri di app.
-  const handleCreateInvitation = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!token) return;
-    setSubmittingMember(true);
-    try {
-      const res = await api(`${slug}/admin/invitations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ role: newMemberRole }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setInvitation({ code: data.code, role: data.role, expiresAt: data.expiresAt });
-        showToast("Kode undangan dibuat");
-      } else {
-        showToast(data.message || "Gagal membuat kode undangan", "error");
-      }
-    } catch {
-      showToast("Terjadi kesalahan jaringan", "error");
-    } finally {
-      setSubmittingMember(false);
-    }
-  };
-
-  const copyInvitationCode = async () => {
-    if (!invitation) return;
-    try {
-      await navigator.clipboard.writeText(invitation.code);
-      showToast("Kode undangan disalin");
-    } catch {
-      showToast("Gagal menyalin. Salin kode secara manual.", "error");
-    }
-  };
-
-  const handleUpdateRole = async (targetUserId: string, newRole: "admin" | "editor") => {
-    if (!token) return;
-    try {
-      const res = await api(`${slug}/admin/members/${targetUserId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ role: newRole }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast("Peran pengurus berhasil diperbarui!");
-        loadMembers(token);
-      } else {
-        showToast(data.message || "Gagal memperbarui peran", "error");
-      }
-    } catch {
-      showToast("Terjadi kesalahan jaringan", "error");
-    }
-  };
-
-  const handleRemoveMember = async (targetUserId: string, memberName: string) => {
-    if (!token || !confirm(`Yakin ingin mencabut hak akses pengurus ${memberName}?`)) return;
-    try {
-      const res = await api(`${slug}/admin/members/${targetUserId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast("Hak akses pengurus berhasil dicabut!");
-        loadMembers(token);
-      } else {
-        showToast(data.message || "Gagal mencabut hak akses", "error");
-      }
-    } catch {
-      showToast("Terjadi kesalahan jaringan", "error");
-    }
   };
 
   const loadStats = async (jwt: string) => {
@@ -466,12 +345,13 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
       const res = await api(`${slug}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailInput.trim(), password: passwordInput }),
+        body: JSON.stringify({ username: usernameInput.trim(), password: passwordInput }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        setLoginError(data.message || "Gagal masuk. Periksa email dan password Anda.");
+        // PORTAL_CREDENTIALS_NOT_SET: Pemilik belum mengatur kredensial di app (Kelola organisasi → Akses Portal website).
+        setLoginError(data.message || "Gagal masuk. Periksa username dan password Anda.");
         return;
       }
 
@@ -774,14 +654,14 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                   halaman ditutup.
                 </p>
                 <p className="font-mono">
-                  Email: {demo.email}
+                  Username: {demo.username}
                   <br />
                   Password: {demo.password}
                 </p>
                 <button
                   type="button"
                   onClick={() => {
-                    setEmailInput(demo.email);
+                    setUsernameInput(demo.username);
                     setPasswordInput(demo.password);
                   }}
                   className="font-semibold text-primary hover:underline"
@@ -803,14 +683,17 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1.5">
-                  Email Akun Pengurus
+                  Username
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   required
-                  placeholder="pengurus@organisasi.id"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  placeholder="mis. admin.osis"
+                  value={usernameInput}
+                  onChange={(e) => setUsernameInput(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface text-foreground text-sm placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                 />
               </div>
@@ -877,7 +760,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
 
   // 3. Authenticated Dashboard View
   interface TabItem {
-    id: "overview" | "submissions" | "news" | "collections" | "members";
+    id: "overview" | "submissions" | "news" | "collections";
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: number;
@@ -893,7 +776,6 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
       : []),
     { id: "news", label: "Berita & Agenda", icon: Newspaper, badge: stats.newsCount },
     { id: "collections", label: "Modul Kustom", icon: Boxes, badge: stats.customItemsCount },
-    { id: "members", label: "Pengurus & Hak Akses", icon: Users, badge: members.length },
   ];
 
   return (
@@ -964,7 +846,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                 title="Profil & Menu"
                 aria-label="Buka menu pengurus"
               >
-                {(user.name || user.email).substring(0, 2).toUpperCase()}
+                {user.username.substring(0, 2).toUpperCase()}
               </button>
             </div>
 
@@ -1012,10 +894,10 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
 
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-primary-container border border-border flex items-center justify-center text-xs font-semibold text-on-primary-container">
-                  {(user.name || user.email).substring(0, 2).toUpperCase()}
+                  {user.username.substring(0, 2).toUpperCase()}
                 </div>
                 <div className="text-left">
-                  <div className="text-xs font-semibold text-foreground leading-tight">{user.name}</div>
+                  <div className="text-xs font-semibold text-foreground leading-tight">{user.username}</div>
                   <div className="text-[10px] uppercase font-mono font-semibold tracking-wider text-muted">
                     {user.role}
                   </div>
@@ -1121,11 +1003,10 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
               <div className="p-3.5 m-3 bg-surface-subtle rounded-xl border border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-primary-container border border-border flex items-center justify-center text-xs font-bold text-on-primary-container shrink-0">
-                    {(user.name || user.email).substring(0, 2).toUpperCase()}
+                    {user.username.substring(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-bold text-foreground truncate leading-tight">{user.name}</div>
-                    <div className="text-[11px] text-muted font-mono truncate">{user.email}</div>
+                    <div className="text-xs font-bold text-foreground truncate leading-tight">{user.username}</div>
                     <div className="mt-1">
                       <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-full bg-surface border border-border text-primary">
                         {user.role}
@@ -1290,23 +1171,20 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                 </p>
               </div>
 
-              <div
-                onClick={() => setActiveTab("members")}
-                className="bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs hover:border-border-strong transition cursor-pointer"
-              >
+              <div className="bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs">
                 <div className="flex items-center justify-between text-muted mb-2 sm:mb-3">
                   <span className="text-[11px] sm:text-xs font-semibold tracking-wider uppercase text-muted">
-                    Pengurus Aktif
+                    Masuk sebagai
                   </span>
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
                     <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                  {members.length}
+                <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground capitalize">
+                  {user.role}
                 </div>
-                <p className="text-[11px] sm:text-xs text-muted mt-1 sm:mt-1.5 leading-snug">
-                  Akun pengelola
+                <p className="text-[11px] sm:text-xs text-muted mt-1 sm:mt-1.5 leading-snug font-mono truncate">
+                  {user.username}
                 </p>
               </div>
             </div>
@@ -1337,7 +1215,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                   <h3 className="text-sm font-bold text-foreground">Keamanan Akses Terpusat</h3>
                 </div>
                 <p className="text-xs text-muted leading-relaxed mt-2">
-                  Setiap pengurus organisasi dapat diberi hak akses berjenjang (Pemilik, Admin, atau Editor). Kredensial dan sesi dienkripsi dengan standar industri tanpa membebani pengelolaan server mandiri.
+                  Portal punya tiga akses: Pemilik, Admin, dan Editor. Username dan password tiap akses diatur Pemilik di app OrgSpace (Kelola organisasi → Akses Portal website) dan berlaku untuk semua website organisasi.
                 </p>
                 <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs">
                   <span className="text-muted">Peran Anda:</span>
@@ -1868,233 +1746,6 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
           </div>
         )}
 
-        {/* ========================================================= */}
-        {/* TAB 5: PENGURUS & HAK AKSES (MEMBERS & ACCESS RIGHTS)      */}
-        {/* ========================================================= */}
-        {activeTab === "members" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-bold tracking-tight text-foreground">Pengurus & Hak Akses (RBAC)</h2>
-              <p className="text-sm text-muted mt-0.5">
-                Kelola pengurus resmi organisasi dan atur izin akses untuk mengelola data website.
-              </p>
-            </div>
-
-            {/* Role Notice Card */}
-            <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs flex items-start gap-4">
-              <div className="w-9 h-9 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 mt-0.5">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div className="space-y-1 text-xs leading-relaxed text-muted flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-foreground">Hierarki Hak Akses:</span>
-                  <span className="font-mono text-[10px] bg-surface-subtle text-muted px-2 py-0.5 rounded-full border border-border">
-                    Server Security Active
-                  </span>
-                </div>
-                <p>
-                  <strong className="text-foreground">Pemilik (Owner)</strong> memiliki kendali penuh atas situs. <strong className="text-foreground">Admin</strong> dapat mengelola konten dan menunjuk pengurus baru. <strong className="text-foreground">Editor</strong> berfokus pada penerbitan berita dan pengisian modul kustom. Data formulir pengunjung hanya untuk Pemilik dan Admin.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Form Tambah Pengurus */}
-              <div className="lg:col-span-1">
-                {user.role === "owner" || user.role === "admin" ? (
-                  <div className="bg-surface p-6 rounded-2xl border border-border shadow-xs sticky top-24">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
-                        <UserPlus className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-bold text-foreground">Undang Pengurus</h3>
-                        <p className="text-xs text-muted">Buat kode, lalu bagikan ke calon pengurus</p>
-                      </div>
-                    </div>
-
-                    <form onSubmit={handleCreateInvitation} className="space-y-3.5">
-                      <div>
-                        <label className="block text-xs font-semibold text-foreground mb-1">
-                          Tingkat Hak Akses (Role) <span className="text-error">*</span>
-                        </label>
-                        <select
-                          value={newMemberRole}
-                          onChange={(e) => setNewMemberRole(e.target.value as "admin" | "editor")}
-                          className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-surface text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                        >
-                          <option value="editor">Editor (Kelola Berita & Modul)</option>
-                          <option value="admin">Admin (Akses Penuh + Kelola Hak Akses)</option>
-                        </select>
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={submittingMember}
-                        className="w-full mt-2 py-2.5 bg-primary hover:bg-primary/90 text-on-primary rounded-xl text-xs font-semibold shadow-xs transition disabled:opacity-50 flex items-center justify-center gap-1.5"
-                      >
-                        {submittingMember ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span>Membuat kode...</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserPlus className="w-3.5 h-3.5" />
-                            <span>Buat Kode Undangan</span>
-                          </>
-                        )}
-                      </button>
-
-                      {invitation && (
-                        <div className="mt-2 p-3.5 rounded-xl border border-border bg-surface-subtle space-y-2">
-                          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-                            Kode undangan {invitation.role === "admin" ? "Admin" : "Editor"}
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <code className="flex-1 text-base font-bold tracking-widest text-foreground">{invitation.code}</code>
-                            <button
-                              type="button"
-                              onClick={copyInvitationCode}
-                              aria-label="Salin kode undangan"
-                              className="p-2 rounded-lg border border-border hover:border-border-strong transition"
-                            >
-                              <Copy className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                          <p className="text-[11px] text-muted leading-relaxed">
-                            Calon pengurus membuka app OrgSpace, masuk, memilih <strong className="text-foreground">Gabung organisasi</strong>,
-                            lalu memasukkan kode ini. Ia baru menjadi pengurus setelah menerimanya. Berlaku sampai{" "}
-                            {new Date(invitation.expiresAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}.
-                          </p>
-                        </div>
-                      )}
-                    </form>
-                  </div>
-                ) : (
-                  <div className="bg-surface p-6 rounded-2xl border border-border shadow-xs text-muted space-y-3">
-                    <div className="flex items-center gap-2 text-foreground font-bold text-sm">
-                      <Shield className="w-4 h-4 text-primary" />
-                      <span>Hak Akses Terbatas</span>
-                    </div>
-                    <p className="text-xs text-muted leading-relaxed">
-                      Anda saat ini masuk sebagai <strong className="text-foreground">Editor Konten</strong>. Anda memiliki wewenang untuk menambah berita dan item modul kustom.
-                    </p>
-                    <p className="text-xs text-muted leading-relaxed">
-                      Penambahan pengurus baru serta pengubahan hak akses hanya dapat dilakukan oleh akun dengan peran <strong className="text-foreground">Admin</strong> atau <strong className="text-foreground">Pemilik</strong>.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Daftar Pengurus Aktif */}
-              <div className="lg:col-span-2 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-foreground">
-                      Daftar Pengurus Aktif ({members.length})
-                    </h3>
-                    <p className="text-xs text-muted">
-                      Pengguna terdaftar dengan kredensial resmi pada website ini
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => token && loadMembers(token)}
-                    className="p-1.5 text-muted hover:text-foreground hover:bg-surface rounded-lg border border-transparent hover:border-border transition"
-                    title="Perbarui data"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${loadingMembers ? "animate-spin text-primary" : ""}`} />
-                  </button>
-                </div>
-
-                {loadingMembers ? (
-                  <div className="py-12 text-center text-muted">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
-                    <p className="text-xs">Memuat daftar pengurus...</p>
-                  </div>
-                ) : members.length === 0 ? (
-                  <div className="bg-surface p-8 text-center rounded-2xl border border-border text-muted text-xs shadow-xs">
-                    Belum ada data pengurus yang dimuat.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {members.map((m) => {
-                      const isOwner = m.role === "owner";
-                      const isAdmin = m.role === "admin";
-                      const isCurrentUser = m.userId === user.id;
-                      const canManage = (user.role === "owner" || user.role === "admin") && !isOwner && !isCurrentUser;
-
-                      return (
-                        <div
-                          key={m.userId}
-                          className="bg-surface p-4 sm:p-5 rounded-2xl border border-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition hover:border-border-strong"
-                        >
-                          <div className="flex items-start sm:items-center gap-3.5">
-                            <div className="w-10 h-10 rounded-full bg-primary-container border border-border flex items-center justify-center font-bold text-xs text-on-primary-container shrink-0">
-                              {(m.name || m.email).substring(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs font-bold text-foreground">
-                                  {m.name || "Tanpa Nama"}
-                                </span>
-                                {isCurrentUser && (
-                                  <span className="text-[10px] bg-surface-subtle text-muted px-1.5 py-0.2 rounded font-mono border border-border">
-                                    (Anda)
-                                  </span>
-                                )}
-                                <span className="text-[10px] px-2 py-0.5 rounded-full font-mono uppercase font-semibold border bg-surface-subtle text-foreground border-border">
-                                  {isOwner ? "👑 Pemilik" : isAdmin ? "🛡️ Admin" : "✍️ Editor"}
-                                </span>
-                              </div>
-                              <div className="text-xs text-muted font-mono mt-0.5">
-                                {m.email}
-                              </div>
-                              {m.positionTitle && (
-                                <div className="text-xs text-muted mt-0.5">
-                                  Posisi: <span className="text-foreground font-medium">{m.positionTitle}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 self-end sm:self-center border-t sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto justify-end">
-                            {canManage ? (
-                              <>
-                                <select
-                                  value={m.role}
-                                  onChange={(e) => handleUpdateRole(m.userId, e.target.value as any)}
-                                  className="text-xs px-2.5 py-1.5 rounded-lg border border-border bg-surface-subtle text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition"
-                                  title="Ganti peran pengurus"
-                                >
-                                  <option value="editor">Role: Editor</option>
-                                  <option value="admin">Role: Admin</option>
-                                </select>
-
-                                <button
-                                  onClick={() => handleRemoveMember(m.userId, m.name || m.email)}
-                                  className="p-1.5 text-muted hover:text-error hover:bg-error/10 rounded-lg transition"
-                                  title="Cabut Hak Akses"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </>
-                            ) : isOwner ? (
-                              <span className="text-[11px] text-muted font-mono px-2 py-1">
-                                Pemilik Utama
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );

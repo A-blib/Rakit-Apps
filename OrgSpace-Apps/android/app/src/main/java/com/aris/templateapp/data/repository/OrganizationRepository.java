@@ -10,12 +10,14 @@ import com.aris.templateapp.data.model.Activity;
 import com.aris.templateapp.data.model.Invitation;
 import com.aris.templateapp.data.model.Member;
 import com.aris.templateapp.data.model.Organization;
+import com.aris.templateapp.data.model.PortalCredential;
 import com.aris.templateapp.data.model.WorkspaceRole;
 import com.aris.templateapp.data.remote.api.OrganizationApi;
 import com.aris.templateapp.data.remote.dto.CreateInvitationRequestDto;
 import com.aris.templateapp.data.remote.dto.DeleteOrganizationRequestDto;
 import com.aris.templateapp.data.remote.dto.MemberUpdateRequestDto;
 import com.aris.templateapp.data.remote.dto.OrganizationDto;
+import com.aris.templateapp.data.remote.dto.PortalCredentialRequestDto;
 import com.aris.templateapp.data.remote.dto.TransferOwnershipRequestDto;
 import com.aris.templateapp.data.remote.dto.UpdateOrganizationRequestDto;
 
@@ -35,7 +37,7 @@ import retrofit2.Response;
 
 /**
  * Mengelola satu organisasi (revisi-fondasi-orgspace.md 4.4): profil, logo, anggota, undangan, serah terima,
- * keluar, hapus, dan riwayat aktivitas. Semua butuh internet; hak tiap aksi tetap dijaga backend.
+ * keluar, hapus, riwayat aktivitas, dan kredensial Portal Pengurus. Semua butuh internet; hak tiap aksi tetap dijaga backend.
  * <p>
  * Aksi yang mengubah daftar ruang kerja (ganti nama/logo, keluar, hapus, serah terima) memuat ulang
  * {@link WorkspaceRepository} agar app bar dan pemilih ruang kerja ikut berubah. Method {@code @WorkerThread} wajib
@@ -129,6 +131,18 @@ public class OrganizationRepository {
     @WorkerThread
     public Resource<Boolean> revokeInvitation(String id, String invitationId) {
         return executeVoid(api.revokeInvitation(id, invitationId));
+    }
+
+    /** Kredensial Portal yang sudah diatur (hanya Pemilik). */
+    @WorkerThread
+    public Resource<List<PortalCredential>> portalCredentials(String id) {
+        return execute(api.portalCredentials(id), list -> map(list, WorkspaceMapper::toModel));
+    }
+
+    @WorkerThread
+    public Resource<PortalCredential> savePortalCredential(String id, WorkspaceRole role, String username, String password) {
+        return execute(api.savePortalCredential(id, role.value(), new PortalCredentialRequestDto(username, password)),
+                WorkspaceMapper::toModel);
     }
 
     /** Satu halaman riwayat; {@code hasMore} ada di {@link ActivityPage}. */

@@ -22,6 +22,8 @@ public final class MarkingValidator {
     private static final Set<String> VIEWS = Set.of("mobile", "desktop");
     // Jenis isian yang mengganti seluruh isi elemen (bukan hanya src/href).
     private static final Set<String> REPLACES_CONTENT = Set.of("text", "paragraph", "button");
+    // Jenis isian yang mengubah href elemen.
+    private static final Set<String> LINK_TYPES = Set.of("link", "button");
     private static final Set<String> THEME_TYPES = Set.of("color", "size");
     private static final Pattern KEY = Pattern.compile("^[a-z][a-z0-9_]{0,39}$");
     private static final Pattern RATIO = Pattern.compile("^\\d{1,2}:\\d{1,2}$");
@@ -138,6 +140,33 @@ public final class MarkingValidator {
                     }
                     ancestor = parents.get(ancestor);
                 }
+            }
+        }
+    }
+
+    /**
+     * Isian di elemen modul dinamis (data-ws-*) ditolak: runtime OrgSpace-Hosting menimpa isinya saat website tayang,
+     * jadi editan pengguna akan hilang diam-diam. Label form, teks data-ws-empty, dan teks statis lain di kartu
+     * tetap boleh, karena tidak ditimpa.
+     */
+    public static void validateDynamic(MarkingData data, Map<String, TemplateNumbering.Dynamic> dynamicByPage) {
+        for (MarkingData.Field field : nullSafe(data.fields())) {
+            for (MarkingData.Element element : nullSafe(field.elements())) {
+                TemplateNumbering.Dynamic dynamic = dynamicByPage.get(element.page());
+                if (dynamic == null) {
+                    continue;
+                }
+                String filled = dynamic.filled().get(element.tplId());
+                require(filled == null, "Isian “" + field.label() + "” ada di modul dinamis (" + filled + "): isinya "
+                        + "diisi otomatis saat website tayang, jadi editan pengguna akan hilang. Hapus tandaan ini.");
+                String linked = dynamic.linked().get(element.tplId());
+                require(linked == null || !LINK_TYPES.contains(field.type()), "Isian “" + field.label()
+                        + "” ada di " + linked + ": link-nya diatur otomatis saat website tayang. Ubah jenisnya "
+                        + "menjadi Teks pendek, atau hapus tandaan ini.");
+                String wraps = dynamic.wraps().get(element.tplId());
+                require(wraps == null || !REPLACES_CONTENT.contains(field.type()), "Isian “" + field.label()
+                        + "” membungkus modul dinamis (" + wraps + ") dan akan menghapusnya. Tandai elemen yang lebih "
+                        + "kecil di dalamnya.");
             }
         }
     }

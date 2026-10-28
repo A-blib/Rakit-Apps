@@ -2256,6 +2256,178 @@ tanpa menunggu job jalan. Backend mengirim `expiresAt` dan `expired` (dihitung j
 Tugas tim web: merapikan tiga tampilan contoh awal di atas.
 Test: `PortalIntegrationTest.portalUpdatesWrittenByAdminAndShownWhenPublished`, `portalUpdateHiddenFromPublicAfterDisplayDays`.
 
+## 33u. Perbaikan Upload provider: modul dinamis, pengecekan terputus, lag di Info (27 Oktober 2026)
+
+Ditemukan saat menguji `template-sinergi` (template dinamis) dari HP lewat Upload → Tandai → Coba → Kirim.
+
+| Masalah | Perbaikan |
+|---|---|
+| Provider bisa menandai elemen modul dinamis (`data-ws-org`, `data-ws-stat`, `data-ws-field` di kartu). Runtime Hosting menimpa isinya saat website tayang, jadi editan pengguna hilang diam-diam | `TemplateNumbering.dynamic` + `MarkingValidator.validateDynamic`, dicek saat Simpan Tandai dan Kirim. Ditolak: elemen yang diisi otomatis, Link/Tombol di `data-ws-link`/`data-ws-auth`, Teks/Paragraf/Tombol yang membungkus modul. Tetap boleh: label form, teks `data-ws-empty`, teks statis di kartu |
+| Server mati saat pengecekan upload/Kirim: template macet di "Sedang dicek" selamanya (memakan kuota draft, tidak bisa dihapus) | `upload/InterruptedCheckRecovery`: saat server siap, pengecekan yang dimulai sebelum server menyala ditutup sebagai gagal karena server (upload: gagal cek; Kirim: kembali ke draft). Contoh dari seeder dev tidak tersentuh |
+| Mengetik di langkah Info terasa lambat (diukur: ±350 ms per frame, 100% patah-patah) | WebView tersembunyi untuk thumbnail digambar CPU di thread utama dan tidak ditutup, sehingga animasi template terus menggambar ulang. `ThumbnailCapture` kini menutupnya setelah memotret (dan saat pilih section dibatalkan). Hasil: diam 0 frame, mengetik ±12 ms per frame |
+
+Di HP (aturan sama dengan server, agar provider tahu sebelum Simpan ditolak):
+- `assets/upload/mark.js`: `describe` mengirim `dynamicFilled`, `dynamicLink`, `wrapsModule`; saran "Tandai semua" dan
+  banner "mirip isian… Hubungkan" tidak lagi mengusulkan elemen dinamis atau elemen yang membungkus modul (sebelumnya
+  "Tandai semua" mengusulkan `<p>Email <a data-ws-org="email">` di footer, lalu Simpan ditolak).
+- `MarkElementSheet.dynamicProblem`: peringatan di lembar Tandai + tombol Simpan nonaktif.
+- Coba tidak menjalankan runtime modul (keputusan Aris): kartu/angka tampil sebagai contoh statis. Keterangan teks
+  untuk itu sempat dibuat lalu dihapus (keputusan Aris, 28 Oktober 2026: tombol sudah cukup jelas, layar tetap lega).
+
+Coba: isian paling bawah di form tidak bisa digulir sampai terlihat (terpotong), karena sheet form setinggi layar dan
+digeser ke bawah oleh `expandedOffset`. `UploadTryFragment.fitFormToVisibleSheet` menambah ruang bawah form sebesar
+bagian sheet yang tersembunyi, dihitung ulang setiap sheet berhenti / layout berubah, jadi berlaku untuk template
+dengan isian berapa pun.
+
+Coba: tombol "Uji isi panjang" dihapus (keputusan Aris, 28 Oktober 2026: tidak terlalu dibutuhkan; cukup tampilan
+asli). "Isi asli" tetap ada untuk mengembalikan pratinjau setelah form diisi. Rancangan `alur-fitur-upload.md` bagian 8
+masih menyebut fitur ini sebagai V1+.
+
+Template yang sudah tayang tidak dicek ulang dengan aturan baru.
+Test: `MarkingValidatorDynamicTest`, `UploadIntegrationTest.checksInterruptedByServerRestartAreClosedOnStartup`.
+
+## 33v. Perbaikan terbit website dari template (28 Oktober 2026)
+
+Ditemukan saat menguji alur pembuat website di HP (galeri → editor template → Publish Langsung) dengan template dinamis.
+
+| Masalah | Perbaikan |
+|---|---|
+| HTML website terbit diformat ulang (pretty print jsoup): elemen yang ditulis rapat (`</div><div>`) dipisah baris baru. Pada elemen `inline-block` celah itu bisa menggeser tata letak, jadi website beda dengan pratinjau editor | `SiteBuildService.processHtmlFiles`: `prettyPrint(false)`, sama dengan penomoran (`TemplateNumbering`) dan export ZIP di HP (`ProjectExporter`). Dicek: rilis kini identik strukturnya dengan paket (348 baris, tag rapat sama) |
+| Formulir cadangan `data-ws-form` (tanpa `<form>`) menempel nama organisasi mentah ke HTML | Nama di-escape (`Entities.escape`). Dampak sebelumnya kecil karena halaman ter-sandbox |
+
+Sudah benar (diuji): isian pengguna masuk, semua atribut `data-ws-*` tetap ada, penanda editor (`data-key`,
+`data-tpl-id`, `data-edit`) terhapus, profil organisasi diisi runtime Hosting, halaman ber-header sandbox. Panel form
+editor template tidak terkena masalah isian terakhir terpotong seperti di Coba.
+Test: `SitePublishIntegrationTest.publishWebsiteAndAccessLocallyWithDynamicModules` (tag rapat tetap rapat).
+
+## 33w. Perbaikan domain kustom: www, cek berkala, cache Hosting (28 Oktober 2026)
+
+| Masalah | Perbaikan |
+|---|---|
+| `www.osis.id` dialihkan ke portal OrgSpace (tanpa HTTPS) jika yang didaftarkan `osis.id`, dan sebaliknya | `SiteDomainRepository.findActiveForHost`: domain utama dan `www.`-nya satu website, dipakai resolve-domain, Caddy ask, dan CORS. Instruksi DNS menambah record pasangan berlabel "Opsional" |
+| Domain aktif tidak pernah dicek ulang: domain yang kedaluwarsa lalu dibeli orang lain tetap terkunci di website lama | `SiteDomainMonitor` (tiap 6 jam, tidak jalan di dev karena domain dev aktif lewat bypass) → `SiteDomainService.recheck`: TXT hilang → peringatan + tanggal batas; hilang ≥ 7 hari (`RELEASE_AFTER`) → domain dilepas (kembali pending) |
+| Status "Aktif" hanya berdasarkan TXT, walau A/CNAME belum mengarah ke OrgSpace | Saat verifikasi dan cek berkala, `pointingProblem` membandingkan IP domain dengan `SITES_PUBLIC_IP` / IP `SITES_CUSTOM_TARGET`; jika belum cocok, domain tetap aktif dengan peringatan `lastError` |
+| Hosting menanyai backend untuk setiap file (css, js, gambar) di domain kustom | Cache 60 detik di `OrgSpace-Hosting/src/middleware.ts` (maks 1000 host; error backend tidak disimpan). Titik di akhir host (`osis.id.`) juga dikenali |
+
+Android (`CustomDomainDialog`): peringatan `lastError` kini juga tampil saat domain aktif (`text_active_warning`), dan
+record A/CNAME kedua tampil terpisah sebagai opsional (`text_optional_record`), tidak lagi menimpa record wajib.
+DNS dibaca lewat `site/DnsLookup` (mudah dipalsukan di test).
+Test: `SiteDomainServiceTest` (11, termasuk peringatan arah DNS dan pelepasan setelah 7 hari),
+`SitePublishIntegrationTest` (www + Caddy ask).
+
+## 33x. Kode undangan organisasi: sekali pakai, berlaku 1 jam (28 Oktober 2026)
+
+Keputusan Aris: kode untuk bergabung ke organisasi hanya untuk **satu orang** dan **kedaluwarsa 1 jam** (sebelumnya
+F2: beberapa orang selama 7 hari). Alasannya: kode yang tersebar (mis. undangan Admin di grup) tidak bisa dipakai
+orang lain.
+
+| Bagian | Isi |
+|---|---|
+| Data | `V37__invitation_single_use.sql`: `used_at`, `used_by` di `organization_invitations` |
+| Backend | `OrganizationInvitation.isUsable` menolak kode terpakai; `InvitationService.accept` mengunci kode (`lockByCodeHash`, `PESSIMISTIC_WRITE`) agar dua orang bersamaan tidak sama-sama masuk, lalu `markUsed`. Anggota yang memasukkan kode baru ditolak `ALREADY_MEMBER` tanpa menghabiskan kodenya. Daftar undangan aktif tidak lagi menampilkan kode terpakai |
+| Konfigurasi | `ORG_INVITE_TTL_MINUTES` (bawaan 60), menggantikan `ORG_INVITE_TTL_DAYS` |
+| Tampilan | App (`InviteSheet`, daftar undangan) dan Portal Pengurus menampilkan jam kedaluwarsa + "hanya untuk satu orang" |
+
+Diuji di HP (28 Okt): buat organisasi, undang (kode berlaku tepat 1 jam), akun lain bergabung, akun ketiga dengan kode
+yang sama ditolak; ruang pribadi (kedua ditolak, tidak bisa mengundang); profil (WA/Instagram dirapikan otomatis) dan
+logo dari Photo Picker. Uji keamanan API: peran (editor tidak bisa ubah profil/undang/naik peran/hapus), orang luar
+`NOT_ORG_MEMBER`, kode dicabut/salah/dipakai dijawab sama, tebak kode dibatasi (429), Pemilik terakhir tidak bisa
+keluar, logo SVG/berkedok/terlalu besar ditolak, input media sosial berbahaya ditolak.
+Test: `OrganizationIntegrationTest` (termasuk `invitationCodeExpiresAfterOneHour`), `SitePublishIntegrationTest`.
+
+## 33y. Susunan deploy: Website + Hosting di Vercel, backend + database di VPS (28 Oktober 2026)
+
+Keputusan Aris: OrgSpace-Website dan OrgSpace-Hosting menjadi dua project Vercel dari repo yang sama (Root Directory
+berbeda), VPS hanya backend + PostgreSQL + Caddy untuk `api.orgspace.app`. Panduan langkah demi langkah:
+`docs/deploy/Panduan-Hosting-OrgSpace.docx` (dibuat ulang; versi lama yang menaruh Hosting di VPS ada di riwayat git).
+
+| Perubahan | Alasan |
+|---|---|
+| `site/VercelDomainClient`: saat domain organisasi aktif, backend mendaftarkannya (dan pasangan `www`) ke project Vercel Hosting lewat API; dilepas saat domain dihapus atau dilepas otomatis | Vercel hanya melayani domain yang terdaftar di project-nya. Satu token (`VERCEL_TOKEN`, `VERCEL_PROJECT_ID`, `VERCEL_TEAM_ID`) untuk semua domain; kosong = dilewati. Gagal mendaftar = verifikasi dibatalkan (`DOMAIN_PROVIDER_FAILED`); permintaan bukti tambahan Vercel (`TXT _vercel`) diteruskan ke app lewat `lastError` |
+| `site/VisitorIp` + Hosting `/api/forms`: Hosting mengirim IP asli pengunjung di `X-OrgSpace-Visitor-IP` beserta `X-OrgSpace-Hosting-Key` (`HOSTING_SHARED_KEY`) | Dari Vercel semua request formulir ber-IP Vercel, sehingga pembatas formulir menganggap semua pengunjung satu orang. Header hanya dipercaya jika kuncinya cocok |
+| `docs/deploy/Caddyfile` khusus API (tanpa on-demand TLS), `uji-caddy-lokal.sh` dan `panduan-caddy.md` disesuaikan | Website dan domain organisasi kini diurus Vercel |
+| Instruksi DNS domain organisasi | Isi `SITES_PUBLIC_IP` / `SITES_CUSTOM_TARGET` dengan nilai Vercel (`76.76.21.21`, `cname.vercel-dns.com`) |
+
+Test: `VercelDomainClientTest` (server Vercel palsu), `SiteDomainServiceTest` (daftar/lepas di Vercel, gagal Vercel),
+`ForwardedClientIpIntegrationTest.hostingOnVercelSendsTheVisitorIpWithTheSharedKey`.
+
+## 33z. Akses Portal Pengurus per peran organisasi (28 Oktober 2026)
+
+**Masalah:** Portal Pengurus (`{hosting}/{slug}/admin`) hanya menerima email + password akun OrgSpace. Pemilik yang
+daftar lewat Google/GitHub (tanpa password) tidak bisa masuk ke Portal websitenya sendiri, dan pengurus lain harus
+diundang dulu sebagai anggota.
+
+**Keputusan Aris:** setiap organisasi punya **tiga kredensial Portal**: Pemilik (wajib), Admin, dan Editor (opsional),
+masing-masing satu username + password. Kredensial berlaku di Portal **semua website organisasi itu**, berapa pun
+jumlah admin/editornya. Hanya Pemilik organisasi yang mengaturnya, di app: Kelola organisasi → **Akses Portal website**.
+Login Portal dengan akun OrgSpace, tab "Pengurus & Hak Akses", dan kode undangan dari Portal **dihapus**.
+
+| Aturan | Cara kerja |
+|---|---|
+| Username = "kartu nama" peran | Username unik antarperan dalam satu organisasi (huruf kecil). Login mencari peran dari username, lalu password hanya dicocokkan dengan hash peran itu: username Editor + password Admin ditolak walau password Admin benar |
+| Hanya organisasi pemilik website | Kredensial organisasi lain dan email/password akun OrgSpace selalu ditolak (`INVALID_CREDENTIALS`, "Username atau password salah.") |
+| Belum ada kredensial sama sekali | `409 PORTAL_CREDENTIALS_NOT_SET`: "Password Portal belum diatur. Atur dulu di app ..." |
+| Ganti password | Versi kredensial naik; token Portal membawa `ver`, dicek di setiap request, jadi semua sesi peran itu langsung keluar. Password tidak bisa dilihat ulang (hanya hash BCrypt) |
+| Undangan organisasi di app | Mengundang sebagai Admin/Editor ditolak `409 PORTAL_CREDENTIAL_REQUIRED` sampai kredensial peran itu diatur |
+| Dialog Terbitkan | Pengingat saja (tidak memblokir) untuk mengatur akses Portal |
+| Hak per peran di Portal | Sama dengan app (`OrgAction`): Kotak Masuk Form hanya Pemilik/Admin; berita dan modul semua peran |
+| Batas tebakan | `AttemptLimiter.checkPortalLogin`: per IP (sama dengan login app) + per username di satu organisasi |
+
+| Bagian | File |
+|---|---|
+| Data | `V38__create_portal_credentials.sql` (`portal_credentials`: PK organisasi + peran, username unik per organisasi, `version`) |
+| Backend | `organization/PortalCredentialService` (atur, cek login, versi), endpoint `GET/PUT /api/organizations/{id}/portal-credentials[/{role}]` (Pemilik, `OrgAction.MANAGE_PORTAL_CREDENTIALS`), `site/PortalAuthController` (`{username, password}`), `site/PortalAccess.requireSession` (peran dari token), `JwtService.createSiteToken(siteId, role, version)`. `PortalMemberController` dihapus. Berita/foto dari Portal disimpan tanpa `created_by` (kredensial bersama tidak menunjuk satu orang) |
+| Android | `ui/organization/PortalAccessFragment` + `PortalAccessViewModel` + `PortalCredentialRules`, `dialog_portal_credential.xml`, menu di `OrganizationFragment` (hanya Pemilik), pengingat di `dialog_export.xml`, riwayat aktivitas `portal_credential.saved` |
+| Hosting | `PortalPengurus.tsx`: form username, tanpa tab Pengurus; demo `/demo/{id}/admin` memakai username `demo` / `demo1234` |
+| Docs web | Panduan Modul Dinamis (`docs-data.ts`, `contoh-modul-orgspace/docs/01-panduan-modul-dinamis.md`, ZIP dibuat ulang) |
+
+**Serah terima (keputusan Aris, 28 Okt):** saat kepemilikan diserahkan, kredensial Portal **Pemilik dihapus**
+(`MemberService.transferOwnership` → `PortalCredentialService.removeOwnerAfterHandover`), sehingga semua sesi Pemilik
+lama di Portal langsung keluar dan Pemilik baru wajib membuat username & password sendiri. Admin/Editor tetap berlaku,
+tapi `GET .../portal-credentials` mengirim `changeRecommended = true` jika diatur sebelum serah terima terakhir
+(dibandingkan dengan `activity_logs` `org.ownership_transferred`); app menampilkannya berwarna peringatan "ganti password".
+Dialog konfirmasi serah terima menyebut hal ini. Urutan pergantian pengurus yang disarankan: atur akses Admin/Editor →
+undang pengurus baru (ketua baru sebagai Admin) → serah terima → ketua baru mengeluarkan anggota lama → ketua baru
+membuat akses Pemilik dan mengganti password Admin/Editor.
+
+Trade-off yang diterima Aris: satu password dipakai bersama per peran, jadi riwayat Portal tidak tahu *siapa* yang
+mengubah, dan mencabut satu orang berarti mengganti password peran itu (semua pemegangnya keluar).
+
+Ikut diperbaiki: error dari sheet **Undang anggota** dulu dibaca `MembersFragment` lebih dulu dan tampil di belakang sheet
+(tidak terlihat); sekarang tampil di sheet.
+
+Diuji di HP (28 Okt, organisasi Pramuka): undang Editor sebelum akses diatur → pesan "Atur dulu ..."; atur Pemilik
+(validasi password pendek tampil di dialog) dan Editor dari app; login Portal lewat API dev: username Editor + password
+Pemilik, email akun OrgSpace, password salah, dan username organisasi lain ditolak dengan pesan yang sama; Editor dan
+Pemilik (username huruf besar) masuk dengan perannya; website Pramuka lain menerima kredensial yang sama; website
+organisasi lain menjawab "Password Portal belum diatur". Di Chrome HP: form login berisi Username; tiga percobaan salah
+ditolak dengan "Username atau password salah."; Pemilik melihat kartu "Masuk sebagai Owner" dan tab Kotak Masuk Form,
+Editor tidak; tidak ada tab Pengurus; sesi bertahan setelah reload tanpa kedip; setelah password Editor diganti di app,
+sesi Editor di Chrome langsung kembali ke form login dan password lama ditolak.
+
+Test: `OrganizationIntegrationTest.portalCredentialsAreOwnerOnlyAndGateInvitations`, `...handoverRemovesTheOwnerPortalCredentialAndFlagsTheOthers`,
+`SitePublishIntegrationTest.handoverSignsTheOldOwnerOutOfThePortal`,
+`SitePublishIntegrationTest` (`portalOnlyAcceptsTheCredentialOfTheRoleNamedByTheUsername`,
+`changingARolePasswordSignsOutOnlyThatRole`, `portalLoginIsLimitedPerUsername`, `formSubmissionsAreOnlyForOwnerAndAdmin...`),
+`JwtServiceTest`, Android `PortalCredentialRulesTest`, Hosting `demo-portal.test.mts`.
+
+## 33aa. Pusat dokumentasi lengkap (28 Oktober 2026)
+
+Permintaan Aris: dokumentasi di OrgSpace-Website diperbarui menyeluruh, terutama untuk calon kreator template (cara
+menjadi provider, aturan, atribut & modul, contoh unduhan). Keputusan Aris: isi disimpan lewat **migrasi DB + cadangan**.
+
+| Bagian | Isi |
+|---|---|
+| `V39__dokumentasi_lengkap_oktober.sql` | 18 artikel (upsert per slug, admin tetap bisa mengedit dari dashboard): Memulai (2), Ruang kerja & anggota (ruang kerja & peran, **akses Portal Pengurus**, **pergantian pengurus**), Membuat website (editor, **kelola website**), Menerbitkan website (publish/ZIP, **Portal Pengurus**, **domain sendiri**), Penyedia template (**menjadi penyedia**, **contoh & paket unduhan**, requirement + daftar lengkap kode `CheckRule`, modul dinamis, fitur kustom, **menandai bagian**), Tanya jawab (**tanya jawab umum**, kritik & saran) |
+| `OrgSpace-Website/src/lib/docs-data.ts` | Cadangan dengan isi yang sama (saat backend tidak bisa dihubungi) |
+| Paket `contoh-modul-orgspace/` | `docs/02-requirement-dan-aturan.md` dan `docs/03-menandai-bagian.md` menggantikan `02-aturan-wajib-template.md` dan `03-requirement-dan-tools.md`; `01` ditambah aturan Tandai untuk modul; `AGENTS.md`/`BACA-SAYA.md` disesuaikan; ZIP dibuat ulang |
+
+Fakta yang dikoreksi dari dokumentasi lama: kode undangan 1 jam & sekali pakai (bukan 7 hari), menu undang di Kelola
+organisasi (bukan Profil), `eval()` hanya peringatan, `onclick`/`javascript:` dihapus saat terbit (bukan ditolak saat
+upload), encoding non-UTF-8 hanya peringatan, alamat publish bukan `localhost:8080/sites/...`, bagian Kelola website yang
+masih "segera hadir" ditandai jujur. Semua tautan antar-artikel dicek (tidak ada yang rusak).
+Test: `PortalIntegrationTest` (skema v39; tes kategori kosong kini memakai `akun` karena `terbit` sudah berisi).
+
 ## 34. Glosarium
 
 | Istilah | Arti singkat |

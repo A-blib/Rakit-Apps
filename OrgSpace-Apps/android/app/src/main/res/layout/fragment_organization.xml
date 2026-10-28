@@ -89,6 +89,10 @@
                     layout="@layout/item_menu_row" />
 
                 <include
+                    android:id="@+id/portal_item"
+                    layout="@layout/item_menu_row" />
+
+                <include
                     android:id="@+id/transfer_item"
                     layout="@layout/item_menu_row" />
 

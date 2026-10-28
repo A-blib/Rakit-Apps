@@ -24,7 +24,8 @@ organisasi lain, lalu tayang di `orgspace.app/nama-website`.
 3. `template-sinergi/`: contoh **lengkap** yang sudah lolos pengecekan: 2 halaman, 7 modul kustom, pengumuman,
    2 formulir, statistik, profil organisasi, tema gelap, animasi. Rujukan utama untuk pola HTML dan `js/main.js`.
 4. `contoh-template/`: contoh **sederhana** satu halaman. Baca jika butuh versi minimal.
-5. `docs/02-aturan-wajib-template.md` dan `docs/03-requirement-dan-tools.md`: aturan ZIP, CDN, keamanan, batas ukuran.
+5. `docs/02-requirement-dan-aturan.md`: batas ukuran, jenis file, CDN, keamanan, dan daftar lengkap kode pengecekan upload.
+6. `docs/03-menandai-bagian.md`: langkah Tandai di app, termasuk elemen yang **tidak bisa** ditandai (isi modul dinamis).
 
 Tiru cara pemakaian atribut dan pola script-nya, **bukan** desainnya. Jika ada yang bertentangan, `docs/01` dan bagian 3
 file ini yang berlaku.
@@ -134,9 +135,13 @@ Setelah ZIP jadi, tulis ringkasan ini agar pengguna bisa langsung mengunggah dan
 
 1. **Halaman & modul**: tabel halaman → section → modul dan field-nya (yang nanti muncul di Portal Pengurus).
 2. **Saran isian Tandai**: daftar `id` elemen yang sebaiknya ditandai, labelnya, jenisnya (teks, paragraf, gambar,
-   tombol/link), dan section-nya. Contoh: `hero-judul` → "Judul utama" (teks, section Hero).
+   tombol/link), dan section-nya. Contoh: `hero-judul` → "Judul utama" (teks, section Hero). Jangan sarankan elemen
+   ber-`data-ws-field`, `data-ws-stat`, `data-ws-org`, atau yang membungkus modul: elemen itu ditolak di Tandai
+   (`docs/03-menandai-bagian.md`).
 3. **Variabel tema**: daftar variabel `:root` yang sebaiknya didaftarkan (mis. `--primary` "Warna utama", jenis warna).
 4. **Cara upload**: di aplikasi OrgSpace beralih ke **mode Penyedia Template** → tab **Upload** → pilih
    `template-saya.zip` → isi Info → Thumbnail → Tandai → Coba → Kirim. Pengecekan otomatis menampilkan kesalahan
    (jika ada) beserta file, baris, dan cara memperbaikinya.
 5. **Untuk pengurus nanti**: data modul diisi di `orgspace.app/nama-website/admin` dan langsung tampil tanpa terbit ulang.
+   Pengurus masuk dengan username + password akses Portal per peran yang diatur Pemilik organisasi di app
+   (Kelola organisasi → Akses Portal website), bukan dengan akun OrgSpace pribadi.

@@ -41,7 +41,8 @@ app:
   # Ruang kerja organisasi (docs/rancangan/revisi-fondasi-orgspace.md bagian 3.2 & 4.1).
   org:
     max-members: ${ORG_MAX_MEMBERS:30}
-    invite-ttl-days: ${ORG_INVITE_TTL_DAYS:7}
+    # Kode undangan sekali pakai; berlaku sejak dibuat.
+    invite-ttl-minutes: ${ORG_INVITE_TTL_MINUTES:60}
     logo-max-kb: ${ORG_LOGO_MAX_KB:1024}
     # Folder logo hasil olahan (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/org-logos.
     logo-dir: ${ORG_LOGO_DIR:./data/org-logos}
@@ -67,6 +68,8 @@ app:
     root-dir: ${SITES_ROOT:./data/sites}
     # Alamat OrgSpace-Hosting; link website = {hosting-url}/{slug}. HP menjangkau localhost:3001 lewat adb reverse.
     hosting-url: ${SITES_HOSTING_URL:http://localhost:3001}
+    # Kunci rahasia bersama dengan OrgSpace-Hosting (Vercel) agar backend percaya IP pengunjung yang dikirim Hosting.
+    hosting-key: ${HOSTING_SHARED_KEY:}
     # Domain kustom: tujuan DNS yang ditampilkan ke user (A untuk domain utama, CNAME untuk subdomain).
     public-ip: ${SITES_PUBLIC_IP:103.175.216.42}
     custom-target: ${SITES_CUSTOM_TARGET:custom.orgspace.app}
@@ -75,6 +78,12 @@ app:
     android-download-url: ${PORTAL_ANDROID_DOWNLOAD_URL:}
     feedback-daily-limit: ${PORTAL_FEEDBACK_DAILY_LIMIT:10}
     usage-flush-seconds: ${PORTAL_USAGE_FLUSH_SECONDS:60}
+  # Project Vercel OrgSpace-Hosting: domain milik organisasi didaftarkan otomatis lewat API (kosong = dilewati,
+  # mis. di laptop). Token dibuat sekali di Vercel → Account Settings → Tokens.
+  vercel:
+    token: ${VERCEL_TOKEN:}
+    project-id: ${VERCEL_PROJECT_ID:}
+    team-id: ${VERCEL_TEAM_ID:}
   # Gambar hero landing page portal web yang diunggah admin (data/ sudah di .gitignore). Di VPS mis. /srv/orgspace/landing.
   landing:
     image-dir: ${LANDING_IMAGE_DIR:./data/landing}

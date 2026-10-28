@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = "server.forward-headers-strategy=native")
+        properties = {"server.forward-headers-strategy=native", "app.sites.hosting-key=kunci-hosting-uji"})
 @ActiveProfiles("test")
 class ForwardedClientIpIntegrationTest {
 
@@ -55,6 +55,32 @@ class ForwardedClientIpIntegrationTest {
         assertThat(limited.body()).contains("Terlalu banyak kiriman dari jaringan ini");
         // Pengunjung lain (IP lain) tetap bisa mengirim: batasnya per pengunjung, bukan untuk semua orang.
         assertThat(submit(slug, "198.51.100.20")).isEqualTo(200);
+    }
+
+    @Test
+    void hostingOnVercelSendsTheVisitorIpWithTheSharedKey() throws Exception {
+        String slug = "ip-vercel-" + UUID.randomUUID().toString().substring(0, 8);
+        UUID siteId = onlineSite(slug);
+
+        // Hosting di Vercel: request datang dari IP Vercel, IP asli pengunjung di header khusus + kunci yang cocok.
+        assertThat(http.send(hostingRequest(slug, "203.0.113.50", "kunci-hosting-uji"), HttpResponse.BodyHandlers.discarding())
+                .statusCode()).isEqualTo(200);
+        // Kunci salah: header IP diabaikan, yang dicatat IP request biasa.
+        assertThat(http.send(hostingRequest(slug, "198.51.100.99", "kunci-palsu"), HttpResponse.BodyHandlers.discarding())
+                .statusCode()).isEqualTo(200);
+        assertThat(jdbc.queryForList("SELECT ip_address FROM form_submissions WHERE site_id = ? ORDER BY created_at",
+                String.class, siteId)).containsExactly("203.0.113.50", "10.0.0.1");
+    }
+
+    private HttpRequest hostingRequest(String slug, String visitorIp, String key) {
+        return HttpRequest.newBuilder(
+                        URI.create("http://localhost:" + port + "/api/public/sites/" + slug + "/forms/pendaftaran"))
+                .header("Content-Type", "application/json")
+                .header("X-Forwarded-For", "10.0.0.1")
+                .header("X-OrgSpace-Visitor-IP", visitorIp)
+                .header("X-OrgSpace-Hosting-Key", key)
+                .POST(HttpRequest.BodyPublishers.ofString("{\"nama\":\"Rina\"}"))
+                .build();
     }
 
     private int submit(String slug, String visitorIp) throws Exception {

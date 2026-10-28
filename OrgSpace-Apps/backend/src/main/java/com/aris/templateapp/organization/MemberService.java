@@ -33,6 +33,7 @@ public class MemberService {
     private final OrganizationAccess access;
     private final ActivityService activityService;
     private final OrganizationService organizationService;
+    private final PortalCredentialService portalCredentials;
 
     @Transactional(readOnly = true)
     public List<MemberResponse> list(UUID organizationId, UUID userId) {
@@ -131,6 +132,7 @@ public class MemberService {
         OrganizationMember receiver = find(members, request.userId());
         OrganizationMember me = find(members, ownerId);
         receiver.setRole(MemberRole.OWNER);
+        portalCredentials.removeOwnerAfterHandover(organizationId);
 
         User receiverUser = user(request.userId());
         Map<String, Object> metadata = new HashMap<>();

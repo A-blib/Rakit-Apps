@@ -9,8 +9,8 @@ contoh-modul-orgspace/
 ├── BACA-SAYA.md       ← file ini
 ├── docs/
 │   ├── 01-panduan-modul-dinamis.md   ← semua modul data-ws-*
-│   ├── 02-aturan-wajib-template.md   ← aturan agar lolos pengecekan upload
-│   ├── 03-requirement-dan-tools.md   ← batas ZIP, struktur folder, CDN
+│   ├── 02-requirement-dan-aturan.md  ← batas ZIP, CDN, daftar kode pengecekan upload
+│   ├── 03-menandai-bagian.md         ← langkah Tandai di app
 │   └── 04-membuat-fitur-kustom.md    ← cara merancang fitur sendiri + resep JavaScript
 ├── contoh-template/   ← template contoh sederhana yang memakai semua modul (sudah lolos pengecekan)
 └── template-sinergi/  ← template lengkap & interaktif: 2 halaman, 7 modul kustom + pengumuman, statistik, animasi (sudah lolos pengecekan)
@@ -40,7 +40,8 @@ contoh-modul-orgspace/
 ZIP isi folder `contoh-template/` lalu upload. Template ini memakai: tombol Portal Pengurus, pengumuman, modul
 kustom `prestasi` dan `agenda`, formulir `pendaftaran` dan `aspirasi`, serta menu HP dengan JavaScript (`js/main.js`).
 
-Dokumentasi terbaru selalu ada di portal OrgSpace: **Dokumentasi → Penyedia template → Panduan Modul Dinamis**.
+Dokumentasi terbaru selalu ada di portal OrgSpace: **Dokumentasi → Penyedia template** (mulai dari "Menjadi Penyedia
+Template" dan "Contoh Template & Paket Unduhan").
 
 ## Template lengkap: Sinergi
 

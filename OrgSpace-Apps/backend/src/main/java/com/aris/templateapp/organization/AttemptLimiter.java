@@ -67,6 +67,12 @@ public class AttemptLimiter {
         }
     }
 
+    /** Percobaan login Portal: per IP sama dengan login app, plus per username di satu organisasi. */
+    public void checkPortalLogin(String ip, UUID organizationId, String username) {
+        check("login-ip:" + ip, loginPerIp, WINDOW);
+        check("portal:" + organizationId + ":" + username.strip().toLowerCase(Locale.ROOT), loginPerEmail, WINDOW);
+    }
+
     /** Permintaan nonce Google dari satu IP (satu nonce per percobaan login Google, jadi batasnya sama dengan login). */
     public void checkNonceRequest(String ip) {
         check("nonce-ip:" + ip, loginPerIp, WINDOW);

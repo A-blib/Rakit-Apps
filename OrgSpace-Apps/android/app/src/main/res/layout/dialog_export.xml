@@ -190,6 +190,18 @@
                             android:maxLines="1" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Pengingat saja (tidak memblokir terbit): Portal Pengurus butuh kredensial per peran. -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_3"
+                        android:drawablePadding="@dimen/space_2"
+                        android:text="@string/publish_portal_reminder"
+                        android:textAppearance="@style/TextAppearance.App.BodySmall"
+                        android:textColor="@color/color_muted"
+                        app:drawableStartCompat="@drawable/ic_key"
+                        app:drawableTint="@color/color_muted" />
+
                     <Button
                         android:id="@+id/publish_button"
                         style="@style/Widget.App.Button"

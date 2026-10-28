@@ -113,6 +113,7 @@
     <string name="custom_domain_verify_btn">Periksa &amp; Aktifkan DNS</string>
     <string name="custom_domain_remove_btn">Lepas Domain</string>
     <string name="custom_domain_copied">Disalin ke clipboard</string>
+    <string name="custom_domain_optional_record">%1$s: %2$s (Host: %3$s) → %4$s</string>
     <string name="custom_domain_success_activated">Domain kustom berhasil diverifikasi dan aktif!</string>
     <string name="custom_domain_open_site">Buka Website</string>
     <string name="custom_domain_copy_address">Salin Alamat</string>

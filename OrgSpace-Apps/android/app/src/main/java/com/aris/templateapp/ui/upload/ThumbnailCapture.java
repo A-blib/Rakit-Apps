@@ -34,7 +34,7 @@ class ThumbnailCapture {
     void captureTop(File siteRoot, List<String> allowedHosts, int cssWidth, Captured done) {
         try {
             page.load(siteRoot, allowedHosts, "index.html", cssWidth,
-                    () -> page.capture(0, ThumbnailImages.SIZE_PX, done::onCaptured));
+                    () -> page.capture(0, ThumbnailImages.SIZE_PX, bitmap -> finish(bitmap, done)));
         } catch (IOException e) {
             done.onCaptured(null);
         }
@@ -51,7 +51,16 @@ class ThumbnailCapture {
     }
 
     void captureSection(SectionInfo section, Captured done) {
-        page.capture(section.top, ThumbnailImages.SIZE_PX, done::onCaptured);
+        page.capture(section.top, ThumbnailImages.SIZE_PX, bitmap -> finish(bitmap, done));
+    }
+
+    /**
+     * Halaman ditutup setelah dipotret. WebView tersembunyi digambar CPU di thread utama; jika dibiarkan, animasi
+     * template (mis. efek mengetik) menggambar ulang terus dan membuat ketikan di form Info tersendat.
+     */
+    private void finish(@Nullable Bitmap bitmap, Captured done) {
+        page.destroy();
+        done.onCaptured(bitmap);
     }
 
     void destroy() {

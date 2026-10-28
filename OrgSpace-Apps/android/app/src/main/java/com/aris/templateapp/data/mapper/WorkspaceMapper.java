@@ -8,6 +8,7 @@ import com.aris.templateapp.data.model.InvitationPreview;
 import com.aris.templateapp.data.model.Member;
 import com.aris.templateapp.data.model.OrgCategories;
 import com.aris.templateapp.data.model.Organization;
+import com.aris.templateapp.data.model.PortalCredential;
 import com.aris.templateapp.data.model.Workspace;
 import com.aris.templateapp.data.model.WorkspaceRole;
 import com.aris.templateapp.data.remote.dto.ActivityPageDto;
@@ -18,6 +19,7 @@ import com.aris.templateapp.data.remote.dto.InvitationPreviewDto;
 import com.aris.templateapp.data.remote.dto.MemberDto;
 import com.aris.templateapp.data.remote.dto.OrganizationDto;
 import com.aris.templateapp.data.remote.dto.OrganizationSummaryDto;
+import com.aris.templateapp.data.remote.dto.PortalCredentialDto;
 
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
@@ -79,6 +81,11 @@ public final class WorkspaceMapper {
 
     public static Invitation toModel(InvitationCreatedDto dto) {
         return new Invitation(dto.id, WorkspaceRole.fromValue(dto.role), dto.code, null, instant(dto.expiresAt));
+    }
+
+    public static PortalCredential toModel(PortalCredentialDto dto) {
+        return new PortalCredential(WorkspaceRole.fromValue(dto.role), dto.username, instant(dto.updatedAt),
+                dto.changeRecommended);
     }
 
     public static Activity toModel(ActivityPageDto.Item dto) {

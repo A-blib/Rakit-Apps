@@ -86,18 +86,10 @@
             android:paddingVertical="@dimen/space_2">
 
             <Button
-                android:id="@+id/long_button"
-                style="@style/Widget.App.Button.Outlined.Compact"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/try_long_content" />
-
-            <Button
                 android:id="@+id/reset_button"
                 style="@style/Widget.App.Button.Outlined.Compact"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/space_2"
                 android:text="@string/try_reset" />
         </LinearLayout>
     </LinearLayout>
