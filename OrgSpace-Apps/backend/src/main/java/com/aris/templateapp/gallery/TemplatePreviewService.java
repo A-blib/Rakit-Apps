@@ -3,6 +3,7 @@ package com.aris.templateapp.gallery;
 import com.aris.templateapp.common.exception.ApiException;
 import com.aris.templateapp.common.exception.ErrorCode;
 import com.aris.templateapp.gallery.dto.TemplatePreviewResponse;
+import com.aris.templateapp.site.PortalConfig;
 import com.aris.templateapp.site.PublicSiteController;
 import com.aris.templateapp.site.dto.SiteRenderResponse;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +71,7 @@ public class TemplatePreviewService {
         }
 
         return new TemplatePreviewResponse(id, packageService.visible(id).getName(), news, collections, modules,
-                stats, sampleOrg());
+                stats, sampleOrg(), portalConfig(pkg, modules));
     }
 
     /** Satu file dari paket (CSS, JS, gambar, HTML). Path dicari sebagai nama entri ZIP, bukan path di disk. */
@@ -104,6 +105,24 @@ public class TemplatePreviewService {
             log.warn("Gagal membaca halaman paket {}", pkg.file(), e);
         }
         return html.toString();
+    }
+
+    /** portal.json paket (opsional), agar Portal demo tampil sama dengan Portal website asli. */
+    private static Map<String, Object> portalConfig(TemplatePackageService.Package pkg,
+                                                    Map<String, Map<String, String>> modules) {
+        try (ZipFile zip = new ZipFile(pkg.file().toFile())) {
+            ZipEntry entry = zip.getEntry(PortalConfig.FILE_NAME);
+            if (entry == null) {
+                return Map.of();
+            }
+            try (InputStream in = zip.getInputStream(entry)) {
+                return PortalConfig.read(new String(in.readAllBytes(), StandardCharsets.UTF_8), modules,
+                        path -> zip.getEntry(path) != null).config();
+            }
+        } catch (IOException e) {
+            log.warn("Gagal membaca portal.json paket {}", pkg.file(), e);
+            return Map.of();
+        }
     }
 
     /** Field gambar sengaja kosong: runtime Hosting lalu memakai foto contoh bawaan template. */

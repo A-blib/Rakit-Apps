@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "theme": { "primary": "#2F6B3F", "accent": "#6B4F2A", "radius": 10 },
+  "layout": {
+    "sidebar": { "position": "left", "width": 268, "resizable": true },
+    "header": {
+      "variant": "banner",
+      "image": "img/hero.jpg",
+      "title": "Pangkalan Tunas Rimba",
+      "subtitle": "Kelola agenda, jadwal latihan, pembina, prestasi, dan galeri. Perubahan langsung tampil di website."
+    }
+  },
+  "nav": [
+    { "builtin": "overview", "label": "Ringkasan", "icon": "compass" },
+    { "group": "Kegiatan", "items": [
+      { "builtin": "news", "label": "Kabar Kegiatan", "icon": "megaphone" },
+      { "module": "agenda", "label": "Agenda", "icon": "calendar" },
+      { "module": "jadwal", "label": "Jadwal Latihan", "icon": "clipboard-list" }
+    ]},
+    { "group": "Profil Pangkalan", "items": [
+      { "module": "pembina", "label": "Pembina", "icon": "users" },
+      { "module": "prestasi", "label": "Prestasi", "icon": "trophy" },
+      { "module": "galeri", "label": "Galeri", "icon": "camera" }
+    ]},
+    { "group": "Pendaftaran", "items": [
+      { "builtin": "submissions", "label": "Pendaftar Baru", "icon": "inbox" }
+    ]}
+  ],
+  "modules": {
+    "agenda": {
+      "description": "Kegiatan mendatang yang tampil di beranda dan halaman Agenda.",
+      "view": "kartu",
+      "title": "judul",
+      "subtitle": "tanggal",
+      "fields": {
+        "judul": { "label": "Nama kegiatan" },
+        "tanggal": { "label": "Tanggal" },
+        "waktu": { "label": "Jam", "help": "Contoh: 07.00–12.00 WIB" },
+        "lokasi": { "label": "Lokasi" },
+        "golongan": { "label": "Golongan", "help": "Siaga, Penggalang, Penegak, atau Semua golongan" },
+        "deskripsi": { "label": "Deskripsi singkat" }
+      },
+      "groups": [
+        { "title": "Waktu & tempat", "fields": ["judul", "tanggal", "waktu", "lokasi"] },
+        { "title": "Detail", "fields": ["golongan", "deskripsi"] }
+      ]
+    },
+    "jadwal": {
+      "description": "Jadwal latihan rutin per golongan di halaman Latihan.",
+      "view": "tabel",
+      "fields": {
+        "hari": { "label": "Hari" },
+        "jam": { "label": "Jam", "help": "Contoh: 15.30–17.00" },
+        "golongan": { "label": "Golongan" },
+        "materi": { "label": "Materi latihan" },
+        "tempat": { "label": "Tempat" }
+      }
+    },
+    "pembina": {
+      "description": "Kakak pembina dan pengurus di halaman Profil.",
+      "view": "kartu",
+      "title": "nama",
+      "subtitle": "jabatan",
+      "image": "foto",
+      "fields": {
+        "foto": { "label": "Foto", "help": "Foto setengah badan, rasio tegak lebih rapi." },
+        "nama": { "label": "Nama lengkap" },
+        "jabatan": { "label": "Jabatan" },
+        "keterangan": { "label": "Keterangan", "help": "Contoh: Pembina Gugus Depan sejak 2019" }
+      }
+    },
+    "prestasi": {
+      "description": "Penghargaan dan juara lomba yang pernah diraih.",
+      "view": "kartu",
+      "title": "judul",
+      "subtitle": "tingkat",
+      "image": "foto",
+      "fields": {
+        "judul": { "label": "Nama prestasi" },
+        "tingkat": { "label": "Tingkat", "help": "Contoh: Kwartir Cabang, Provinsi, Nasional" },
+        "tahun": { "label": "Tahun" },
+        "peraih": { "label": "Diraih oleh" },
+        "deskripsi": { "label": "Cerita singkat" },
+        "foto": { "label": "Foto" }
+      },
+      "groups": [
+        { "title": "Prestasi", "fields": ["judul", "tingkat", "tahun", "peraih"] },
+        { "title": "Cerita & foto", "fields": ["deskripsi", "foto"] }
+      ]
+    },
+    "galeri": {
+      "description": "Foto kegiatan di halaman Galeri.",
+      "view": "kartu",
+      "title": "judul",
+      "subtitle": "kategori",
+      "image": "foto",
+      "fields": {
+        "foto": { "label": "Foto" },
+        "judul": { "label": "Keterangan foto" },
+        "kategori": { "label": "Kategori", "help": "Contoh: Perkemahan, Latihan, Bakti" }
+      }
+    }
+  },
+  "mobile": { "nav": "bottom", "bottom": ["overview", "agenda", "news", "submissions"] }
+}

@@ -1,3 +1,5 @@
+import type { PortalConfig } from "./portal-config";
+
 export interface SeoMeta {
   title: string;
   description: string;
@@ -83,6 +85,8 @@ export interface SiteRenderData {
   // Angka untuk data-ws-stat (pengurus, berita, form.{nama}, {modul}) dan profil umum organisasi untuk data-ws-org.
   stats?: Record<string, number>;
   org?: Record<string, string>;
+  // Tampilan Portal Pengurus dari portal.json template (hanya bagian yang valid).
+  portal?: PortalConfig;
 }
 
 /** Data contoh preview template (GET /api/public/templates/{id}/preview); semua isinya buatan backend. */
@@ -94,4 +98,5 @@ export interface TemplatePreviewData {
   modules: Record<string, Record<string, FieldType>>;
   stats: Record<string, number>;
   org: Record<string, string>;
+  portal?: PortalConfig;
 }

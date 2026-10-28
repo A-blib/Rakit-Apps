@@ -57,6 +57,7 @@ public enum CheckRule {
     DUPLICATE_ID(WARNING, 1, "Ada id yang dipakai lebih dari sekali"),
     BASE64_IMAGE(WARNING, 1, "Gambar besar ditanam langsung di HTML"),
     DYNAMIC_MODULE_INVALID(ERROR, 1, "Penanda modul dinamis tidak valid"),
+    PORTAL_CONFIG_INVALID(ERROR, 1, "Pengaturan tampilan Portal (portal.json) tidak valid"),
 
     // ---------- D. File yang dirujuk dan antar-halaman ----------
     MISSING_ASSET(ERROR, 1, "File CSS/JS yang dirujuk tidak ada"),

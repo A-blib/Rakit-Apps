@@ -32,7 +32,9 @@ public record SiteRenderResponse(
         // Angka ringkasan untuk data-ws-stat (pengurus, berita, form.{nama}, {modul kustom}) dan profil umum
         // organisasi untuk data-ws-org. Tanpa nama/email anggota dan tanpa isi form.
         Map<String, Long> stats,
-        Map<String, String> org
+        Map<String, String> org,
+        // Pengaturan tampilan Portal Pengurus dari portal.json template (hanya bagian valid; kosong = tampilan standar).
+        Map<String, Object> portal
 ) {
     public record SeoMeta(
             String title,

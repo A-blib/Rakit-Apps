@@ -105,6 +105,12 @@ def with_body(extra, **kw):
     return page(body=base + extra, **kw)
 
 
+# Modul kustom kecil untuk kasus portal.json.
+AGENDA_MODULE = ('<section data-ws-collection="agenda"><article data-ws-item>'
+                 '<h3 data-ws-field="nama">Rapat</h3><img data-ws-field="foto" src="img/hero.png" alt="Foto">'
+                 '</article><p data-ws-empty>Belum ada agenda.</p></section>')
+
+
 def with_js(code):
     return site({"js/main.js": JS + code})
 
@@ -225,6 +231,16 @@ CASES = {
             '<article data-ws-item><h3 data-ws-field="judul">Judul berita</h3></article>'
             '<p data-ws-empty>Belum ada berita.</p>'
             '</section>')})),
+    "PORTAL_CONFIG_INVALID": (
+        site({"index.html": with_body(AGENDA_MODULE),
+              "portal.json": '{"nav": [{"module": "kegiatan"}], "layout": {"sidebar": {"posisi": "kanan"}}}'}),
+        site({"index.html": with_body(AGENDA_MODULE),
+              "portal.json": '{"version": 1, "theme": {"primary": "#1E40AF"},'
+                             ' "layout": {"sidebar": {"position": "right"}, "header": {"variant": "banner", "image": "img/hero.png"}},'
+                             ' "nav": [{"builtin": "overview"}, {"module": "agenda", "label": "Agenda", "icon": "calendar"}],'
+                             ' "modules": {"agenda": {"view": "kartu", "title": "nama", "image": "foto",'
+                             ' "fields": {"nama": {"label": "Nama kegiatan"}}}},'
+                             ' "mobile": {"nav": "bottom", "bottom": ["overview", "agenda"]}}'})),
     # D. File yang dirujuk
     "MISSING_ASSET": (site({"index.html": page(scripts='<script src="js/tidak-ada.js"></script>')}), site()),
     "MISSING_IMAGE": (site({"index.html": with_body('<img src="img/hilang.png" alt="Hilang">')}), site()),
