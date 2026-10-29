@@ -9,6 +9,14 @@ const DEFAULT_HOSTS = new Set([
   `www.${HOSTING_DOMAIN}`,
 ]);
 
+function isInternalHost(host: string): boolean {
+  const clean = host.toLowerCase().split(":")[0].replace(/\.$/, "");
+  if (DEFAULT_HOSTS.has(clean) || DEFAULT_HOSTS.has(host.toLowerCase())) return true;
+  // Alamat IP lokal pengujian (Wi-Fi 192.168.x.x, 10.x.x.x, loopback) agar tidak dikira domain kustom
+  if (/^(127\.|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(clean)) return true;
+  return false;
+}
+
 // Hasil cek domain kustom disimpan sebentar: satu halaman memuat puluhan file (css, js, gambar) dari domain yang
 // sama, dan tanpa ini setiap file menanyai backend. Domain yang baru aktif/dilepas terlihat paling lambat 60 detik.
 const DOMAIN_TTL_MS = 60_000;
@@ -45,7 +53,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Host lain: cek apakah domain kustom milik sebuah website. File template (css/, img/) ikut diarahkan.
-  if (host && !DEFAULT_HOSTS.has(host.toLowerCase())) {
+  if (host && !isInternalHost(host)) {
     // Titik di akhir (osis.id.) adalah bentuk sah nama domain di DNS.
     const cleanHost = host.toLowerCase().split(":")[0].replace(/\.$/, "");
 

@@ -13,6 +13,14 @@ if (process.env.NODE_ENV === "production") {
 const nextConfig: NextConfig = {
   // Website user disajikan di /{slug}/ (dengan "/") agar path relatif template (css/, tentang.html) benar.
   skipTrailingSlashRedirect: true,
+  // Izinkan koneksi development/HMR dari HP via adb reverse dan Wi-Fi lokal laptop agar tidak memicu reload loop
+  allowedDevOrigins: [
+    "localhost:3001",
+    "127.0.0.1:3001",
+    "192.168.*",
+    "10.*",
+    "172.*",
+  ],
   turbopack: {
     rules: {
       "*.css": {
