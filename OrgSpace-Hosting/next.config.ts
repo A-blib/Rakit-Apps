@@ -6,7 +6,7 @@ import { REQUIRED_IN_PRODUCTION } from "./src/lib/config";
 if (process.env.NODE_ENV === "production") {
   const missing = REQUIRED_IN_PRODUCTION.filter((name) => !process.env[name]);
   if (missing.length > 0) {
-    throw new Error(`Environment production belum lengkap: ${missing.join(", ")}. Isi .env.production.local (Panduan Hosting bab 5.3).`);
+    throw new Error(`Environment production belum lengkap: ${missing.join(", ")}. Isi di Vercel → Settings → Environment Variables (Panduan Hosting bab 8).`);
   }
 }
 
