@@ -6,7 +6,8 @@
 const orDev = (value: string | undefined, devValue: string) => (value || devValue).replace(/\/+$/, "");
 
 /** Backend untuk kode yang berjalan di server Hosting (di VPS: http://127.0.0.1:8080, tidak lewat internet). */
-export const BACKEND_API_URL = orDev(process.env.BACKEND_API_URL, "http://localhost:8080");
+export const BACKEND_API_URL = orDev(process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL, "http://localhost:8080");
+
 
 /** Backend untuk kode yang berjalan di browser (Portal Pengurus): alamat publik, mis. https://api.orgspace.app. */
 export const PUBLIC_BACKEND_URL = orDev(process.env.NEXT_PUBLIC_BACKEND_URL, "http://localhost:8080");

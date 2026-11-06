@@ -27,16 +27,21 @@ async function slugForDomain(host: string): Promise<string | null> {
   const now = Date.now();
   const hit = domainCache.get(host);
   if (hit && hit.until > now) return hit.slug;
-  const res = await fetch(`${BACKEND_API_URL}/api/public/sites/resolve-domain?domain=${encodeURIComponent(host)}`, {
-    cache: "no-store",
-  });
-  // Gangguan backend tidak disimpan, agar domain tidak "hilang" selama TTL karena error sesaat.
-  if (!res.ok) return null;
-  const data = await res.json();
-  const slug: string | null = data.slug || null;
-  if (domainCache.size >= DOMAIN_CACHE_MAX) domainCache.clear();
-  domainCache.set(host, { slug, until: now + DOMAIN_TTL_MS });
-  return slug;
+  try {
+    const res = await fetch(`${BACKEND_API_URL}/api/public/sites/resolve-domain?domain=${encodeURIComponent(host)}`, {
+      cache: "no-store",
+    });
+    // Gangguan backend tidak disimpan, agar domain tidak "hilang" selama TTL karena error sesaat.
+    if (!res.ok) return null;
+    const data = await res.json();
+    const slug: string | null = data.slug || null;
+    if (domainCache.size >= DOMAIN_CACHE_MAX) domainCache.clear();
+    domainCache.set(host, { slug, until: now + DOMAIN_TTL_MS });
+    return slug;
+  } catch (err) {
+    console.error(`Gagal memeriksa domain ${host} ke backend:`, err);
+    return null;
+  }
 }
 
 /**
