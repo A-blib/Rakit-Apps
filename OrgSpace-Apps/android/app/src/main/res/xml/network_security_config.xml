@@ -2,4 +2,8 @@
 <!-- Build rilis: hanya HTTPS. Versi debug (src/debug/res/xml) mengizinkan HTTP ke localhost. -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">194.62.248.20</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
 </network-security-config>

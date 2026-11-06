@@ -52,8 +52,9 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"http://localhost:8080/api/\"")
         }
         release {
-            // Placeholder: diganti alamat server sungguhan saat app dirilis.
-            buildConfigField("String", "API_BASE_URL", "\"https://api.example.com/api/\"")
+            signingConfig = signingConfigs.getByName("debug")
+            // Backend server sungguhan di VPS
+            buildConfigField("String", "API_BASE_URL", "\"http://194.62.248.20:8080/api/\"")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**")
