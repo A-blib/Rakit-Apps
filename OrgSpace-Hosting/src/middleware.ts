@@ -57,11 +57,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Host lain: cek apakah domain kustom milik sebuah website. File template (css/, img/) ikut diarahkan.
-  if (host && !isInternalHost(host)) {
-    // Titik di akhir (osis.id.) adalah bentuk sah nama domain di DNS.
-    const cleanHost = host.toLowerCase().split(":")[0].replace(/\.$/, "");
+  const cleanHost = host.toLowerCase().split(":")[0].replace(/\.$/, "");
+  const isInternal = isInternalHost(host);
 
+  // Host lain: cek apakah domain kustom milik sebuah website. File template (css/, img/) ikut diarahkan.
+  if (host && !isInternal) {
     try {
       const slug = await slugForDomain(cleanHost);
       if (slug) {
@@ -70,8 +70,11 @@ export async function middleware(request: NextRequest) {
         if (pathname === base || pathname.startsWith(`${base}/`)) {
           return NextResponse.next();
         }
-        const target = `${base}${pathname}`;
-        return NextResponse.rewrite(new URL(target, request.url));
+        const target = pathname === "/" ? `${base}/` : `${base}${pathname}`;
+        const res = NextResponse.rewrite(new URL(target, request.url));
+        res.headers.set("x-debug-slug", slug);
+        res.headers.set("x-debug-host", cleanHost);
+        return res;
       }
     } catch (e) {
       console.error("Gagal memeriksa custom domain:", e);
@@ -89,14 +92,21 @@ export async function middleware(request: NextRequest) {
         ? rawPortal
         : `https://${rawPortal}`;
       try {
-        return NextResponse.redirect(new URL(portalUrl), 307);
+        const res = NextResponse.redirect(new URL(portalUrl), 307);
+        res.headers.set("x-debug-internal", String(isInternal));
+        res.headers.set("x-debug-host", cleanHost);
+        res.headers.set("x-debug-backend", BACKEND_API_URL);
+        return res;
       } catch (err) {
         console.error("URL portal tidak valid:", err);
       }
     }
   }
 
-  return NextResponse.next();
+  const res = NextResponse.next();
+  res.headers.set("x-debug-internal", String(isInternal));
+  res.headers.set("x-debug-host", cleanHost);
+  return res;
 }
 
 export const config = {
