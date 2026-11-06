@@ -27,21 +27,44 @@ async function slugForDomain(host: string): Promise<string | null> {
   const now = Date.now();
   const hit = domainCache.get(host);
   if (hit && hit.until > now) return hit.slug;
+
+  // Di Vercel Edge Runtime, panggilan HTTP ke port non-standar (:8080) dibatasi oleh jaringan Edge.
+  // Gunakan proxy internal HTTPS (https://${proxyHost}/api/public/...) yang berjalan di Node.js runtime.
+  const proxyHost = HOSTING_DOMAIN.startsWith("localhost")
+    ? HOSTING_DOMAIN
+    : HOSTING_DOMAIN.startsWith("www.") ? HOSTING_DOMAIN : `www.${HOSTING_DOMAIN}`;
+
+  const proxyEndpoint = `https://${proxyHost}/api/public/sites/resolve-domain?domain=${encodeURIComponent(host)}`;
+  const directEndpoint = `${BACKEND_API_URL}/api/public/sites/resolve-domain?domain=${encodeURIComponent(host)}`;
+  const targetUrl = process.env.NODE_ENV === "production" ? proxyEndpoint : directEndpoint;
+
   try {
-    const res = await fetch(`${BACKEND_API_URL}/api/public/sites/resolve-domain?domain=${encodeURIComponent(host)}`, {
-      cache: "no-store",
-    });
-    // Gangguan backend tidak disimpan, agar domain tidak "hilang" selama TTL karena error sesaat.
-    if (!res.ok) return null;
-    const data = await res.json();
-    const slug: string | null = data.slug || null;
-    if (domainCache.size >= DOMAIN_CACHE_MAX) domainCache.clear();
-    domainCache.set(host, { slug, until: now + DOMAIN_TTL_MS });
-    return slug;
+    const res = await fetch(targetUrl, { cache: "no-store", redirect: "follow" });
+    if (res.ok) {
+      const data = await res.json();
+      const slug: string | null = data.slug || null;
+      if (domainCache.size >= DOMAIN_CACHE_MAX) domainCache.clear();
+      domainCache.set(host, { slug, until: now + DOMAIN_TTL_MS });
+      return slug;
+    }
   } catch (err) {
-    console.error(`Gagal memeriksa domain ${host} ke backend:`, err);
-    return null;
+    console.error(`Gagal memeriksa domain ${host} via proxy:`, err);
   }
+
+  // Fallback direct jika proxy gagal
+  try {
+    const res = await fetch(directEndpoint, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      const slug: string | null = data.slug || null;
+      domainCache.set(host, { slug, until: now + DOMAIN_TTL_MS });
+      return slug;
+    }
+  } catch {
+    // Ignore fallback error
+  }
+
+  return null;
 }
 
 /**
