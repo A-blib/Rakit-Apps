@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 // Build production (Vercel) berhenti jika alamat backend belum diisi, daripada tayang sambil memanggil localhost.
 if (process.env.NODE_ENV === "production" && !process.env.ORGSPACE_API_URL) {
-  throw new Error("Environment production belum lengkap: ORGSPACE_API_URL. Isi di Vercel → Settings → Environment Variables (Panduan Hosting bab 8).");
+  throw new Error("Environment production belum lengkap: ORGSPACE_API_URL. Isi di Vercel → Settings → Environment Variables (Panduan Hosting bab 7).");
 }
 
 // Cache Components (bawaan create-next-app 16) sengaja tidak dinyalakan: pola fetch + `revalidate` biasa lebih mudah
