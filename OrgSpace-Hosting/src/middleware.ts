@@ -60,9 +60,12 @@ export async function middleware(request: NextRequest) {
     try {
       const slug = await slugForDomain(cleanHost);
       if (slug) {
-        // Link di halaman yang sudah memuat /{slug} tidak boleh jadi /{slug}/{slug}.
+        // Jika path sudah memuat /{slug}, lanjutkan langsung tanpa rewrite ulang (mencegah loop tak terhingga).
         const base = `/${slug}`;
-        const target = pathname === base || pathname.startsWith(`${base}/`) ? pathname : `${base}${pathname}`;
+        if (pathname === base || pathname.startsWith(`${base}/`)) {
+          return NextResponse.next();
+        }
+        const target = `${base}${pathname}`;
         return NextResponse.rewrite(new URL(target, request.url));
       }
     } catch (e) {
@@ -76,8 +79,15 @@ export async function middleware(request: NextRequest) {
   if (pathname === "/") {
     const isInfoRequested = request.nextUrl.searchParams.get("info") === "true";
     if (!isInfoRequested) {
-      const portalUrl = PORTAL_URL;
-      return NextResponse.redirect(new URL(portalUrl), 307);
+      const rawPortal = PORTAL_URL.trim();
+      const portalUrl = rawPortal.startsWith("http://") || rawPortal.startsWith("https://")
+        ? rawPortal
+        : `https://${rawPortal}`;
+      try {
+        return NextResponse.redirect(new URL(portalUrl), 307);
+      } catch (err) {
+        console.error("URL portal tidak valid:", err);
+      }
     }
   }
 
