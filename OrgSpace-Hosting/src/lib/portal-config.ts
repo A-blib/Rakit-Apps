@@ -16,7 +16,7 @@ export interface PortalConfig {
   mobile?: { nav?: "drawer" | "bottom"; bottom?: string[] };
 }
 
-export type BuiltinId = "overview" | "news" | "submissions";
+export type BuiltinId = "overview" | "news" | "submissions" | "access" | "sections";
 type NavItemConfig = { builtin?: BuiltinId; module?: string; label?: string; icon?: string };
 export type NavEntry = NavItemConfig | { group: string; items: NavItemConfig[] };
 
@@ -50,6 +50,8 @@ const BUILTIN: Record<BuiltinId, { label: string; icon: string }> = {
   overview: { label: "Ringkasan", icon: "layout-dashboard" },
   submissions: { label: "Kotak Masuk Form", icon: "inbox" },
   news: { label: "Berita & Agenda", icon: "newspaper" },
+  access: { label: "Akses Pengelola", icon: "shield-check" },
+  sections: { label: "Kelola Section", icon: "list" },
 };
 
 /** "program_kerja" → "Program Kerja": label bawaan modul dan field tanpa portal.json. */
@@ -74,9 +76,12 @@ export function buildNav(
   config: PortalConfig,
   modules: string[],
   orphans: string[],
-  canViewSubmissions: boolean
+  canViewSubmissions: boolean,
+  canManageAccess: boolean = false
 ): NavGroup[] {
-  const allowed = (id: NavId) => id !== "submissions" || canViewSubmissions;
+  const allowed = (id: NavId) =>
+    (id !== "submissions" || canViewSubmissions) &&
+    ((id !== "access" && id !== "sections") || canManageAccess);
   const used = new Set<NavId>();
   const link = (entry: NavItemConfig): NavLink | null => {
     const id: NavId | null = entry.builtin ? entry.builtin : entry.module ? `mod:${entry.module}` : null;
@@ -121,7 +126,17 @@ export function buildNav(
     const data = modules.map((m) => link({ module: m })).filter((l): l is NavLink => l !== null);
     if (data.length) groups.push({ title: "Data Website", items: data });
   }
-  const lost = orphans.filter((o) => !modules.includes(o));
+
+  // Tambahkan grup Pengaturan & Tim untuk Akses Pengelola dan Kelola Section jika belum masuk nav
+  if (canManageAccess) {
+    const adminItems = [link({ builtin: "access" }), link({ builtin: "sections" })].filter(
+      (l): l is NavLink => l !== null
+    );
+    if (adminItems.length) {
+      groups.push({ title: "Pengaturan & Tim", items: adminItems });
+    }
+  }
+  const lost = orphans.filter((o) => !modules.includes(o) && !o.startsWith("_"));
   if (lost.length) {
     groups.push({
       title: "Data tidak dipakai template",

@@ -46,6 +46,23 @@ export function createDemoApi(sample: TemplatePreviewData): PortalApi {
       createdAt: daysAgo(i),
     }))
   );
+
+  let accessCredentials = [
+    { role: "owner", username: "demo", updatedAt: daysAgo(1), canEdit: true },
+    { role: "admin", username: "admin_musik", updatedAt: daysAgo(3), canEdit: true },
+    { role: "editor", username: "editor_soundwave", updatedAt: daysAgo(5), canEdit: true },
+  ];
+
+  let sections = [
+    { id: "about", name: "Tentang Kami (Filosofi & Visi)", enabled: true },
+    { id: "struktur", name: "Struktur Organisasi (Bagan Kepengurusan)", enabled: true },
+    { id: "anggota", name: "Personel Musisi & Talenta", enabled: true },
+    { id: "program", name: "Program Kerja Studio", enabled: true },
+    { id: "galeri", name: "Dokumentasi Aksi Panggung", enabled: true },
+    { id: "berita", name: "Kabar Rilis & Warta", enabled: true },
+    { id: "agenda", name: "Jadwal Manggung & Tur", enabled: true },
+    { id: "pendaftaran", name: "Booking Penampilan & Audisi", enabled: true, startAt: "2026-11-01", endAt: "2026-12-31" },
+  ];
   return async (path, init = {}) => {
     const method = (init.method || "GET").toUpperCase();
     const body = typeof init.body === "string" ? JSON.parse(init.body) : null;
@@ -108,6 +125,28 @@ export function createDemoApi(sample: TemplatePreviewData): PortalApi {
           return json({ message: "Item dihapus." });
         }
         break;
+      }
+      case "access": {
+        if (method === "PUT" && a) {
+          const found = accessCredentials.find((c) => c.role === a);
+          if (found) {
+            found.username = body?.username || found.username;
+            found.updatedAt = new Date().toISOString();
+          } else {
+            accessCredentials.push({ role: a, username: body?.username, updatedAt: new Date().toISOString(), canEdit: true });
+          }
+          return json({ success: true, message: "Kredensial berhasil diperbarui." });
+        }
+        return json(accessCredentials);
+      }
+      case "sections": {
+        if (method === "PUT") {
+          if (Array.isArray(body?.sections)) {
+            sections = body.sections;
+          }
+          return json({ success: true, sections });
+        }
+        return json(sections);
       }
       case "media": {
         const file = init.body instanceof FormData ? init.body.get("file") : null;

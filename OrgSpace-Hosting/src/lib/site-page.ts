@@ -8,7 +8,7 @@ import { BACKEND_API_URL as BACKEND_URL } from "./config";
  * sebagai origin anonim: JavaScript template tetap jalan, tapi tidak bisa membaca cookie/storage orgspace.app,
  * Portal Pengurus, atau website lain. Tanpa allow-same-origin, sengaja.
  */
-const SANDBOX =
+export const SANDBOX =
   "sandbox allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads";
 
 const NOT_FOUND_HTML = `<!doctype html><html lang="id"><head><meta charset="utf-8">
@@ -51,7 +51,7 @@ function moduleNews(news: NewsItem[]) {
 }
 
 /** Halaman template + runtime modul, selalu dengan header sandbox. Dipakai website terbit dan preview template. */
-function pageResponse(html: string, data: unknown, extraHeaders: Record<string, string> = {}): Response {
+export function pageResponse(html: string, data: unknown, extraHeaders: Record<string, string> = {}): Response {
   const head = `<script>${STORAGE_SHIM}</script>`;
   html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (tag) => tag + head) : head + html;
   const tail = `<script type="application/json" id="orgspace-data">${embedJson(data)}</script><script>${MODULE_RUNTIME}</script>`;
@@ -63,6 +63,7 @@ function pageResponse(html: string, data: unknown, extraHeaders: Record<string, 
       "Content-Security-Policy": SANDBOX,
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
+      "Access-Control-Allow-Origin": "*",
       ...extraHeaders,
     },
   });

@@ -14,6 +14,8 @@ export interface NewsItem {
   content: string;
   publishedAt: string;
   imageUrl: string | null;
+  expiresAt?: string | null;
+  expired?: boolean;
 }
 
 export interface FormField {
@@ -61,7 +63,7 @@ export interface ProjectSnapshot {
   sections?: CustomSection[];
 }
 
-export type FieldType = "teks" | "paragraf" | "angka" | "tanggal" | "link" | "gambar";
+export type FieldType = "teks" | "paragraf" | "angka" | "tanggal" | "link" | "gambar" | "audio";
 
 export interface SiteRenderData {
   siteId: string;
@@ -80,7 +82,7 @@ export interface SiteRenderData {
   forms: FormConfig[];
   collections?: Record<string, Array<Record<string, any>>>;
   compiledHtml: string | null;
-  // Nama modul → field → jenis isian (teks, paragraf, angka, tanggal, link, gambar).
+  // Nama modul → field → jenis isian (teks, paragraf, angka, tanggal, link, gambar, audio).
   modules?: Record<string, Record<string, FieldType>>;
   // Angka untuk data-ws-stat (pengurus, berita, form.{nama}, {modul}) dan profil umum organisasi untuk data-ws-org.
   stats?: Record<string, number>;

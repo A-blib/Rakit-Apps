@@ -104,6 +104,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (isInternal && (pathname === "/admin" || pathname === "/admin/")) {
+    return NextResponse.redirect(new URL("/music/admin", request.url), 307);
+  }
+
   // Jika root hosting (orgspace.app / localhost:3001) diakses tanpa slug:
   // Redirect otomatis ke Portal Utama (OrgSpace-Website), persis seperti perilaku vercel.app -> vercel.com.
   // Sertakan opsi ?info=true jika pengembang ingin melihat status gateway.

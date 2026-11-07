@@ -7,6 +7,7 @@ import { serveAsset, serveMedia, servePage } from "@/lib/site-page";
  */
 export async function GET(_request: NextRequest, ctx: RouteContext<"/[slug]/[...path]">) {
   const { slug, path } = await ctx.params;
+  if (path[0] === "admin") return new Response("Not found", { status: 404 });
   if (path.length === 2 && path[0] === "_media") return serveMedia(slug, path[1]);
   const file = path.join("/");
   if (file.endsWith("/") || !/\.[a-z0-9]+$/i.test(file)) return servePage(slug, `${file.replace(/\/$/, "")}/index.html`);

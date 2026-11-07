@@ -32,54 +32,86 @@ export const MODULE_RUNTIME = `(function(){
   function safeSrc(v){return /^(https?:|\\/)/i.test(v)}
   function fill(card,item){
     card.querySelectorAll("[data-ws-field]").forEach(function(f){
-      var v=item[f.getAttribute("data-ws-field")]; if(v===undefined||v===null||v==="") return; v=String(v);
+      var v=item[f.getAttribute("data-ws-field")];
+      if(f.tagName==="IMG"){
+        if(v&&safeSrc(String(v).trim())){
+          f.setAttribute("src",String(v).trim());
+          f.style.display="";
+        } else {
+          f.removeAttribute("src");
+          f.style.display="none";
+        }
+        return;
+      }
+      if(f.tagName==="AUDIO"||(f.getAttribute("data-ws-type")||"").toLowerCase()==="audio"){
+        if(v&&safeSrc(String(v).trim())){
+          var cleanSrc=String(v).trim();
+          f.setAttribute("src",cleanSrc);
+          f.setAttribute("data-audio-src",cleanSrc);
+          f.textContent=cleanSrc;
+        } else {
+          f.removeAttribute("src");
+          f.removeAttribute("data-audio-src");
+          f.textContent="";
+        }
+        return;
+      }
+      if(v===undefined||v===null||v===""){ f.textContent=""; return; } v=String(v);
       var t=(f.getAttribute("data-ws-type")||"").toLowerCase();
       // Portal menyimpan tanggal sebagai 2026-10-19; pengunjung melihat "19 Oktober 2026".
       if(t==="tanggal"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(v)){ var dt=new Date(v+"T00:00:00");
         if(!isNaN(dt)) v=dt.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }
       if(t==="paragraf") f.style.whiteSpace="pre-line";
-      if(f.tagName==="IMG"){ if(safeSrc(v)) f.setAttribute("src",v); } else { f.textContent=v; }
+      f.textContent=v;
     });
     card.querySelectorAll("[data-ws-link]").forEach(function(a){
       var v=item[a.getAttribute("data-ws-link")]; v=v===undefined||v===null?"":String(v).trim();
       if(v&&safeHref(v)) a.setAttribute("href",v);
     });
   }
-  document.querySelectorAll("[data-ws-list],[data-ws-collection]").forEach(function(box){
-    var name=(box.getAttribute("data-ws-list")||box.getAttribute("data-ws-collection")||"").toLowerCase();
-    var items=NEWS.indexOf(name)>=0?d.news:(d.collections[name]||[]);
-    var limit=parseInt(box.getAttribute("data-ws-limit")||"",10); if(limit>0) items=items.slice(0,limit);
-    var card=box.querySelector("[data-ws-item]"), empty=box.querySelector("[data-ws-empty]");
-    if(!card) return;
-    if(!items.length){ card.style.display="none"; if(empty) empty.style.display=""; return; }
-    if(empty) empty.style.display="none";
-    var blank=card.cloneNode(true), last=card;
-    items.forEach(function(item,i){
-      var c=i===0?card:blank.cloneNode(true); fill(c,item);
-      if(i>0){ last.parentNode.insertBefore(c,last.nextSibling); last=c; }
+  function renderModules(scope){
+    var root=scope||document;
+    root.querySelectorAll("[data-ws-list],[data-ws-collection]").forEach(function(box){
+      if(box.__ws_done) return;
+      var name=(box.getAttribute("data-ws-list")||box.getAttribute("data-ws-collection")||"").toLowerCase();
+      var items=NEWS.indexOf(name)>=0?d.news:(d.collections[name]||[]);
+      var limit=parseInt(box.getAttribute("data-ws-limit")||"",10); if(limit>0) items=items.slice(0,limit);
+      var card=box.querySelector("[data-ws-item]"), empty=box.querySelector("[data-ws-empty]");
+      if(!card) return;
+      box.__ws_done=true;
+      if(!items.length){ card.style.display="none"; if(empty) empty.style.display=""; return; }
+      if(empty) empty.style.display="none";
+      if(!box.__ws_prototype) box.__ws_prototype=card.cloneNode(true);
+      var blank=box.__ws_prototype.cloneNode(true), last=card;
+      items.forEach(function(item,i){
+        var c=i===0?card:blank.cloneNode(true); fill(c,item);
+        if(i>0){ last.parentNode.insertBefore(c,last.nextSibling); last=c; }
+      });
     });
-  });
-  // Angka ringkasan & profil organisasi. Profil yang belum diisi disembunyikan agar teks contoh template (mis.
-  // "Alamat organisasi") tidak tampil di website asli; logo tetap memakai logo template.
-  document.querySelectorAll("[data-ws-stat]").forEach(function(x){
-    var v=d.stats[(x.getAttribute("data-ws-stat")||"").toLowerCase()];
-    x.textContent=String(v===undefined?0:v);
-  });
-  document.querySelectorAll("[data-ws-org]").forEach(function(x){
-    var k=(x.getAttribute("data-ws-org")||"").toLowerCase(), v=d.org[k];
-    if(!v){ if(k!=="logo") x.style.display="none"; return; }
-    if(x.tagName==="IMG"){ if(safeSrc(v)) x.setAttribute("src",v); }
-    else if(x.tagName==="A"&&(k==="email"||k==="whatsapp"||k==="instagram")){
-      x.textContent=v;
-      x.setAttribute("href",k==="email"?"mailto:"+v:k==="whatsapp"?"https://wa.me/"+v.replace(/\\D/g,"").replace(/^0/,"62"):"https://instagram.com/"+v.replace(/^@/,""));
-    } else x.textContent=v;
-  });
+    // Angka ringkasan & profil organisasi. Profil yang belum diisi disembunyikan agar teks contoh template (mis.
+    // "Alamat organisasi") tidak tampil di website asli; logo tetap memakai logo template.
+    root.querySelectorAll("[data-ws-stat]").forEach(function(x){
+      var v=d.stats[(x.getAttribute("data-ws-stat")||"").toLowerCase()];
+      x.textContent=String(v===undefined?0:v);
+    });
+    root.querySelectorAll("[data-ws-org]").forEach(function(x){
+      var k=(x.getAttribute("data-ws-org")||"").toLowerCase(), v=d.org[k];
+      if(!v){ if(k!=="logo") x.style.display="none"; return; }
+      if(x.tagName==="IMG"){ if(safeSrc(v)) x.setAttribute("src",v); }
+      else if(x.tagName==="A"&&(k==="email"||k==="whatsapp"||k==="instagram")){
+        x.textContent=v;
+        x.setAttribute("href",k==="email"?"mailto:"+v:k==="whatsapp"?"https://wa.me/"+v.replace(/\\D/g,"").replace(/^0/,"62"):"https://instagram.com/"+v.replace(/^@/,""));
+      } else x.textContent=v;
+    });
+    root.querySelectorAll('a[data-ws-auth="login"]').forEach(function(a){a.setAttribute("href","/"+d.slug+"/admin")});
+    root.querySelectorAll('[data-ws-auth="logout"],[data-ws-role]').forEach(function(x){x.style.display="none"});
+  }
+  renderModules(document);
   // Script provider berjalan sebelum script ini, jadi diberi tahu lewat event setelah modul terisi.
   // Data modul juga dibuka (salinan) agar provider bisa membuat filter, grafik, atau peta sendiri.
-  window.orgspace={siap:true,data:JSON.parse(el.textContent)};
+  window.orgspace={siap:true,data:JSON.parse(el.textContent),render:renderModules};
+  document.addEventListener("orgspace:render",function(e){renderModules(e&&e.detail&&e.detail.root);});
   document.dispatchEvent(new CustomEvent("orgspace:siap",{detail:window.orgspace.data}));
-  document.querySelectorAll('a[data-ws-auth="login"]').forEach(function(a){a.setAttribute("href","/"+d.slug+"/admin")});
-  document.querySelectorAll('[data-ws-auth="logout"],[data-ws-role]').forEach(function(x){x.style.display="none"});
   function notice(form,ok,text){
     var box=form.querySelector("[data-ws-form-alert]");
     if(!box){ box=document.createElement("div"); box.setAttribute("role","status");

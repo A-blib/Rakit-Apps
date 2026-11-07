@@ -27,6 +27,7 @@ import {
   EyeOff,
   Sun,
   Moon,
+  Clock,
   Calendar,
   User,
   Trophy,
@@ -95,6 +96,8 @@ interface NewsItem {
   content: string;
   imageUrl?: string;
   publishedAt?: string;
+  expiresAt?: string | null;
+  expired?: boolean;
 }
 
 interface ModuleField {
@@ -137,6 +140,7 @@ const ICONS: Record<string, LucideIcon> = {
   sparkles: Sparkles,
   mail: Mail,
   link: LinkIcon,
+  "shield-check": ShieldCheck,
 };
 
 const iconOf = (name: string | undefined): LucideIcon => (name && ICONS[name]) || Boxes;
@@ -182,8 +186,8 @@ interface PortalPengurusProps {
  * lihat lib/demo-portal.ts), agar demo selalu sama dengan Portal asli.
  */
 export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProps) {
-  // Demo tidak pernah menyimpan sesi: token-nya palsu dan tidak boleh menimpa sesi pengurus asli di origin ini.
-  const tokenKey = demo ? null : `orgspace_site_token_${slug}`;
+  // Demo memakai key tersendiri agar tidak menimpa sesi pengurus asli, tetapi tetap bertahan saat halaman di-refresh.
+  const tokenKey = demo ? `orgspace_demo_token_${slug}` : `orgspace_site_token_${slug}`;
 
   // Auth states
   const [token, setToken] = useState<string | null>(null);
@@ -236,6 +240,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     }
   });
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
   const [siteName, setSiteName] = useState<string>("");
   const [orgName, setOrgName] = useState<string>("");
   const [stats, setStats] = useState<Stats>({ submissionsCount: 0, newsCount: 0, customItemsCount: 0 });
@@ -250,7 +255,23 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
   const [newTitle, setNewTitle] = useState("");
   const [newSummary, setNewSummary] = useState("");
   const [newContent, setNewContent] = useState("");
+  const [newImageUrl, setNewImageUrl] = useState("");
+  const [uploadingNewsPhoto, setUploadingNewsPhoto] = useState(false);
+  const [newExpiresAt, setNewExpiresAt] = useState("");
+  const [newsFilter, setNewsFilter] = useState<"active" | "expired" | "all">("active");
+  const [editingNewsExpiryId, setEditingNewsExpiryId] = useState<string | null>(null);
+  const [editExpiryDate, setEditExpiryDate] = useState("");
   const [submittingNews, setSubmittingNews] = useState(false);
+
+  // Edit News Modal state
+  const [editingNewsItem, setEditingNewsItem] = useState<NewsItem | null>(null);
+  const [editNewsTitle, setEditNewsTitle] = useState("");
+  const [editNewsSummary, setEditNewsSummary] = useState("");
+  const [editNewsContent, setEditNewsContent] = useState("");
+  const [editNewsImageUrl, setEditNewsImageUrl] = useState("");
+  const [editNewsExpiresAt, setEditNewsExpiresAt] = useState("");
+  const [savingNewsEdit, setSavingNewsEdit] = useState(false);
+  const [uploadingEditNewsPhoto, setUploadingEditNewsPhoto] = useState(false);
 
   // Collections state
   const [collections, setCollections] = useState<Record<string, Array<Record<string, any>>>>({});
@@ -272,6 +293,42 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
   };
 
   const [submittingColItem, setSubmittingColItem] = useState(false);
+
+  // Access Management state
+  interface AccessCred {
+    role: "owner" | "admin" | "editor";
+    username: string;
+    updatedAt?: string;
+    canEdit?: boolean;
+  }
+  const [accessList, setAccessList] = useState<AccessCred[]>([]);
+  const [loadingAccess, setLoadingAccess] = useState(false);
+  const [editingCredRole, setEditingCredRole] = useState<"owner" | "admin" | "editor" | null>(null);
+  const [newCredUsername, setNewCredUsername] = useState("");
+  const [newCredPassword, setNewCredPassword] = useState("");
+  const [showCredPassword, setShowCredPassword] = useState(false);
+  const [savingCred, setSavingCred] = useState(false);
+
+  // Section Manager state (Option 1)
+  interface SectionConfigItem {
+    id: string;
+    name: string;
+    enabled: boolean;
+    startAt?: string;
+    endAt?: string;
+  }
+  const DEFAULT_SECTIONS: SectionConfigItem[] = [
+    { id: "about", name: "Tentang Kami (Filosofi & Profil)", enabled: true },
+    { id: "anggota", name: "Personel Musisi & Talenta", enabled: true },
+    { id: "program", name: "Program Kerja Studio", enabled: true },
+    { id: "galeri", name: "Dokumentasi Aksi Panggung", enabled: true },
+    { id: "berita", name: "Kabar Rilis & Warta", enabled: true },
+    { id: "agenda", name: "Jadwal Manggung & Tur", enabled: true },
+    { id: "pendaftaran", name: "Booking Penampilan & Audisi", enabled: true },
+  ];
+  const [sectionList, setSectionList] = useState<SectionConfigItem[]>(DEFAULT_SECTIONS);
+  const [loadingSections, setLoadingSections] = useState(false);
+  const [savingSections, setSavingSections] = useState(false);
 
   // Success / error alerts
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -341,6 +398,8 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     loadSubmissions(jwt);
     loadNews(jwt);
     loadCollections(jwt);
+    loadAccess(jwt);
+    loadSections(jwt);
   };
 
   const loadStats = async (jwt: string) => {
@@ -398,12 +457,133 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
         headers: { Authorization: `Bearer ${jwt}` },
       });
       if (res.ok) {
-        setCollections(await res.json());
+        const raw: Record<string, any[]> = await res.json();
+        const filtered: Record<string, any[]> = {};
+        for (const [k, v] of Object.entries(raw || {})) {
+          if (!k.startsWith("_")) {
+            filtered[k] = v;
+          }
+        }
+        setCollections(filtered);
       }
     } catch (e) {
       console.error(e);
     } finally {
       setLoadingCollections(false);
+    }
+  };
+
+  const loadAccess = async (jwt: string) => {
+    setLoadingAccess(true);
+    try {
+      const res = await api(`${slug}/admin/access`, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAccessList(Array.isArray(data) ? data : []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAccess(false);
+    }
+  };
+
+  const handleSaveCred = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || !editingCredRole || !newCredUsername.trim()) return;
+    setSavingCred(true);
+    try {
+      const res = await api(`${slug}/admin/access/${editingCredRole}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: newCredUsername.trim(),
+          password: newCredPassword.trim() || undefined,
+        }),
+      });
+      if (res.ok) {
+        showToast(`Kredensial ${editingCredRole.toUpperCase()} berhasil diperbarui!`, "success");
+        setEditingCredRole(null);
+        setNewCredUsername("");
+        setNewCredPassword("");
+        loadAccess(token);
+      } else {
+        const err = await res.json();
+        showToast(err.message || "Gagal memperbarui kredensial.", "error");
+      }
+    } catch {
+      showToast("Terjadi kesalahan saat menyimpan kredensial.", "error");
+    } finally {
+      setSavingCred(false);
+    }
+  };
+
+  const loadSections = async (jwt: string) => {
+    setLoadingSections(true);
+    try {
+      const res = await api(`${slug}/admin/sections`, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : Array.isArray(data?.sections) ? data.sections : [];
+        if (list.length > 0) {
+          setSectionList(list);
+        } else {
+          setSectionList(DEFAULT_SECTIONS);
+        }
+      } else {
+        setSectionList(DEFAULT_SECTIONS);
+      }
+    } catch (e) {
+      console.error(e);
+      setSectionList(DEFAULT_SECTIONS);
+    } finally {
+      setLoadingSections(false);
+    }
+  };
+
+  const moveSection = (index: number, direction: "up" | "down") => {
+    const target = direction === "up" ? index - 1 : index + 1;
+    if (target < 0 || target >= sectionList.length) return;
+    const updated = [...sectionList];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(target, 0, moved);
+    setSectionList(updated);
+  };
+
+  const toggleSection = (id: string) => {
+    setSectionList((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, enabled: !s.enabled } : s))
+    );
+  };
+
+  const handleSaveSections = async () => {
+    if (!token) return;
+    setSavingSections(true);
+    try {
+      const res = await api(`${slug}/admin/sections`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sections: sectionList }),
+      });
+      if (res.ok) {
+        showToast("Urutan dan visibilitas section berhasil disimpan!", "success");
+      } else {
+        showToast("Gagal menyimpan pengaturan section.", "error");
+      }
+    } catch {
+      showToast("Terjadi kesalahan koneksi.", "error");
+    } finally {
+      setSavingSections(false);
     }
   };
 
@@ -445,6 +625,38 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     showToast("Anda telah keluar dari portal pengurus.", "success");
   };
 
+  const handleUploadNewsPhoto = async (file: File | undefined, isEdit = false) => {
+    if (!token || !file) return;
+    if (isEdit) setUploadingEditNewsPhoto(true);
+    else setUploadingNewsPhoto(true);
+
+    try {
+      const body = new FormData();
+      body.append("file", await shrinkPhoto(file), "berita.jpg");
+      const res = await api(`${slug}/admin/media`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        if (isEdit) {
+          setEditNewsImageUrl(data.url);
+        } else {
+          setNewImageUrl(data.url);
+        }
+        showToast("Foto berita berhasil diunggah!");
+      } else {
+        showToast(data.message || "Gagal mengunggah foto", "error");
+      }
+    } catch {
+      showToast("Gagal mengunggah foto", "error");
+    } finally {
+      if (isEdit) setUploadingEditNewsPhoto(false);
+      else setUploadingNewsPhoto(false);
+    }
+  };
+
   const handleCreateNews = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || !newTitle.trim()) return;
@@ -461,6 +673,8 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
           title: newTitle.trim(),
           summary: newSummary.trim(),
           content: newContent.trim(),
+          imageUrl: newImageUrl.trim() || null,
+          expiresAt: newExpiresAt || null,
         }),
       });
 
@@ -468,6 +682,8 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
         setNewTitle("");
         setNewSummary("");
         setNewContent("");
+        setNewImageUrl("");
+        setNewExpiresAt("");
         showToast("Berita baru berhasil diterbitkan!");
         loadNews(token);
         loadStats(token);
@@ -479,6 +695,68 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
       showToast("Terjadi kesalahan jaringan", "error");
     } finally {
       setSubmittingNews(false);
+    }
+  };
+
+  const handleSaveNewsEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || !editingNewsItem || !editNewsTitle.trim()) return;
+    setSavingNewsEdit(true);
+
+    try {
+      const res = await api(`${slug}/admin/news/${editingNewsItem.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: editNewsTitle.trim(),
+          summary: editNewsSummary.trim(),
+          content: editNewsContent.trim(),
+          imageUrl: editNewsImageUrl.trim() || null,
+          expiresAt: editNewsExpiresAt || null,
+        }),
+      });
+
+      if (res.ok) {
+        showToast("Berita berhasil diperbarui!");
+        setEditingNewsItem(null);
+        loadNews(token);
+      } else {
+        const err = await res.json();
+        showToast(err.message || "Gagal memperbarui berita", "error");
+      }
+    } catch {
+      showToast("Terjadi kesalahan jaringan", "error");
+    } finally {
+      setSavingNewsEdit(false);
+    }
+  };
+
+  const handleUpdateNewsExpiry = async (newsId: string, expiresAt: string | null) => {
+    if (!token) return;
+    try {
+      const res = await api(`${slug}/admin/news/${newsId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ expiresAt }),
+      });
+
+      if (res.ok) {
+        showToast("Waktu auto hilang berhasil diperbarui!");
+        setEditingNewsExpiryId(null);
+        setEditExpiryDate("");
+        loadNews(token);
+      } else {
+        const err = await res.json();
+        showToast(err.message || "Gagal memperbarui batas waktu", "error");
+      }
+    } catch {
+      showToast("Terjadi kesalahan jaringan", "error");
     }
   };
 
@@ -617,6 +895,35 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     }
   };
 
+  const handleUploadAudio = async (index: number, file: File | undefined) => {
+    if (!token || !file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      showToast("Ukuran file audio maksimal 15 MB", "error");
+      return;
+    }
+    setUploadingField(index);
+    try {
+      const body = new FormData();
+      body.append("file", file, file.name || "audio.mp3");
+      const res = await api(`${slug}/admin/media`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        updateField(index, { value: data.url });
+        showToast("Audio berhasil diunggah", "success");
+      } else {
+        showToast(data.message || "Gagal mengunggah audio", "error");
+      }
+    } catch {
+      showToast("Audio gagal diunggah. Pastikan file audio valid lalu coba lagi.", "error");
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
   const handleMoveItem = async (index: number, direction: -1 | 1) => {
     const items = [...(collections[selectedCol] || [])];
     const target = index + direction;
@@ -643,7 +950,10 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
   const openNav = (id: NavId) => {
     setActiveTab(id);
     if (id.startsWith("mod:")) chooseCollection(id.slice(4));
+    if (id === "access" && token) loadAccess(token);
+    if (id === "sections" && token) loadSections(token);
     setMobileSidebarOpen(false);
+    setMobileProfileOpen(false);
   };
 
   const saveSidebarWidth = (width: number) => {
@@ -839,7 +1149,8 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
   // 3. Dashboard (sudah masuk)
   // Isian formulir pengunjung (nama, nomor WhatsApp) hanya untuk Pemilik & Admin; server menolak Editor (403).
   const canViewSubmissions = user.role === "owner" || user.role === "admin";
-  const navGroups = buildNav(portal, Object.keys(templateModules), Object.keys(collections), canViewSubmissions);
+  const canManageAccess = user.role === "owner" || user.role === "admin";
+  const navGroups = buildNav(portal, Object.keys(templateModules), Object.keys(collections), canViewSubmissions, canManageAccess);
   const navLinks = navGroups.flatMap((g) => g.items);
   const current: NavLink | undefined = navLinks.find((l) => l.id === activeTab) || navLinks[0];
   const firstModule = navLinks.find((l) => l.id.startsWith("mod:"));
@@ -987,6 +1298,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
         type="button"
         onClick={() => {
           setMobileSidebarOpen(false);
+    setMobileProfileOpen(false);
           handleLogout();
         }}
         className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-error hover:bg-error/10 rounded-xl transition"
@@ -1039,7 +1351,7 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
     const help = modSettings?.fields?.[field.key]?.help;
     return (
       <div key={field.key || idx} className="space-y-1.5">
-        <label htmlFor={field.type === "gambar" ? undefined : id} className="block text-xs font-semibold text-foreground">
+        <label htmlFor={field.type === "gambar" || field.type === "audio" ? undefined : id} className="block text-xs font-semibold text-foreground">
           {fieldLabel(field.key)}
         </label>
         {field.type === "paragraf" ? (
@@ -1093,6 +1405,43 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                 </button>
               )}
             </div>
+          </div>
+        ) : field.type === "audio" ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <label className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl border border-border bg-surface text-foreground cursor-pointer hover:bg-surface-subtle transition">
+                {uploadingField === idx ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                ) : (
+                  <Music className="w-3.5 h-3.5 text-primary" />
+                )}
+                <span>{uploadingField === idx ? "Mengunggah..." : field.value ? "Ganti file MP3" : "Pilih file MP3 / Audio"}</span>
+                <input
+                  type="file"
+                  accept="audio/*,.mp3,.wav,.ogg,.m4a"
+                  className="sr-only"
+                  disabled={uploadingField !== null}
+                  onChange={(e) => {
+                    handleUploadAudio(idx, e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              {field.value && (
+                <button
+                  type="button"
+                  onClick={() => updateField(idx, { value: "" })}
+                  className="text-[11px] text-muted hover:text-error transition"
+                >
+                  Hapus audio
+                </button>
+              )}
+            </div>
+            {field.value && (
+              <div className="flex items-center gap-2 p-2 rounded-xl bg-surface-subtle border border-border">
+                <audio controls src={field.value} className="h-8 w-full max-w-md" preload="metadata" />
+              </div>
+            )}
           </div>
         ) : (
           <input
@@ -1175,19 +1524,20 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
           <header className="md:hidden bg-surface border-b border-border sticky top-0 z-30">
             <div className="h-14 px-4 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
-                {bottomLinks.length === 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setMobileSidebarOpen(true)}
-                    className="p-2 -ml-2 rounded-xl text-foreground hover:bg-surface-subtle transition"
-                    aria-label="Buka menu navigasi"
-                  >
-                    <Menu className="w-5 h-5" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileProfileOpen(false);
+                    setMobileSidebarOpen(true);
+                  }}
+                  className="p-2 -ml-2 rounded-xl text-foreground hover:bg-surface-subtle transition"
+                  aria-label="Buka menu navigasi"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
                 <h1 className="text-sm font-bold text-foreground truncate">{current?.label || "Portal Pengurus"}</h1>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 relative">
                 <button
                   type="button"
                   onClick={toggleTheme}
@@ -1198,13 +1548,91 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                 </button>
                 <button
                   type="button"
-                  onClick={() => setMobileSidebarOpen(true)}
-                  className="w-9 h-9 rounded-full bg-primary-container border border-border flex items-center justify-center text-xs font-semibold text-on-primary-container"
-                  aria-label="Buka menu pengurus"
+                  onClick={() => setMobileProfileOpen((prev) => !prev)}
+                  className="w-9 h-9 rounded-full bg-primary-container border border-border flex items-center justify-center text-xs font-semibold text-on-primary-container transition active:scale-95"
+                  aria-label="Buka menu profil pengurus"
+                  aria-expanded={mobileProfileOpen}
                 >
                   {initials}
                 </button>
+
+                {/* Dropdown Menu Khusus Profil Pengurus (Tidak memunculkan sidebar) */}
+                {mobileProfileOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setMobileProfileOpen(false)}
+                      aria-hidden="true"
+                    />
+                    <div className="absolute right-0 top-12 mt-1 w-60 rounded-2xl bg-surface border border-border shadow-xl z-50 p-2 divide-y divide-border/60">
+                      <div className="flex items-center gap-2.5 px-3 py-2.5">
+                        <div className="w-8 h-8 rounded-full bg-primary-container border border-border flex items-center justify-center text-xs font-semibold text-on-primary-container shrink-0">
+                          {initials}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-semibold text-foreground truncate">{user.username}</div>
+                          <div className="text-[10px] uppercase font-mono font-semibold tracking-wider text-muted">{user.role}</div>
+                        </div>
+                      </div>
+                      <div className="pt-1.5 space-y-1">
+                        <Link
+                          href={siteHref}
+                          target="_blank"
+                          onClick={() => setMobileProfileOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted hover:text-foreground hover:bg-surface-subtle rounded-xl transition"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>Lihat Website</span>
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileProfileOpen(false);
+                            handleLogout();
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-error hover:bg-error/10 rounded-xl transition"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>Keluar dari Portal</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
+            </div>
+
+            {/* Menu Navigasi Scroll Samping di Mobile */}
+            <div className="flex items-center gap-1.5 overflow-x-auto px-4 py-2 border-t border-border/60 bg-surface-subtle/30 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {navLinks.map((link) => {
+                const Icon = iconOf(link.icon);
+                const active = current?.id === link.id;
+                const badge = badgeOf(link.id);
+                return (
+                  <button
+                    key={link.id}
+                    type="button"
+                    onClick={() => openNav(link.id)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition ${
+                      active
+                        ? "bg-primary text-on-primary shadow-xs"
+                        : "bg-surface border border-border text-muted hover:text-foreground hover:bg-surface-subtle"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{link.label}</span>
+                    {typeof badge === "number" && badge > 0 && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                          active ? "bg-white/20 text-white" : "bg-primary-container text-on-primary-container"
+                        }`}
+                      >
+                        {badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </header>
 
@@ -1442,6 +1870,77 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                           className={inputClass}
                         />
                       </div>
+
+                      {/* Foto Sampul Berita (Opsional) */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-xs font-semibold text-foreground flex items-center gap-1.5">
+                            <ImageIcon className="w-3.5 h-3.5 text-primary" />
+                            <span>Foto Sampul (Opsional)</span>
+                          </label>
+                          {newImageUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setNewImageUrl("")}
+                              className="text-[10px] text-error hover:underline flex items-center gap-0.5"
+                            >
+                              <X className="w-3 h-3" /> Hapus Foto
+                            </button>
+                          )}
+                        </div>
+
+                        {newImageUrl ? (
+                          <div className="relative rounded-xl overflow-hidden border border-border group bg-surface-subtle">
+                            <img
+                              src={newImageUrl}
+                              alt="Pratinjau foto berita"
+                              className="w-full h-36 object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                              <label className="cursor-pointer px-2.5 py-1.5 rounded-lg bg-surface/90 text-foreground text-xs font-semibold hover:bg-surface transition flex items-center gap-1">
+                                <ImagePlus className="w-3.5 h-3.5" /> Ganti Foto
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleUploadNewsPhoto(e.target.files?.[0])}
+                                  disabled={uploadingNewsPhoto}
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setNewImageUrl("")}
+                                className="p-1.5 rounded-lg bg-error text-white hover:bg-error/90 transition"
+                                title="Hapus foto"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center gap-2 p-3.5 border-2 border-dashed border-border hover:border-primary/50 hover:bg-surface-subtle/50 rounded-xl cursor-pointer transition text-center group">
+                            {uploadingNewsPhoto ? (
+                              <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                            ) : (
+                              <ImagePlus className="w-5 h-5 text-muted group-hover:text-primary transition" />
+                            )}
+                            <div className="text-xs">
+                              <span className="font-semibold text-foreground group-hover:text-primary transition">
+                                {uploadingNewsPhoto ? "Mengunggah foto..." : "Pilih atau Unggah Foto"}
+                              </span>
+                              <p className="text-[10px] text-muted mt-0.5">JPG, PNG, WebP • Opsional (bisa tanpa foto)</p>
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handleUploadNewsPhoto(e.target.files?.[0])}
+                              disabled={uploadingNewsPhoto}
+                            />
+                          </label>
+                        )}
+                      </div>
+
                       <div className="space-y-1.5">
                         <label htmlFor="news-summary" className="block text-xs font-semibold text-foreground">
                           Ringkasan
@@ -1461,27 +1960,82 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                         </label>
                         <textarea
                           id="news-content"
-                          rows={5}
+                          rows={4}
                           value={newContent}
                           onChange={(e) => setNewContent(e.target.value)}
                           className={inputClass}
                         />
                       </div>
+
+                      <div className="space-y-1.5 pt-1 border-t border-border/60">
+                        <div className="flex items-center justify-between">
+                          <label htmlFor="news-expires" className="block text-xs font-semibold text-foreground flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-primary" />
+                            <span>Auto Hilang (Kedaluwarsa)</span>
+                          </label>
+                          {newExpiresAt && (
+                            <button
+                              type="button"
+                              onClick={() => setNewExpiresAt("")}
+                              className="text-[10px] text-muted hover:text-error transition"
+                            >
+                              Hapus batas
+                            </button>
+                          )}
+                        </div>
+                        <input
+                          id="news-expires"
+                          type="datetime-local"
+                          value={newExpiresAt}
+                          onChange={(e) => setNewExpiresAt(e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+
                       <button
                         type="submit"
                         disabled={submittingNews}
                         className="w-full py-2.5 bg-primary hover:opacity-90 text-on-primary rounded-xl text-sm font-semibold shadow-xs transition disabled:opacity-50"
                       >
-                        {submittingNews ? "Menerbitkan..." : "Terbitkan"}
+                        {submittingNews ? "Menerbitkan..." : "Terbitkan Berita"}
                       </button>
                     </form>
                   </div>
 
                   <div className="xl:col-span-2 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-foreground">Berita aktif</h3>
-                      <span className="text-xs text-muted font-mono">{newsList.length} berita</span>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-1 p-1 bg-surface-subtle rounded-xl border border-border">
+                        <button
+                          type="button"
+                          onClick={() => setNewsFilter("active")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                            newsFilter === "active" ? "bg-primary text-on-primary shadow-xs" : "text-muted hover:text-foreground"
+                          }`}
+                        >
+                          Berita Aktif ({newsList.filter((n) => !n.expired && (!n.expiresAt || new Date(n.expiresAt) > new Date())).length})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNewsFilter("expired")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                            newsFilter === "expired" ? "bg-primary text-on-primary shadow-xs" : "text-muted hover:text-foreground"
+                          }`}
+                        >
+                          Sudah Auto Hilang ({newsList.filter((n) => n.expired || (n.expiresAt && new Date(n.expiresAt) <= new Date())).length})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNewsFilter("all")}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                            newsFilter === "all" ? "bg-primary text-on-primary shadow-xs" : "text-muted hover:text-foreground"
+                          }`}
+                        >
+                          Semua ({newsList.length})
+                        </button>
+                      </div>
+                      <span className="text-xs text-muted font-mono">{newsList.length} total berita</span>
                     </div>
+
                     {loadingNews ? (
                       <div className="py-12 text-center text-muted">
                         <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
@@ -1492,29 +2046,174 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                         Belum ada berita yang diterbitkan.
                       </div>
                     ) : (
-                      newsList.map((item) => (
-                        <div
-                          key={item.id}
-                          className="bg-surface p-5 rounded-2xl border border-border shadow-xs flex items-start justify-between gap-4 hover:border-border-strong transition"
-                        >
-                          <div className="space-y-1.5 flex-1 min-w-0">
-                            <h4 className="text-sm font-bold text-foreground leading-snug">{item.title}</h4>
-                            {item.summary && <p className="text-xs text-muted leading-relaxed">{item.summary}</p>}
-                            {item.publishedAt && (
-                              <div className="text-[11px] text-muted/80 font-mono pt-1">{item.publishedAt}</div>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteNews(item.id)}
-                            className="p-2 text-muted hover:text-error hover:bg-error/10 rounded-lg transition shrink-0"
-                            title="Hapus berita"
-                            aria-label="Hapus berita"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))
+                      (() => {
+                        const now = new Date();
+                        const displayed = newsList.filter((item) => {
+                          const isExp = item.expired || (item.expiresAt ? new Date(item.expiresAt) <= now : false);
+                          if (newsFilter === "active") return !isExp;
+                          if (newsFilter === "expired") return isExp;
+                          return true;
+                        });
+
+                        if (displayed.length === 0) {
+                          return (
+                            <div className="bg-surface p-8 text-center rounded-2xl border border-border text-muted text-xs shadow-xs">
+                              {newsFilter === "active"
+                                ? "Tidak ada berita aktif. Semua berita telah selesai tayang / kedaluwarsa."
+                                : newsFilter === "expired"
+                                ? "Belum ada berita yang kedaluwarsa."
+                                : "Tidak ada berita ditemukan."}
+                            </div>
+                          );
+                        }
+
+                        return displayed.map((item) => {
+                          const isExp = item.expired || (item.expiresAt ? new Date(item.expiresAt) <= now : false);
+                          const isEditingThis = editingNewsExpiryId === item.id;
+
+                          return (
+                            <div
+                              key={item.id}
+                              className={`bg-surface p-5 rounded-2xl border shadow-xs transition space-y-3 ${
+                                isExp ? "border-error/30 bg-error/5" : "border-border hover:border-border-strong"
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                                  {item.imageUrl ? (
+                                    <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-border bg-surface-subtle">
+                                      <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-16 h-16 rounded-xl border border-dashed border-border bg-surface-subtle/50 flex flex-col items-center justify-center shrink-0 text-muted/60">
+                                      <ImageIcon className="w-5 h-5" />
+                                      <span className="text-[9px] mt-0.5">Tanpa foto</span>
+                                    </div>
+                                  )}
+                                  <div className="space-y-1.5 flex-1 min-w-0">
+                                    <h4 className="text-sm font-bold text-foreground leading-snug">{item.title}</h4>
+                                    {item.summary && <p className="text-xs text-muted leading-relaxed line-clamp-2">{item.summary}</p>}
+                                    <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
+                                      {item.publishedAt && (
+                                        <span className="text-muted/80 font-mono">{item.publishedAt}</span>
+                                      )}
+                                      {item.expiresAt ? (
+                                        isExp ? (
+                                          <span className="px-2 py-0.5 rounded-md font-semibold bg-error/15 text-error border border-error/20 flex items-center gap-1">
+                                            <Clock className="w-3 h-3" /> Auto hilang (kedaluwarsa)
+                                          </span>
+                                        ) : (
+                                          <span className="px-2 py-0.5 rounded-md font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1">
+                                            <Clock className="w-3 h-3" /> Auto hilang:{" "}
+                                            {new Date(item.expiresAt).toLocaleDateString("id-ID", {
+                                              day: "numeric",
+                                              month: "short",
+                                              year: "numeric",
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                            })}
+                                          </span>
+                                        )
+                                      ) : (
+                                        <span className="text-muted/70 text-[10px] font-medium">Tayang permanen</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingNewsItem(item);
+                                      setEditNewsTitle(item.title);
+                                      setEditNewsSummary(item.summary || "");
+                                      setEditNewsContent(item.content || "");
+                                      setEditNewsImageUrl(item.imageUrl || "");
+                                      setEditNewsExpiresAt(
+                                        item.expiresAt ? new Date(item.expiresAt).toISOString().slice(0, 16) : ""
+                                      );
+                                    }}
+                                    className="p-2 text-muted hover:text-primary hover:bg-surface-subtle rounded-lg transition"
+                                    title="Edit berita & foto"
+                                    aria-label="Edit berita & foto"
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (isEditingThis) {
+                                        setEditingNewsExpiryId(null);
+                                      } else {
+                                        setEditingNewsExpiryId(item.id);
+                                        setEditExpiryDate(
+                                          item.expiresAt ? new Date(item.expiresAt).toISOString().slice(0, 16) : ""
+                                        );
+                                      }
+                                    }}
+                                    className="p-2 text-muted hover:text-primary hover:bg-surface-subtle rounded-lg transition"
+                                    title="Atur waktu auto hilang"
+                                    aria-label="Atur waktu auto hilang"
+                                  >
+                                    <Clock className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteNews(item.id)}
+                                    className="p-2 text-muted hover:text-error hover:bg-error/10 rounded-lg transition"
+                                    title="Hapus berita"
+                                    aria-label="Hapus berita"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {isEditingThis && (
+                                <div className="p-3 bg-surface-subtle rounded-xl border border-border space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                      <Clock className="w-3.5 h-3.5 text-primary" />
+                                      Atur Waktu Auto Hilang Berita Ini
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingNewsExpiryId(null)}
+                                      className="text-xs text-muted hover:text-foreground"
+                                    >
+                                      Batal
+                                    </button>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="datetime-local"
+                                      value={editExpiryDate}
+                                      onChange={(e) => setEditExpiryDate(e.target.value)}
+                                      className={inputClass}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUpdateNewsExpiry(item.id, editExpiryDate || null)}
+                                      className="px-3 py-2 bg-primary text-on-primary rounded-xl text-xs font-semibold shrink-0"
+                                    >
+                                      Simpan
+                                    </button>
+                                    {item.expiresAt && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleUpdateNewsExpiry(item.id, null)}
+                                        className="px-3 py-2 bg-surface hover:bg-error/10 hover:text-error text-muted border border-border rounded-xl text-xs font-semibold shrink-0"
+                                      >
+                                        Hapus Batas
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        });
+                      })()
                     )}
                   </div>
                 </div>
@@ -1633,6 +2332,12 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                                                 className="w-10 h-10 rounded-lg object-cover border border-border"
                                               />
                                             ) : null
+                                          ) : modFields[key] === "audio" ? (
+                                            item[key] ? (
+                                              <audio controls src={String(item[key])} className="h-7 w-48" preload="none" />
+                                            ) : (
+                                              <span className="text-xs text-muted italic">(belum ada audio)</span>
+                                            )
                                           ) : (
                                             <span className="line-clamp-2">{shownValue(key, item[key])}</span>
                                           )}
@@ -1679,11 +2384,25 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                                     <div className="flex flex-wrap gap-1.5">
                                       {Object.entries(item)
                                         .filter(([k]) => k !== "id")
-                                        .map(([k, v]) => (
-                                          <span key={k} className="text-xs bg-surface-subtle border border-border px-2 py-0.5 rounded-lg">
-                                            <span className="text-muted">{humanize(k)}:</span> {String(v)}
-                                          </span>
-                                        ))}
+                                        .map(([k, v]) => {
+                                          if (modFields && modFields[k] === "audio") {
+                                            return (
+                                              <div key={k} className="w-full mt-1">
+                                                <span className="text-xs text-muted block mb-1">{humanize(k)}:</span>
+                                                {v ? (
+                                                  <audio controls src={String(v)} className="h-7 w-full" preload="none" />
+                                                ) : (
+                                                  <span className="text-xs text-muted italic">(belum ada audio)</span>
+                                                )}
+                                              </div>
+                                            );
+                                          }
+                                          return (
+                                            <span key={k} className="text-xs bg-surface-subtle border border-border px-2 py-0.5 rounded-lg">
+                                              <span className="text-muted">{humanize(k)}:</span> {String(v)}
+                                            </span>
+                                          );
+                                        })}
                                     </div>
                                   )}
                                 </div>
@@ -1700,9 +2419,656 @@ export function PortalPengurus({ slug, siteHref, api, demo }: PortalPengurusProp
                 </div>
               </div>
             )}
+
+            {/* AKSES PENGELOLA */}
+            {current?.id === "access" && canManageAccess && (
+              <div className="space-y-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-bold tracking-tight text-foreground">{current.label}</h2>
+                    <p className="text-sm text-muted mt-0.5">
+                      Kelola kredensial (username & password) untuk masuk ke Portal Pengurus. Tingkat peran menentukan batasan wewenang.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => token && loadAccess(token)}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg border border-border bg-surface hover:bg-surface-subtle text-foreground transition shrink-0"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Segarkan</span>
+                  </button>
+                </div>
+
+                {loadingAccess ? (
+                  <div className="py-16 text-center text-muted">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+                    <p className="text-xs">Memuat data akses...</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Pemilik (Owner) */}
+                    {(() => {
+                      const ownerCred = accessList.find((c) => c.role === "owner");
+                      const canEditOwner = user.role === "owner";
+                      return (
+                        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between gap-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full bg-primary-container text-on-primary-container border border-primary/20">
+                                Kendali Penuh
+                              </span>
+                              <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
+                                <ShieldCheck className="w-4 h-4" />
+                              </div>
+                            </div>
+                            <div>
+                              <h3 className="text-base font-bold text-foreground">Pemilik (Owner)</h3>
+                              <p className="text-xs text-muted mt-1 leading-relaxed">
+                                Memiliki kendali mutlak atas seluruh konten, data formulir pendaftar, dan pengaturan akun pengurus lain.
+                              </p>
+                            </div>
+                            <div className="pt-2 border-t border-border">
+                              <div className="text-[11px] text-muted">Username Aktif:</div>
+                              <div className="text-sm font-mono font-bold text-foreground mt-0.5">
+                                @{ownerCred?.username || user.username}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={!canEditOwner}
+                            onClick={() => {
+                              setEditingCredRole("owner");
+                              setNewCredUsername(ownerCred?.username || user.username);
+                              setNewCredPassword("");
+                            }}
+                            className={`w-full py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                              canEditOwner
+                                ? "bg-primary text-on-primary hover:opacity-90"
+                                : "bg-surface-subtle text-muted cursor-not-allowed border border-border"
+                            }`}
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                            <span>{canEditOwner ? "Atur Kredensial" : "Hanya untuk Pemilik"}</span>
+                          </button>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Admin */}
+                    {(() => {
+                      const adminCred = accessList.find((c) => c.role === "admin");
+                      const canEditAdmin = user.role === "owner";
+                      return (
+                        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between gap-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full bg-accent/15 text-accent border border-accent/20">
+                                Operasional & Tim
+                              </span>
+                              <div className="w-8 h-8 rounded-lg bg-accent/15 text-accent flex items-center justify-center">
+                                <Users className="w-4 h-4" />
+                              </div>
+                            </div>
+                            <div>
+                              <h3 className="text-base font-bold text-foreground">Admin</h3>
+                              <p className="text-xs text-muted mt-1 leading-relaxed">
+                                Dapat mengelola seluruh konten, melihat isian formulir pendaftaran, dan mengatur akun Editor.
+                              </p>
+                            </div>
+                            <div className="pt-2 border-t border-border">
+                              <div className="text-[11px] text-muted">Username Aktif:</div>
+                              <div className="text-sm font-mono font-bold text-foreground mt-0.5">
+                                {adminCred?.username ? `@${adminCred.username}` : <span className="text-muted font-sans text-xs">Belum diatur</span>}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={!canEditAdmin}
+                            onClick={() => {
+                              setEditingCredRole("admin");
+                              setNewCredUsername(adminCred?.username || "admin." + slug);
+                              setNewCredPassword("");
+                            }}
+                            className={`w-full py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                              canEditAdmin
+                                ? "bg-primary text-on-primary hover:opacity-90"
+                                : "bg-surface-subtle text-muted cursor-not-allowed border border-border"
+                            }`}
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                            <span>{canEditAdmin ? "Atur Kredensial" : "Hanya Pemilik yang Boleh Ubah"}</span>
+                          </button>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Editor */}
+                    {(() => {
+                      const editorCred = accessList.find((c) => c.role === "editor");
+                      const canEditEditor = user.role === "owner" || user.role === "admin";
+                      return (
+                        <div className="bg-surface p-5 rounded-2xl border border-border shadow-xs flex flex-col justify-between gap-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full bg-surface-subtle text-muted border border-border">
+                                Konten Saja
+                              </span>
+                              <div className="w-8 h-8 rounded-lg bg-surface-subtle text-muted flex items-center justify-center">
+                                <Pencil className="w-4 h-4" />
+                              </div>
+                            </div>
+                            <div>
+                              <h3 className="text-base font-bold text-foreground">Editor</h3>
+                              <p className="text-xs text-muted mt-1 leading-relaxed">
+                                Hanya dapat mengedit berita dan modul. Tidak bisa melihat formulir pendaftaran dan tidak bisa mengakses menu Akses ini.
+                              </p>
+                            </div>
+                            <div className="pt-2 border-t border-border">
+                              <div className="text-[11px] text-muted">Username Aktif:</div>
+                              <div className="text-sm font-mono font-bold text-foreground mt-0.5">
+                                {editorCred?.username ? `@${editorCred.username}` : <span className="text-muted font-sans text-xs">Belum diatur</span>}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={!canEditEditor}
+                            onClick={() => {
+                              setEditingCredRole("editor");
+                              setNewCredUsername(editorCred?.username || "editor." + slug);
+                              setNewCredPassword("");
+                            }}
+                            className={`w-full py-2.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
+                              canEditEditor
+                                ? "bg-primary text-on-primary hover:opacity-90"
+                                : "bg-surface-subtle text-muted cursor-not-allowed border border-border"
+                            }`}
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                            <span>{canEditEditor ? "Atur Kredensial" : "Akses Terbatas"}</span>
+                          </button>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* KELOLA SECTION (SECTION MANAGER OPSI 1) */}
+            {current?.id === "sections" && canManageAccess && (
+              <div className="space-y-5">
+                {/* Header Bagian Atas */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 pb-1 border-b border-border/50">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 shadow-xs">
+                        <Boxes className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground leading-tight">{current.label}</h2>
+                        <span className="text-[11px] font-medium text-muted">Tata Letak & Urutan Halaman Beranda</span>
+                      </div>
+                    </div>
+                    <p className="text-xs sm:text-sm text-muted leading-relaxed">
+                      Atur urutan tampilan section, sembunyikan section yang belum siap, atau kembalikan ke susunan bawaan.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setSectionList(DEFAULT_SECTIONS)}
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl border border-border bg-surface hover:bg-surface-subtle text-muted hover:text-foreground transition shadow-xs"
+                      title="Kembalikan susunan section ke urutan standar"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Reset Bawaan</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={savingSections}
+                      onClick={handleSaveSections}
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-xl bg-primary text-on-primary hover:opacity-90 transition shadow-sm disabled:opacity-50"
+                    >
+                      {savingSections ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                      <span className="whitespace-nowrap">Simpan Urutan</span>
+                    </button>
+                  </div>
+                </div>
+
+                {loadingSections ? (
+                  <div className="py-16 text-center text-muted">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+                    <p className="text-xs">Memuat section halaman...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Struktur Tetap Atas (Hero & Sticky Navbar) */}
+                    <div className="rounded-2xl border border-dashed border-border/80 bg-surface-subtle/40 p-3 sm:p-4 space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted flex items-center gap-1.5">
+                          <span>🔒</span>
+                          <span>Struktur Tetap di Bagian Atas</span>
+                        </span>
+                        <span className="text-[10px] font-semibold text-muted bg-surface px-2 py-0.5 rounded-md border border-border/70">
+                          Posisi Kunci
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="bg-surface/90 p-2.5 sm:p-3 rounded-xl border border-border/60 flex items-center gap-2.5 shadow-2xs">
+                          <span className="text-[11px] font-mono font-bold text-muted bg-surface-subtle px-1.5 py-0.5 rounded border border-border/70 shrink-0">
+                            #hero
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-bold text-foreground truncate">Hero Section (100vh)</div>
+                            <div className="text-[10px] text-muted truncate">Headline, deskripsi, CTA, foto ketua</div>
+                          </div>
+                        </div>
+
+                        <div className="bg-surface/90 p-2.5 sm:p-3 rounded-xl border border-border/60 flex items-center gap-2.5 shadow-2xs">
+                          <span className="text-[11px] font-mono font-bold text-muted bg-surface-subtle px-1.5 py-0.5 rounded border border-border/70 shrink-0">
+                            #navbar
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-bold text-foreground truncate">Sticky Navbar on Scroll</div>
+                            <div className="text-[10px] text-muted truncate">Menempel otomatis setelah melewati Hero</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Header Bagian Section Dinamis */}
+                    <div className="flex items-center justify-between pt-1 px-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-foreground">Urutan Section Dinamis</span>
+                        <span className="text-[10px] font-semibold text-primary bg-primary-container px-2 py-0.5 rounded-full">
+                          {sectionList.length} Section
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-muted hidden sm:inline">
+                        Gunakan panah naik/turun untuk mengubah urutan
+                      </span>
+                    </div>
+
+                    {/* Daftar Section yang Bisa Di-reorder */}
+                    <div className="space-y-2.5">
+                      {sectionList.map((sec, idx) => (
+                        <div
+                          key={sec.id}
+                          className={`bg-surface p-3 sm:p-3.5 rounded-xl border transition flex items-center justify-between gap-3 ${
+                            sec.enabled ? "border-border shadow-xs" : "border-border/50 opacity-60 bg-surface-subtle"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                            <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-surface-subtle border border-border flex items-center justify-center text-xs font-bold font-mono text-muted shrink-0">
+                              {idx + 1}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-xs sm:text-sm font-bold text-foreground truncate">{sec.name}</span>
+                                <span className="text-[10px] font-mono text-muted bg-surface-subtle px-1.5 py-0.2 rounded border border-border/60">
+                                  #{sec.id}
+                                </span>
+                              </div>
+                              <div className="text-[11px] text-muted mt-0.5 flex flex-wrap items-center gap-1.5">
+                                <span className={`inline-flex items-center gap-1 font-semibold ${sec.enabled ? "text-primary" : "text-muted"}`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${sec.enabled ? "bg-primary" : "bg-muted"}`} />
+                                  <span>{sec.enabled ? "Tampil" : "Disembunyikan"}</span>
+                                </span>
+                                {sec.startAt && <span>• Mulai: {sec.startAt}</span>}
+                                {sec.endAt && <span>• Selesai: {sec.endAt}</span>}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {/* Tombol Reorder Naik & Turun (Segmented Control) */}
+                            <div className="flex items-center bg-surface-subtle rounded-lg border border-border p-0.5">
+                              <button
+                                type="button"
+                                title="Pindahkan ke atas"
+                                disabled={idx === 0}
+                                onClick={() => moveSection(idx, "up")}
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-md text-foreground hover:bg-surface flex items-center justify-center disabled:opacity-25 disabled:cursor-not-allowed transition"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                title="Pindahkan ke bawah"
+                                disabled={idx === sectionList.length - 1}
+                                onClick={() => moveSection(idx, "down")}
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-md text-foreground hover:bg-surface flex items-center justify-center disabled:opacity-25 disabled:cursor-not-allowed transition"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Tombol Toggle Visibilitas */}
+                            <button
+                              type="button"
+                              onClick={() => toggleSection(sec.id)}
+                              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                                sec.enabled
+                                  ? "bg-primary-container text-on-primary-container border-primary/30"
+                                  : "bg-surface-subtle text-muted border-border"
+                              }`}
+                            >
+                              {sec.enabled ? "Aktif" : "Mati"}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Footer Terkunci */}
+                    <div className="bg-surface-subtle/40 p-3 sm:p-3.5 rounded-xl border border-dashed border-border/80 flex items-center justify-between opacity-80 gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="text-[11px] font-mono font-bold text-muted bg-surface px-1.5 py-0.5 rounded border border-border shrink-0">#footer</span>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-foreground truncate">Footer Website</div>
+                          <div className="text-[10px] text-muted truncate">Hak cipta, navigasi sekunder, dan sosial media</div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted bg-surface px-2 py-0.5 rounded-full border border-border shrink-0">
+                        🔒 Terkunci di Paling Bawah
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </main>
         </div>
       </div>
+
+      {/* Modal Edit Berita & Foto */}
+      {editingNewsItem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-opacity overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-edit-news-title"
+        >
+          <div className="bg-surface border border-border w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-4 my-8 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 id="modal-edit-news-title" className="text-base font-bold text-foreground">
+                    Edit Berita
+                  </h3>
+                  <p className="text-xs text-muted">Perbarui judul, foto sampul, ringkasan, atau batas waktu tayang.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingNewsItem(null)}
+                className="p-1.5 text-muted hover:text-foreground hover:bg-surface-subtle rounded-lg transition"
+                aria-label="Tutup modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNewsEdit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-foreground">
+                  Judul Berita <span className="text-error">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editNewsTitle}
+                  onChange={(e) => setEditNewsTitle(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              {/* Edit Foto Sampul Berita */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-primary" />
+                    <span>Foto Sampul (Opsional)</span>
+                  </label>
+                  {editNewsImageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setEditNewsImageUrl("")}
+                      className="text-[10px] text-error hover:underline flex items-center gap-0.5"
+                    >
+                      <X className="w-3 h-3" /> Hapus Foto (Jadikan Tanpa Foto)
+                    </button>
+                  )}
+                </div>
+
+                {editNewsImageUrl ? (
+                  <div className="relative rounded-xl overflow-hidden border border-border group bg-surface-subtle">
+                    <img
+                      src={editNewsImageUrl}
+                      alt="Pratinjau foto berita"
+                      className="w-full h-40 object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                      <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-surface/90 text-foreground text-xs font-semibold hover:bg-surface transition flex items-center gap-1">
+                        <ImagePlus className="w-3.5 h-3.5" /> Ganti Foto
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleUploadNewsPhoto(e.target.files?.[0], true)}
+                          disabled={uploadingEditNewsPhoto}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setEditNewsImageUrl("")}
+                        className="p-1.5 rounded-lg bg-error text-white hover:bg-error/90 transition"
+                        title="Hapus foto"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-border hover:border-primary/50 hover:bg-surface-subtle/50 rounded-xl cursor-pointer transition text-center group">
+                    {uploadingEditNewsPhoto ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                    ) : (
+                      <ImagePlus className="w-5 h-5 text-muted group-hover:text-primary transition" />
+                    )}
+                    <div className="text-xs">
+                      <span className="font-semibold text-foreground group-hover:text-primary transition">
+                        {uploadingEditNewsPhoto ? "Mengunggah foto..." : "Pilih atau Unggah Foto Baru"}
+                      </span>
+                      <p className="text-[10px] text-muted mt-0.5">JPG, PNG, WebP • Opsional (bisa tanpa foto)</p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleUploadNewsPhoto(e.target.files?.[0], true)}
+                      disabled={uploadingEditNewsPhoto}
+                    />
+                  </label>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-foreground">
+                  Ringkasan Berita
+                </label>
+                <input
+                  type="text"
+                  value={editNewsSummary}
+                  onChange={(e) => setEditNewsSummary(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-foreground">
+                  Isi Lengkap Berita
+                </label>
+                <textarea
+                  rows={3}
+                  value={editNewsContent}
+                  onChange={(e) => setEditNewsContent(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="space-y-1.5 pt-1 border-t border-border">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-primary" />
+                    <span>Auto Hilang (Kedaluwarsa)</span>
+                  </label>
+                  {editNewsExpiresAt && (
+                    <button
+                      type="button"
+                      onClick={() => setEditNewsExpiresAt("")}
+                      className="text-[10px] text-muted hover:text-error transition"
+                    >
+                      Hapus batas
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="datetime-local"
+                  value={editNewsExpiresAt}
+                  onChange={(e) => setEditNewsExpiresAt(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setEditingNewsItem(null)}
+                  className="px-4 py-2 text-xs font-medium text-foreground hover:bg-surface-subtle rounded-xl border border-border transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingNewsEdit || !editNewsTitle.trim()}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-primary text-on-primary hover:opacity-90 rounded-xl transition disabled:opacity-50"
+                >
+                  {savingNewsEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                  <span>Simpan Perubahan</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Edit Kredensial Pengurus */}
+      {editingCredRole && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-opacity"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-cred-title"
+        >
+          <div className="bg-surface border border-border w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 id="modal-cred-title" className="text-base font-bold text-foreground">
+                    Atur Kredensial {editingCredRole.toUpperCase()}
+                  </h3>
+                  <p className="text-xs text-muted">Ubah username atau password login portal.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingCredRole(null)}
+                className="p-1.5 text-muted hover:text-foreground hover:bg-surface-subtle rounded-lg transition"
+                aria-label="Tutup modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCred} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-foreground">
+                  Username <span className="text-error">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newCredUsername}
+                  onChange={(e) => setNewCredUsername(e.target.value)}
+                  placeholder={`Contoh: ${editingCredRole}.${slug}`}
+                  className="w-full px-3.5 py-2.5 text-sm bg-surface-subtle border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-foreground">
+                  Password Baru
+                </label>
+                <div className="relative">
+                  <input
+                    type={showCredPassword ? "text" : "password"}
+                    value={newCredPassword}
+                    onChange={(e) => setNewCredPassword(e.target.value)}
+                    placeholder="Kosongkan jika tidak ingin mengubah password"
+                    className="w-full pl-3.5 pr-10 py-2.5 text-sm bg-surface-subtle border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCredPassword(!showCredPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted hover:text-foreground transition"
+                    aria-label={showCredPassword ? "Sembunyikan password" : "Lihat password"}
+                    title={showCredPassword ? "Sembunyikan password" : "Lihat password"}
+                  >
+                    {showCredPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-[11px] text-muted">
+                  Minimal 6 karakter jika ingin mengganti password baru.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setEditingCredRole(null)}
+                  className="px-4 py-2 text-xs font-medium text-foreground hover:bg-surface-subtle rounded-xl border border-border transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingCred || !newCredUsername.trim()}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-primary text-on-primary hover:opacity-90 rounded-xl transition disabled:opacity-50"
+                >
+                  {savingCred ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                  <span>Simpan Kredensial</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Drawer HP: semua menu + akun. Muncul dari sisi yang sama dengan sidebar desktop. */}
       <div
