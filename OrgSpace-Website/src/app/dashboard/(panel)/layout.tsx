@@ -74,14 +74,23 @@ export default async function PanelLayout({ children }: LayoutProps<"/dashboard"
       {/* Main Content Area: Scroll mandiri di desktop */}
       <div className="flex flex-1 flex-col min-w-0 md:h-screen md:overflow-y-auto">
         {/* Top bar sticky */}
-        <header className="sticky top-0 z-10 flex h-13 items-center justify-between border-b border-border bg-surface/90 px-6 backdrop-blur shrink-0 transition-colors duration-200">
-          <div className="flex items-center gap-2 text-xs text-muted">
-            <span className="font-medium text-foreground">Portal Tim</span>
-            <span>/</span>
-            <span className="text-muted">Monitoring & Manajemen</span>
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border bg-surface/90 px-4 md:px-8 backdrop-blur shrink-0 transition-colors duration-200">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-semibold text-navy dark:text-foreground">Portal Tim OrgSpace</span>
+            <span className="text-muted/60">/</span>
+            <span className="text-muted">Monitoring & Kendali Admin</span>
           </div>
 
           <div className="flex items-center gap-2.5">
+            {/* Live system health status badge */}
+            <div className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex size-2 rounded-full bg-emerald-500"></span>
+              </span>
+              <span>Sistem Normal</span>
+            </div>
+
             {/* Tombol Pengalih Mode Terang / Gelap Dashboard */}
             <DashboardThemeToggle />
 
@@ -89,7 +98,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/dashboard"
               href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-field border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-surface-subtle hover:text-foreground"
+              className="inline-flex items-center gap-1.5 rounded-field border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-surface-subtle hover:text-foreground hover:border-border-strong"
             >
               <span>Buka Situs Publik</span>
               <svg className="size-3 text-muted/70" viewBox="0 0 20 20" fill="currentColor">
@@ -101,7 +110,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/dashboard"
         </header>
 
         {/* Content */}
-        <main className="min-w-0 flex-1 p-5 md:p-8">{children}</main>
+        <main className="min-w-0 flex-1 p-4 sm:p-6 md:p-8">{children}</main>
       </div>
     </div>
   );

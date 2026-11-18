@@ -8,6 +8,28 @@ if (process.env.NODE_ENV === "production" && !process.env.ORGSPACE_API_URL) {
 // Cache Components (bawaan create-next-app 16) sengaja tidak dinyalakan: pola fetch + `revalidate` biasa lebih mudah
 // dipahami tim. Nyalakan hanya setelah dibahas dengan Aris (lihat AGENTS.md).
 const nextConfig: NextConfig = {
+  images: {
+    localPatterns: [
+      {
+        pathname: "/images/**",
+      },
+      {
+        pathname: "/template-thumbnail/**",
+        search: "?*",
+      },
+      {
+        pathname: "/hero-image",
+        search: "?*",
+      },
+      {
+        pathname: "/update-image/**",
+        search: "?*",
+      },
+      {
+        pathname: "/**",
+      },
+    ],
+  },
   experimental: {
     // Form hero di dashboard mengirim gambar maks 2 MB (batas backend) lewat Server Action; bawaannya hanya 1 MB.
     serverActions: { bodySizeLimit: "3mb" },

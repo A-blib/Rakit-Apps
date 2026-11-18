@@ -49,6 +49,23 @@ export const UPDATE_CATEGORY_LABEL: Record<PortalUpdateCategory, string> = {
   lainnya: "Lainnya",
 };
 
+export const TEMPLATE_CATEGORY_LABEL: Record<string, string> = {
+  osis_mpk: "OSIS / MPK",
+  bem_dema_dpm: "BEM / DEMA",
+  himpunan: "Himpunan",
+  ukm: "UKM",
+  pramuka: "Pramuka",
+  jurnalistik_media: "Jurnalistik",
+  pmr_ksr: "PMR / KSR",
+  paskibra: "Paskibra",
+  kerohanian: "Kerohanian",
+  seni_olahraga: "Seni & Olahraga",
+  lainnya: "Komunitas",
+};
+
+export const templateCategoryLabel = (category?: string | null) =>
+  (category && TEMPLATE_CATEGORY_LABEL[category]) || category || "Organisasi";
+
 const number = new Intl.NumberFormat("id-ID");
 const dateTime = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" });
 const date = new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", timeZone: "UTC" });

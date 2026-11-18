@@ -303,12 +303,12 @@ export function SectionThreeShowcase() {
     <section
       ref={sectionRef}
       id="fitur-showcase"
-      className="relative w-full overflow-hidden bg-gradient-to-b from-white via-[#FAFBFD] to-[#F3F7FD] pt-12 sm:pt-16 md:pt-20 pb-20 sm:pb-24 lg:pb-32 transition-colors duration-500"
+      className="relative w-full overflow-hidden bg-gradient-to-b from-white via-[#FAFBFD] to-[#F3F7FD] dark:from-[#07152B] dark:via-[#091D3A] dark:to-[#07152B] pt-20 sm:pt-28 lg:pt-32 pb-20 sm:pb-24 lg:pb-32 transition-colors duration-500"
     >
       {/* Background Glow Halus */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 right-1/4 h-96 w-96 rounded-full bg-blue-100/40 blur-3xl" />
-        <div className="absolute top-1/2 -left-20 h-96 w-96 rounded-full bg-sky-100/30 blur-3xl" />
+        <div className="absolute -top-32 right-1/4 h-96 w-96 rounded-full bg-blue-100/40 dark:bg-blue-600/10 blur-3xl" />
+        <div className="absolute top-1/2 -left-20 h-96 w-96 rounded-full bg-sky-100/30 dark:bg-cyan-600/10 blur-3xl" />
       </div>
 
       <div ref={containerRef} className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -324,11 +324,11 @@ export function SectionThreeShowcase() {
               style={{
                 transitionDelay: isTextVisible ? "100ms" : "0ms",
               }}
-              className={`inline-flex items-center gap-2 rounded-full border border-[#0084FF]/25 bg-[#EBF5FF] px-4 py-1.5 text-xs sm:text-sm font-bold text-[#0070E0] shadow-xs transition-all duration-800 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`inline-flex items-center gap-2 rounded-full border border-[#0084FF]/25 dark:border-cyan/30 bg-[#EBF5FF] dark:bg-cyan/15 px-4 py-1.5 text-xs sm:text-sm font-bold text-[#0070E0] dark:text-cyan shadow-xs transition-all duration-800 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 isTextVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
               }`}
             >
-              <svg className="h-4 w-4 text-[#0084FF]" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4 text-[#0084FF] dark:text-cyan" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
               </svg>
               <span>SAATNYA MULAI BERKREASI</span>
@@ -339,12 +339,12 @@ export function SectionThreeShowcase() {
               style={{
                 transitionDelay: isTextVisible ? "600ms" : "0ms",
               }}
-              className={`mt-4 sm:mt-5 text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-black tracking-tight text-[#0B1E36] leading-[1.14] transition-all duration-900 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`mt-4 sm:mt-5 text-3xl sm:text-4xl md:text-5xl lg:text-[48px] font-black tracking-tight text-[#0B1E36] dark:text-white leading-[1.14] transition-all duration-900 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 isTextVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12 pointer-events-none"
               }`}
             >
               Ide Website-mu Layak Jadi Nyata.<br />
-              <span className="text-[#0084FF]">Yuk, Wujudkan Bersama OrgSpace!</span>
+              <span className="text-[#0084FF] dark:text-cyan">Yuk, Wujudkan Bersama OrgSpace!</span>
             </h2>
 
             {/* 3. Deskripsi Pendukung (Jeda 1100ms) */}
@@ -352,11 +352,11 @@ export function SectionThreeShowcase() {
               style={{
                 transitionDelay: isTextVisible ? "1100ms" : "0ms",
               }}
-              className={`mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-[#475569] leading-relaxed max-w-xl transition-all duration-900 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`mt-4 sm:mt-5 text-sm sm:text-base md:text-lg text-[#475569] dark:text-slate-300 leading-relaxed max-w-xl transition-all duration-900 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 isTextVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12 pointer-events-none"
               }`}
             >
-              Dengan Rakit, kamu bisa membuat website profesional tanpa perlu coding. Pilih desain, atur konten, dan bangun kehadiran online-mu dengan lebih mudah dan cepat.
+              Dengan OrgSpace, kamu bisa membuat website profesional tanpa perlu coding. Pilih desain, atur konten, dan bangun kehadiran online-mu dengan lebih mudah dan cepat.
             </p>
 
             {/* 4. Tombol Call to Action (Jeda 1600ms) */}
@@ -378,21 +378,21 @@ export function SectionThreeShowcase() {
 
               <Link
                 href="/docs"
-                className="inline-flex items-center justify-center rounded-xl border-2 border-[#0B1E36] bg-white px-6 sm:px-7 py-3 sm:py-3.5 text-sm sm:text-base font-bold text-[#0B1E36] hover:bg-[#F8FAFC] hover:border-[#0084FF] hover:text-[#0084FF] transition-all duration-200"
+                className="inline-flex items-center justify-center rounded-xl border-2 border-[#0B1E36] dark:border-slate-600 bg-white dark:bg-slate-800 px-6 sm:px-7 py-3 sm:py-3.5 text-sm sm:text-base font-bold text-[#0B1E36] dark:text-white hover:bg-[#F8FAFC] dark:hover:bg-slate-700 hover:border-[#0084FF] dark:hover:border-cyan hover:text-[#0084FF] dark:hover:text-cyan transition-all duration-200"
               >
                 Lihat Demo
               </Link>
             </div>
 
             {/* 5. Tiga Poin Keunggulan Utama (Muncul satu persatu dengan palet warna selaras) */}
-            <div className="mt-10 pt-7 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+            <div className="mt-10 pt-7 border-t border-slate-200/80 dark:border-[#1E3E6B] grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
               {BOTTOM_FEATURES.map((item, index) => (
                 <div
                   key={item.title}
                   style={{
                     transitionDelay: isTextVisible ? `${2100 + index * 450}ms` : "0ms",
                   }}
-                  className={`group flex flex-col p-3.5 sm:p-4 rounded-2xl bg-white/70 hover:bg-white border border-slate-200/70 ${item.cardBorderHover} shadow-2xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 ${
+                  className={`group flex flex-col p-3.5 sm:p-4 rounded-2xl bg-white/70 dark:bg-[#0C2E5B]/80 hover:bg-white dark:hover:bg-[#0C2E5B] border border-slate-200/70 dark:border-[#1E3E6B] ${item.cardBorderHover} shadow-2xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 ${
                     isTextVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8 pointer-events-none"
                   }`}
                 >
@@ -405,10 +405,10 @@ export function SectionThreeShowcase() {
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-[#0B1E36] group-hover:text-[#0084FF] transition-colors">
+                    <h3 className="text-xs sm:text-sm font-bold text-[#0B1E36] dark:text-white group-hover:text-[#0084FF] dark:group-hover:text-cyan transition-colors">
                       {item.title}
                     </h3>
-                    <p className="mt-1 text-[11px] sm:text-xs text-[#475569] leading-relaxed">
+                    <p className="mt-1 text-[11px] sm:text-xs text-[#475569] dark:text-slate-300 leading-relaxed">
                       {item.desc}
                     </p>
                   </div>

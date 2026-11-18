@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { BarChart } from "@/components/BarChart";
+import { AreaChart } from "@/components/AreaChart";
 import { StatCard } from "@/components/StatCard";
 import { adminApi } from "@/lib/api/admin";
 import { adminToken } from "@/lib/auth/session";
@@ -66,9 +66,10 @@ export default async function TrafficPage({ searchParams }: PageProps<"/dashboar
           <p className="text-xs text-muted">Fluktuasi beban request API sepanjang periode yang dipilih</p>
         </div>
         <div className="mt-4">
-          <BarChart
+          <AreaChart
             points={traffic.days.map((d) => ({ date: d.date, count: d.requests }))}
             label="Request per hari"
+            color="cyan"
           />
         </div>
       </div>

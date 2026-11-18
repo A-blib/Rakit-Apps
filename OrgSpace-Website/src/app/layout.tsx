@@ -18,10 +18,33 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const THEME_SCRIPT = `
+(function() {
+  try {
+    var stored = localStorage.getItem('orgspace_theme');
+    var isDark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  } catch(e) {}
+})();
+`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="id" className={`${jakarta.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col font-sans overflow-x-hidden">{children}</body>
+    <html lang="id" className={`${jakarta.variable} h-full antialiased scroll-smooth`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
+      <body className="flex min-h-full flex-col font-sans overflow-x-hidden bg-background text-foreground transition-colors duration-200">
+        {children}
+      </body>
     </html>
   );
 }

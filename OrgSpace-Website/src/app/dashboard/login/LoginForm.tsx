@@ -130,15 +130,6 @@ export function LoginForm() {
           )}
         </button>
       </div>
-
-      {/* Footer Info */}
-      <div className="mt-6 pt-6 border-t border-slate-200 dark:border-white/10 text-xs flex justify-between items-center text-slate-500 dark:text-slate-400">
-        <span>
-          Akun default:{" "}
-          <span className="text-cyan-600 dark:text-cyan-400 font-semibold font-mono">admin@admin.com</span> /{" "}
-          <span className="text-cyan-600 dark:text-cyan-400 font-semibold font-mono">admin123</span>
-        </span>
-      </div>
     </form>
   );
 }
