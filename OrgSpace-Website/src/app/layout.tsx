@@ -22,7 +22,7 @@ const THEME_SCRIPT = `
 (function() {
   try {
     var stored = localStorage.getItem('orgspace_theme');
-    var isDark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var isDark = stored === 'dark';
     if (isDark) {
       document.documentElement.classList.add('dark');
       document.documentElement.classList.remove('light');

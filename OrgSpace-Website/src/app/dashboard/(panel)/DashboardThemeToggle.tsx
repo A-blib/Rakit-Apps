@@ -12,17 +12,17 @@ function subscribe(callback: () => void) {
 }
 
 function getSnapshot(): string {
-  if (typeof window === "undefined") return "dark";
-  return localStorage.getItem("orgspace_theme") ?? "dark";
+  if (typeof window === "undefined") return "light";
+  return localStorage.getItem("orgspace_theme") === "dark" ? "dark" : "light";
 }
 
 function getServerSnapshot(): string {
-  return "dark";
+  return "light";
 }
 
 export function DashboardThemeToggle() {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const isDark = theme !== "light";
+  const isDark = theme === "dark";
 
   // Sinkronisasi kelas tema ke tag <html> saat inisialisasi dan saat berpindah mode
   useEffect(() => {

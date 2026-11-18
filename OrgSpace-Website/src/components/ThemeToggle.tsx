@@ -14,8 +14,7 @@ function subscribe(callback: () => void) {
 function getSnapshot(): string {
   if (typeof window === "undefined") return "light";
   const stored = localStorage.getItem("orgspace_theme");
-  if (stored) return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return stored === "dark" ? "dark" : "light";
 }
 
 function getServerSnapshot(): string {
