@@ -32,12 +32,13 @@ export function CtaSection() {
 
             {/* CTA Buttons */}
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4">
-              <Link
-                href="/dashboard/login"
+              <a
+                href="/downloads/orgspace.apk"
+                download="orgspace.apk"
                 className="w-full sm:w-auto inline-flex h-12 sm:h-13 items-center justify-center rounded-2xl bg-[#0099FF] px-8 text-sm sm:text-base font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-[#0084FF] hover:shadow-xl hover:shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all duration-200"
               >
-                Mulai Buat Website Sekarang
-              </Link>
+                Mulai Gratis (Unduh APK)
+              </a>
               <Link
                 href="/docs"
                 className="w-full sm:w-auto inline-flex h-12 sm:h-13 items-center justify-center rounded-2xl border border-white/20 bg-white/5 backdrop-blur-sm px-6 text-sm sm:text-base font-bold text-white hover:bg-white/10 hover:border-white/30 transition-all duration-200"

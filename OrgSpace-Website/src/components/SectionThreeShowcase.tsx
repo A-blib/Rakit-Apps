@@ -368,7 +368,8 @@ export function SectionThreeShowcase() {
               }`}
             >
               <a
-                href="#akses-awal"
+                href="/downloads/orgspace.apk"
+                download="orgspace.apk"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FF5A00] to-[#FF7700] px-6 sm:px-7 py-3 sm:py-3.5 text-sm sm:text-base font-bold text-white shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:-translate-y-0.5 hover:from-[#FF6A15] hover:to-[#FF8515] transition-all duration-200"
               >
                 <span>Mulai Gratis</span>

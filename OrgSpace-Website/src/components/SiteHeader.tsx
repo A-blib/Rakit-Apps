@@ -81,12 +81,13 @@ export function SiteHeader() {
           {/* Theme Toggle Button */}
           <ThemeToggle />
 
-          <Link
-            href="#akses-awal"
+          <a
+            href="/downloads/orgspace.apk"
+            download="orgspace.apk"
             className="inline-flex h-9 sm:h-10 items-center justify-center rounded-full bg-[#0B1E36] dark:bg-cyan dark:text-navy px-4 sm:px-5.5 text-xs sm:text-sm font-bold text-white shadow-sm hover:bg-[#12263F] dark:hover:bg-cyan-light hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 whitespace-nowrap"
           >
             Mulai Gratis
-          </Link>
+          </a>
 
           {/* Hamburger Button untuk Smartphone */}
           <button
@@ -141,13 +142,14 @@ export function SiteHeader() {
             Testimoni
           </Link>
           <div className="pt-2 border-t border-slate-100 dark:border-[#1E3E6B]">
-            <Link
-              href="#akses-awal"
+            <a
+              href="/downloads/orgspace.apk"
+              download="orgspace.apk"
               onClick={() => setMobileMenuOpen(false)}
               className="flex w-full items-center justify-center rounded-xl bg-[#0099FF] dark:bg-cyan dark:text-navy py-2.5 text-sm font-bold text-white shadow-xs hover:bg-[#0084FF] transition-colors"
             >
-              Mulai Gratis Sekarang
-            </Link>
+              Mulai Gratis (Unduh APK)
+            </a>
           </div>
         </div>
       )}

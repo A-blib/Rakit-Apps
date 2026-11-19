@@ -324,12 +324,13 @@ export default function TestimoniPage() {
             Mulai sekarang juga. Pilih template yang cocok, isi konten dari HP, dan website resmimu langsung aktif tanpa biaya!
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/#akses-awal"
+            <a
+              href="/downloads/orgspace.apk"
+              download="orgspace.apk"
               className="inline-flex items-center justify-center rounded-2xl bg-[#0099FF] px-7 py-3 text-sm font-bold text-white shadow-md hover:bg-[#0084FF] hover:scale-105 active:scale-95 transition-all"
             >
-              Mulai Buat Website Gratis
-            </Link>
+              Mulai Buat Website Gratis (Unduh APK)
+            </a>
             <Link
               href="/"
               className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-bold text-white hover:bg-white/10 transition-all"
