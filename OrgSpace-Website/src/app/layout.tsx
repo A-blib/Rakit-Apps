@@ -11,6 +11,13 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: { default: "OrgSpace — Website organisasi tanpa coding", template: "%s · OrgSpace" },
   description: "Buat website OSIS, BEM, UKM, dan komunitas langsung dari HP. Pilih template, isi, terbitkan.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/images/orgspace-emblem.png", type: "image/png" },
+    ],
+    apple: "/images/orgspace-emblem.png",
+  },
 };
 
 export const viewport: Viewport = {
